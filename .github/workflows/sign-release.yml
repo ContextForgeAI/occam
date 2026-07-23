@@ -1,0 +1,91 @@
+name: Sign Release Artifacts
+
+on:
+  release:
+    types: [published]
+  # Manual remediation / rerun for an existing tag (e.g. attach signatures after
+  # uploading missing platform assets to an already-published release).
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to sign (e.g. v1.0.0-rc.2)"
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  # Upload .bundle signatures onto the GitHub Release (gh release upload).
+  contents: write
+  attestations: write
+
+jobs:
+  sign:
+    # GitHub-only: keyless cosign needs GitHub OIDC.
+    if: contains(github.server_url, 'github.com')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve release tag
+        id: tag
+        env:
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          TAG="${EVENT_TAG:-}"
+          if [[ -z "$TAG" ]]; then
+            TAG="${INPUT_TAG:-}"
+          fi
+          if [[ -z "$TAG" ]]; then
+            echo "error: no release tag (event.release.tag_name / inputs.tag)" >&2
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Signing release tag: $TAG"
+
+      - name: Download GitHub Release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          gh release download "$TAG" --repo "${{ github.repository }}" --dir artifacts/
+          echo "Downloaded assets:"
+          ls -la artifacts/
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign platform archives (keyless)
+        run: |
+          set -euo pipefail
+          # shellcheck source=scripts/lib/sign-release-archives.sh
+          source scripts/lib/sign-release-archives.sh
+          mapfile -t archives < <(select_release_archives artifacts)
+          echo "Archives to sign (${#archives[@]}):"
+          printf '  %s\n' "${archives[@]}"
+          for f in "${archives[@]}"; do
+            echo "signing $f"
+            cosign sign-blob --yes --bundle "${f}.bundle" "$f"
+          done
+
+      - name: Upload signatures to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          bundles=(artifacts/ff-occam-*-linux-x64.tar.gz.bundle
+                   artifacts/ff-occam-*-osx-arm64.tar.gz.bundle
+                   artifacts/ff-occam-*-win-x64.tar.gz.bundle)
+          if ((${#bundles[@]} == 0)); then
+            echo "error: no signature bundles produced under artifacts/" >&2
+            ls -la artifacts/ >&2 || true
+            exit 1
+          fi
+          echo "Uploading ${#bundles[@]} bundle(s) to $TAG (--clobber for deterministic reruns)"
+          # --clobber: reruns replace prior .bundle assets for the same filenames.
+          gh release upload "$TAG" "${bundles[@]}" --repo "${{ github.repository }}" --clobber

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "ff-occam": {
+      "command": "node",
+      "args": ["${workspaceFolder}/scripts/launch-mcp-host.mjs"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "OCCAM_HOME": "${workspaceFolder}",
+        "OCCAM_PROFILE": "researcher",
+        "WT_OCCAM_BANNER": "0"
+      }
+    }
+  }
+}

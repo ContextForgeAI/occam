@@ -1,0 +1,1 @@
+{"id":"pool-parallel-nginx-mdn","urls":["https://nginx.org/en/docs/","https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide"],"backend":"browser","expect_ok":true,"min_succeeded":2,"timeout_seconds":240,"pool_size":2}

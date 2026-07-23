@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "id": "x.com",
+  "hosts": ["x.com", "twitter.com"],
+  "meta": {
+    "title": "X (Twitter) posts and profiles",
+    "tags": ["anti_bot_blogs", "social"]
+  },
+  "routing": {
+    "preferred_backend": "browser"
+  },
+  "agent_notes": "/status/ permalinks require backend_policy=browser — http and http_then_browser return thin_extract. Profile bios may work on http; tweet text needs browser."
+}

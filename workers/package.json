@@ -1,0 +1,15 @@
+{
+  "name": "ffoccam-workers",
+  "private": true,
+  "workspaces": [
+    "http-extract",
+    "browser-extract",
+    "css-extract"
+  ],
+  "comments": {
+    "overrides": "canvas is an optional, unused peer of unpdf (serverless pdfjs) and jsdom. We never render to canvas, but its node-pre-gyp -> tar chain trips npm audit (high). Neutralize it with an empty stub so the vulnerable tar never enters the dependency graph. unpdf/jsdom both guard canvas behind try/catch, so PDF text extraction and DOM extraction are unaffected (verified)."
+  },
+  "overrides": {
+    "canvas": "npm:@favware/skip-dependency@1.2.1"
+  }
+}

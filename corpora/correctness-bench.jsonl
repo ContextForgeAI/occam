@@ -1,0 +1,41 @@
+{"id":"clean-mdn","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","expect":"extractable","marker":"JavaScript"}
+{"id":"clean-nginx","url":"https://nginx.org/en/docs/","expect":"extractable","marker":"nginx"}
+{"id":"clean-pydocs","url":"https://docs.python.org/3/library/functions.html","expect":"extractable","marker":"zip"}
+{"id":"clean-rustblog","url":"https://blog.rust-lang.org/","expect":"extractable","marker":"Rust"}
+{"id":"clean-wiki-http","url":"https://en.wikipedia.org/wiki/HTTP","expect":"extractable","marker":"hypertext"}
+{"id":"clean-httpwg","url":"https://httpwg.org/specs/rfc9111.html","expect":"extractable","marker":"cache"}
+{"id":"clean-go-doc","url":"https://go.dev/doc/","expect":"extractable","marker":"Go"}
+{"id":"clean-sqlite","url":"https://www.sqlite.org/lang_select.html","expect":"extractable","marker":"SELECT"}
+{"id":"clean-mdn-caching","url":"https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching","expect":"extractable","marker":"cache"}
+{"id":"clean-wiki-tcp","url":"https://en.wikipedia.org/wiki/Transmission_Control_Protocol","expect":"extractable","marker":"Transmission"}
+{"id":"clean-pep8","url":"https://peps.python.org/pep-0008/","expect":"extractable","marker":"indentation"}
+{"id":"clean-mdn-css","url":"https://developer.mozilla.org/en-US/docs/Web/CSS/flex","expect":"extractable","marker":"flex"}
+{"id":"clean-kernel","url":"https://www.kernel.org/doc/html/latest/admin-guide/index.html","expect":"extractable","marker":"kernel"}
+{"id":"clean-postgres","url":"https://www.postgresql.org/docs/current/sql-select.html","expect":"extractable","marker":"SELECT"}
+{"id":"spa-excalidraw","url":"https://excalidraw.com/","expect":"js_shell","marker":"whiteboard","note":"CSR canvas app; naive gets a near-empty shell"}
+{"id":"spa-tldraw","url":"https://www.tldraw.com/","expect":"js_shell","marker":"canvas","note":"CSR canvas app"}
+{"id":"spa-reactdev","url":"https://react.dev/reference/react/useState","expect":"js_shell","marker":"useState","note":"docs; may be SSR"}
+{"id":"spa-mui","url":"https://mui.com/material-ui/react-button/","expect":"js_shell","marker":"Button","note":"component docs; JS-heavy"}
+{"id":"block-g2","url":"https://www.g2.com/categories/web-scraping","expect":"blocked","note":"Cloudflare anti-bot"}
+{"id":"block-glassdoor","url":"https://www.glassdoor.com/Reviews/index.htm","expect":"blocked","note":"anti-bot wall"}
+{"id":"block-crunchbase","url":"https://www.crunchbase.com/organization/openai","expect":"blocked","note":"heavy anti-bot"}
+{"id":"block-indeed","url":"https://www.indeed.com/","expect":"blocked","note":"Cloudflare/anti-bot"}
+{"id":"block-zillow","url":"https://www.zillow.com/homes/","expect":"blocked","note":"PerimeterX anti-bot"}
+{"id":"block-similarweb","url":"https://www.similarweb.com/website/example.com/","expect":"blocked","note":"anti-bot"}
+{"id":"block-nowsecure","url":"https://nowsecure.nl/","expect":"blocked","note":"deterministic Cloudflare JS-challenge test page"}
+{"id":"block-ticketmaster","url":"https://www.ticketmaster.com/","expect":"blocked","note":"anti-bot"}
+{"id":"block-idealista","url":"https://www.idealista.com/en/","expect":"blocked","note":"DataDome anti-bot"}
+{"id":"block-realtor","url":"https://www.realtor.com/","expect":"blocked","note":"anti-bot"}
+{"id":"block-instagram","url":"https://www.instagram.com/nasa/","expect":"blocked","note":"login+anti-bot wall to naive"}
+{"id":"real-linkedin","url":"https://www.linkedin.com/company/openai/","expect":"extractable","marker":"OpenAI","note":"public company page served real content to vm200 (not blocked)"}
+{"id":"paywall-wsj","url":"https://www.wsj.com/","expect":"paywall","note":"subscriber wall"}
+{"id":"paywall-medium","url":"https://medium.com/@medium/its-time-to-tell-your-story-2fb6c6a5b2e0","expect":"paywall","note":"member-only story"}
+{"id":"paywall-economist","url":"https://www.economist.com/","expect":"paywall","note":"paywall"}
+{"id":"paywall-ft","url":"https://www.ft.com/","expect":"paywall","note":"hard paywall + anti-bot"}
+{"id":"paywall-bloomberg","url":"https://www.bloomberg.com/","expect":"paywall","note":"paywall + anti-bot"}
+{"id":"paywall-wired","url":"https://www.wired.com/story/","expect":"paywall","note":"metered paywall"}
+{"id":"notfound-mdn","url":"https://developer.mozilla.org/en-US/docs/OccamCorrectnessMissing404","expect":"notfound","note":"404 on a live host"}
+{"id":"notfound-nginx","url":"https://nginx.org/en/docs/this-page-does-not-exist-404","expect":"notfound","note":"404 on a live docs host"}
+{"id":"notfound-github","url":"https://github.com/this-org-does-not-exist-occam/nope-404","expect":"notfound","note":"GitHub 404"}
+{"id":"thin-example","url":"https://example.com/","expect":"thin","note":"tiny placeholder page"}
+{"id":"thin-iana","url":"https://www.iana.org/help/example-domains","expect":"extractable","marker":"example","note":"short but real content"}

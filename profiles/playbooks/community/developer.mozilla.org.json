@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "id": "developer.mozilla.org",
+  "hosts": ["developer.mozilla.org"],
+  "meta": {
+    "title": "MDN Web Docs",
+    "tags": ["documentation", "tier_a_docs", "community"]
+  },
+  "routing": {
+    "preferred_backend": "http"
+  },
+  "extract": {
+    "contentSelectors": [
+      "main.layout__content article",
+      "main#content",
+      "#content",
+      "main.layout__content"
+    ]
+  },
+  "browser": {
+    "recipe_ref": "workers/browser-extract/lib/recipes/developer.mozilla.org.mjs"
+  },
+  "agent_notes": "Community vetted: hub pages are TOC — use leaf URLs for API definitions. Tighter article-scoped selectors reduce footer leakage on guide pages; fit_markdown is opt-in for long references."
+}

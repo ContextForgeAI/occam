@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Understanding token budgets — Occam Blog</title></head>
+<body>
+  <header id="site-header">
+    <nav><a href="/">Home</a> <a href="/blog">Blog</a> <a href="/pricing">Pricing</a> <a href="/login">Sign in</a></nav>
+  </header>
+  <aside class="sidebar"><h3>Newsletter</h3><p>Subscribe to get the latest posts in your inbox every week.</p></aside>
+  <article>
+    <h1>Understanding token budgets</h1>
+    <p>Token budgets are the single most important lever when feeding web content into a language model. Every character you send costs money and, more importantly, context window space that could hold reasoning.</p>
+    <h2>Why pruning wins</h2>
+    <p>A typical article page ships thirty kilobytes of navigation, cookie banners, and analytics for every kilobyte of prose. Stripping that boilerplate before the model ever sees it routinely cuts the payload by ninety percent while preserving the argument the author actually made.</p>
+    <h2>Measuring the result</h2>
+    <p>The honest metric is compression against a full fetch of the same page. If your extractor claims a win it should be able to show the byte ratio on a real corpus, not a cherry-picked demo.</p>
+  </article>
+  <footer id="site-footer">
+    <p>&copy; 2026 Occam Inc. All rights reserved. Terms of service and privacy policy apply.</p>
+    <div class="ad-slot">Advertisement: buy our premium plan today and save twenty percent!</div>
+  </footer>
+</body>
+</html>

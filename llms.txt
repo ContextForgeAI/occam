@@ -1,0 +1,46 @@
+# FF-Occam MCP
+
+> Local Model Context Protocol server that turns live public URLs into clean, token-budgeted Markdown with typed failures and optional signed receipts. Core MCP tools are always available; batch, watch, cross-check, and failure-atlas tools are opt-in.
+
+Use this file as the compact map for an LLM using FF-Occam MCP. Do not load every linked page at once. Start with the task router, then open only the selected tool page and any failure or configuration page needed for the current call.
+
+Non-negotiable rules:
+
+- Runtime `tools/list` is authoritative for available tools and input schemas.
+- Use parameter names exactly as returned by the server; Occam tool parameters are snake_case.
+- `ok: false` means the page content is unknown. Read `failure.code`; never substitute model memory.
+- `thin_extract` means bad extraction (chrome/shell), not a short quality page (`quality.verdict=short_quality` is success).
+- Prefer one `occam_digest` over N× `occam_transcode` when you already have several URLs.
+- Do not call playbook-authoring tools unless the user is explicitly repairing an extraction recipe.
+- The default page reader is **`occam_transcode`** (do not invent an `occam_read` tool name).
+- The repository name is FFOccamMCP; the product and MCP server are FF-Occam MCP.
+
+## Start
+
+- [Documentation hub](docs/index.md): Audience-based routes for operators, people using the tools, LLM agents, SDK users, and contributors.
+- [Choose a tool](docs/choosing-a-tool.md): Goal-to-tool decision table and role-scoped tool sets.
+- [Per-tool index](docs/tools/index.md): Open one focused page for the tool selected by the router.
+- [Recipes](docs/recipes.md): Minimal multi-tool workflows with exact call order.
+
+## Contract and reference
+
+- [MCP API contract](MCP_API_SPEC.md): Normative response shapes, cross-tool semantics, limits, and transport contract.
+- [Compact tools reference](docs/tools-reference.md): All core and opt-in tools in one page.
+- [Failure codes](docs/failure-codes.md): Typed failure meaning and retry/stop actions.
+- [Configuration](docs/configuration.md): Environment variables and defaults.
+- [Transports](docs/transports.md): stdio, local WebSocket, authenticated remote WSS, and batch HTTP.
+- [Receipt verification](docs/receipt_verification.md): Normative byte-level signature format.
+
+## Installation and operation
+
+- [Deterministic installer instructions](INSTALL.md): Read in full before an automated agent installs or publishes the host.
+- [Getting started](docs/getting-started.md): Human-oriented install, MCP wiring, operator CLI, and first tool call.
+- [Troubleshooting](docs/troubleshooting.md): Symptom-to-fix runbook.
+
+## Optional
+
+- [Concepts](docs/concepts.md): Trust model, backends, playbooks, sessions, and receipts.
+- [Receipts guide](docs/receipts.md): How people and agents consume and verify receipts.
+- [FAQ](docs/faq.md): Short operational answers.
+- [Roadmap](docs/roadmap.md): Shipped surface, release state, and explicitly unshipped items.
+- [Contributor instructions](AGENTS.md): Read only when modifying this repository, not when merely using the MCP tools.

@@ -1,0 +1,17 @@
+{
+  "name": "bench",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "bench:extract": "node extract-bench.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "FF-Occam Contributors",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "dependencies": {
+    "tiktoken": "^1.0.22"
+  }
+}

@@ -1,0 +1,15 @@
+services:
+  occam:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - OCCAM_HOME=/app
+      - OCCAM_LOG=info
+      # - OCCAM_ALLOW_PRIVATE_URLS=1  # uncomment for local testing
+      # - OCCAM_HTTP_PROXY=http://proxy:8080
+    # For stdio MCP, run interactively:
+    #   docker compose run --rm occam
+    stdin_open: true
+    tty: true
+    restart: unless-stopped

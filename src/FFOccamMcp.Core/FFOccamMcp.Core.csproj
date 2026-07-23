@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Condition="'$(OccamGateBuild)' == 'true'">
+    <DefineConstants>$(DefineConstants);OCCAM_GATE</DefineConstants>
+    <IntermediateOutputPath>obj\gate\$(Configuration)\$(TargetFramework)\</IntermediateOutputPath>
+    <OutputPath>bin\gate\$(Configuration)\$(TargetFramework)\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PublishAot>true</PublishAot>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <TrimMode>full</TrimMode>
+    <IlcOptimizationPreference>Size</IlcOptimizationPreference>
+    <StripSymbols>true</StripSymbols>
+    <IsAotCompatible>true</IsAotCompatible>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <RootNamespace>OccamMcp.Core</RootNamespace>
+    <AssemblyName>OccamMcp.Core</AssemblyName>
+    <Version>1.0.0-rc.2</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <InformationalVersion>1.0.0-rc.2</InformationalVersion>
+    
+    <!-- Reproducible / Deterministic -->
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <Deterministic>true</Deterministic>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <DebugType>embedded</DebugType>
+    
+    <!-- Source Link -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+
+  <!-- NuGet package metadata for SBOM -->
+  <PropertyGroup>
+    <Authors>FF-Occam Contributors</Authors>
+    <Company>FF-Occam</Company>
+    <Copyright>Copyright (C) 2026 Ebony Swan</Copyright>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/ContextForgeAI/occam</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ContextForgeAI/occam</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryCommit>$([System.Text.RegularExpressions.Regex]::Match($(Build_SourceVersion), '[0-9a-f]{40}'))</RepositoryCommit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>L0Gate</_Parameter1>
+    </AssemblyAttribute>
+    <PackageReference Include="ModelContextProtocol" Version="1.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
+    <!-- SI-15: RFC3161 time-stamp tokens (Rfc3161TimestampRequest/Token) for time-anchored receipts. -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.0" />
+  </ItemGroup>
+
+</Project>

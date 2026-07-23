@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Reading a file in Python</title></head>
+<body>
+  <article>
+    <h1>Reading a file in Python</h1>
+    <p>Opening and reading a text file is one of the most common tasks a beginner will run into. The example below reads the entire contents of a file into a single string and prints it to standard output for inspection.</p>
+    <pre><code>with open("notes.txt", "r", encoding="utf-8") as handle:
+    text = handle.read()
+    print(text)</code></pre>
+    <p>Always prefer the context-manager form shown above: it guarantees the file descriptor is closed even if an exception is raised while the body of the block is executing.</p>
+  </article>
+</body>
+</html>

@@ -1,0 +1,10 @@
+# Copy to config.toml and set OCCAM_HOME to your local checkout.
+# Do not commit config.toml — it is gitignored for machine-specific paths.
+
+[mcp_servers.ff-occam]
+command = "node"
+args = ["scripts/launch-mcp-host.mjs"]
+
+[mcp_servers.ff-occam.env]
+OCCAM_HOME = "/path/to/FFOccamMCP"
+WT_OCCAM_BANNER = "0"

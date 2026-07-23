@@ -1,0 +1,9 @@
+{"url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array","expectedBackend":"http","expectedOutcome":"ok","minMarkdownLength":500,"tags":["tier_a_docs","rotation"],"focusQuery":"Array methods"}
+{"url":"https://nginx.org/en/docs/http/ngx_http_core_module.html","expectedBackend":"http","expectedOutcome":"ok","minMarkdownLength":500,"tags":["tier_a_docs","rotation"],"focusQuery":"directives"}
+{"url":"https://nuxt.com/docs/getting-started/installation","expectedBackend":"http_then_browser","expectedOutcome":"ok","minMarkdownLength":500,"tags":["spa_docs","rotation"],"focusQuery":"install Nuxt"}
+{"url":"https://developers.openai.com/api/docs/guides/rate-limits","expectedBackend":"http_then_browser","expectedOutcome":"ok","minMarkdownLength":500,"tags":["docs","rotation"],"focusQuery":"rate limits"}
+{"url":"https://developer.mozilla.org/en-US/docs/Web/OccamGateMissingPage404","expectedBackend":"http","expectedOutcome":"failure","expectedFailureCode":"http_404","tags":["honesty","rotation"]}
+{"url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures","expectedBackend":"http","expectedOutcome":"ok","minMarkdownLength":300,"tags":["tier_a_docs","rotation","focus"],"focusQuery":"functions closures"}
+{"url":"https://www.postgresql.org/docs/current/sql-select.html","expectedBackend":"http","expectedOutcome":"ok","minMarkdownLength":500,"tags":["docs","rotation","digest"],"focusQuery":"select query syntax"}
+{"url":"https://docs.docker.com/get-started/","expectedBackend":"http","expectedOutcome":"ok","minMarkdownLength":500,"tags":["docs","rotation","digest"],"focusQuery":"getting started"}
+{"url":"https://nginx.org/en/docs/","expectedBackend":"http","expectedOutcome":"ok","minMarkdownLength":500,"tags":["tier_a_docs","rotation","map"],"focusQuery":"configuration syntax"}

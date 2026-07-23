@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('src/**/*.csproj', 'benchmarks/**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore src/FFOccamMcp.Core
+
+      - name: Build
+        run: dotnet build src/FFOccamMcp.Core -c Release --no-restore
+
+      - name: Security — fail on vulnerable packages
+        run: |
+          dotnet list src/FFOccamMcp.Core package --vulnerable --include-transitive 2>&1 | tee vuln.txt
+          if grep -q "has the following vulnerable packages" vuln.txt; then
+            echo "ERROR: vulnerable NuGet packages detected"; exit 1
+          fi
+          echo "OK: no vulnerable packages"
+
+      - name: Publish AOT (linux-x64)
+        # Compile + trim + native link gate. Binary is uploaded for gate-fast:
+        # PublicMcpToolsListLiveTests spawns the published host (same resolve order as
+        # launch-mcp-host.mjs) and asserts live tools/list schema parity.
+        run: dotnet publish src/FFOccamMcp.Core -c Release -r linux-x64 --self-contained -o ./publish
+
+      - name: Upload published host
+        uses: actions/upload-artifact@v4
+        with:
+          name: occam-host-linux-x64
+          path: publish/OccamMcp.Core
+          if-no-files-found: error
+          retention-days: 1
+
+  gate-fast:
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      OCCAM_HOME: ${{ github.workspace }}
+      # NO OCCAM_ALLOW_PRIVATE_URLS here — on purpose. That flag skips the SSRF check, and with it the
+      # pinned-dispatcher path that every real user hits by default. Setting it job-wide made this gate
+      # test a configuration nobody runs, and it is exactly why CI stayed green while prod died on a
+      # plain MDN 404 (the pool teardown hung on an unread body — only reachable WITH pinning).
+      # The --fast tier is public URLs + unit tests only, so it does not need the flag.
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: workers/package-lock.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('src/**/*.csproj', 'benchmarks/**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: npm ci (workers)
+        # workers/ is a single npm workspace — install from the root so deps hoist correctly.
+        # Per-package `npm ci` leaves members without their hoisted deps → worker crashes →
+        # no_json → workers_unavailable in the live smoke.
+        run: npm ci --no-fund --no-audit
+        working-directory: workers
+
+      - name: Security — fail on vulnerable worker packages
+        # Mirror the NuGet vuln scan for the Node side. Production deps only (--omit=dev);
+        # high+ severity fails the gate. Lockfile is kept clean via workers/package.json overrides.
+        run: npm audit --omit=dev --audit-level=high
+        working-directory: workers
+
+      # Place OccamMcp.Core at OCCAM_HOME root — first candidate in ResolvePublishedHostExecutable /
+      # scripts/lib/resolve-host-binary.mjs (live tools/list public MCP contract).
+      - name: Download published host
+        uses: actions/download-artifact@v4
+        with:
+          name: occam-host-linux-x64
+          path: .
+
+      - name: Make host executable
+        run: chmod +x OccamMcp.Core && ls -la OccamMcp.Core
+
+      - name: Build gate
+        run: dotnet build benchmarks/l0-gate -c Release
+
+      - name: L0 Gate (fast)
+        run: dotnet run --project benchmarks/l0-gate -- --fast
+        timeout-minutes: 5
+
+  docs-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate human and LLM documentation
+        run: node scripts/check-docs.mjs
+
+      - name: Validate environment catalog against code
+        run: node scripts/lib/operator/env-catalog.selftest.mjs

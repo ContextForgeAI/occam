@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.0",
+  "onboard_json_schema_version": "1.0",
+  "help_json_schema_version": "1.0",
+  "title": "FF-Occam host wizard manifest",
+  "requiredEnv": ["OCCAM_HOME"],
+  "doctorCommand": "occam doctor",
+  "doctorCommandWindows": "occam doctor",
+  "smokeCommand": "occam smoke",
+  "onboardCommand": "occam onboard --non-interactive --profile default --host-target generic-stdio --json",
+  "skillInstallCommand": "occam skill install --platform all",
+  "helpCommand": "occam help --json",
+  "connectionSnippetCommand": "node scripts/lib/print-connection-snippet.mjs <OCCAM_HOME> <hostTarget>",
+  "operatorJourneyDoc": "docs/getting-started.md",
+  "installGuidance": {
+    "canonicalLauncher": "node scripts/launch-mcp-host.mjs",
+    "canonicalEnv": { "OCCAM_HOME": "<install-root>" },
+    "bootstrap": "./scripts/occam-doctor.sh",
+    "avoidForCloneInstall": "packages/occam-mcp/bin/occam-mcp.js on a git clone — exits with INSTALL.md instructions; use scripts/occam-wrapper.sh (Hermes) or launch-mcp-host.mjs",
+    "installDoc": "INSTALL.md",
+    "npxPath": "npx @ff-occam/mcp — not part of 1.0.0-rc.2; use GitHub tarball or OCCAM_HOME + launch-mcp-host.mjs"
+  },
+  "onboardJsonSchema": {
+    "type": "object",
+    "required": ["schema_version", "profile", "hostTarget", "occamHome", "env"],
+    "properties": {
+      "schema_version": { "type": "string", "const": "1.0" },
+      "profile": {
+        "type": "string",
+        "enum": ["default", "hermes-headless", "mass-scrape"]
+      },
+      "hostTarget": {
+        "type": "string",
+        "enum": ["cursor", "hermes", "openclaw", "claude-desktop", "generic-stdio", "cli-only"]
+      },
+      "occamHome": { "type": "string" },
+      "env": {
+        "type": "object",
+        "additionalProperties": { "type": "string" }
+      },
+      "written_at": { "type": "string", "format": "date-time" },
+      "generator": { "type": "string" }
+    }
+  },
+  "profiles": {
+    "default": {
+      "summary": "Bundled Chromium, pool size 1, no proxy"
+    },
+    "hermes-headless": {
+      "summary": "Banner off, shared daemon, pool size 1"
+    },
+    "mass-scrape": {
+      "summary": "Isolated browser, higher parallelism — configure OCCAM_PROXY_LIST_FILE separately"
+    }
+  },
+  "hostTargets": {
+    "cursor": {
+      "transport": "stdio",
+      "configFormat": "json",
+      "launcher": "node scripts/launch-mcp-host.mjs",
+      "configHint": "Cursor Settings → MCP — workspace .cursor/mcp.json or global config",
+      "avoidLauncher": "packages/occam-mcp/bin/occam-mcp.js on a git clone without OCCAM_HOME"
+    },
+    "hermes": {
+      "transport": "stdio",
+      "configFormat": "yaml",
+      "launcher": "scripts/occam-wrapper.sh",
+      "configHint": "~/.hermes/config.yaml mcp_servers",
+      "avoidLauncher": "packages/occam-mcp/bin/occam-mcp.js on a git clone without OCCAM_HOME"
+    },
+    "openclaw": {
+      "transport": "stdio",
+      "configFormat": "json",
+      "launcher": "node scripts/launch-mcp-host.mjs",
+      "configHint": "Host MCP registry",
+      "avoidLauncher": "packages/occam-mcp/bin/occam-mcp.js on a git clone without OCCAM_HOME"
+    },
+    "claude-desktop": {
+      "transport": "stdio",
+      "configFormat": "json",
+      "launcher": "node scripts/launch-mcp-host.mjs",
+      "configHint": "claude_desktop_config.json mcpServers",
+      "avoidLauncher": "packages/occam-mcp/bin/occam-mcp.js on a git clone without OCCAM_HOME"
+    },
+    "generic-stdio": {
+      "transport": "stdio",
+      "configFormat": "json",
+      "launcher": "node scripts/launch-mcp-host.mjs",
+      "configHint": "VS Code / ollama MCP bridge / subprocess hosts",
+      "avoidLauncher": "packages/occam-mcp/bin/occam-mcp.js on a git clone without OCCAM_HOME"
+    },
+    "cli-only": {
+      "transport": "none",
+      "configFormat": "none",
+      "launcher": null,
+      "configHint": "scripts/hermes-smoke.mjs only"
+    }
+  }
+}

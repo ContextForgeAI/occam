@@ -1,0 +1,5 @@
+{"id":"egress-no-proxy-baseline","mode":"baseline","note":"L0 smoke path unchanged when proxy env unset"}
+{"id":"egress-invalid-proxy-url","mode":"worker","url":"https://nginx.org/en/docs/","backend_policy":"http","proxy_url":"not-a-valid-proxy","expect_ok":false,"failure_kind":"invalid_proxy_url"}
+{"id":"egress-reject-proxy","mode":"worker","url":"https://nginx.org/en/docs/","backend_policy":"http","use_mock_proxy":true,"mock_proxy_reject":true,"expect_ok":false,"failure_kind":"proxy_unreachable"}
+{"id":"egress-http-mdn-mock","mode":"live","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","backend_policy":"http","use_mock_proxy":true,"expect_ok":true,"min_markdown_chars":200}
+{"id":"egress-browser-nginx-mock","mode":"live","url":"https://nginx.org/en/docs/","backend_policy":"browser","use_mock_proxy":true,"expect_ok":true,"min_markdown_chars":200}

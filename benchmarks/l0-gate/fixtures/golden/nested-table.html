@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Regional on-call ownership</title></head>
+<body>
+  <article>
+    <h1>Regional on-call ownership</h1>
+    <p>This reference lists which team owns the primary on-call rotation for each region, along with the service-level notes that apply. One cell embeds a small metrics table so we exercise nested-table rendering — the outer table must keep exactly three columns and must not absorb the inner rows.</p>
+    <table>
+      <thead><tr><th>Region</th><th>Team</th><th>SLA notes</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>EMEA</td>
+          <td>Platform</td>
+          <td>
+            <table>
+              <thead><tr><th>Metric</th><th>Target</th></tr></thead>
+              <tbody>
+                <tr><td>Uptime</td><td>99.9%</td></tr>
+                <tr><td>Latency</td><td>200ms</td></tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <tr><td>AMER</td><td>Data</td><td>Standard business-hours coverage with weekend escalation.</td></tr>
+        <tr><td>APAC</td><td>Edge</td><td>Follow-the-sun handoff from EMEA at 08:00 local.</td></tr>
+      </tbody>
+    </table>
+    <p>Escalation policy is unchanged across regions: page the primary, then the secondary after ten minutes, then the engineering manager. The metrics embedded above are illustrative and refreshed each quarter by the reliability team during the planning review.</p>
+  </article>
+</body>
+</html>

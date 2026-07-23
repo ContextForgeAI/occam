@@ -1,0 +1,6 @@
+{"id":"golden-probe-ok","category":"occam_probe","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","expect_ok":true,"notes":"K3 setup: documentation page — probe ok, then transcode in recipe_a."}
+{"id":"golden-probe-404","category":"occam_probe","url":"https://developer.mozilla.org/en-US/docs/OccamGateMissingPage404","expect_ok":false,"notes":"K1 honesty: http_404, no markdown."}
+{"id":"golden-transcode-live","category":"occam_transcode","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","backend":"http","expect_ok":true,"notes":"K1: live HTTP extract, full markdown."}
+{"id":"golden-transcode-budget","category":"occam_transcode","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","backend":"http","fit_markdown":true,"focus_query":"function scope closure","max_tokens":800,"expect_ok":true,"notes":"K2: token contract — fit + cap."}
+{"id":"golden-transcode-selectors","category":"occam_transcode","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","backend":"http","content_selectors":"[\"Guide\"]","max_tokens":1200,"expect_ok":true,"notes":"K2: content_selectors keep one section."}
+{"id":"golden-recipe-a","category":"recipe_a","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","backend":"http","expect_ok":true,"notes":"K3: occam_probe → occam_transcode on same URL."}

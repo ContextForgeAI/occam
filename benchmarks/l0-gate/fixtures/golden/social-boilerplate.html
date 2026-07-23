@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Why we rewrote the scheduler — Engineering</title></head>
+<body>
+  <nav id="topnav"><a href="/">Home</a> <a href="/jobs">Careers</a></nav>
+  <article>
+    <h1>Why we rewrote the scheduler</h1>
+    <p>The old scheduler was a single global queue guarded by one lock. It served us well for three years, but as the fleet grew past a thousand workers the lock became the bottleneck that capped our throughput no matter how much hardware we added.</p>
+    <h2>The new design</h2>
+    <p>We moved to per-shard queues with work stealing, so an idle worker pulls from a busy neighbour instead of contending on a global structure. Latency at the ninety-ninth percentile dropped by more than half in the first week of the rollout.</p>
+    <div class="share-bar">Share this article on Twitter Facebook LinkedIn Reddit</div>
+    <aside class="related"><h3>Related posts</h3><ul><li>Our migration to Rust</li><li>Ten years of on-call lessons</li></ul></aside>
+  </article>
+  <footer><p>Subscribe to our newsletter for weekly engineering deep dives.</p></footer>
+</body>
+</html>

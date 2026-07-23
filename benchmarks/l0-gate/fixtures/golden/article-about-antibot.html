@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>How anti-bot challenge pages work</title></head>
+<body>
+  <article>
+    <h1>How anti-bot challenge pages work</h1>
+    <p>Anti-bot systems sit between a visitor and the origin server and decide, request by request, whether the caller looks like a human browser or an automated client. This article explains the common mechanisms without endorsing any way to defeat them — the goal is to understand what an honest extractor sees when it meets one.</p>
+    <h2>The interstitial</h2>
+    <p>The most visible mechanism is the interstitial page. Cloudflare, for example, serves a small holding page whose title is often the phrase "Just a moment" while a background script runs a proof-of-work check. The page carries almost no real content; its entire job is to stall for a second and then redirect. Because it is nearly empty, a content extractor should classify it as a challenge and return an honest failure rather than pretending the two sentences of boilerplate are the article the user asked for.</p>
+    <h2>Rate limiting</h2>
+    <p>A second, gentler mechanism is rate limiting. When a client sends too many requests in a short window the server replies with the status code 429 Too Many Requests and usually a Retry-After header telling the caller how long to wait. This is not really a challenge at all — it is a polite request to slow down — but naive scrapers often confuse the resulting short error body with a captcha wall.</p>
+    <h2>The captcha</h2>
+    <p>The strongest mechanism asks the visitor to solve a puzzle: identify the traffic lights, check the box that says you are human, or complete a hCaptcha or Turnstile widget. A page dominated by an "attention required" notice and a captcha widget, with no article beneath it, is a hard stop for any tool that does not run a solver — and running a solver crosses the line from extraction into impersonation.</p>
+    <h2>Why content length is the tell</h2>
+    <p>Every one of these mechanisms shares a property: the page the bot receives is tiny. The real article, if there is one, is hidden behind the wall. That is the honest signal an extractor should key on. A document that runs to several thousand words and merely discusses Cloudflare, captchas, rate limits and the phrase "just a moment" as its subject matter is plainly real content — not a challenge — and must not be thrown away just because it contains the vocabulary of the thing it describes.</p>
+    <h2>Fingerprinting and reputation</h2>
+    <p>Beyond the visible interstitial, most systems also score the connection itself. They inspect the TLS handshake, the ordering of HTTP headers, the presence of the automation flags a headless browser leaves behind, and the reputation of the source address. A residential address that has behaved for months scores well; a data-centre address that has just sent a thousand requests scores badly and is shown a harder challenge. None of this is visible in the page body, which is exactly why an extractor cannot reason about it from the markdown alone and should instead trust the coarse signal that a near-empty response after a redirect is probably a wall.</p>
+    <h2>The honest contract</h2>
+    <p>An extractor that respects its users draws a bright line. It will render a real browser fingerprint, because a stock browser is not a disguise, and it will read whatever content is served to that browser. It will not solve a captcha, rotate identities, or forge the reputation signals described above, because those steps cross from reading the public web into impersonating a specific human. When it meets a wall it says so plainly, with a typed failure the calling agent can branch on, and it never invents the article that sat behind the challenge it could not pass.</p>
+  </article>
+</body>
+</html>

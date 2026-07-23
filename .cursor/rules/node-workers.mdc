@@ -1,0 +1,31 @@
+---
+description: Node extract workers — HTTP, browser, UTF-8 JSON stdout
+globs: workers/**/*
+alwaysApply: false
+---
+
+# Occam workers
+
+## Layout
+
+- `http-extract/extract.mjs` — fetch + Readability + Turndown
+- `browser-extract/` — Playwright; daemon in `browser-daemon.mjs`
+- `shared/lib/` — shared imports; do not duplicate
+
+## Contract
+
+- Worker stdout: **one JSON line/object** for host parser
+- stderr: diagnostics only
+- No mojibake — UTF-8 end to end
+
+## Quality
+
+- Site tweaks: recipes under `browser-extract/lib/recipes/` — not new MCP tools
+- Live URL regressions: add/adjust `corpora/l0-smoke.jsonl` + update `docs/04`, `docs/11`
+
+## Verify
+
+```powershell
+.\scripts\run-l0-fast.ps1
+# SPA cases: dotnet run --project benchmarks\l0-gate
+```

@@ -1,0 +1,15 @@
+{"id":"mdn-js-guide","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","recipe":"A","expected":"WORKS","notes":"golden probe+transcode"}
+{"id":"nginx-docs","url":"https://nginx.org/en/docs/","recipe":"C","expected":"WORKS","notes":"seed overlay playbook_policy=auto"}
+{"id":"nuxt-docs","url":"https://nuxt.com/docs/getting-started/introduction","recipe":"A","expected":"WORKS","notes":"docs SPA may need browser"}
+{"id":"k8s-concepts","url":"https://kubernetes.io/docs/concepts/","recipe":"R","expected":"WORKS","notes":"genome+schema pilot; resolve+map subset (no digest in Phase 2 runner)"}
+{"id":"docker-docs","url":"https://docs.docker.com/get-started/","recipe":"A","expected":"WORKS","notes":"tier-A docs host"}
+{"id":"openai-platform","url":"https://platform.openai.com/docs/concepts","recipe":"C","expected":"NEEDS_SESSION","notes":"platform.openai.com http_403 without session; configure_session_profile hint"}
+{"id":"hn-front","url":"https://news.ycombinator.com/","recipe":"A","expected":"WORKS","notes":"HN front page — HTTP extract returns story list"}
+{"id":"arxiv-abs","url":"https://arxiv.org/abs/2401.00001","recipe":"A","expected":"WORKS","notes":"public paper abstract"}
+{"id":"reddit-permalink","url":"https://www.reddit.com/r/programming/comments/1example/test/","recipe":"A","expected":"FAIL_HONEST","notes":"stale/fake permalink → thin_extract terminal code"}
+{"id":"stackoverflow-question","url":"https://stackoverflow.com/questions/11227809/why-is-processing-a-sorted-array-faster","recipe":"A","expected":"FAIL_HONEST","notes":"extraction_failed without session — CF/browser wall"}
+{"id":"github-readme","url":"https://github.com/microsoft/playwright/blob/main/README.md","recipe":"A","expected":"WORKS","notes":"github markdown render"}
+{"id":"amazon-product","url":"https://www.amazon.com/dp/B0BDHWDR12","recipe":"A","expected":"FAIL_HONEST","notes":"retail bot interstitial — thin_extract via continue-shopping phrase"}
+{"id":"wikipedia-nodejs","url":"https://en.wikipedia.org/wiki/Node.js","recipe":"A","expected":"WORKS","notes":"public reference http-only fast path"}
+{"id":"rfc2616","url":"https://www.rfc-editor.org/rfc/rfc2616","recipe":"A","expected":"FAIL_HONEST","notes":"~1.2MB > OCCAM_MAX_RESPONSE_BYTES (1 MiB) → response_too_large is the intended honest failure"}
+{"id":"hn-item","url":"https://news.ycombinator.com/item?id=40000000","recipe":"B","expected":"WORKS","notes":"digest single live HN item"}

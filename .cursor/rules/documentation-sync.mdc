@@ -1,0 +1,31 @@
+---
+description: Keep user docs in sync with code — matrix and audit
+globs: docs/**/*.md,MCP_API_SPEC.md,README.md,CHANGELOG.md,INSTALL.md,AGENTS.md
+alwaysApply: false
+---
+
+# Documentation sync
+
+Docs are part of every deliverable. See AGENTS.md §3.
+
+## Quick matrix
+
+| Change | Update |
+|--------|--------|
+| Tool params/response | `MCP_API_SPEC.md`, `docs/04`, `docs/15` (digest) |
+| Failure codes | `MCP_API_SPEC.md`, `docs/07`, `docs/09` |
+| Backend/timeouts | `docs/05`, `MCP_API_SPEC.md` |
+| Env vars | `docs/configuration.md`, `MCP_API_SPEC.md` |
+| Install/scripts | `INSTALL.md`, `docs/getting-started.md`, `docs/troubleshooting.md` |
+| New user-facing page | `docs/README.md` TOC row |
+| Roadmap / backlog / planning | `docs/ROADMAP.md` — public summary; full archive in `docs-internal/MASTER-PLAN-ARCHIVE.md` |
+| Product surface change | `docs/00-agent-handbook.md`, `MCP_API_SPEC.md`, `docs/ROADMAP.md`, `AGENTS.md` |
+
+**Product surface v0.8.4-pb3-heal-learn:** seven tools (`occam_transcode`, `occam_probe`, `occam_digest`, `occam_playbook_resolve`, `occam_map`, `occam_playbook_heal`, `occam_playbook_save`); `occam_transcode` max 7 params (+ `session_profile`); dual MCP transport (stdio default + optional `--mcp-server` WS); `occam_digest` linear ≤8 URLs; `occam_map` HTTP ≤64 links (Tier-A `HtmlStreamScanner`); probe `include_social_meta` via Tier-A `HtmlHeadScanner` + `HtmlVisibleTextScanner`; plain-text HTTP pass-through; RFC/Wikipedia public-reference honesty; PB2 community resolver + PB3 local learn; live-only (no file cache); production install Level A + Level B tarball; popular-host seeds (reddit/SO/X); no L2a shape knobs; domain rules in playbook seeds only; visual matrix = 6 golden cases; agent recipes 0c–0g in docs/11.
+
+## Before finishing
+
+- Grep docs for stale behavior
+- No Russian in committed docs
+- No maintainer-only content in `docs/` (use `docs-internal/`)
+- New `docs/NN-*.md` → add to `docs/README.md`

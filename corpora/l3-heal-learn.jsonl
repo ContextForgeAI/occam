@@ -1,0 +1,14 @@
+{"id":"heal-pilot-nginx-index","tier":"pilot","url":"https://nginx.org/en/docs/","seed":"nginx.org.seed.json","simulated_fail":"strip contentSelectors","expect":"K1 heal ok → K2 save verify → K3 retry transcode Fidelity≥3"}
+{"id":"heal-pilot-nginx-leaf","tier":"pilot","url":"https://nginx.org/en/docs/http/ngx_http_core_module.html","seed":"nginx.org.seed.json","simulated_fail":"wrong selector #sidebar","expect":"K1→K2 contentSelectors #content or article-scoped; audit POS: content_selectors_miss → heal hint → heal ok + domSkeleton"}
+{"id":"heal-pilot-nuxt-spa","tier":"pilot","url":"https://nuxt.com/docs","seed":"nuxt.com.seed.json","simulated_fail":"preferred_backend http only","expect":"K2 routing http_then_browser + postMarkdown flags"}
+{"id":"heal-pilot-docker-hub","tier":"pilot","url":"https://docs.docker.com/get-started/introduction/","seed":"docs.docker.com.seed.json","simulated_fail":"omit domStripSelectors","expect":"K2 domStripSelectors + postMarkdown.dockerMarlinToolbarStrip; noise reduction vs unpruned baseline"}
+{"id":"heal-pilot-mdn-guide","tier":"pilot","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","seed":"developer.mozilla.org.seed.json","simulated_fail":"over-broad selector footer leakage","expect":"K2 tighter main/article selector"}
+{"id":"heal-neg-captcha","tier":"negative","expect":"no heal hint; host stops","failure_code":"captcha_or_challenge"}
+{"id":"heal-neg-404","tier":"negative","expect":"no heal hint","failure_code":"http_404"}
+{"id":"heal-neg-private","tier":"negative","url":"http://127.0.0.1/","expect":"private_url_blocked; no heal","failure_code":"private_url_blocked"}
+{"id":"heal-neg-login-no-session","tier":"negative","expect":"requires_login; heal not offered","failure_code":"requires_login"}
+{"id":"heal-neg-bad-draft","tier":"negative","expect":"playbook_verify_failed; disk unchanged"}
+{"id":"heal-neg-secrets-in-json","tier":"negative","expect":"playbook_save_rejected or schema reject"}
+{"id":"heal-neg-retry-cap","tier":"negative","expect":"host stops at 4th save attempt; lesson notes failure"}
+{"id":"heal-neg-workers","tier":"negative","expect":"workers_unavailable; no partial write","failure_code":"workers_unavailable"}
+{"id":"heal-neg-challenge-url","tier":"negative","url":"https://www.reddit.com/svc/shreddit/update-recaptcha?js_challenge=1","expect":"no heal hint on challenge URL; audit NEG step 5","failure_code":"extraction_failed"}

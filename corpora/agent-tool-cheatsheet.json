@@ -1,0 +1,184 @@
+{
+  "version": "1.0.0-rc.2",
+  "liveExtractOnly": true,
+  "tools": [
+    {
+      "name": "occam_probe",
+      "whenToUse": "Cheap HTTP diagnosis before expensive transcode; read classification and recommendation.backend.",
+      "whenNotToUse": "When you need page markdown — probe does not extract body content.",
+      "params": {
+        "url": { "type": "string", "required": true },
+        "timeout_ms": { "type": "int", "default": 10000, "range": "1000-120000" },
+        "include_social_meta": { "type": "bool", "default": false },
+        "session_profile": { "type": "string", "required": false }
+      },
+      "successFields": ["ok", "url", "classification", "recommendation", "agentHints", "statusCode", "probeLatencyMs"],
+      "failureShape": "top-level failureCode + message; optional agentHints.decisions",
+      "commonFailureCodes": ["http_404", "http_403", "timeout", "invalid_url", "unsupported_content_type"],
+      "nextOnSuccess": "occam_transcode with recommendation.backend",
+      "nextOnFailure": {
+        "http_404": "stop",
+        "http_401": "configure_session_profile",
+        "http_403": "configure_session_profile",
+        "likelyLoginRequired": "configure_session_profile",
+        "captcha_or_challenge": "stop"
+      }
+    },
+    {
+      "name": "occam_transcode",
+      "whenToUse": "Single URL to LLM-ready markdown; default workhorse after probe.",
+      "whenNotToUse": "Multi-URL research (use occam_digest); structured schema facts (use occam_extract_knowledge after resolve).",
+      "params": {
+        "url": { "type": "string", "required": true },
+        "backend_policy": { "type": "string", "default": "http_then_browser", "enum": ["http", "browser", "http_then_browser"] },
+        "max_tokens": { "type": "int", "required": false, "min": 128 },
+        "fit_markdown": { "type": "bool", "default": false },
+        "focus_query": { "type": "string", "required": false },
+        "content_selectors": { "type": "string", "required": false, "note": "heading anchors, not CSS" },
+        "session_profile": { "type": "string", "required": false },
+        "playbook_policy": { "type": "string", "default": "off", "enum": ["off", "auto"] }
+      },
+      "successFields": ["ok", "url", "markdown", "backend", "mediaRefs", "compile", "session"],
+      "failureShape": "failure.code + failure.message; agentMeta.decisions; optional agentHints.suggestedNext",
+      "commonFailureCodes": ["thin_extract", "captcha_or_challenge", "http_404", "requires_login", "workers_unavailable", "timeout"],
+      "nextOnSuccess": "use markdown; optional mediaRefs for host fetch",
+      "nextOnFailure": {
+        "thin_extract": "retry_transcode browser or occam_playbook_heal",
+        "requires_login": "configure_session_profile",
+        "http_401": "configure_session_profile",
+        "http_403": "configure_session_profile",
+        "workers_unavailable": "run_doctor",
+        "captcha_or_challenge": "stop"
+      }
+    },
+    {
+      "name": "occam_digest",
+      "whenToUse": "Research across 2-8 URLs in one call; set focus_query on noisy sites.",
+      "whenNotToUse": "Single page (use transcode); more than 8 URLs (batch digest calls).",
+      "params": {
+        "urls": { "type": "string", "required": true, "note": "JSON array or delimited list" },
+        "backend_policy": { "type": "string", "default": "http_then_browser" },
+        "max_urls": { "type": "int", "default": 8, "max": 8 },
+        "per_url_max_tokens": { "type": "int", "required": false, "min": 128 },
+        "focus_query": { "type": "string", "required": false },
+        "fit_markdown": { "type": "bool", "default": true },
+        "include_combined": { "type": "bool", "default": true },
+        "session_profile": { "type": "string", "required": false }
+      },
+      "successFields": ["ok", "digestId", "items", "combined", "stats", "agentHints"],
+      "failureShape": "top-level failureCode + message; partial ok when some items succeed",
+      "commonFailureCodes": ["invalid_urls", "digest_failed", "workers_unavailable"],
+      "nextOnSuccess": "read agentHints before citing combined; prefer items[].excerpt where focusMatched",
+      "nextOnFailure": {
+        "digest_failed": "occam_transcode singles for failed items",
+        "workers_unavailable": "run_doctor"
+      }
+    },
+    {
+      "name": "occam_map",
+      "whenToUse": "Discover same-domain links for RAG bootstrap or site-scoped crawl seeds.",
+      "whenNotToUse": "Page content extraction; cross-domain link harvest.",
+      "params": {
+        "url": { "type": "string", "required": true },
+        "source": { "type": "string", "default": "homepage", "enum": ["homepage", "sitemap", "robots"] },
+        "max_links": { "type": "int", "default": 32, "max": 64 },
+        "same_domain": { "type": "bool", "default": true },
+        "filter_nonsense": { "type": "bool", "default": true },
+        "focus_query": { "type": "string", "required": false },
+        "timeout_ms": { "type": "int", "default": 15000, "range": "3000-30000" },
+        "session_profile": { "type": "string", "required": false }
+      },
+      "successFields": ["ok", "links", "linkCount", "source", "agentHints"],
+      "failureShape": "failureCode + message; optional agentHints.decisions",
+      "commonFailureCodes": ["sitemap_not_found", "thin_extract", "timeout", "private_url_blocked"],
+      "nextOnSuccess": "host filters links then occam_digest (max 8)",
+      "nextOnFailure": {
+        "sitemap_not_found": "retry source=homepage",
+        "thin_extract": "try source=sitemap or transcode seed URL"
+      }
+    },
+    {
+      "name": "occam_playbook_resolve",
+      "whenToUse": "Read-only per-host hints before transcode/extract; genome and knowledgeSchema for Recipe R/F.",
+      "whenNotToUse": "Writing playbooks (use occam_playbook_save); fetching page markdown.",
+      "params": {
+        "url": { "type": "string", "required": true },
+        "schema_version": { "type": "string", "default": "1.0" },
+        "include_lessons": { "type": "bool", "default": false },
+        "fetch_site_genome": { "type": "bool", "default": false }
+      },
+      "successFields": ["ok", "playbookId", "provenance", "contentSelectors", "preferredBackend", "genome", "knowledgeSchema", "pageClass"],
+      "failureShape": "failureCode + message; optional agentHints.decisions",
+      "commonFailureCodes": ["playbook_not_found", "invalid_arguments"],
+      "nextOnSuccess": "occam_transcode with playbook_policy=auto or occam_extract_knowledge if knowledgeSchema",
+      "nextOnFailure": {
+        "playbook_not_found": "occam_transcode with default policy"
+      }
+    },
+    {
+      "name": "occam_playbook_heal",
+      "whenToUse": "After heal-eligible occam_transcode failure — DOM skeleton for host-drafted playbook.",
+      "whenNotToUse": "Terminal failures (captcha, 404, workers_unavailable); before first transcode attempt.",
+      "params": {
+        "url": { "type": "string", "required": true },
+        "failure_reason": { "type": "string", "required": true },
+        "session_profile": { "type": "string", "required": false },
+        "max_skeleton_nodes": { "type": "int", "default": 400, "range": "50-600" }
+      },
+      "successFields": ["ok", "domSkeleton", "anchors", "agentHints"],
+      "failureShape": "failureCode + message; optional agentHints.decisions",
+      "commonFailureCodes": ["heal_not_applicable", "captcha_or_challenge", "workers_unavailable"],
+      "nextOnSuccess": "occam_playbook_save with host-drafted JSON",
+      "nextOnFailure": {
+        "heal_not_applicable": "stop or retry transcode with browser"
+      }
+    },
+    {
+      "name": "occam_playbook_save",
+      "whenToUse": "Persist host-drafted playbook to local tier after heal; verify=true dry-runs transcode.",
+      "whenNotToUse": "Bundled seeds; publishing to community (not shipped).",
+      "params": {
+        "url": { "type": "string", "required": true },
+        "playbook_json": { "type": "string", "required": true },
+        "verify": { "type": "bool", "default": true },
+        "verify_url": { "type": "string", "required": false },
+        "lesson_note": { "type": "string", "required": false, "maxLength": 500 },
+        "failure_reason": { "type": "string", "required": false },
+        "host_id": { "type": "string", "required": false }
+      },
+      "successFields": ["ok", "playbookId", "writtenPath", "verify", "lessonAppended"],
+      "failureShape": "failureCode + message; optional agentHints.decisions",
+      "commonFailureCodes": ["playbook_schema_invalid", "playbook_verify_failed", "playbook_save_rejected"],
+      "nextOnSuccess": "retry occam_transcode on target URL",
+      "nextOnFailure": {
+        "playbook_verify_failed": "revise playbook_json selectors"
+      }
+    },
+    {
+      "name": "occam_extract_knowledge",
+      "whenToUse": "Recipe F: structured facts[] when resolve returned knowledgeSchema.",
+      "whenNotToUse": "Hosts without knowledge_schema; general markdown (use transcode).",
+      "params": {
+        "url": { "type": "string", "required": true },
+        "backend_policy": { "type": "string", "default": "http_then_browser" },
+        "session_profile": { "type": "string", "required": false }
+      },
+      "successFields": ["ok", "facts", "meta.koId", "playbookId", "pageClass", "backend"],
+      "failureShape": "failureCode + message; optional agentHints.decisions; optional partialFacts",
+      "commonFailureCodes": ["knowledge_schema_missing", "page_class_unmatched", "playbook_not_found", "workers_unavailable"],
+      "nextOnSuccess": "index facts[] with meta.koId in RAG metadata",
+      "nextOnFailure": {
+        "knowledge_schema_missing": "occam_transcode instead",
+        "workers_unavailable": "run_doctor"
+      }
+    }
+  ],
+  "recipes": ["A", "B", "C", "D", "E", "F", "R"],
+  "antiPatterns": [
+    "probe-only without transcode for content",
+    "cite combined when agentHints.warnings present",
+    "copy resolve contentSelectors into transcode content_selectors",
+    "invent page text when ok is false"
+  ],
+  "honestyRule": "if ok is false, agent does not know the page"
+}

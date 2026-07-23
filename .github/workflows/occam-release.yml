@@ -1,0 +1,194 @@
+# Level B release tarball — linux-x64 Native AOT, published to GitHub Releases on tag v*
+# so get-ff-occam.sh / npx can resolve assets.
+#
+# Primary CI target: GitHub Actions (origin). Forgejo remains a backup remote only;
+# these short `actions/*@v4` refs are GitHub-native (full https:// URLs fail on github.com).
+#
+# Single job for build+publish on tag: publish reads tarballs from the same workspace
+# (no cross-job artifact hand-off required for the linux path).
+name: occam-release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: occam-release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  release-linux:
+    name: release-linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate release version policy
+        run: node scripts/lib/release-version.selftest.mjs
+
+      - name: Resolve release tag metadata
+        id: release-meta
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: node scripts/lib/release-version.mjs --ref "$GITHUB_REF" >> "$GITHUB_OUTPUT"
+
+      - name: Build + verify tarball
+        env:
+          OCCAM_RELEASE_VERSION: ${{ steps.release-meta.outputs.version }}
+        run: bash ./scripts/ci-release-build.sh linux-x64
+
+      - name: Assert tag, package, and host versions match
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: >-
+          node scripts/lib/verify-release-artifact.mjs
+          --rid linux-x64
+          --version "${{ steps.release-meta.outputs.version }}"
+
+      - name: List built assets
+        run: ls -la artifacts/releases
+
+      # Publish only on a tag. softprops/action-gh-release creates/updates the GitHub
+      # Release and uploads assets from this workspace.
+      - name: Publish to GitHub Releases
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          prerelease: ${{ steps.release-meta.outputs.prerelease }}
+          files: |
+            artifacts/releases/ff-occam-*-linux-x64.tar.gz
+            artifacts/releases/ff-occam-*-linux-x64-manifest.json
+          fail_on_unmatched_files: true
+
+  # macOS (Apple Silicon) Native AOT. Native AOT cannot cross-compile — needs a real
+  # macos-latest runner. Runs on every SemVer release tag (v*).
+  release-macos:
+    name: release-macos
+    runs-on: macos-latest
+    timeout-minutes: 45
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Resolve release tag metadata
+        id: release-meta
+        run: node scripts/lib/release-version.mjs --ref "$GITHUB_REF" >> "$GITHUB_OUTPUT"
+
+      - name: Build + verify tarball
+        env:
+          OCCAM_RELEASE_VERSION: ${{ steps.release-meta.outputs.version }}
+        run: bash ./scripts/ci-release-build.sh osx-arm64
+
+      - name: Assert tag, package, and host versions match
+        run: >-
+          node scripts/lib/verify-release-artifact.mjs
+          --rid osx-arm64
+          --version "${{ steps.release-meta.outputs.version }}"
+
+      - name: List built assets
+        run: ls -la artifacts/releases
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          prerelease: ${{ steps.release-meta.outputs.prerelease }}
+          files: |
+            artifacts/releases/ff-occam-*-osx-arm64.tar.gz
+            artifacts/releases/ff-occam-*-osx-arm64-manifest.json
+          fail_on_unmatched_files: true
+
+  # Windows x64 Native AOT — build + verify; on tags, upload to the same GitHub Release
+  # as linux/osx (softprops updates the existing release by tag). Waits for release-linux
+  # so the Release object already exists before Windows uploads.
+  release-windows:
+    name: release-windows
+    needs: release-linux
+    runs-on: windows-latest
+    timeout-minutes: 45
+    if: ${{ startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' }}
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate release version policy
+        run: node scripts/lib/release-version.selftest.mjs
+
+      - name: Host-process stop helper selftest
+        run: node scripts/lib/stop-occam-processes.selftest.mjs
+
+      - name: Resolve release tag metadata
+        id: release-meta
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: node scripts/lib/release-version.mjs --ref "$GITHUB_REF" >> "$GITHUB_OUTPUT"
+
+      - name: Build + verify tarball
+        shell: pwsh
+        env:
+          OCCAM_RELEASE_VERSION: ${{ steps.release-meta.outputs.version }}
+        run: |
+          if ($env:OCCAM_RELEASE_VERSION) {
+            .\scripts\ci-release-build.ps1 -Rid win-x64 -Version $env:OCCAM_RELEASE_VERSION
+          } else {
+            # workflow_dispatch / non-tag: use latest CHANGELOG released version
+            .\scripts\ci-release-build.ps1 -Rid win-x64
+          }
+
+      - name: List built assets
+        shell: pwsh
+        run: Get-ChildItem artifacts/releases | Format-Table Name, Length
+
+      # Tag only — same softprops path as linux/osx; targets release by tag_name (no new tag).
+      - name: Publish to GitHub Releases
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          prerelease: ${{ steps.release-meta.outputs.prerelease }}
+          files: |
+            artifacts/releases/ff-occam-*-win-x64.tar.gz
+            artifacts/releases/ff-occam-*-win-x64-manifest.json
+          fail_on_unmatched_files: true

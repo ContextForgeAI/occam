@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "id": "docs.docker.com",
+  "hosts": ["docs.docker.com"],
+  "meta": {
+    "title": "Docker documentation",
+    "tags": ["spa_docs", "community"]
+  },
+  "routing": {
+    "preferred_backend": "http_then_browser"
+  },
+  "extract": {
+    "contentSelectors": [
+      "main article.prose",
+      "[data-pagefind-body]",
+      "main article",
+      "article[data-pagefind-body]"
+    ],
+    "domStripSelectors": [
+      "#breadcrumbs",
+      "article script",
+      "article > div:has([marlin-action])"
+    ]
+  },
+  "postMarkdown": {
+    "dockerMarlinToolbarStrip": true
+  },
+  "browser": {
+    "recipe_ref": "workers/browser-extract/lib/recipes/docs.docker.com.mjs"
+  },
+  "agent_notes": "Community vetted: SPA docs hub — get-started does not match SQL focus_query (expect focusMatched:false). Prefer http_then_browser; Marlin toolbar JS stripped via postMarkdown. Use leaf guide URLs for topic-specific digest; read agentHints before citing combined markdown."
+}

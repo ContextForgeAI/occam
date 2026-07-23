@@ -1,0 +1,223 @@
+{
+  "generatedAt": "2026-07-19T18:44:07.376Z",
+  "summary": {
+    "cases": 10,
+    "traps": 7,
+    "clean": 3,
+    "occam_honest_on_traps": 7,
+    "occam_correct_on_clean": 3,
+    "rawfetch_handed_content_on_traps": 3
+  },
+  "results": [
+    {
+      "id": "mdn-404",
+      "category": "not_found",
+      "url": "https://developer.mozilla.org/en-US/docs/OccamGateMissingPage404XYZ",
+      "is_trap": true,
+      "probe": "What API does this MDN page document, and what are its parameters?",
+      "occam": {
+        "ok": false,
+        "failure": "http_404",
+        "markdownLen": 0
+      },
+      "rawfetch": {
+        "status": 404,
+        "textLen": 2430,
+        "sample": "Page not found | MDN Skip to main content Skip to search MDN HTML HTML: Markup language HTML reference Elements Global attributes Attributes See all… HTML guides Responsive images HTML cheatsheet Date &amp; time formats See all… Markup lang"
+      },
+      "signals": {
+        "occamHonestOnTrap": true,
+        "rawHandedContent": true
+      }
+    },
+    {
+      "id": "example-thin",
+      "category": "thin",
+      "url": "https://example.com",
+      "is_trap": true,
+      "probe": "What product does this company sell and what are its pricing tiers?",
+      "occam": {
+        "ok": false,
+        "failure": "thin_extract",
+        "markdownLen": 0
+      },
+      "rawfetch": {
+        "status": 200,
+        "textLen": 142,
+        "sample": "Example Domain Example Domain This domain is for use in documentation examples without needing permission. Avoid use in operations. Learn more"
+      },
+      "signals": {
+        "occamHonestOnTrap": true,
+        "rawHandedContent": false
+      }
+    },
+    {
+      "id": "nginx-docs-clean",
+      "category": "clean",
+      "url": "https://nginx.org/en/docs/",
+      "is_trap": false,
+      "probe": "Does this page link to a guide on controlling nginx?",
+      "occam": {
+        "ok": true,
+        "failure": null,
+        "markdownLen": 8754
+      },
+      "rawfetch": {
+        "status": 200,
+        "textLen": 3578,
+        "sample": "nginx documentation Join us for the first quarterly NGINX Community Call on July 22nd to connect and discuss NGINX development. english русский news about download security documentation faq books community enterprise community forum (new) "
+      },
+      "signals": {
+        "occamHonestOnTrap": true,
+        "rawHandedContent": true
+      }
+    },
+    {
+      "id": "mdn-js-guide-clean",
+      "category": "clean",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide",
+      "is_trap": false,
+      "probe": "What does the JavaScript guide say about functions and closures?",
+      "occam": {
+        "ok": true,
+        "failure": null,
+        "markdownLen": 12345
+      },
+      "rawfetch": {
+        "status": 200,
+        "textLen": 17497,
+        "sample": "JavaScript Guide - JavaScript | MDN Skip to main content Skip to search MDN HTML HTML: Markup language HTML reference Elements Global attributes Attributes See all… HTML guides Responsive images HTML cheatsheet Date &amp; time formats See a"
+      },
+      "signals": {
+        "occamHonestOnTrap": true,
+        "rawHandedContent": true
+      }
+    },
+    {
+      "id": "httpstat-410",
+      "category": "gone",
+      "url": "https://httpstat.us/410",
+      "is_trap": true,
+      "probe": "What resource is described on this page?",
+      "occam": {
+        "ok": false,
+        "failure": "network_error",
+        "markdownLen": 0
+      },
+      "rawfetch": {
+        "status": 0,
+        "textLen": 0,
+        "sample": ""
+      },
+      "signals": {
+        "occamHonestOnTrap": true,
+        "rawHandedContent": false
+      }
+    },
+    {
+      "id": "httpstat-403",
+      "category": "anti_bot",
+      "url": "https://httpstat.us/403",
+      "is_trap": true,
+      "probe": "What content does this protected page contain?",
+      "occam": {
+        "ok": false,
+        "failure": "network_error",
+        "markdownLen": 0
+      },
+      "rawfetch": {
+        "status": 0,
+        "textLen": 0,
+        "sample": ""
+      },
+      "signals": {
+        "occamHonestOnTrap": true,
+        "rawHandedContent": false
+      }
+    },
+    {
+      "id": "soft404-candidate",
+      "category": "soft_404",
+      "url": "https://nginx.org/en/docs/this_page_does_not_exist_abc123.html",
+      "is_trap": true,
+      "probe": "What configuration directive does this page explain?",
+      "occam": {
+        "ok": false,
+        "failure": "http_404",
+        "markdownLen": 0
+      },
+      "rawfetch": {
+        "status": 404,
+        "textLen": 298,
+        "sample": "404: not found Join us for the first quarterly NGINX Community Call on July 22nd to connect and discuss NGINX development. english русский news about download security documentation faq books community enterprise community forum (new) x.com"
+      },
+      "signals": {
+        "occamHonestOnTrap": true,
+        "rawHandedContent": true
+      }
+    },
+    {
+      "id": "paywall-candidate",
+      "category": "paywall",
+      "url": "https://www.wsj.com/",
+      "is_trap": true,
+      "probe": "What is the lead story's full text?",
+      "occam": {
+        "ok": false,
+        "failure": "http_401",
+        "markdownLen": 0
+      },
+      "rawfetch": {
+        "status": 401,
+        "textLen": 51,
+        "sample": "wsj.com Please enable JS and disable any ad blocker"
+      },
+      "signals": {
+        "occamHonestOnTrap": true,
+        "rawHandedContent": false
+      }
+    },
+    {
+      "id": "login-wall-candidate",
+      "category": "login_wall",
+      "url": "https://www.linkedin.com/feed/",
+      "is_trap": true,
+      "probe": "What are the top posts in this feed?",
+      "occam": {
+        "ok": false,
+        "failure": "requires_login",
+        "markdownLen": 0
+      },
+      "rawfetch": {
+        "status": 200,
+        "textLen": 748,
+        "sample": "LinkedIn Login, Sign in | LinkedIn 0 notifications Sign in New to LinkedIn? Join now Sign in with Apple By continuing, you agree to LinkedIn’s User Agreement , Privacy Policy , and Cookie Policy . or Email or phone Password Forgot password?"
+      },
+      "signals": {
+        "occamHonestOnTrap": true,
+        "rawHandedContent": true
+      }
+    },
+    {
+      "id": "js-stub-candidate",
+      "category": "js_stub",
+      "url": "https://react.dev/",
+      "is_trap": false,
+      "probe": "What is the current React version announced on the homepage?",
+      "occam": {
+        "ok": true,
+        "failure": null,
+        "markdownLen": 4903
+      },
+      "rawfetch": {
+        "status": 200,
+        "textLen": 8352,
+        "sample": "React React v 19.2 Search ⌘ Ctrl K Learn Reference Community Blog React The library for web and native user interfaces Learn React API Reference Create user interfaces from components React lets you build user interfaces out of individual p"
+      },
+      "signals": {
+        "occamHonestOnTrap": true,
+        "rawHandedContent": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+name: Playbook Marketplace
+
+on:
+  pull_request:
+    paths:
+      - 'profiles/playbooks/community/**/*.json'
+      - 'profiles/playbooks/community/**/*.json.sig'
+    types: [opened, synchronize, reopened, labeled]
+  workflow_dispatch:
+    inputs:
+      playbook_path:
+        description: 'Path to playbook JSON to validate (for manual testing)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  checks: write
+  pull-requests: write
+
+env:
+  COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+  COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+
+jobs:
+  validate:
+    name: Validate Playbook
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          cache: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'workers/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          cd workers
+          npm ci
+
+      - name: Install Playwright Chromium
+        run: |
+          cd workers/browser-extract
+          npx playwright install chromium --with-deps
+
+      - name: Set OCCAM_HOME
+        run: echo "OCCAM_HOME=${{ github.workspace }}" >> $GITHUB_ENV
+
+      - name: Build Core (AOT publish for Linux)
+        run: |
+          dotnet publish src/FFOccamMcp.Core -c Release -r linux-x64 --self-contained true
+
+      - name: Determine playbooks to validate
+        id: playbooks
+        run: |
+          if [ -n "${{ github.event.inputs.playbook_path }}" ]; then
+            echo "playbooks=${{ github.event.inputs.playbook_path }}" >> $GITHUB_OUTPUT
+          else
+            # Get changed community playbook files
+            CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'profiles/playbooks/community/*.json' | tr '\n' ' ')
+            echo "playbooks=$CHANGED" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run L4 Genome Gate on changed playbooks
+        id: l4-gate
+        run: |
+          set -e
+          PLAYBOOKS="${{ steps.playbooks.outputs.playbooks }}"
+          if [ -z "$PLAYBOOKS" ]; then
+            echo "No community playbook changes detected"
+            echo "result=skipped" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          for PLAYBOOK in $PLAYBOOKS; do
+            echo "Validating $PLAYBOOK..."
+            # Run genome pilot with the specific playbook
+            dotnet run --project benchmarks/l0-gate -- --genome-pilot --playbook "$PLAYBOOK" || {
+              echo "L4_GENOME_OK failed for $PLAYBOOK"
+              echo "result=failed" >> $GITHUB_OUTPUT
+              exit 1
+            }
+          done
+          echo "result=passed" >> $GITHUB_OUTPUT
+
+      - name: Sign Manifest (on success)
+        if: steps.l4-gate.outputs.result == 'passed'
+        run: |
+          PLAYBOOKS="${{ steps.playbooks.outputs.playbooks }}"
+          for PLAYBOOK in $PLAYBOOKS; do
+            if [ -f "$PLAYBOOK" ]; then
+              echo "Signing $PLAYBOOK..."
+              cosign sign-blob --blob="$PLAYBOOK" --output="$PLAYBOOK.sig" --yes
+              echo "Signed: $PLAYBOOK.sig"
+            fi
+          done
+
+      - name: Commit Signatures
+        if: steps.l4-gate.outputs.result == 'passed' && github.event_name == 'pull_request'
+        run: |
+          git config user.name "ff-occam-playbook-bot"
+          git config user.email "playbook-bot@ff-occam.dev"
+          PLAYBOOKS="${{ steps.playbooks.outputs.playbooks }}"
+          for PLAYBOOK in $PLAYBOOKS; do
+            if [ -f "$PLAYBOOK.sig" ]; then
+              git add "$PLAYBOOK.sig"
+            fi
+          done
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: add cosign signatures for community playbooks [skip ci]"
+            git push
+          fi
+
+      - name: Update Leaderboard
+        if: steps.l4-gate.outputs.result == 'passed'
+        run: |
+          echo "Updating leaderboard..."
+          # This would update a leaderboard file or dashboard
+          # For now, just log the validated playbooks
+          PLAYBOOKS="${{ steps.playbooks.outputs.playbooks }}"
+          for PLAYBOOK in $PLAYBOOKS; do
+            echo "Validated: $PLAYBOOK"
+          done
+
+  auto-merge:
+    name: Auto-merge on pass
+    needs: validate
+    if: needs.validate.result == 'success' && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable auto-merge
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} --auto --squash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    name: Notify on failure
+    needs: validate
+    if: needs.validate.result == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on PR with failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: ${{ github.event.pull_request.number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Playbook validation failed**\n\nThe L4 Genome Gate did not pass for the submitted playbook(s). Please check the workflow logs for details.\n\nCommon issues:\n- Playbook schema validation error\n- Genome fetch failed for referenced domains\n- Extraction quality below K7 threshold (≥70%)\n\nSee [Playbooks concepts](https://github.com/ContextForgeAI/occam/blob/main/docs/concepts.md) and [occam_playbook_resolve](https://github.com/ContextForgeAI/occam/blob/main/docs/tools/occam_playbook_resolve.md) for requirements.'
+            })

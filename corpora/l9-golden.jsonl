@@ -1,0 +1,22 @@
+{"id":"golden-challenge","fixture":"challenge-turnstile","expect_ok":false,"failure_code":"captcha_or_challenge"}
+{"id":"golden-thin","fixture":"thin-shell","expect_ok":false,"failure_code":"thin_extract"}
+{"id":"golden-login","fixture":"login-wall","expect_ok":false,"failure_code":"requires_login"}
+{"id":"golden-table","fixture":"data-table","expect_ok":true,"min_chars":250,"must_contain":["HTTP status code reference","| Code | Name | Category |","| 200 | OK | Success |","| 404 | Not Found | Client error |"]}
+{"id":"golden-article-boilerplate","fixture":"article-boilerplate","expect_ok":true,"min_chars":400,"max_chars":1200,"must_contain":["Token budgets are the single most important lever","Why pruning wins","Measuring the result"],"must_not_contain":["Pricing","Newsletter","Advertisement","All rights reserved"]}
+{"id":"golden-mdn-doc","fixture":"mdn-doc","expect_ok":true,"min_chars":2000,"must_contain":["HTTP request methods","GET","POST"]}
+{"id":"golden-nginx-doc","fixture":"nginx-doc","expect_ok":true,"min_chars":5000,"must_contain":["Beginner","nginx"]}
+{"id":"golden-wikipedia","fixture":"wikipedia-article","expect_ok":true,"min_chars":10000,"must_contain":["Markdown","John Gruber","markup language"]}
+{"id":"golden-code-block","fixture":"code-block","expect_ok":true,"min_chars":300,"must_contain":["```","with open(\"notes.txt\", \"r\", encoding=\"utf-8\") as handle:","print(text)"]}
+{"id":"golden-nested-list","fixture":"nested-list","expect_ok":true,"min_chars":300,"must_contain":["*   src","    *   core","    *   utils"]}
+{"id":"golden-blockquote","fixture":"blockquote","expect_ok":true,"min_chars":300,"must_contain":["> Everything should be made as simple as possible, but not simpler."]}
+{"id":"golden-links-headings","fixture":"links-headings","expect_ok":true,"min_chars":400,"must_contain":["## Install the toolchain","### Verify the installation","[supported versions page](https://example.com/support/versions)"]}
+{"id":"golden-unicode","fixture":"unicode-content","expect_ok":true,"min_chars":300,"must_contain":["café","日本語","Ελληνικά","🌍","Gödel"]}
+{"id":"golden-table-ragged","fixture":"table-colspan","expect_ok":true,"min_chars":250,"must_contain":["| Team | Q1 | Q2 |","| Platform | 12 | 14 |","| Total | 19 | 21 |"]}
+{"id":"golden-table-nested","fixture":"nested-table","expect_ok":true,"min_chars":400,"must_contain":["| Region | Team | SLA notes |","| --- | --- | --- |","| AMER | Data |","Uptime","99.9%"],"must_not_contain":["| --- | --- | --- | --- |","| Metric | Target |"]}
+{"id":"golden-social-boilerplate","fixture":"social-boilerplate","expect_ok":true,"min_chars":400,"must_contain":["per-shard queues with work stealing","## The new design"],"must_not_contain":["Related posts","Our migration to Rust","Subscribe to our newsletter","Careers"]}
+{"id":"golden-image-alt","fixture":"image-alt","expect_ok":true,"min_chars":300,"must_contain":["![A red-tailed hawk perched on a fence post at sunrise](https://example.com/media/red-tailed-hawk.jpg)"]}
+{"id":"golden-json-tables","fixture":"data-table","expect_ok":true,"json_tables":true,"min_tables":1,"table_contains":["Code","200","Client error","Internal Server Error"]}
+{"id":"golden-json-feed","fixture":"sample-feed.xml","expect_ok":true,"json_feed":true,"feed_title":"Occam Engineering Blog","min_feed_items":3}
+{"id":"golden-json-blocks","fixture":"article-boilerplate","expect_ok":true,"json_blocks":true,"min_blocks":4}
+{"id":"golden-json-blocks-browser","fixture":"article-boilerplate","backend":"browser","expect_ok":true,"json_blocks":true,"min_blocks":4}
+{"id":"golden-antibot-article","fixture":"article-about-antibot","expect_ok":true,"min_chars":2000,"must_contain":["How anti-bot challenge pages work","content length is the tell","429 Too Many Requests","The honest contract"]}

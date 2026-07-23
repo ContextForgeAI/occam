@@ -1,0 +1,5 @@
+{"id":"openai-concepts","url":"https://platform.openai.com/docs/concepts","must_contain":["tokenization"],"must_not_contain":["тАЭ","тАЬ","тАЩ"],"backend":"http_then_browser","env_blocked_ok":true}
+{"id":"mdn-js-guide","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","backend":"http"}
+{"id":"nginx-doc","url":"https://nginx.org/en/docs/","backend":"http"}
+{"id":"nuxt-spa","url":"https://nuxt.com/docs/getting-started/introduction","must_contain":["Nuxt"],"must_not_contain":["Community","Was this helpful"],"backend":"http_then_browser"}
+{"id":"not-found","url":"https://developer.mozilla.org/en-US/docs/OccamGateMissingPage404","expect_ok":false,"failure_code":"http_404","backend":"http"}

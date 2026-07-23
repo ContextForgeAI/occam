@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "id": "nuxt.com",
+  "hosts": ["nuxt.com"],
+  "meta": {
+    "title": "Nuxt documentation",
+    "tags": ["spa_docs"]
+  },
+  "routing": {
+    "preferred_backend": "http_then_browser"
+  },
+  "extract": {
+    "contentSelectors": ["main article", "[data-content-id=\"docs-content\"]", "main"]
+  },
+  "browser": {
+    "recipe_ref": "workers/browser-extract/lib/recipes/nuxt.com.mjs"
+  },
+  "postMarkdown": {
+    "nuxtSidebarNavCollapse": true,
+    "nuxtFooterPromos": true,
+    "nuxtShikiCssStrip": true
+  },
+  "agent_notes": "SPA docs — prefer http_then_browser. Footer promos and shiki CSS stripped via postMarkdown seed flags only (not generic prune)."
+}
+

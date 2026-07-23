@@ -1,0 +1,5 @@
+{"id":"transport-stdio-launch","mode":"stdio","args":[],"expect_exit_zero":true,"note":"unit/integration mock — host starts with no CLI flags"}
+{"id":"transport-stdio-tools-count","mode":"stdio","expect_tool_count":15,"expect_tool_prefix":"occam_"}
+{"id":"transport-invalid-port","mode":"mcp-server","args":["--mcp-server","--port","0"],"expect_exit_zero":false,"failure_kind":"invalid_arguments"}
+{"id":"transport-ws-bind-localhost","mode":"mcp-server","args":["--mcp-server"],"expect_bind":"127.0.0.1","optional_ci":true,"note":"integration smoke — optional job, not merge-blocking in v1 if flaky"}
+{"id":"transport-regression-gate","mode":"stdio","expect_l0_gate_ok":true,"note":"full L0_GATE_OK under default stdio launcher — regression guard"}

@@ -1,0 +1,15 @@
+# Keep the build context small and reproducible — never ship host build output.
+**/node_modules
+**/bin
+**/obj
+**/publish
+graphify-out
+artifacts
+docs-internal
+.git
+.github
+.vs
+.vscode
+**/*.tmp
+**/*.user
+*.md
