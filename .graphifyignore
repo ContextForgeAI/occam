@@ -1,0 +1,27 @@
+# .graphifyignore - exclude docs and non-code
+docs/
+docs-internal/
+*.md
+*.txt
+*.yaml
+*.yml
+*.json
+!package.json
+!tsconfig.json
+*.html
+*.css
+*.svg
+*.png
+*.jpg
+*.webp
+*.gif
+*.pdf
+node_modules/
+dist/
+bin/
+obj/
+artifacts/
+benchmarks/*/bin/
+benchmarks/*/obj/
+src/*/bin/
+src/*/obj/

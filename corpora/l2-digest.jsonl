@@ -1,0 +1,3 @@
+{"id":"digest-two-docs","urls":["https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","https://nginx.org/en/docs/"],"backend":"http","min_succeeded":2,"expect_ok":true,"expect_combined":true,"focus_query":"configuration syntax","focus_matched_by_url":[{"url_contains":"developer.mozilla.org","expect":false},{"url_contains":"nginx.org","expect":true}]}
+{"id":"digest-partial","urls":["https://nginx.org/en/docs/","https://developer.mozilla.org/en-US/docs/OccamGateMissingPage404"],"backend":"http","min_succeeded":1,"expect_ok":true}
+{"id":"digest-token-cap","urls":["https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","https://nginx.org/en/docs/"],"backend":"http","per_url_max_tokens":256,"min_succeeded":2,"expect_ok":true}

@@ -1,0 +1,6 @@
+{
+  "schema_version": "1.0",
+  "id": "tamper.neg.test",
+  "hosts": ["tamper.neg.test"],
+  "agent_notes": "genome-neg-manifest-sha256 fixture"
+} 

@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "description": "Vetted community playbooks — read-only resolver tier; no secrets or session headers.",
+  "playbooks": [
+    {
+      "id": "docs.docker.com",
+      "hosts": ["docs.docker.com"],
+      "schema_version": "1.0",
+      "file": "docs.docker.com.json",
+      "sha256": "dcc5df3b18eba14a00ecbf388d398376a18624e6b158fe876405047a70d7eb4e"
+    },
+    {
+      "id": "postgresql.org",
+      "hosts": ["postgresql.org"],
+      "schema_version": "1.0",
+      "file": "postgresql.org.json",
+      "sha256": "6e947eb0f26b26d7433d6b06df3d6d08d5fcac88e8c9d781d3823be9d43d7c23"
+    },
+    {
+      "id": "developer.mozilla.org",
+      "hosts": ["developer.mozilla.org"],
+      "schema_version": "1.0",
+      "file": "developer.mozilla.org.json",
+      "sha256": "7a71bc1e97f40b58f11a4ee3025cf5fbe0113fa8e20f25cbddadc0f5df275089"
+    },
+    {
+      "id": "kubernetes.io",
+      "hosts": ["kubernetes.io"],
+      "schema_version": "1.0",
+      "file": "kubernetes.io.json",
+      "sha256": "f4d875059fcb50f0e464798c28bfd626c92f6f42859dcedb59f55ce4e5e34dac"
+    }
+  ]
+}

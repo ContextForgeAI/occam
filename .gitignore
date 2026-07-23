@@ -1,0 +1,135 @@
+artifacts/
+docs-internal/
+.cursor/mcp.json
+.mcp.json
+.codex/config.toml
+
+# Secrets — never commit (local-only tokens, env files, etc.)
+.secrets/
+*.token
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Local OpenAI ChatGPT tunnel tooling (binaries + operator profiles)
+/tools/tunnel-client/
+/tools/chatgpt-tunnel/
+/tools/searxng/
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Published host binary accidentally dropped at repo root (build output, never tracked).
+/OccamMcp.Core.exe
+/OccamMcp.Core
+
+# npm package entry point — hand-written source, NOT .NET build output.
+# The blanket `bin/` rule above would otherwise drop the npx wrapper from git.
+!packages/occam-mcp/bin/
+!packages/occam-mcp/bin/occam-mcp.js
+!packages/occam-skill/bin/
+!packages/occam-skill/bin/install.mjs
+
+# @ff-occam/mcp build output (tsc emits these from lib/*.ts; rebuilt on prepublishOnly).
+packages/occam-mcp/lib/*.js
+packages/occam-mcp/lib/*.js.map
+packages/occam-mcp/lib/*.d.ts
+packages/occam-mcp/lib/*.d.ts.map
+packages/occam-mcp/package-lock.json
+
+# Node workers / packages
+node_modules/
+
+# IDE / editor
+.vs/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Graphify artifacts
+graphify-out/
+src/graphify-out/
+workers/graphify-out/
+
+# Cursor proxy (local dev)
+cursor-proxy/
+
+# Caches, logs, temps, local DBs
+*.cache
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+*.pdb
+*.db
+*.sqlite
+*.sqlite3
+__pycache__/
+*.pyc
+coverage/
+TestResults/
+
+# Eval harness TypeScript build output (source is corpora/eval-harness/src/)
+corpora/eval-harness/dist/
+
+# Claude Code local overrides (global ignore may also cover this)
+.claude/settings.local.json
+
+# Certificates / private keys (never commit)
+*.pfx
+*.pem
+*.key
+*.p12
+*.p8
+
+# OS junk
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Temp files
+test_write.md
+# Sprint/session prompts — the convention is `*.PROMPT.md` (dot). The old `*_PROMPT.md`
+# (underscore) never matched them, leaving ~77 untracked. Two active ones kept below.
+*.PROMPT.md
+/gate-*.txt
+/test-output.txt
+
+# Quality audit drafts (baseline reports stay — see corpora/README.md)
+/corpora/quality-audit-reports/*
+!/corpora/quality-audit-reports/2026-06-26-full-eight-tool-audit.md
+!/corpora/quality-audit-reports/2026-06-27-gitea-ci-runner.md
+!/corpora/quality-audit-reports/2026-06-17-agent-first-mvp-gate.md
+
+# Active sprint prompts (override *_PROMPT.md ignore)
+!corpora/quality-audit-agent.PROMPT.md
+!corpora/quality-sprint-wide-cursor-desk.PROMPT.md
+
+# Local scratch — owner's throwaway working files, not part of the product.
+# Kept on disk, ignored so `git status` stays clean for reviewers. Not referenced
+# by any committed doc or code (only by gitignored docs-internal/ and artifacts/).
+/liskov.md
+/mdn.md
+/scripts/benchmark-run.mjs
+/scripts/save-md.mjs
+/scripts/bench/run-sweep-crawl4ai.cmd
+/scripts/bench/run-sweep-crawl4ai-2k.cmd
+/scripts/bench/run-sweep-detached.cmd
+/scripts/bench/extract-bench-results.json
+/corpora/lean-a-retest.jsonl
+/workers/browser-extract/test-lean-a.mjs
+
+# private CI/infra setup notes — never ship
+corpora/*gitea*
+corpora/quality-audit-reports/*gitea*
+# Local validation evidence packs (hostnames/paths/provider details; not for VCS)
+validation/

@@ -1,0 +1,3 @@
+{"id":"mdn-http","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","tool":"occam_transcode","args":{"backend_policy":"http"},"target_p50_ms":3000}
+{"id":"nginx-http","url":"https://nginx.org/en/docs/","tool":"occam_transcode","args":{"backend_policy":"http"},"target_p50_ms":3000}
+{"id":"nuxt-browser","url":"https://nuxt.com/docs/getting-started/introduction","tool":"occam_transcode","args":{"backend_policy":"browser"},"target_p50_ms":8000}

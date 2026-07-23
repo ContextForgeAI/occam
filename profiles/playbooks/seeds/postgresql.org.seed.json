@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "id": "postgresql.org",
+  "hosts": ["postgresql.org"],
+  "meta": {
+    "title": "PostgreSQL documentation",
+    "tags": ["documentation", "tier_a_docs"]
+  },
+  "routing": {
+    "preferred_backend": "http"
+  },
+  "extract": {
+    "contentSelectors": ["div.sect1", "#docs", "table.doccontent", "div.chapter"]
+  },
+  "browser": {
+    "recipe_ref": "workers/browser-extract/lib/recipes/postgresql.org.mjs"
+  }
+}

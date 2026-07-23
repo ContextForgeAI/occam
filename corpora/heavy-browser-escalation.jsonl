@@ -1,0 +1,5 @@
+{"id":"mdn-js-guide","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","backend":"http_then_browser","note":"large public docs page; no VPN requirement"}
+{"id":"nginx-docs","url":"https://nginx.org/en/docs/","backend":"http_then_browser","note":"public docs index; no VPN requirement"}
+{"id":"python-pep8","url":"https://www.python.org/dev/peps/pep-0008/","backend":"http_then_browser","note":"long technical page; redirects to peps.python.org"}
+{"id":"kubernetes-overview","url":"https://kubernetes.io/docs/concepts/overview/","backend":"http_then_browser","note":"large docs site; no VPN requirement"}
+{"id":"react-learn","url":"https://react.dev/learn","backend":"http_then_browser","note":"modern docs frontend; publicly reachable without VPN"}

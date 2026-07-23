@@ -1,0 +1,10 @@
+{"id":"session-private-transcode","tool":"transcode","url":"http://127.0.0.1/","backend_policy":"http","expect_ok":false,"failure_code":"private_url_blocked"}
+{"id":"session-private-probe","tool":"probe","url":"http://localhost/","expect_ok":false,"failure_code":"private_url_blocked"}
+{"id":"session-private-probe-local","tool":"probe","url":"http://intranet.corp.local/","expect_ok":false,"failure_code":"private_url_blocked"}
+{"id":"session-private-transcode-linklocal","tool":"transcode","url":"http://169.254.169.254/","backend_policy":"http","expect_ok":false,"failure_code":"private_url_blocked"}
+{"id":"session-private-map","tool":"map","url":"http://127.0.0.1/","source":"homepage","expect_ok":false,"failure_code":"private_url_blocked"}
+{"id":"session-private-digest","tool":"digest","urls":["http://192.168.0.1/"],"backend_policy":"http","expect_ok":false,"failure_code":"private_url_blocked"}
+{"id":"session-profile-not-found","tool":"transcode","url":"https://nginx.org/en/docs/","backend_policy":"http","session_profile":"__gate_missing_profile__","expect_ok":false,"failure_code":"session_profile_not_found"}
+{"id":"session-invalid-profile-id","tool":"transcode","url":"https://nginx.org/en/docs/","backend_policy":"http","session_profile":"../etc/passwd","expect_ok":false,"failure_code":"invalid_session_profile"}
+{"id":"session-public-baseline-transcode","tool":"transcode","url":"https://nginx.org/en/docs/","backend_policy":"http","expect_ok":true,"min_markdown_chars":200}
+{"id":"session-public-baseline-map","tool":"map","url":"https://nginx.org/en/docs/","source":"sitemap","max_links":32,"expect_ok":true,"min_links":5,"expect_same_host":"nginx.org"}

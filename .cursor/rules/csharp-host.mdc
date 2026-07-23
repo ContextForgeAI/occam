@@ -1,0 +1,29 @@
+---
+description: C# MCP host — AOT, pipeline, minimal diffs
+globs: src/**/*.cs
+alwaysApply: false
+---
+
+# FFOccamMcp.Core
+
+## Architecture
+
+- `OccamTranscodeTool` + `OccamProbeTool` + `OccamDigestTool` — MCP tool surfaces
+- `TranscodePipeline` + `OccamRouter` — routing; do not bypass for one-off logic
+- `IExtractBackend` — HTTP (35s) / Browser (120s)
+- `ITranscodePostProcessor` — challenge + thin extract
+
+## Rules
+
+- Native AOT safe: source-generated JSON, no reflection serializers
+- UTF-8: `Console.OutputEncoding = UTF-8`; Node spawn must preserve UTF-8
+- Test hooks: `#if OCCAM_GATE` only — never ship test-only paths in prod without `#if`
+- Extend via seams (`AddOccamCore`, backends, post-processors) — not monolith paste from FFWebMCP
+
+## After edits
+
+```powershell
+.\scripts\run-l0-fast.ps1
+```
+
+Full gate if router/backends/post-processors changed.

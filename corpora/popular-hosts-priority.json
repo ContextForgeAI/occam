@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "description": "Strategically important hosts for agent research — tracked in wildcard audits; NOT merge-blocking golden-hosts (yet). Product goal: honest extract or honest failure on URLs agents actually use.",
+  "status_legend": {
+    "golden": "in corpora/golden-hosts.json — merge-blocking seeds",
+    "wildcard": "in corpora/quality-audit-wildcard.jsonl — exploration + priority tracking",
+    "blocked_env": "http_403 / network policy in audit 2026-06-15 — may work on other networks",
+    "partial": "probe or appendix OK; MCP transcode not agent-ready (2026-06-15 post-VPN social audit)",
+    "works": "MCP transcode agent-ready on documented backend path (social audit run #2)",
+    "needs_playbook": "requires seed + consent/session for acceptable fidelity"
+  },
+  "hosts": [
+    {
+      "host": "reddit.com",
+      "tier": "news_consent",
+      "priority": "critical",
+      "golden": false,
+      "audit_2026_06_15": "blocked_env",
+      "audit_2026_06_15_post_vpn": "partial",
+      "audit_2026_06_15_social_run_2": "partial",
+      "audit_2026_06_15_post_v080": "works",
+      "direct_permalink_tested": true,
+      "direct_permalink_note": "post-v0.8 audit: browser WORKS on live 1tlh5aj permalink — full rules-announcement MD (anti-bot URL params OK). Prior runs: captcha_or_challenge or http_403. workers_unavailable fixed (heap 512MB).",
+      "agent_expectation": "WORKS via browser on permalink when anti-bot clears; listing harder; P2-7 seed shipped"
+    },
+    {
+      "host": "stackoverflow.com",
+      "tier": "spa_docs",
+      "priority": "critical",
+      "golden": false,
+      "audit_2026_06_15": "blocked_env",
+      "audit_2026_06_15_post_vpn": "partial",
+      "audit_2026_06_15_social_run_2": "works",
+      "audit_2026_06_15_post_v082": "works",
+      "audit_vpn_on_digest": "blocked_env",
+      "direct_permalink_tested": true,
+      "direct_permalink_note": "run #2 + re-spot 2026-06-15 VPN-off: http_then_browser WORKS. Finland VPN 2026-06-15: http_403 CF (__cf_chl_rt_tk) standalone + D3 batch — VPN_REGRESSION on datacenter IP.",
+      "agent_expectation": "WORKS via http_then_browser on local IP; avoid VPN datacenter exits for CF hosts; digest batch flaky"
+    },
+    {
+      "host": "github.com",
+      "tier": "spa_docs",
+      "priority": "high",
+      "golden": false,
+      "audit_2026_06_15": "works",
+      "direct_permalink_tested": true,
+      "direct_permalink_note": "README/blob URLs work on HTTP extract in audit; probe may warn challenge.",
+      "agent_expectation": "WORKS for raw/README; issues/PRs need future playbook"
+    },
+    {
+      "host": "x.com",
+      "tier": "anti_bot_blogs",
+      "priority": "high",
+      "golden": false,
+      "audit_2026_06_15_post_vpn": "partial",
+      "audit_2026_06_15_social_run_2": "partial",
+      "direct_permalink_tested": true,
+      "direct_permalink_note": "run #2: status WORKS with backend_policy=browser («It's time to fly.»). http/htb thin_extract. Profile bio OK on http.",
+      "agent_expectation": "Status permalink: use browser policy; profile bio partial on http"
+    },
+    {
+      "host": "instagram.com",
+      "tier": "anti_bot_blogs",
+      "priority": "high",
+      "golden": false,
+      "audit_2026_06_15_post_vpn": "blocked_env",
+      "audit_2026_06_15_social_run_2": "works",
+      "direct_permalink_tested": true,
+      "direct_permalink_note": "run #2: browser WORKS — natgeo profile (bio+grid) + post /natgeo/p/DZgI3gLGuai/ full caption. http extraction_failed.",
+      "agent_expectation": "WORKS via browser; probe false-stop tuning (P2-7 P2)"
+    },
+    {
+      "host": "facebook.com",
+      "tier": "news_consent",
+      "priority": "high",
+      "golden": false,
+      "audit_2026_06_15_post_vpn": "blocked_env",
+      "direct_permalink_tested": false,
+      "direct_permalink_note": "Meta page login wall; http_400 / timeout; no /posts/ permalink in HTML.",
+      "agent_expectation": "FAIL_HONEST — consent + session (P2-7 P1)"
+    },
+    {
+      "host": "tiktok.com",
+      "tier": "anti_bot_blogs",
+      "priority": "medium",
+      "golden": false,
+      "audit_2026_06_15_post_vpn": "blocked_env",
+      "direct_permalink_tested": false,
+      "direct_permalink_note": "Profile thin_extract → captcha shell; no invented video IDs.",
+      "agent_expectation": "FAIL_HONEST captcha — honest stop OK (P2-7 P2)"
+    },
+    {
+      "host": "linkedin.com",
+      "tier": "spa_docs",
+      "priority": "medium",
+      "golden": false,
+      "audit_2026_06_15_post_vpn": "works",
+      "direct_permalink_tested": true,
+      "direct_permalink_note": "Company page http WORKS (About + feed teasers); probe likelyChallenge false positive.",
+      "agent_expectation": "WORKS for company research; classifier tune only (P2-7 defer)"
+    },
+    {
+      "host": "threads.net",
+      "tier": "anti_bot_blogs",
+      "priority": "low",
+      "golden": false,
+      "audit_2026_06_15_post_vpn": "blocked_env",
+      "direct_permalink_tested": false,
+      "direct_permalink_note": "network_error / about:blank — transport/DNS; threads.com alias same.",
+      "agent_expectation": "FAIL_HONEST — fix network probe first (P2-7 P3)"
+    },
+    {
+      "host": "medium.com",
+      "tier": "anti_bot_blogs",
+      "priority": "high",
+      "golden": false,
+      "audit_2026_06_15": "blocked_env",
+      "direct_permalink_tested": false,
+      "direct_permalink_note": "Wildcard used tag page; single-article permalink is next test.",
+      "agent_expectation": "probe anti_bot warning; honest failure OK"
+    },
+    {
+      "host": "bbc.com",
+      "tier": "news_consent",
+      "priority": "high",
+      "golden": false,
+      "audit_2026_06_15": "partial",
+      "audit_2026_06_15_digest": "blocked_env",
+      "audit_vpn_on_digest": "works",
+      "direct_permalink_tested": false,
+      "direct_permalink_note": "Section front tested; single-article URL recommended for next wildcard round. VPN-off 2026-06-15: network_error. Finland VPN 2026-06-15: WORKS http_then_browser — technology headlines in MD.",
+      "agent_expectation": "VPN may unblock if local network_error; consent + BM25 may drop above-fold on single-article URLs"
+    },
+    {
+      "host": "wikipedia.org",
+      "tier": "tier_a_docs",
+      "priority": "high",
+      "golden": false,
+      "audit_2026_06_15": "blocked_env",
+      "direct_permalink_tested": true,
+      "direct_permalink_note": "Article permalink tested; probe hcaptcha → requires_login on transcode despite WebFetch HTML.",
+      "agent_expectation": "needs probe/transcode classifier tuning or seed"
+    },
+    {
+      "host": "news.ycombinator.com",
+      "tier": "tier_a_docs",
+      "priority": "critical",
+      "golden": false,
+      "audit_2026_06_15_digest": "blocked_env",
+      "audit_vpn_on_digest": "works",
+      "direct_permalink_tested": true,
+      "direct_permalink_note": "VPN-off digest: http_429. Finland VPN 2026-06-15: HTTP WORKS — HN comment text in MD; D1 chain 3/3.",
+      "agent_expectation": "Retry with VPN if local http_429; prefer direct article URLs over HN in digest when rate-limited"
+    },
+    {
+      "host": "reuters.com",
+      "tier": "news_consent",
+      "priority": "high",
+      "golden": false,
+      "audit_2026_06_15_digest": "blocked_env",
+      "audit_vpn_on_digest": "blocked_env",
+      "direct_permalink_tested": true,
+      "direct_permalink_note": "Section front http_401 VPN-off and Finland VPN-on; WebFetch 403 on VPN.",
+      "agent_expectation": "FAIL_HONEST http_401 — VPN does not help; use alternate wire source"
+    },
+    {
+      "host": "npmjs.com",
+      "tier": "spa_docs",
+      "priority": "high",
+      "golden": false,
+      "audit_2026_06_15_digest": "works",
+      "audit_vpn_on_digest": "blocked_env",
+      "direct_permalink_tested": true,
+      "direct_permalink_note": "VPN-off D3: express package WORKS browser. Finland VPN D3: http_403 CF regression.",
+      "agent_expectation": "WORKS http_then_browser on local IP; VPN datacenter may trigger CF 403"
+    },
+    {
+      "host": "react.dev",
+      "tier": "spa_docs",
+      "priority": "medium",
+      "golden": false,
+      "audit_2026_06_15": "works",
+      "direct_permalink_tested": true,
+      "direct_permalink_note": "Docs path works generic browser — candidate for golden-hosts expansion.",
+      "agent_expectation": "WORKS generic path"
+    }
+  ],
+  "product_note": "Golden-hosts (7) prove doc-site quality on merge gates. Popular-hosts priority tracks where real agents go next — reddit/SO/news are as important strategically even when L0 returns FAIL_HONEST today. Next audit: daily-digest wildcard (corpora/quality-audit-wildcard-digest.jsonl).",
+  "p2_7_seed_status": {
+    "reddit.com": "seed_shipped — browser preferred; post-v0.8 audit WORKS on 1tlh5aj permalink",
+    "stackoverflow.com": "seed_shipped — http_then_browser WORKS (re-spot 2026-06-15; browser fallback after HTTP CF)",
+    "x.com": "seed_shipped — browser required for /status/; WORKS (spot 2026-06-15)",
+    "instagram.com": "probe_tuned — browser WORKS; seed deferred",
+    "linkedin.com": "probe_tuned — http WORKS; seed deferred"
+  }
+}

@@ -1,0 +1,20 @@
+[[BATTERY B01-baseline-doc]] Read the MDN JavaScript Guide page at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide and tell me what it covers.
+[[BATTERY B02-table-json]] I need the country GDP figures from https://en.wikipedia.org/wiki/List_of_countries_by_GDP_(nominal) as structured rows I can compute on, not prose.
+[[BATTERY B03-huge-focus]] On https://docs.python.org/3/library/functions.html, what exactly does zip() do and what are its arguments? The page is huge, keep it tight.
+[[BATTERY B04-feed]] What are the latest posts on the Rust blog feed https://blog.rust-lang.org/feed.xml?
+[[BATTERY B05-digest-multi]] Summarize what these four pages say about HTTP caching: https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching , https://nginx.org/en/docs/http/ngx_http_proxy_module.html , https://httpwg.org/specs/rfc9111.html , https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
+[[BATTERY B06-map-then-digest]] On nginx.org, find the documentation pages about reverse proxying and give me a short summary of what they cover. Start from https://nginx.org/en/docs/
+[[BATTERY B07-search-web]] Find a page that documents the HTTP 418 status code — I don't have a URL.
+[[BATTERY B08-claim-check]] Is it actually true, according to https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/418 , that a teapot must refuse to brew coffee? Quote the page.
+[[BATTERY B09-extract-knowledge]] From https://blog.rust-lang.org/ pull the structured facts of the newest post: title, author, publication date, and the canonical link.
+[[BATTERY B10-login-gated]] Get me the content of https://github.com/settings/profile — it's behind a login.
+[[BATTERY B11-spa-browser]] Read the content of https://react.dev/learn — it's a JS-heavy single-page app.
+[[BATTERY B12-prove-receipt]] Extract https://nginx.org/en/docs/ and give me something a third party can use to prove this text really came from that page.
+[[BATTERY B13-honest-failure]] Read the article at https://www.g2.com/categories/web-scraping — the site is known to block bots. Tell me what it says.
+[[BATTERY B14-change-detect]] I extracted https://nginx.org/en/docs/ yesterday and stored the content hash. Tell me cheaply whether it changed, without pulling the whole page again.
+[[BATTERY B15-rag-citations]] I'm building a RAG index over https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching and need each passage with a pointer back to where it sits in the page.
+[[BATTERY B16-llms-txt]] Does https://svelte.dev/docs/svelte/overview publish an LLM-friendly version of its docs? If so use it, otherwise extract the page normally.
+[[BATTERY B17-thin-heal]] https://news.ycombinator.com/item?id=1 keeps giving me almost nothing useful. Can you make extraction of this site work better next time?
+[[BATTERY B18-dataset-export]] Extract these two pages and hand me the result as a verifiable dataset file I can ship to a colleague: https://nginx.org/en/docs/ and https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching
+[[BATTERY B19-selectors-scope]] From https://docs.python.org/3/library/functions.html I only want the sections for map() and filter(), nothing else.
+[[BATTERY B20-404-honesty]] Summarize https://developer.mozilla.org/en-US/docs/OccamBatteryMissingPage404 for me.

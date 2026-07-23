@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "id": "developer.mozilla.org",
+  "hosts": ["developer.mozilla.org"],
+  "meta": {
+    "title": "MDN Web Docs",
+    "tags": ["documentation", "tier_a_docs"]
+  },
+  "routing": {
+    "preferred_backend": "http"
+  },
+  "extract": {
+    "contentSelectors": ["#content", "main#content", "main.layout__content"]
+  },
+  "browser": {
+    "recipe_ref": "workers/browser-extract/lib/recipes/developer.mozilla.org.mjs"
+  },
+  "agent_notes": "Hub pages are TOC — use leaf URLs for definitions; fit_markdown is opt-in."
+}

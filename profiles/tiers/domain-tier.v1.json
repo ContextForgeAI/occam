@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "tiers": [
+    {
+      "id": "tier_a_docs",
+      "label": "Static documentation — HTTP-first",
+      "http_only": true,
+      "page_class_hint": "documentation",
+      "quality_mode_hint": "fast",
+      "hosts": ["developer.mozilla.org", "nginx.org", "kubernetes.io", "rfc-editor.org", "wikipedia.org"]
+    },
+    {
+      "id": "spa_docs",
+      "label": "SPA documentation — browser-friendly",
+      "http_only": false,
+      "page_class_hint": "documentation",
+      "quality_mode_hint": "balanced",
+      "hosts": ["nuxt.com", "docs.docker.com"]
+    },
+    {
+      "id": "news_consent",
+      "label": "News / consent SPAs",
+      "http_only": false,
+      "page_class_hint": "news",
+      "quality_mode_hint": "balanced",
+      "hosts": ["bbc.com", "reddit.com"]
+    },
+    {
+      "id": "marketplace",
+      "label": "Marketplace listings",
+      "http_only": false,
+      "page_class_hint": "marketplace",
+      "quality_mode_hint": "balanced",
+      "hosts": ["ebay.com", "amazon.com"]
+    },
+    {
+      "id": "anti_bot_blogs",
+      "label": "Anti-bot blogs",
+      "http_only": false,
+      "page_class_hint": "article",
+      "quality_mode_hint": "balanced",
+      "hosts": ["medium.com", "netflixtechblog.com"]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "id": "stackoverflow.com",
+  "hosts": ["stackoverflow.com"],
+  "meta": {
+    "title": "Stack Overflow Q&A",
+    "tags": ["spa_docs", "social"]
+  },
+  "routing": {
+    "preferred_backend": "http_then_browser"
+  },
+  "extract": {
+    "contentSelectors": ["#question", ".s-prose", "#answers-header", "#answers"]
+  },
+  "agent_notes": "Question permalinks — default http_then_browser often http_403 (Cloudflare). cf_clearance cookie paste does not fix workers. Optional: session_profile with probe User-Agent + backend_policy=http (see docs/09-troubleshooting.md). Prefer direct /questions/ URLs over tag or home listings."
+}

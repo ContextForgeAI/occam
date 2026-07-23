@@ -1,0 +1,24 @@
+---
+description: After extract/probe/digest code changes — run gate + semantic quality audit
+globs:
+  - workers/**/*
+  - src/**/Compile/**/*
+  - src/**/Digest*/**/*
+  - src/**/Probe*/**/*
+  - src/**/FitMarkdown*/**/*
+  - src/**/TokenBudget*/**/*
+  - src/**/HtmlProbe*/**/*
+---
+
+# Quality verification (extract / probe / digest)
+
+When this rule applies, **AGENTS.md §8** tier 1 is mandatory; tier 3 is mandatory before REPORT.
+
+1. `occam-doctor.ps1` + `run-l0-fast.ps1` (or full `l0-gate`) — must pass.
+2. Run full audit per `corpora/quality-audit-agent.PROMPT.md`:
+   - HTML baseline **before** each MCP call
+   - Matrix A → B1/B2 → C in order
+   - Compare to § **Expected outcomes**; flag regressions on golden scenarios
+3. Do **not** treat `ok: true` or gate corpora as proof of semantic quality.
+
+Tier 3 is agent-driven (HTML + rubric). It does not replace merge-blocking gates.

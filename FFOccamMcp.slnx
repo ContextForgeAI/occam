@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/benchmarks/" />
+  <Folder Name="/benchmarks/l0-gate/">
+    <Project Path="benchmarks/l0-gate/L0Gate.csproj" />
+  </Folder>
+  <Folder Name="/benchmarks/l0-ram-stress/">
+    <Project Path="benchmarks/l0-ram-stress/L0RamStress.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/FFOccamMcp.Core/FFOccamMcp.Core.csproj" />
+  </Folder>
+</Solution>

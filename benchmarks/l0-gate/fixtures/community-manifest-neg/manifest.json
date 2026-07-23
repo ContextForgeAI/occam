@@ -1,0 +1,14 @@
+{
+    "playbooks":  [
+                      {
+                          "schema_version":  "1.0",
+                          "sha256":  "6124eaba028a4164cea5c0ad560ad1ea9f775142bc929f387f607253721e14dc",
+                          "id":  "tamper.neg.test",
+                          "hosts":  [
+                                        "tamper.neg.test"
+                                    ],
+                          "file":  "tamper.neg.test.json"
+                      }
+                  ],
+    "schema_version":  "1.0"
+}

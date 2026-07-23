@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "id": "reddit.com",
+  "hosts": ["reddit.com", "old.reddit.com"],
+  "meta": {
+    "title": "Reddit threads and subreddits",
+    "tags": ["news_consent", "social"]
+  },
+  "routing": {
+    "preferred_backend": "browser"
+  },
+  "extract": {
+    "contentSelectors": [
+      "[data-test-id=\"post-content\"]",
+      "shreddit-post",
+      "[slot=\"text-body\"]",
+      "article"
+    ],
+    "domStripSelectors": [
+      "[data-testid=\"login-modal\"]",
+      "auth-flow-modal",
+      "faceplate-dialog",
+      "[data-testid=\"recaptcha\"]",
+      "iframe[src*=\"recaptcha\"]",
+      "iframe[src*=\"google.com/signin\"]",
+      "iframe[src*=\"accounts.google\"]",
+      "#RECaptcha",
+      ".login-modal",
+      "[aria-label=\"Login\"]"
+    ]
+  },
+  "agent_notes": "news_consent tier — prefer browser for permalink /comments/ URLs. HTTP often extraction_failed; http_then_browser may hit captcha_or_challenge. Corpus must use live permalinks — slug reuse redirects (e.g. learnprogramming/1bpt0y7 → r/mead). Subreddit listings harder than direct post URLs."
+}

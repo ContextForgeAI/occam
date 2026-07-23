@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "description": "Merge-blocking corpus hosts — playbook seeds and browser recipe allowlist",
+  "hosts": [
+    "developer.mozilla.org",
+    "nginx.org",
+    "nuxt.com",
+    "platform.openai.com",
+    "developers.openai.com",
+    "postgresql.org",
+    "docs.docker.com"
+  ],
+  "browserRecipes": [
+    "developer.mozilla.org",
+    "kubernetes.io",
+    "nginx.org",
+    "nuxt.com",
+    "docs.docker.com",
+    "postgresql.org"
+  ]
+}

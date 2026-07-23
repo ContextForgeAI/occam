@@ -1,0 +1,42 @@
+{
+  "name": "@ff-occam/skill",
+  "version": "1.0.0-rc.2",
+  "type": "module",
+  "description": "Portable FF-Occam agent skill — lazy MCP orchestration for Cursor, Claude Code, Hermes, and other harnesses",
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ContextForgeAI/occam.git",
+    "directory": "packages/occam-skill"
+  },
+  "homepage": "https://github.com/ContextForgeAI/occam",
+  "keywords": [
+    "mcp",
+    "skill",
+    "agent",
+    "web-extraction",
+    "occam",
+    "cursor",
+    "claude-code",
+    "hermes"
+  ],
+  "bin": {
+    "occam-skill-install": "bin/install.mjs"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "skill/"
+  ],
+  "scripts": {
+    "sync-skill": "node ../../scripts/sync-occam-skill-package.mjs",
+    "prepublishOnly": "npm run sync-skill"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "id": "gate.neg-cookie.example",
+  "hosts": ["gate.neg-cookie.example"],
+  "request": {
+    "headers": {
+      "Cookie": "session=gate-fixture-secret"
+    }
+  },
+  "extract": {
+    "contentSelectors": ["main"]
+  },
+  "agent_notes": "Gate fixture — must never export with Cookie header."
+}

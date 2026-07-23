@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "id": "kubernetes.io",
+  "hosts": ["kubernetes.io"],
+  "meta": {
+    "title": "Kubernetes documentation",
+    "tags": ["docs", "community", "genome-pilot"]
+  },
+  "genome": {
+    "site_type": "documentation",
+    "features": ["search", "versioned_docs", "nav_tree"],
+    "page_classes": {
+      "concepts": "/docs/concepts/*",
+      "tasks": "/docs/tasks/*",
+      "reference": "/docs/reference/*"
+    },
+    "nav_hints": {
+      "discovery": "occam_map",
+      "likely_next": ["/docs/concepts/", "/docs/tasks/"]
+    }
+  },
+  "routing": {
+    "preferred_backend": "http_then_browser"
+  },
+  "extract": {
+    "contentSelectors": ["main", ".td-content", "article", "#main", "h1"]
+  },
+  "knowledge_schema": {
+    "concepts": {
+      "title": { "selector": "h1", "attr": "text" }
+    },
+    "tasks": {
+      "title": { "selector": "h1", "attr": "text" }
+    },
+    "reference": {
+      "title": { "selector": "h1", "attr": "text" }
+    },
+    "default": {
+      "title": { "selector": "h1", "attr": "text" }
+    }
+  },
+  "agent_notes": "Community genome pilot: concepts/tasks/reference page classes; prefer http_then_browser on deep task pages."
+}

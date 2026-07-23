@@ -1,0 +1,8 @@
+{"id":"map-nginx-sitemap","url":"https://nginx.org/en/docs/","source":"sitemap","max_links":32,"same_domain":true,"filter_nonsense":true,"expect_ok":true,"min_links":10,"expect_same_host":"nginx.org"}
+{"id":"map-mdn-sitemap","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","source":"sitemap","max_links":32,"same_domain":true,"filter_nonsense":true,"expect_ok":true,"min_links":20,"expect_same_host":"developer.mozilla.org"}
+{"id":"map-homepage-nginx","url":"https://nginx.org/en/docs/","source":"homepage","max_links":32,"same_domain":true,"filter_nonsense":true,"expect_ok":true,"min_links":5,"expect_same_host":"nginx.org","must_not_path_suffix":[".css",".js"]}
+{"id":"map-max-links-cap","url":"https://nginx.org/en/docs/","source":"sitemap","max_links":8,"same_domain":true,"filter_nonsense":true,"expect_ok":true,"max_link_count":8}
+{"id":"map-focus-rank","url":"https://nginx.org/en/docs/","source":"sitemap","max_links":32,"same_domain":true,"filter_nonsense":true,"focus_query":"configuration syntax","expect_ok":true,"min_links":1,"top_link_path_contains":["config","syntax"]}
+{"id":"map-sitemap-missing","url":"https://example.com/","source":"sitemap","max_links":32,"same_domain":true,"filter_nonsense":true,"expect_ok":false,"failure_code":"sitemap_not_found"}
+{"id":"map-invalid-source","url":"https://nginx.org/en/docs/","source":"browser_nav","expect_ok":false,"failure_code":"invalid_arguments"}
+{"id":"map-invalid-url","url":"not-a-url","source":"homepage","expect_ok":false,"failure_code":"invalid_url"}

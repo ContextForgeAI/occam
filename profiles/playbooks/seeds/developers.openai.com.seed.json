@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "id": "developers.openai.com",
+  "hosts": ["developers.openai.com", "platform.openai.com"],
+  "meta": {
+    "title": "OpenAI API documentation",
+    "tags": ["documentation", "spa_docs"]
+  },
+  "routing": {
+    "preferred_backend": "http_then_browser"
+  },
+  "postMarkdown": {
+    "openAiDocHeadings": true
+  },
+  "agent_notes": "Concepts page merges h2 sections — seed restores Embeddings/Tokens headings in post-process."
+}

@@ -1,0 +1,35 @@
+---
+description: L0 gate and benchmarks — live URLs, exit tokens
+globs: benchmarks/**/*,corpora/**/*
+alwaysApply: false
+---
+
+# L0 gate
+
+## Exit tokens
+
+- Fast: `L0_GATE_FAST_OK` via `scripts/run-l0-fast.ps1`
+- Full: `L0_GATE_OK` via `dotnet run --project benchmarks/l0-gate`
+- Merge path also emits: `L1A_TOKEN_OK`, `L1B_PROBE_OK`, `L1_FAILURE_TAXONOMY_OK`, `L2_DIGEST_OK`, `L2_MAP_OK`, **`L2_SESSION_OK`**, **`L2_TRANSPORT_OK`**, **`L2_EGRESS_OK`**
+
+**Not in merge path:** `L2_POLICY_OK`, cache freshness (removed v0.6).
+## Corpus rules
+
+- `corpora/l0-smoke.jsonl` — **live URLs only**; no synthetic HTML fixtures
+- `corpora/l0-smoke.jsonl` — **live URLs only**; no synthetic HTML fixtures
+- `expect_ok: false` for negative cases (e.g. 404)
+- `corpora/l2-digest.jsonl` — multi-URL digest live cases
+- `corpora/l2-map.jsonl` — map discovery live cases
+- `corpora/l2-session.jsonl` — session/private-URL cases; **`L2_SESSION_OK`** in merge path (P2-2 shipped)
+- `corpora/l2-transport.jsonl` — transport stdio/WS cases; **`L2_TRANSPORT_OK`** in merge path (P2-4 shipped)
+- `corpora/l2-egress.jsonl` — egress proxy mock + live cases; **`L2_EGRESS_OK`** in merge path (P2-12 shipped)
+
+## CLI flags (l0-gate)
+
+`--fast`, `--smoke-only`, `--visual`, `--open`, `--url=`, `--backend=`, `--bench-browser`
+
+## Scope
+
+Gate code stays in `benchmarks/l0-gate/` — do not port FFWebMCP gate-unit wholesale.
+
+Maintainer runbooks: local `docs-internal/runbooks/` (gitignored).

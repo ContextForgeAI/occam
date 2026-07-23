@@ -1,0 +1,32 @@
+---
+description: FF-Occam L0 core — scope, entry points, language
+alwaysApply: true
+---
+
+# FF-Occam L0 — always on
+
+**Repo:** FFOccamMCP only. Do not implement L0 core in FFWebMCP.
+
+**Read first:** [AGENTS.md](../../AGENTS.md) · User docs: [docs/index.md](../../docs/index.md)
+
+## Ships today (v1.0.0-rc.2 — core MCP tools, Receipt v1, PB4b extract + PB3 heal/save, Tier-A C# span scan, session, dual MCP transport stdio + optional WS, production install Level A + Level B tarball, L0 core CLOSED)
+
+- **Core MCP tools** — canonical list: `OccamMcpServerRegistration.OccamToolNames` (banner/CLI derive count dynamically)
+- `occam_extract_knowledge`: Recipe D — schema required; `facts[]` + `meta.koId`
+- Receipt v1 + offline `verify` CLI; opt-in extras under env flags (`OCCAM_BATCH_MCP`, `OCCAM_WATCH_MCP`, …)
+- Gate: `L4_GENOME_OK` on `corpora/l4-genome.jsonl` (PB4a + PB4b full)
+- Workers: `workers/http-extract/`, `workers/browser-extract/`, **`workers/css-extract/`**
+- **No file cache by design** — always live extract
+- Killer features: K1 honest compiler · K2 token contract · K3 Recipe A · Recipe B digest · Receipt v1
+
+## Task order (mandatory)
+
+UNDERSTAND → SCOPE → IMPLEMENT → VERIFY → SYNC DOCS → CLEAN UP → REPORT
+
+## Language
+
+English only in committed files (`docs/`, `README.md`, `MCP_API_SPEC.md`, `AGENTS.md`).
+
+## Done means
+
+Code works, docs match code, no garbage files, gate run if behavior changed.

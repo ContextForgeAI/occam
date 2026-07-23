@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "id": "postgresql.org",
+  "hosts": ["postgresql.org"],
+  "meta": {
+    "title": "PostgreSQL documentation",
+    "tags": ["documentation", "tier_a_docs", "community"]
+  },
+  "routing": {
+    "preferred_backend": "http"
+  },
+  "extract": {
+    "contentSelectors": [
+      "div.sect1",
+      "#docs",
+      "table.doccontent",
+      "div.chapter",
+      "div.sect2"
+    ]
+  },
+  "browser": {
+    "recipe_ref": "workers/browser-extract/lib/recipes/postgresql.org.mjs"
+  },
+  "agent_notes": "Community vetted: static HTML docs — http backend is sufficient. Prefer chapter leaf URLs for SQL syntax questions; index pages are TOC-heavy. Pair with occam_digest focus_query for multi-chapter topics."
+}

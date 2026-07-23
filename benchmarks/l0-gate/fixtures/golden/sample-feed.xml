@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Occam Engineering Blog</title>
+    <link>https://example.com/blog</link>
+    <description>Notes on extraction, token budgets, and honest tooling.</description>
+    <item>
+      <title>Why we rewrote the scheduler</title>
+      <link>https://example.com/blog/scheduler-rewrite</link>
+      <pubDate>Mon, 30 Jun 2026 09:00:00 GMT</pubDate>
+      <description>Moving from a global lock to per-shard work stealing.</description>
+    </item>
+    <item>
+      <title>Measuring compression honestly</title>
+      <link>https://example.com/blog/honest-compression</link>
+      <pubDate>Tue, 24 Jun 2026 09:00:00 GMT</pubDate>
+      <description>The only metric that matters is the byte ratio on a real corpus.</description>
+    </item>
+    <item>
+      <title>A field guide to failure codes</title>
+      <link>https://example.com/blog/failure-codes</link>
+      <pubDate>Wed, 18 Jun 2026 09:00:00 GMT</pubDate>
+      <description>ok:false means unknown — never guess the content.</description>
+    </item>
+  </channel>
+</rss>

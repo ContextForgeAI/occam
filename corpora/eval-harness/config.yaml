@@ -1,0 +1,34 @@
+# FF-Occam Evaluation Harness Configuration
+# 
+# This config defines how to connect to an MCP server and which corpora to evaluate against.
+# Run with: npx @ff-occam/eval-harness --config corpora/eval-harness/config.yaml
+
+mcpServer:
+  # Stdio transport (default) - launches the locally built MCP host.
+  # Prefer scripts/launch-mcp-host.mjs (resolves AOT publish under OCCAM_HOME).
+  # Do not use `npx @ff-occam/mcp` in repo CI — that package may be unpublished.
+  command: "node"
+  args: ["scripts/launch-mcp-host.mjs"]
+  env:
+    OCCAM_HOME: "."  # Will be resolved to repo root at runtime
+  
+  # WebSocket transport (alternative) - connects to running MCP server
+  # transport: "websocket"
+  # wsUrl: "ws://localhost:5050"
+
+# Corpora to evaluate (paths relative to repo root)
+corpora:
+  - "l0-smoke"           # Fast smoke test (3 URLs, HTTP only)
+  - "l4-genome"          # Genome pilot test (playbook resolution + extract)
+  - "quality-audit-rotation"  # Monthly rotating quality audit URLs
+
+# Output configuration
+output:
+  dir: "artifacts/eval"  # Output directory
+  format: "both"         # "json" | "html" | "both"
+
+# Pass/fail thresholds
+thresholds:
+  minAccuracy: 0.95          # Minimum accuracy (0.0-1.0)
+  maxAvgLatencyMs: 5000      # Maximum average latency in ms
+  minFocusMatchHonesty: 0.8  # Minimum focus match honesty score

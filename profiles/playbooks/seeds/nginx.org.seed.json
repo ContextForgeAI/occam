@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "id": "nginx.org",
+  "hosts": ["nginx.org"],
+  "meta": {
+    "title": "nginx documentation",
+    "tags": ["documentation", "tier_a_docs"]
+  },
+  "routing": {
+    "preferred_backend": "http"
+  },
+  "extract": {
+    "contentSelectors": ["#content"]
+  },
+  "postMarkdown": {
+    "nginxIndexModuleSpam": true
+  },
+  "agent_notes": "Index /en/docs/ — module spam pruned via seed; use leaf URLs for directive detail."
+}

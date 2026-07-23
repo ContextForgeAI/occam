@@ -1,0 +1,9 @@
+{"id":"genome-pilot-nginx-auto","tier":"pilot","sub_slice":"PB4a","url":"https://nginx.org/en/docs/","expect":"playbook_policy=auto; seed #content + nginxIndexModuleSpam; Fidelity≥3"}
+{"id":"genome-pilot-k8s-resolve","tier":"pilot","sub_slice":"PB4a","url":"https://kubernetes.io/docs/concepts/overview/","expect":"genome.page_classes; knowledgeSchema.concepts; pageClass=concepts; audit § Часть 2 шаг 1"}
+{"id":"genome-pilot-k8s-extract","tier":"pilot","sub_slice":"PB4b","url":"https://kubernetes.io/docs/concepts/overview/","expect":"resolve→extract_knowledge; facts.title non-empty; meta.koId present; audit § Часть 2 шаг 7 POS"}
+{"id":"genome-pilot-local-overlay","tier":"pilot","sub_slice":"PB4a","url":"https://nginx.org/en/docs/","expect":"after local save; transcode auto picks local tier without prior resolve"}
+{"id":"genome-pilot-lessons-export","tier":"pilot","sub_slice":"PB4a","expect":"resolve include_lessons=true returns local lessons[] only"}
+{"id":"genome-neg-no-well-known","tier":"negative","sub_slice":"PB4a","url":"https://nginx.org/en/docs/","fetch_site_genome":true,"expect":"genomeFetch ok=false http_404; resolve ok from seed"}
+{"id":"genome-neg-extract-no-schema","tier":"negative","sub_slice":"PB4b","url":"https://nginx.org/en/docs/","expect":"knowledge_schema_missing; audit § Часть 2 шаг 7 NEG"}
+{"id":"genome-neg-publish-cookie","tier":"negative","sub_slice":"PB4c","gate_active":true,"expect":"CLI publish rejects secrets_detected; no export file"}
+{"id":"genome-neg-manifest-sha256","tier":"negative","sub_slice":"manifest","gate_active":true,"expect":"tampered community playbook skipped when manifest sha256 mismatch"}

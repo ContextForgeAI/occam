@@ -1,0 +1,6 @@
+{"id":"probe-mdn","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","expect_ok":true,"page_class":"documentation","requires_javascript":false,"backend":"http"}
+{"id":"probe-nginx","url":"https://nginx.org/en/docs/","expect_ok":true,"page_class":"documentation","requires_javascript":false,"backend":"http"}
+{"id":"probe-excalidraw-spa","url":"https://excalidraw.com/","expect_ok":true,"requires_javascript":true,"backend_one_of":["browser","http_then_browser"]}
+{"id":"probe-not-found","url":"https://developer.mozilla.org/en-US/docs/OccamGateMissingPage404","expect_ok":false,"failure_code":"http_404"}
+{"id":"probe-redirect","url":"http://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","expect_ok":true,"expect_final_https":true,"page_class":"documentation"}
+{"id":"probe-pydocs-static","url":"https://docs.python.org/3/library/functions.html","expect_ok":true,"page_class":"documentation","requires_javascript":false,"backend":"http"}

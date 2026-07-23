@@ -1,0 +1,1 @@
+{"id":"batch-nginx-http","urls":["https://nginx.org/en/docs/","https://example.com/"],"backend":"http","expect_ok":true,"min_succeeded":1,"timeout_seconds":120}
