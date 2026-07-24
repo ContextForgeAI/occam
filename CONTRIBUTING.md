@@ -7,11 +7,11 @@ Welcome! FF-Occam is a local-first MCP server that compiles web pages into LLM-r
 ## Quick start
 
 ```powershell
-# 1. Clone
-git clone <your-remote> FFOccamMCP
-cd FFOccamMCP
+# 1. Clone (public)
+git clone https://github.com/ContextForgeAI/occam.git occam
+cd occam
 
-# 2. Install dependencies + publish AOT
+# 2. Install dependencies + publish AOT (.NET 10 SDK required)
 $env:OCCAM_HOME = (Get-Location).Path
 .\scripts\occam-doctor.ps1
 
@@ -25,7 +25,7 @@ dotnet run --project benchmarks\l0-gate
 node scripts\launch-mcp-host.mjs
 ```
 
-**Runtime requirements:** .NET 10 SDK, Node.js 20+, Playwright Chromium (doctor installs it).
+**Operators (no .NET SDK):** use the canonical one-liner in [INSTALL.md](INSTALL.md) instead of this clone path.
 
 ---
 

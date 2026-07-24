@@ -1,6 +1,7 @@
 {
   "name": "ffoccam-workers",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "workspaces": [
     "http-extract",
     "browser-extract",

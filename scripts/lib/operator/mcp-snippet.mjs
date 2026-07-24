@@ -217,7 +217,7 @@ export function getConnectionNextSteps(connectionKind) {
       return [
         "No MCP host wiring — scripts/smoke only.",
         "Run: node scripts/hermes-smoke.mjs",
-        "Docs: docs/01-operator-journey.md",
+        "Docs: INSTALL.md",
       ];
     default:
       return ["Run: node scripts/hermes-smoke.mjs"];

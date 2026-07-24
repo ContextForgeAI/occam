@@ -8,7 +8,7 @@ FF-Occam MCP is a [Model Context Protocol](https://modelcontextprotocol.io/) ser
 
 **Install:** [INSTALL.md](INSTALL.md) · **Human docs:** [docs/index.md](docs/index.md) ·
 **LLM map:** [llms.txt](llms.txt) · **API:** [MCP_API_SPEC.md](MCP_API_SPEC.md) ·
-**Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md)
+**Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md) · **Agents:** [AGENTS.md](AGENTS.md)
 
 > **Release:** Occam Core **1.0.0-rc.2** — install via the one-liner below (GitHub Release tarball).  
 > npm / NuGet / VS Code extension are **not** part of this RC.
