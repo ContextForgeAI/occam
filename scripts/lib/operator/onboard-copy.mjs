@@ -166,7 +166,7 @@ export const ONBOARD_COMPLETE = {
 
     "Verify: node scripts/hermes-smoke.mjs (after reload)",
 
-    "Journey: docs/01-operator-journey.md#verify",
+    "Docs: INSTALL.md",
 
     "CLI: node scripts/occam-help.mjs",
 

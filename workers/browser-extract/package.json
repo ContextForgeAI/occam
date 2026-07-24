@@ -1,6 +1,7 @@
 {
   "name": "ffoccam-browser-extract",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "type": "module",
   "dependencies": {
     "@mozilla/readability": "^0.6.0",

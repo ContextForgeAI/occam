@@ -51,9 +51,34 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p artifacts
-          gh release download "$TAG" --repo "${{ github.repository }}" --dir artifacts/
-          echo "Downloaded assets:"
-          ls -la artifacts/
+          # Release "published" can race ahead of platform asset uploads (linux/osx/win jobs).
+          # Retry until archives appear or we time out with a clear message.
+          attempt=1
+          max_attempts=18
+          sleep_s=20
+          while true; do
+            rm -rf artifacts/*
+            mkdir -p artifacts
+            if gh release download "$TAG" --repo "${{ github.repository }}" --dir artifacts/ 2>/tmp/gh-dl.err; then
+              count="$(find artifacts -maxdepth 1 -type f -name 'ff-occam-*.tar.gz' | wc -l | tr -d ' ')"
+              echo "Downloaded assets (tar.gz count=$count):"
+              ls -la artifacts/ || true
+              if [[ "$count" -ge 1 ]]; then
+                break
+              fi
+              echo "warning: release has no ff-occam-*.tar.gz yet (attempt $attempt/$max_attempts)" >&2
+            else
+              echo "warning: gh release download failed (attempt $attempt/$max_attempts)" >&2
+              cat /tmp/gh-dl.err >&2 || true
+            fi
+            if [[ "$attempt" -ge "$max_attempts" ]]; then
+              echo "error: timed out waiting for release archives on $TAG" >&2
+              echo "hint: ensure occam-release finished uploading linux/osx/win assets, then re-run this workflow." >&2
+              exit 1
+            fi
+            attempt=$((attempt + 1))
+            sleep "$sleep_s"
+          done
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3

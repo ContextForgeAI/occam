@@ -103,35 +103,36 @@ Reload MCP servers in Cursor after saving.
 
 ## Wire into Claude Desktop
 
-Add to `claude_desktop_config.json` (path varies by OS):
+After the [canonical install](../INSTALL.md), add to `claude_desktop_config.json` (path varies by OS).
+Replace the install root with your `OCCAM_HOME` (default `~/.local/share/ff-occam`):
 
 ```json
 {
   "mcpServers": {
     "ff-occam": {
-      "command": "npx",
-      "args": ["-y", "@ff-occam/mcp"],
+      "command": "node",
+      "args": ["/path/to/ff-occam/scripts/launch-mcp-host.mjs"],
       "env": {
-        "OCCAM_HOME": "/path/to/FFOccamMCP"
+        "OCCAM_HOME": "/path/to/ff-occam"
       }
     }
   }
 }
 ```
 
-Restart Claude Desktop.
+`npx @ff-occam/mcp` is **not** part of `1.0.0-rc.2`. Restart Claude Desktop after saving.
 
 ---
 
 ## Generic MCP client (stdio)
 
-Any client that spawns a process and speaks JSON-RPC over stdin/stdout:
+Any client that spawns a process and speaks JSON-RPC over stdin/stdout (after Level B install):
 
 | Field | Value |
 |-------|-------|
-| Command | `npx` |
-| Args | `["@ff-occam/mcp"]` or `["node", "scripts/launch-mcp-host.mjs"]` for git clone |
-| Env | `OCCAM_HOME` = install root |
+| Command | `node` |
+| Args | `["$OCCAM_HOME/scripts/launch-mcp-host.mjs"]` |
+| Env | `OCCAM_HOME` = install root (default `~/.local/share/ff-occam`) |
 | Transport | stdio (default) |
 
 WebSocket clients: start the host with `--mcp-server` and connect to `ws://127.0.0.1:5050`. See [Transports](transports.md).
@@ -140,7 +141,8 @@ WebSocket clients: start the host with `--mcp-server` and connect to `ws://127.0
 
 ## Programmatic TypeScript client
 
-Use the SDK when your Node application owns the orchestration loop:
+npm packages are **not** part of `1.0.0-rc.2`. Prefer MCP stdio via the Level B host for RC.
+When a registry package exists later:
 
 ```bash
 npm install @ff-occam/agent-sdk @ff-occam/mcp

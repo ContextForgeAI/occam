@@ -1,6 +1,7 @@
 {
   "name": "ffoccam-css-extract",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "type": "module",
   "dependencies": {
     "jsdom": "^26.0.0",

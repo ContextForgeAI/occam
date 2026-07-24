@@ -13,7 +13,7 @@ Non-negotiable rules:
 - Prefer one `occam_digest` over N× `occam_transcode` when you already have several URLs.
 - Do not call playbook-authoring tools unless the user is explicitly repairing an extraction recipe.
 - The default page reader is **`occam_transcode`** (do not invent an `occam_read` tool name).
-- The repository name is FFOccamMCP; the product and MCP server are FF-Occam MCP.
+- The public repository is https://github.com/ContextForgeAI/occam ; the product and MCP server are **FF-Occam MCP** / Occam.
 
 ## Start
 
@@ -33,8 +33,8 @@ Non-negotiable rules:
 
 ## Installation and operation
 
-- [Deterministic installer instructions](INSTALL.md): Read in full before an automated agent installs or publishes the host.
-- [Getting started](docs/getting-started.md): Human-oriented install, MCP wiring, operator CLI, and first tool call.
+- [INSTALL.md](INSTALL.md): **Canonical install** — Linux/macOS `curl …/get-ff-occam.sh | bash`; Windows `irm …/get-ff-occam.ps1 | iex`. Read before any automated install.
+- [Getting started](docs/getting-started.md): Human-oriented MCP wiring, operator CLI, and first tool call.
 - [Troubleshooting](docs/troubleshooting.md): Symptom-to-fix runbook.
 
 ## Optional
