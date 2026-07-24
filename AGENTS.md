@@ -29,7 +29,7 @@ You are working in **FFOccamMCP**, the L0 core of **FF-Occam MCP**. **Read this 
 
 **PB4b extract (shipped v0.8.6-pb4b-extract):** **eighth tool** — `occam_extract_knowledge` (documented exception like PB3 heal/save). Recipe D: resolve → extract; failure codes §4.3; K7 ≥70%. Gate: `L4_GENOME_OK` **full** + `genome-pilot-k8s-extract`, `genome-neg-extract-no-schema`. Does **not** ship: publish CLI, `occam_playbook_publish`, PB4c gate merge.
 
-**FFWebMCP** (`c:\PROJECTS\FFWebMCP`): read-only cherry-pick. **Do not grow core there.**
+**Predecessor (private):** read-only cherry-pick only. **Do not grow Occam core there.**
 
 ---
 

@@ -8,80 +8,55 @@ FF-Occam MCP is a [Model Context Protocol](https://modelcontextprotocol.io/) ser
 
 **Install:** [INSTALL.md](INSTALL.md) · **Human docs:** [docs/index.md](docs/index.md) ·
 **LLM map:** [llms.txt](llms.txt) · **API:** [MCP_API_SPEC.md](MCP_API_SPEC.md) ·
-**Contributing:** [AGENTS.md](AGENTS.md)
+**Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md)
 
-> **Release status:** Occam Core **1.0.0-rc.2** is a **GitHub tarball-only** release candidate.
->
-> Occam `1.0.0-rc.2` is distributed through GitHub release archives for:
-> - Linux x64
-> - macOS arm64
-> - Windows x64
->
-> npm packages, NuGet packages, and the VS Code extension are **not**
-> part of this release candidate. From a checkout, use the git-clone / doctor path below.
+> **Release:** Occam Core **1.0.0-rc.2** — install via the one-liner below (GitHub Release tarball).  
+> npm / NuGet / VS Code extension are **not** part of this RC.
 
 ---
 
-## Server / Hermes (GitHub Releases)
+## Install (canonical)
 
-**No .NET 10 SDK?** Use the Level B release tarball — **not** a bare git clone.
-
-**From downloaded assets (no checkout):** download `ff-occam-<ver>-linux-x64.tar.gz` (or
-`osx-arm64` on Apple Silicon) and its `-manifest.json` from the GitHub Release, extract, then run
-doctor from the extracted tree:
+**Linux / macOS** (Node 20+):
 
 ```bash
-INSTALL_DIR="${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}"
-mkdir -p "$INSTALL_DIR"
-tar -xzf ff-occam-1.0.0-rc.2-linux-x64.tar.gz -C "$INSTALL_DIR" --strip-components=1
-export OCCAM_HOME="$INSTALL_DIR"
-cd "$OCCAM_HOME"
-bash scripts/occam-doctor.sh --skip-build
-node scripts/hermes-smoke.mjs
+curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
 ```
 
-**From an existing checkout:** set `OCCAM_RELEASE_BASE` / `OCCAM_VERSION` and run
-`bash scripts/get-ff-occam.sh`, or `./scripts/install.sh --from-url <tarball-url>`.
-
-Git clone + `./scripts/occam-doctor.sh` requires **.NET 10 SDK** on that machine. .NET 8 will not work.
-
-Full steps: [INSTALL.md](INSTALL.md)
-
----
-
-## npm packages (not part of 1.0.0-rc.2)
-
-`@ff-occam/mcp`, `@ff-occam/agent-sdk`, and `@ff-occam/skill` remain in the repository for future
-publication, but they are **not** a supported install path for this release candidate. Do not use
-`npx @ff-occam/mcp` as the RC install method.
-
-**Git clone** (contributors — .NET 10 SDK):
+**Windows** (PowerShell, Node 20+):
 
 ```powershell
-git clone https://github.com/ContextForgeAI/occam.git occam
-cd occam
-$env:OCCAM_HOME = (Get-Location).Path
-.\scripts\occam-doctor.ps1
-node scripts/launch-mcp-host.mjs
+irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
 ```
 
-**Cursor** — add to `.cursor/mcp.json` (clone / tarball install; set `OCCAM_HOME`):
+Full details: [INSTALL.md](INSTALL.md). Contributors with .NET 10 SDK: see Advanced section there.
+
+**Cursor** — after install, use the printed snippet, or:
 
 ```json
 {
   "mcpServers": {
     "ff-occam": {
       "command": "node",
-      "args": ["C:\\path\\to\\occam\\scripts\\launch-mcp-host.mjs"],
-      "env": { "OCCAM_HOME": "C:\\path\\to\\occam" }
+      "args": ["C:\\path\\to\\ff-occam\\scripts\\launch-mcp-host.mjs"],
+      "env": { "OCCAM_HOME": "C:\\path\\to\\ff-occam" }
     }
   }
 }
 ```
 
-**Agent skill (any harness)** — lazy MCP orchestration for Cursor, Claude Code, Hermes, etc.
-From a clone: `occam skill install` (or the packaged skill under `skills/occam/`).
-`npx @ff-occam/skill` is **not** part of `1.0.0-rc.2`. See [docs/getting-started.md](docs/getting-started.md#agent-skill-any-harness).
+---
+
+## Minimal example
+
+Once the MCP host is connected, call:
+
+```json
+{ "name": "occam_transcode", "arguments": { "url": "https://example.com" } }
+```
+
+- `ok: true` — use `markdown` (and optional signed `receipt`).
+- `ok: false` — read `failure.code`; do **not** invent page content.
 
 ---
 
@@ -105,6 +80,20 @@ From a clone: `occam skill install` (or the packaged skill under `skills/occam/`
 | `occam_dataset_export` | Signed dataset export |
 
 Agent guide: [docs/choosing-a-tool.md](docs/choosing-a-tool.md) · Reference: [docs/tools-reference.md](docs/tools-reference.md)
+
+---
+
+## Architecture
+
+Native AOT **.NET 10** MCP host + **Node.js** workers (`http-extract`, `browser-extract`, `css-extract`).  
+Stdio (default) or optional WebSocket. No file cache — every call is a live extract.  
+See [docs/concepts.md](docs/concepts.md) and [docs/architecture/semantic-contract.md](docs/architecture/semantic-contract.md).
+
+---
+
+## Roadmap
+
+[docs/roadmap.md](docs/roadmap.md) — shipped log and explicit non-goals.
 
 ---
 
