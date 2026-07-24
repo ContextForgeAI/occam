@@ -2,8 +2,8 @@
 
 Portable **agent skill** for FF-Occam MCP — lazy orchestration layer any harness can load (Cursor, Claude Code, Hermes, Codex, Copilot, Kiro, Pi, Devin).
 
-> **Registry status:** `npx` commands apply after owner publication or in a configured private
-> registry. From a checkout, use `occam skill install`.
+> **MCP host first:** install Occam with root [INSTALL.md](../../INSTALL.md) (canonical one-liner), then install this skill.
+> Registry `npx @ff-occam/skill` applies after owner publication or in a private registry. From a checkout: `occam skill install`.
 
 ## Why skill + MCP?
 
@@ -12,7 +12,8 @@ MCP exposes `occam_*` tools. The skill keeps tool schemas and recipes **out of t
 ## Install the skill
 
 ```bash
-npx @ff-occam/skill install --platform all
+# After Level B / clone install (OCCAM_HOME set):
+occam skill install --platform all
 ```
 
 | Platform | Destination (global) |
@@ -26,15 +27,11 @@ npx @ff-occam/skill install --platform all
 
 Project scope: add `--project` (e.g. `.cursor/skills/occam` in repo).
 
-From a git clone: `occam skill install` (same flags).
+Future registry: `npx @ff-occam/skill install --platform all` (not part of `1.0.0-rc.2`).
 
 ## Wire MCP (required)
 
-The skill does not replace the MCP host:
-
-```bash
-npx @ff-occam/mcp
-```
+The skill does not replace the MCP host. Use the Level B launcher from [INSTALL.md](../../INSTALL.md) / `references/install.md` — **not** `npx @ff-occam/mcp` for this RC.
 
 See installed `references/install.md` for Cursor, Claude Desktop, Hermes, and generic stdio wiring.
 

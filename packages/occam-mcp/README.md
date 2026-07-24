@@ -1,16 +1,18 @@
 # @ff-occam/mcp
 
-**FF-Occam MCP** — Native AOT .NET 10 host with 14 MCP tools that turn a URL into clean, token-budgeted Markdown **locally**, each extraction carrying a locally-signed **verifiable receipt**. Zero-config install via `npx`.
+**FF-Occam MCP** — Native AOT .NET 10 host that turns a URL into clean, token-budgeted Markdown **locally**, with typed failures and optional signed receipts.
 
-> **Package status:** `@ff-occam/mcp` is **not** part of the `1.0.0-rc.2` tarball-only release candidate.
-> Use GitHub Release archives (`linux-x64` / `osx-arm64`) or a local clone — see root `INSTALL.md`.
-> Registry commands below apply only after a future npm publication or a private registry build.
+> **Not the RC install path.** For `1.0.0-rc.2` use root [INSTALL.md](../../INSTALL.md):
+> - Linux/macOS: `curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash`
+> - Windows: `irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex`
+>
+> `@ff-occam/mcp` / `npx` apply only after a future npm publication or a private registry build.
 
 - **Local & private** — the URL and its content never leave the machine.
 - **Honest failures** — a typed `failure.code` on `ok:false`; the tool never hallucinates page content from memory.
 - **Verifiable** — every extraction can emit a signed receipt (`contentHash` + block Merkle root); verify offline with the bundled CLI.
 
-## Quick Start
+## Quick Start (post-RC / private registry only)
 
 ```bash
 # Stdio mode (for Cursor, Claude, any MCP client)
