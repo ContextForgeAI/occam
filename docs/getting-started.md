@@ -6,147 +6,39 @@
 
 ---
 
-## Choose an install path
+## Canonical install
 
-| Path | When to use | Requirements |
-|------|-------------|--------------|
-| **Release tarball** | **Supported RC path** — Hermes / VPS — **no .NET SDK** | Node 20+ |
-| **Git clone** | Contributors, custom builds, full control | Node 20+, .NET 10 SDK |
-| **npm / npx** | **Not part of `1.0.0-rc.2`** — future / private registry only | Node.js 20+ |
-
-`1.0.0-rc.2` ships **GitHub release archives for Linux x64, macOS arm64, and Windows x64**. npm packages,
-NuGet packages, and the VS Code extension are out of RC scope. A source
-checkout works today with the git-clone path below.
-
----
-
-## Production server (Hermes, no .NET SDK)
-
-**Use the release tarball** — not a bare git clone. Clone has source only; the AOT binary comes from
-GitHub Releases or `dotnet publish` on a .NET 10 machine. See [INSTALL.md](../INSTALL.md).
-
-### From downloaded release assets (no checkout)
-
-Download `ff-occam-<ver>-linux-x64.tar.gz` and `ff-occam-<ver>-linux-x64-manifest.json` from the
-GitHub Release, then extract and run doctor from the **extracted** tree:
+**One path** for operators and agents — see [INSTALL.md](../INSTALL.md):
 
 ```bash
-INSTALL_DIR="${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}"
-mkdir -p "$INSTALL_DIR"
-tar -xzf ff-occam-1.0.0-rc.2-linux-x64.tar.gz -C "$INSTALL_DIR" --strip-components=1
-export OCCAM_HOME="$INSTALL_DIR"
-cd "$OCCAM_HOME"
-bash scripts/occam-doctor.sh --skip-build
-node scripts/hermes-smoke.mjs
-```
-
-Do not call `scripts/lib/release-install.mjs` unless that script is already on disk (checkout or
-extracted release). Without a checkout you can also bootstrap from the public raw script:
-
-```bash
+# Linux / macOS (Node 20+)
 curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
 ```
 
-### From an existing checkout
-
-```bash
-cd /path/to/FFOccamMCP
-export OCCAM_VERSION=1.0.0-rc.2
-export OCCAM_RELEASE_BASE="https://github.com/ContextForgeAI/occam/releases/download/v${OCCAM_VERSION}"
-bash scripts/get-ff-occam.sh
-# or: ./scripts/install.sh --from-url "$OCCAM_RELEASE_BASE/ff-occam-${OCCAM_VERSION}-linux-x64.tar.gz"
+```powershell
+# Windows (PowerShell, Node 20+)
+irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
 ```
 
-There is **no** root `npm run bootstrap`. Do **not** install .NET 8.
+`npx @ff-occam/mcp` is **not** part of `1.0.0-rc.2`. Contributor clone + `.NET 10` doctor is documented under Advanced in [INSTALL.md](../INSTALL.md).
 
-**Git clone** is for machines with **.NET 10 SDK** only:
-
-```bash
-git clone https://github.com/ContextForgeAI/occam.git /srv/hermes/mcp-tools/FFOccamMCP
-export OCCAM_HOME=/srv/hermes/mcp-tools/FFOccamMCP
-cd "$OCCAM_HOME"
-./scripts/occam-doctor.sh
-```
-
-Wire Hermes (or any stdio MCP host) to the canonical launcher:
+Wire any stdio MCP host to:
 
 | Field | Value |
 |-------|-------|
-| Command | `bash` |
-| Args | `["/path/to/FFOccamMCP/scripts/occam-wrapper.sh"]` |
-| Env | `OCCAM_HOME=/path/to/FFOccamMCP` |
+| Command | `node` |
+| Args | `["$OCCAM_HOME/scripts/launch-mcp-host.mjs"]` |
+| Env | `OCCAM_HOME=<install root>` |
 
-Equivalent: `node scripts/launch-mcp-host.mjs` with the same `OCCAM_HOME`.
+**Do not** put `OPENROUTER_API_KEY` (or other LLM API keys) in Occam's env.
 
-**Do not** put `OPENROUTER_API_KEY` (or other LLM API keys) in Occam's env — those belong to Hermes's LLM config, not the MCP host.
-
-Smoke test after wiring:
+Smoke:
 
 ```bash
-node scripts/hermes-smoke.mjs
+node "$OCCAM_HOME/scripts/hermes-smoke.mjs"
 ```
 
 Expect **15** `occam_*` tools and a successful `occam_transcode` probe.
-
-**Git clone on a build machine:** run `./scripts/occam-doctor.sh` once — it publishes the host and copies `OccamMcp.Core` to the repo root so launchers find it without a deep publish path.
-
----
-
-## Install via npm (not part of 1.0.0-rc.2)
-
-npm packages are **not** included in the `1.0.0-rc.2` release candidate. Prefer the release tarball
-or git-clone path. The commands below remain for a future registry publication or a private
-registry build — do not treat them as the supported RC install path.
-
-```bash
-# Stdio — default for MCP clients (post-RC / private registry only)
-npx @ff-occam/mcp
-
-# WebSocket on 127.0.0.1:5050
-npx @ff-occam/mcp --mcp-server
-```
-
-Global install (same caveat):
-
-```bash
-npm install -g @ff-occam/mcp
-occam-mcp
-```
-
-From a checkout, install a published **tarball** (supported RC path):
-
-```bash
-export OCCAM_VERSION=1.0.0-rc.2
-export OCCAM_RELEASE_BASE="https://github.com/ContextForgeAI/occam/releases/download/v${OCCAM_VERSION}"
-bash scripts/get-ff-occam.sh
-```
-
-Without a checkout, download the GitHub Release assets and follow
-[Installation from downloaded release assets](../INSTALL.md#installation-from-downloaded-release-assets-no-checkout).
-
-If you deliberately use a future/private `@ff-occam/mcp` build without a local clone, set
-`OCCAM_RELEASE_BASE_URL` to `https://github.com/ContextForgeAI/occam/releases/download`.
----
-
-## Install via git clone
-
-```powershell
-git clone https://github.com/ContextForgeAI/occam.git occam
-cd FFOccamMCP
-$env:OCCAM_HOME = (Get-Location).Path
-.\scripts\occam-doctor.ps1
-```
-
-macOS / Linux:
-
-```bash
-git clone https://github.com/ContextForgeAI/occam.git occam
-cd FFOccamMCP
-export OCCAM_HOME="$(pwd)"
-./scripts/occam-doctor.sh
-```
-
-Doctor installs npm workspaces, Playwright Chromium, and publishes the .NET host.
 
 Launch the MCP host:
 

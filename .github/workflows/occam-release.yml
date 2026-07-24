@@ -1,8 +1,8 @@
 # Level B release tarball — linux-x64 Native AOT, published to GitHub Releases on tag v*
 # so get-ff-occam.sh / npx can resolve assets.
 #
-# Primary CI target: GitHub Actions (origin). Forgejo remains a backup remote only;
-# these short `actions/*@v4` refs are GitHub-native (full https:// URLs fail on github.com).
+# Primary CI target: GitHub Actions.
+# Short `actions/*@v4` refs are GitHub-native.
 #
 # Single job for build+publish on tag: publish reads tarballs from the same workspace
 # (no cross-job artifact hand-off required for the linux path).

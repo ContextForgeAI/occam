@@ -260,7 +260,7 @@ The tree is published **pseudonymously** (see memory `identity-pseudonym-first`)
 
 ### Related repositories
 
-- `c:\PROJECTS\FFWebMCP` — predecessor reference (read-only, do not grow L0 there).
+- Predecessor repo (private) — read-only cherry-pick only; do not grow Occam core there.
 
 ## graphify
 

@@ -187,8 +187,9 @@ download() {
   if ! curl -fsSL "$url" -o "$dest"; then
     echo "" >&2
     echo "error: download failed — is the release tarball published?" >&2
-    echo "  maintainer: run release-build CI and upload ff-occam-${VERSION}-${RID}.tar.gz" >&2
-    echo "  see: docs/gitea-actions-ci.md" >&2
+    echo "  url: $url" >&2
+    echo "  maintainer: tag v${VERSION} and ensure GitHub Release assets exist" >&2
+    echo "  see: INSTALL.md" >&2
     exit 1
   fi
 }
