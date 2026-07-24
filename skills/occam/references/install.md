@@ -23,52 +23,39 @@ Stack: **.NET 10 AOT host** + **Node 20+** workers. Expect **15** `occam_*` tool
 
 ---
 
-## Pick your path
+## Canonical install (one path)
 
-| Machine | Do this |
-|---------|---------|
-| **Hermes / prod, no .NET 10 SDK** | Level B tarball — `get-ff-occam.sh` (below) |
-| **Git clone + .NET 10 SDK** | `occam doctor` (publishes `OccamMcp.Core`) |
-| **Git clone only, no SDK, no tarball** | **Will not work** — clone has source, not the binary |
-
----
-
-## 1. Install the MCP host
-
-### Hermes / production (no .NET SDK) — recommended
-
-Requires **published** GitHub Release assets (`ff-occam-<ver>-linux-x64.tar.gz`). If the manifest URL returns **404**, stop — ask the operator to publish `v1.0.0-rc.2` (or set `OCCAM_VERSION`) before retrying.
+### Linux / macOS
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
 export OCCAM_HOME="${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}"
-cd "$OCCAM_HOME"
-node scripts/hermes-smoke.mjs
+node "$OCCAM_HOME/scripts/hermes-smoke.mjs"
 ```
 
-Expect **exit 0** and **15** tools.
+### Windows (PowerShell)
 
-### npm / npx (not part of 1.0.0-rc.2)
-
-npm packages are **not** in the `1.0.0-rc.2` release candidate. Prefer the tarball path above. If you use a private/future registry build:
-
-```bash
-npx @ff-occam/mcp
+```powershell
+irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+$env:OCCAM_HOME = if ($env:OCCAM_INSTALL_DIR) { $env:OCCAM_INSTALL_DIR } else { Join-Path $env:USERPROFILE ".local\share\ff-occam" }
+node "$env:OCCAM_HOME\scripts\hermes-smoke.mjs"
 ```
 
-Set `OCCAM_HOME` to the install root. Override downloads with `OCCAM_RELEASE_BASE_URL` when needed.
+Expect **exit 0** and **15** tools. Full details: repo-root `INSTALL.md`.
 
-### Git clone + .NET 10 SDK (contributors)
+`npx @ff-occam/mcp` is **not** part of `1.0.0-rc.2`.
+
+### Advanced: git clone + .NET 10 SDK (contributors)
 
 ```bash
-git clone https://github.com/ContextForgeAI/occam.git /path/to/FFOccamMCP
-cd /path/to/FFOccamMCP
+git clone https://github.com/ContextForgeAI/occam.git
+cd occam
 export OCCAM_HOME="$(pwd)"
 ./scripts/occam-doctor.sh
 node scripts/hermes-smoke.mjs
 ```
 
-Git clone: launch via `node scripts/launch-mcp-host.mjs` or `scripts/occam-wrapper.sh` — **not** in-repo `occam-mcp.js`.
+Launch via `node scripts/launch-mcp-host.mjs` — **not** in-repo `packages/occam-mcp/bin/occam-mcp.js`.
 
 ---
 
