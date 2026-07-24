@@ -276,9 +276,9 @@ print_connection_snippet() {
   echo "=== Connection snippet (host=$HOST_TARGET) ==="
   node "$INSTALL_DIR/scripts/lib/print-connection-snippet.mjs" "$INSTALL_DIR" "$HOST_TARGET"
   echo ""
-  echo "Docs: docs/01-operator-journey.md#verify"
+  echo "Docs: INSTALL.md"
   echo "PATH: export PATH=\"$INSTALL_DIR/scripts:\$PATH\""
-  echo "Next: occam   # operator menu"
+  echo "Next: node \"$INSTALL_DIR/scripts/hermes-smoke.mjs\""
   echo "       occam smoke   # after MCP reload"
 }
 

@@ -94,24 +94,8 @@ Create or edit `.cursor/mcp.json` (gitignored locally). For a **git clone**, pre
 
 `OCCAM_PROFILE=researcher` exposes eight core tools (read + claim_check + verify). Use `full` when authoring playbooks. See [configuration.md](configuration.md#tool-surface-profile-occam_profile).
 
-Published package path (after registry release):
-
-```json
-{
-  "mcpServers": {
-    "ff-occam": {
-      "command": "npx",
-      "args": ["@ff-occam/mcp"],
-      "env": {
-        "OCCAM_HOME": "C:\\path\\to\\FFOccamMCP",
-        "OCCAM_PROFILE": "researcher"
-      }
-    }
-  }
-}
-```
-
-For a **git clone** install, set `OCCAM_HOME` to the repository root. For **npx-only**, the wrapper auto-discovers the install directory when possible; set `OCCAM_HOME` if you see `workers_unavailable`.
+Published package path (`npx @ff-occam/mcp`) is **not** part of `1.0.0-rc.2`. Prefer the Level B install
+snippet above with `OCCAM_HOME` pointing at `~/.local/share/ff-occam` (or your `OCCAM_INSTALL_DIR`).
 
 Reload MCP servers in Cursor after saving.
 
