@@ -16,8 +16,8 @@ Only the current supported line receives security patches. There is no long-term
 
 Instead, report privately:
 
-- **Email:** *(add your security contact email here)*
-- Or use GitHub's [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidelines-on-reporting-and-writing-information-about-vulnerabilities) if enabled.
+- **Email:** OWNER DECISION REQUIRED — no public security contact address is configured in this repository yet. Prefer GitHub private reporting until an address is published.
+- **GitHub:** use [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidelines-on-reporting-and-writing-information-about-vulnerabilities) on [ContextForgeAI/occam](https://github.com/ContextForgeAI/occam) when enabled for the repository.
 
 Include in your report:
 1. Affected version
@@ -29,13 +29,13 @@ We acknowledge reports within 72 hours and aim for a fix within 30 days.
 
 ## Security Boundaries
 
-FF-Occam MCP is a **local-first** tool. Understanding its trust model:
+Occam is a **local-first** MCP tool. Understanding its trust model:
 
 ### What Occam does
 - Fetches web pages via HTTP or Playwright Chromium
 - Extracts content (DOM, Markdown, structured facts)
 - Returns typed results or honest failures
-- Processes data locally — no cloud service
+- Processes data locally — no cloud service required for core extract
 
 ### What Occam does NOT do
 - No cloud API or telemetry endpoint
@@ -63,7 +63,7 @@ Web pages may contain malicious content. Occam:
 - Sanitizes output to Markdown (strips scripts/styles)
 - Returns typed failures instead of potentially dangerous content
 
-**Operator advice:** Review `worker/` code if you process sensitive pages. The extraction pipeline is deterministic — no external model calls.
+**Operator advice:** Review `workers/` code if you process sensitive pages. The extraction pipeline is deterministic — no external model calls for core extract.
 
 ### 2. Session profile leakage
 

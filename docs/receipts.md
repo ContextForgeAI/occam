@@ -1,6 +1,16 @@
 # Receipts
 
-**What you'll do:** read signed extraction receipts and verify them offline.
+**What you'll do:** understand extraction provenance, then verify receipts offline.
+
+---
+
+## In one sentence
+
+A **receipt** lets another process check which URL was fetched, when, what content hash was produced, which backend produced it, and whether the receipt signature is valid.
+
+That is **verification** (mechanism). Occam’s refusal to invent missing pages is **honesty** (behavior). See [Trust & Safety](trust-and-safety.md).
+
+Normative byte-level rules: [Receipt verification](receipt_verification.md) · Tool: [`occam_verify`](tools/occam_verify.md)
 
 ---
 
