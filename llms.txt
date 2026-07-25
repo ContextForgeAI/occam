@@ -1,8 +1,8 @@
-# FF-Occam MCP
+# Occam
 
-> Local Model Context Protocol server that turns live public URLs into clean, token-budgeted Markdown with typed failures and optional signed receipts. Core MCP tools are always available; batch, watch, cross-check, and failure-atlas tools are opt-in.
+> Local Model Context Protocol server that turns live public URLs into clean, token-budgeted Markdown with typed failures and optional signed receipts. Fifteen core MCP tools are always available; batch, watch, cross-check, and failure-atlas tools are opt-in.
 
-Use this file as the compact map for an LLM using FF-Occam MCP. Do not load every linked page at once. Start with the task router, then open only the selected tool page and any failure or configuration page needed for the current call.
+Use this file as the compact map for an LLM using Occam MCP. Do not load every linked page at once. Start with the task router, then open only the selected tool page and any failure or configuration page needed for the current call.
 
 Non-negotiable rules:
 
@@ -13,14 +13,16 @@ Non-negotiable rules:
 - Prefer one `occam_digest` over N× `occam_transcode` when you already have several URLs.
 - Do not call playbook-authoring tools unless the user is explicitly repairing an extraction recipe.
 - The default page reader is **`occam_transcode`** (do not invent an `occam_read` tool name).
-- The public repository is https://github.com/ContextForgeAI/occam ; the product and MCP server are **FF-Occam MCP** / Occam.
+- Public product name: **Occam** / **Occam MCP**. Repository: https://github.com/ContextForgeAI/occam . Compatibility ids such as `ff-occam` and `FFOccamMcp.Core` are not brand names.
 
 ## Start
 
-- [Documentation hub](docs/index.md): Audience-based routes for operators, people using the tools, LLM agents, SDK users, and contributors.
-- [Choose a tool](docs/choosing-a-tool.md): Goal-to-tool decision table and role-scoped tool sets.
+- [Documentation hub](docs/index.md): Human and agent routes, task table, source-of-truth order.
+- [Quick Start](docs/quick-start.md): Install → connect → first web read.
+- [Choose a tool](docs/choosing-a-tool.md): Goal-to-tool decision table (task router).
 - [Per-tool index](docs/tools/index.md): Open one focused page for the tool selected by the router.
-- [Recipes](docs/recipes.md): Minimal multi-tool workflows with exact call order.
+- [Examples](docs/examples/index.md): Copy/paste workflows.
+- [Recipes](docs/recipes.md): Additional multi-tool workflows with exact call order.
 
 ## Contract and reference
 
@@ -34,14 +36,18 @@ Non-negotiable rules:
 ## Installation and operation
 
 - [INSTALL.md](INSTALL.md): **Canonical install** — Linux/macOS `curl …/get-ff-occam.sh | bash`; Windows `irm …/get-ff-occam.ps1 | iex`. Read before any automated install.
-- [Getting started](docs/getting-started.md): Human-oriented MCP wiring, operator CLI, and first tool call.
-- [MCP hosts](docs/mcp-hosts.md): Which AI tools `occam connect` registers automatically, which need an explicit flag, and the config-safety rules.
+- [Getting started](docs/getting-started.md): First web read and operator CLI (not a second install manual).
+- [MCP hosts](docs/mcp-hosts.md): Which AI tools `occam connect` registers automatically, which need `--only`, and config-safety rules.
+- [Trust & Safety](docs/trust-and-safety.md): Local-first, honesty, receipts, install safety.
 - [Troubleshooting](docs/troubleshooting.md): Symptom-to-fix runbook.
 
 ## Optional
 
-- [Concepts](docs/concepts.md): Trust model, backends, playbooks, sessions, and receipts.
+- [What is Occam?](docs/what-is-occam.md): Human product explanation.
+- [How Occam works](docs/how-occam-works.md): User mental model.
+- [Concepts](docs/concepts.md): Backends, playbooks, sessions, and receipts.
 - [Receipts guide](docs/receipts.md): How people and agents consume and verify receipts.
+- [Ask AI](docs/ask-ai.md): How assistants should load docs.
 - [FAQ](docs/faq.md): Short operational answers.
 - [Roadmap](docs/roadmap.md): Shipped surface, release state, and explicitly unshipped items.
 - [Contributor instructions](AGENTS.md): Read only when modifying this repository, not when merely using the MCP tools.

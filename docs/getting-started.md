@@ -1,28 +1,86 @@
-# Getting started
+# Your first web read
 
-**Agents / Hermes:** read [INSTALL.md](../INSTALL.md) first.
+**What you'll do:** after Occam is installed and connected, run a successful `occam_transcode` and understand the result.
 
-**What you'll do:** install FF-Occam MCP, wire it into an MCP client, and run your first successful `occam_transcode`.
+If you still need install: [Quick Start](quick-start.md) · canonical reference [Install](install.md) · root [`INSTALL.md`](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md).
 
 ---
 
-## Canonical install
+## Confirm the host sees Occam
 
-**One path** for operators and agents — see [INSTALL.md](../INSTALL.md):
+Add `$OCCAM_HOME/scripts` to `PATH` (default install: `~/.local/share/ff-occam`).
 
 ```bash
-# Linux / macOS (Node 20+)
-curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+occam smoke
+# expect exit 0 and 15 occam_* tools
 ```
 
-```powershell
-# Windows (PowerShell, Node 20+)
-irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+Re-check AI host registration:
+
+```bash
+occam connect
 ```
 
-`npx @ff-occam/mcp` is **not** part of `1.0.0-rc.2`. Contributor clone + `.NET 10` doctor is documented under Advanced in [INSTALL.md](../INSTALL.md).
+Restart or trust the named app if the status is **Almost ready** or **Action required**. Host tiers: [MCP hosts](mcp-hosts.md).
 
-Wire any stdio MCP host to:
+---
+
+## First call
+
+Ask your agent:
+
+> Use Occam to read https://example.com
+
+Or invoke:
+
+```json
+{ "name": "occam_transcode", "arguments": { "url": "https://example.com" } }
+```
+
+### Expected success
+
+- `ok: true`
+- Non-empty `markdown`
+- Optional signed `receipt` (default on)
+
+### Expected failure handling
+
+- `ok: false` → read `failure.code` → [Failure codes](failure-codes.md)  
+- Do **not** invent page content from memory  
+
+Optional session budget (once per chat):
+
+```json
+{ "name": "occam_client_capabilities", "arguments": { "context_tokens": 200000 } }
+```
+
+---
+
+## Operator CLI
+
+After installation, add `$OCCAM_HOME/scripts` to `PATH`. Run `occam --help` for the live command list.
+
+| Command | Use it for |
+|---|---|
+| `occam connect` | Detect AI tools and register Occam with validated ones |
+| `occam doctor` | Validate workers, browser, and host binary |
+| `occam smoke` | stdio tools/list + probe |
+| `occam snippet` | Paste-ready MCP config (advanced) |
+| `occam status` | Install / onboarding state |
+| `occam session` | Session profiles |
+| `occam skill` | Portable agent skill |
+
+---
+
+## Session profiles (login walls)
+
+For gated pages, export a browser session to a local profile and pass `session_profile` on extract tools. Occam does not solve CAPTCHAs. See [Sessions guide](guides/sessions.md) and [Configuration](configuration.md).
+
+---
+
+## Advanced: manual MCP wiring
+
+Prefer **`occam connect`**. Use manual JSON only for generic clients or contributor checkouts.
 
 | Field | Value |
 |-------|-------|
@@ -30,272 +88,48 @@ Wire any stdio MCP host to:
 | Args | `["$OCCAM_HOME/scripts/launch-mcp-host.mjs"]` |
 | Env | `OCCAM_HOME=<install root>` |
 
-**Do not** put `OPENROUTER_API_KEY` (or other LLM API keys) in Occam's env.
+Server registration name: `ff-occam`.
 
-Smoke:
+### Wire into Cursor
 
-```bash
-node "$OCCAM_HOME/scripts/hermes-smoke.mjs"
-```
-
-Expect **15** `occam_*` tools and a successful `occam_transcode` probe.
-
-Launch the MCP host:
-
-```bash
-node scripts/launch-mcp-host.mjs
-```
-
----
-
-## Connect your AI tools
-
-The installer runs this for you; run it again any time to re-check or to add a host:
-
-```bash
-occam connect
-```
-
-It detects the AI tools on the machine, registers Occam with the ones it can configure safely, and
-prints what each one still needs — a restart, a trust prompt, or a manual paste. Hosts that are
-implemented but not yet proven end-to-end are left alone until you name them:
-
-```bash
-occam connect --only vscode
-```
-
-Which hosts are automatic, which need `--only`, and what connect refuses to touch:
-[MCP hosts](mcp-hosts.md). On a build server connect reports what it found and changes nothing.
-The manual wiring below stays valid for anything connect does not cover.
-
----
-
-## Operator CLI
-
-After installation, add `$OCCAM_HOME/scripts` to `PATH`. Run `occam --help` for the live command
-list; the table below is the task-oriented summary.
-
-| Command | Use it for |
-|---|---|
-| `occam` / `occam control` | Interactive operator menu in a TTY |
-| `occam connect` | Detect AI tools and register Occam with the validated ones |
-| `occam doctor` | Validate workers, browser, and the AOT host |
-| `occam onboard` | Create operator settings and an MCP connection snippet |
-| `occam snippet` | Print paste-ready MCP configuration |
-| `occam smoke` | Initialize stdio, list tools, and probe a public URL |
-| `occam status` | Show install version and onboarding state |
-| `occam update` | Check for a newer release without changing files |
-| `occam refresh` | Stop Occam MCP hosts and rerun doctor |
-| `occam session` | Create, list, import, or export session profiles |
-| `occam skill` | Install the portable agent skill |
-
-Do not expose the interactive menu to a non-interactive agent. Use explicit subcommands and inspect
-their exit codes or `--json` output.
-
----
-
-## Wire into Cursor
-
-Create or edit `.cursor/mcp.json` (gitignored locally). For a **git clone**, prefer the launcher + a narrow tool profile so the agent reaches for Occam without drifting into heal/save:
+If you must edit JSON by hand (connect unavailable), register:
 
 ```json
 {
   "mcpServers": {
     "ff-occam": {
       "command": "node",
-      "args": ["${workspaceFolder}/scripts/launch-mcp-host.mjs"],
-      "cwd": "${workspaceFolder}",
-      "env": {
-        "OCCAM_HOME": "${workspaceFolder}",
-        "OCCAM_PROFILE": "researcher",
-        "WT_OCCAM_BANNER": "0"
-      }
+      "args": ["C:\\path\\to\\ff-occam\\scripts\\launch-mcp-host.mjs"],
+      "env": { "OCCAM_HOME": "C:\\path\\to\\ff-occam" }
     }
   }
 }
 ```
 
-`OCCAM_PROFILE=researcher` exposes eight core tools (read + claim_check + verify). Use `full` when authoring playbooks. See [configuration.md](configuration.md#tool-surface-profile-occam_profile).
+Prefer `occam connect` so backups and ownership checks apply. More: [Manual connect](connect/manual.md).
 
-Published package path (`npx @ff-occam/mcp`) is **not** part of `1.0.0-rc.2`. Prefer the Level B install
-snippet above with `OCCAM_HOME` pointing at `~/.local/share/ff-occam` (or your `OCCAM_INSTALL_DIR`).
+!!! tip "Contributor checkout"
+    From a git clone with `.NET 10` SDK, set `OCCAM_HOME` to the repo root, run doctor, then `occam connect`. See [Install — Advanced](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md#advanced--contributors).
 
-Reload MCP servers in Cursor after saving.
-
----
-
-## Wire into Claude Desktop
-
-After the [canonical install](../INSTALL.md), add to `claude_desktop_config.json` (path varies by OS).
-Replace the install root with your `OCCAM_HOME` (default `~/.local/share/ff-occam`):
-
-```json
-{
-  "mcpServers": {
-    "ff-occam": {
-      "command": "node",
-      "args": ["/path/to/ff-occam/scripts/launch-mcp-host.mjs"],
-      "env": {
-        "OCCAM_HOME": "/path/to/ff-occam"
-      }
-    }
-  }
-}
-```
-
-`npx @ff-occam/mcp` is **not** part of `1.0.0-rc.2`. Restart Claude Desktop after saving.
-
----
-
-## Generic MCP client (stdio)
-
-Any client that spawns a process and speaks JSON-RPC over stdin/stdout (after Level B install):
-
-| Field | Value |
-|-------|-------|
-| Command | `node` |
-| Args | `["$OCCAM_HOME/scripts/launch-mcp-host.mjs"]` |
-| Env | `OCCAM_HOME` = install root (default `~/.local/share/ff-occam`) |
-| Transport | stdio (default) |
-
-WebSocket clients: start the host with `--mcp-server` and connect to `ws://127.0.0.1:5050`. See [Transports](transports.md).
+Do **not** put LLM API keys in Occam's env.
 
 ---
 
 ## Programmatic TypeScript client
 
-npm packages are **not** part of `1.0.0-rc.2`. Prefer MCP stdio via the Level B host for RC.
-When a registry package exists later:
-
-```bash
-npm install @ff-occam/agent-sdk @ff-occam/mcp
-```
-
-```typescript
-import { createClient } from "@ff-occam/agent-sdk";
-
-const client = await createClient();
-try {
-  const tools = await client.listTools();
-  const page = await client.transcode({ url: "https://example.com" });
-  if (page.ok) console.log(page.markdown);
-} finally {
-  await client.stop();
-}
-```
-
-`createClient()` completes the MCP initialize handshake before returning. It offers the current
-stable revision (`2025-11-25`), accepts the server's negotiated revision only when it is in the
-client's explicit compatibility set, and otherwise disconnects. Inspect
-`client.negotiatedProtocolVersion` when protocol provenance matters. Typed methods return the
-decoded Occam JSON object rather than the raw MCP `content[]` envelope. Use
-`callTool<T>(name, arguments)` for opt-in or newly added tools. For a clone, set `OCCAM_HOME` and run
-`occam doctor` first; the client discovers the current platform's RID-specific AOT publish path.
-
-Always stop a reusable client in `finally`. Shutdown is idempotent and first closes stdio cleanly so
-the host can dispose its worker daemons; a bounded process-tree termination is the fallback.
-
----
-
-## First tool call
-
-Call `occam_transcode` with a stable public URL:
-
-```json
-{
-  "url": "https://example.com"
-}
-```
-
-### Success shape (abbreviated)
-
-```json
-{
-  "ok": true,
-  "url": { "requested": "https://example.com", "final": "https://example.com/" },
-  "markdown": "# Example Domain\n\nThis domain is for use in documentation examples...",
-  "backend": "http",
-  "receipt": {
-    "signed": {
-      "v": 1,
-      "contentHash": "sha256:…",
-      "sig": "…"
-    }
-  }
-}
-```
-
-### Failure shape
-
-```json
-{
-  "ok": false,
-  "failure": {
-    "code": "http_404",
-    "message": "HTTP 404 (http_404).",
-    "retryable": null
-  }
-}
-```
-
-Do not summarize the page when `ok` is false.
+From a source checkout, see the [`@ff-occam/agent-sdk` package README](https://github.com/ContextForgeAI/occam/blob/main/packages/occam-agent-sdk/README.md). Registry publication is not part of this RC.
 
 ---
 
 ## Agent skill (any harness)
 
-FF-Occam ships a **portable skill** that wraps MCP with lazy-loaded recipes — for Cursor, Claude Code, Hermes, Codex, Copilot, and other agents. The skill teaches *when* and *how* to call `occam_*` without loading all tool docs into every prompt.
-
-**Install skill** (after MCP host is available):
-
-```bash
-occam skill install --platform all
-```
-
-npm-only, after registry publication:
-
-```bash
-npx @ff-occam/skill install --platform cursor
-```
-
-| Flag | Effect |
-|------|--------|
-| `--platform cursor\|claude\|hermes\|…\|all` | Target harness (default `all`) |
-| `--project` | Install into current repo (e.g. `.cursor/skills/occam/`) |
-| `--target <dir>` | Custom skills directory |
-
-Source tree: `skills/occam/` (`SKILL.md` + `references/`). Wire MCP first (sections above), then reload your agent so it discovers the skill.
-
-Package: [`@ff-occam/skill`](../packages/occam-skill/README.md).
+Occam ships a portable skill under `skills/occam/`. Install via `occam skill install` from an Occam install. Details: [`@ff-occam/skill`](https://github.com/ContextForgeAI/occam/blob/main/packages/occam-skill/README.md).
 
 ---
 
-## Session profiles (login walls)
+## Next
 
-When `failure.code` is `requires_login` or `http_403`:
-
-1. Log in to the site in a normal browser.
-2. Export cookies: `node scripts/occam-session.mjs export-state --profile mysite`
-3. Retry with `session_profile: "mysite"`.
-
-Details: [Configuration — session profiles](configuration.md#session-profiles).
-
----
-
-## Verify the install
-
-| Symptom | Fix |
-|---------|-----|
-| `workers_unavailable` | Set `OCCAM_HOME`, run `occam-doctor` |
-| MCP shows zero tools | Reload MCP; check stderr for crash |
-| Browser failures | `cd workers/browser-extract && npx playwright install chromium` |
-
-More: [Troubleshooting](troubleshooting.md).
-
----
-
-## Next steps
-
-- Agents: [Choosing a tool](choosing-a-tool.md)
-- Reference: [Tools reference](tools-reference.md)
-- Env vars: [Configuration](configuration.md)
+- [How Occam works](how-occam-works.md)
+- [Examples](examples/index.md)
+- [Verify a receipt](examples/verify-receipt.md)
+- [Trust & Safety](trust-and-safety.md)

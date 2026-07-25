@@ -1,106 +1,107 @@
-# FF-Occam MCP
+# Occam
 
-**Turn any URL into clean, token-budgeted Markdown locally — with honest failures and a verifiable receipt.**
+**Occam gives AI agents clean web context with verifiable provenance.**
 
-FF-Occam MCP is a [Model Context Protocol](https://modelcontextprotocol.io/) server: a Native AOT .NET host plus Node.js extract workers. Core MCP tools ship by default; batch, watch, cross-check, and failure atlas are opt-in.
+It is a local [Model Context Protocol](https://modelcontextprotocol.io/) server: your AI asks Occam to read a URL; Occam fetches the live page, returns compact Markdown (or structured data), and can attach a signed receipt. When extraction fails, Occam says so — it does not invent the page.
+
+[Documentation](https://contextforgeai.github.io/occam/) · [Quick Start](docs/quick-start.md) · [Supported hosts](docs/mcp-hosts.md) · [Trust & Safety](docs/trust-and-safety.md) · [API](MCP_API_SPEC.md) · [Releases](https://github.com/ContextForgeAI/occam/releases)
 
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue?logo=gnu)](LICENSE)
 
-**Install:** [INSTALL.md](INSTALL.md) · **Human docs:** [docs/index.md](docs/index.md) ·
-**LLM map:** [llms.txt](llms.txt) · **API:** [MCP_API_SPEC.md](MCP_API_SPEC.md) ·
-**Contributing:** [CONTRIBUTING.md](CONTRIBUTING.md) · **Agents:** [AGENTS.md](AGENTS.md)
-
-> **Release:** Occam Core **1.0.0-rc.2** — install via the one-liner below (GitHub Release tarball).  
+> **Release:** Occam Core **1.0.0-rc.2** — fifteen core MCP tools, Receipt v1, and `occam connect` for supported AI hosts.  
 > npm / NuGet / VS Code extension are **not** part of this RC.
 
 ---
 
-## Install (canonical)
+## Install Occam
 
-**Linux / macOS** (Node 20+):
+**Linux / macOS** (Node.js 20+):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
 ```
 
-**Windows** (PowerShell, Node 20+):
+**Windows** (PowerShell, Node.js 20+):
 
 ```powershell
 irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
 ```
 
-Full details: [INSTALL.md](INSTALL.md). Contributors with .NET 10 SDK: see Advanced section there.
+No .NET SDK required on the install machine. Full reference: [INSTALL.md](INSTALL.md) · Walkthrough: [docs/quick-start.md](docs/quick-start.md)
 
-**Cursor** — after install, use the printed snippet, or:
+### What the installer does
 
-```json
-{
-  "mcpServers": {
-    "ff-occam": {
-      "command": "node",
-      "args": ["C:\\path\\to\\ff-occam\\scripts\\launch-mcp-host.mjs"],
-      "env": { "OCCAM_HOME": "C:\\path\\to\\ff-occam" }
-    }
-  }
-}
+1. Downloads and **SHA-256-verifies** the release archive  
+2. Runs **doctor** (Node workers + Playwright)  
+3. Verifies the Occam host (**15** core `occam_*` tools)  
+4. Detects installed AI / MCP hosts and runs **`occam connect`** for validated ones  
+5. Tells you if a host needs a restart, trust prompt, or a manual paste  
+
+You should not need to edit JSON by hand for a first success.
+
+---
+
+## After install
+
+1. Restart or trust the host Occam named (when asked).  
+2. Ask your connected agent: *Use Occam to read https://example.com*  
+3. Expect `ok: true`, Markdown body, and usually a signed `receipt`.
+
+Re-check or add hosts any time:
+
+```bash
+occam connect
 ```
+
+---
+
+## Supported AI hosts (summary)
+
+| Tier | Behavior | Examples |
+|------|----------|----------|
+| **Live validated** | `occam connect` configures automatically | Hermes, OpenClaw, Claude Code, Codex CLI, Gemini CLI, Cursor, Claude Desktop |
+| **Config validated** | Implemented; use `occam connect --only <id>` | VS Code, Cline, Roo, Windsurf, Zed, OpenCode |
+| **Assisted** | Detected; paste guidance only | Goose, Junie |
+| **Model runtimes** | Detected; **not** MCP hosts | Ollama, LM Studio, llama.cpp |
+
+Details: [docs/mcp-hosts.md](docs/mcp-hosts.md)
 
 ---
 
 ## Minimal example
 
-Once the MCP host is connected, call:
+Once a host is connected:
 
 ```json
 { "name": "occam_transcode", "arguments": { "url": "https://example.com" } }
 ```
 
-- `ok: true` — use `markdown` (and optional signed `receipt`).
-- `ok: false` — read `failure.code`; do **not** invent page content.
+- `ok: true` — use `markdown` (and optional signed `receipt`)  
+- `ok: false` — read `failure.code`; do **not** invent page content  
 
 ---
 
-## Core MCP tools
+## Why trust the result?
 
-| Tool | One line |
-|------|----------|
-| `occam_transcode` | One page → Markdown + signed receipt |
-| `occam_probe` | Cheap URL diagnosis before a full fetch |
-| `occam_digest` | Up to 8 URLs → research digest |
-| `occam_map` | Discover same-domain links |
-| `occam_search` | Web search → candidate URLs |
-| `occam_playbook_resolve` | Read-only playbook lookup |
-| `occam_playbook_heal` | DOM skeleton for playbook authoring |
-| `occam_playbook_save` | Save a local playbook |
-| `occam_extract_knowledge` | Structured `facts[]` from playbook schema |
-| `occam_verify` | Verify a signed receipt |
-| `occam_claim_check` | Ground one claim in one page |
-| `occam_attest` | Batch citation check |
-| `occam_playbook_lint` | Validate playbook JSON |
-| `occam_dataset_export` | Signed dataset export |
+- **Local-first** — extraction runs on your machine; no normal cloud middleman  
+- **Honest failures** — `ok: false` means content is unknown  
+- **Signed receipts** — prove URL, time, content hash, and backend offline  
+- **Safe connect** — backups, atomic writes, unmanaged-entry protection; CI does not mutate desktops by default  
 
-Agent guide: [docs/choosing-a-tool.md](docs/choosing-a-tool.md) · Reference: [docs/tools-reference.md](docs/tools-reference.md)
+More: [docs/trust-and-safety.md](docs/trust-and-safety.md)
 
 ---
 
-## Architecture
+## Documentation map
 
-Native AOT **.NET 10** MCP host + **Node.js** workers (`http-extract`, `browser-extract`, `css-extract`).  
-Stdio (default) or optional WebSocket. No file cache — every call is a live extract.  
-See [docs/concepts.md](docs/concepts.md) and [docs/architecture/semantic-contract.md](docs/architecture/semantic-contract.md).
-
----
-
-## Roadmap
-
-[docs/roadmap.md](docs/roadmap.md) — shipped log and explicit non-goals.
-
----
-
-## Trust model
-
-- `ok: true` — content came from a live extract.
-- `ok: false` — content is **unknown**; read `failure.code`, never hallucinate the page.
+| | |
+|--|--|
+| **Docs site** | https://contextforgeai.github.io/occam/ |
+| **Quick Start** | [docs/quick-start.md](docs/quick-start.md) |
+| **Hub (GitHub)** | [docs/index.md](docs/index.md) |
+| **LLM map** | [llms.txt](llms.txt) |
+| **API contract** | [MCP_API_SPEC.md](MCP_API_SPEC.md) |
+| **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) · [AGENTS.md](AGENTS.md) |
 
 ---
 

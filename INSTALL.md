@@ -4,9 +4,11 @@
 > Do **not** edit `FFOccamMcp.Core.csproj`, do **not** install .NET 8, do **not** run
 > `npx @ff-occam/mcp`, and do **not** invent alternate install paths.
 
-**Repo:** [https://github.com/ContextForgeAI/occam](https://github.com/ContextForgeAI/occam)
+**Product:** Occam (Occam MCP)  
+**Repo:** [https://github.com/ContextForgeAI/occam](https://github.com/ContextForgeAI/occam)  
+**Docs site:** [https://contextforgeai.github.io/occam/](https://contextforgeai.github.io/occam/)
 
-**Requirements:** Node.js **20+**. No .NET SDK on the install machine.
+**Requirements:** Node.js **20+** (installer also checks Homebrew locations `/opt/homebrew/bin` and `/usr/local/bin` when `node` is not already on `PATH`). No .NET SDK on the install machine.
 
 **Current release:** `1.0.0-rc.2` (GitHub Release tag `v1.0.0-rc.2`).
 
@@ -26,35 +28,30 @@ curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/g
 irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
 ```
 
-Optional env (same on all platforms):
+### What the bootstrap does
+
+1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + manifest from GitHub Releases  
+2. Verifies **SHA-256**  
+3. Runs **doctor** (`--skip-build`) — npm workers + Playwright  
+4. Verifies the Occam host (`verify-install` + `hermes-smoke.mjs`) — expect **15** `occam_*` tools  
+5. Runs operator onboard (settings / defaults)  
+6. Runs **`occam connect`** — detects installed AI/MCP hosts and configures **live-validated** ones  
+7. Reports **Ready / Almost ready / Action required / Not ready**, and prints a manual snippet only as a fallback when auto-connect did not land a registration  
+
+Human walkthrough: [docs/quick-start.md](docs/quick-start.md) · Host tiers: [docs/mcp-hosts.md](docs/mcp-hosts.md)
+
+Optional env (compatibility — same on all platforms):
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `OCCAM_SETUP` | `auto` when non-interactive | `auto` or `manual` onboard |
-| `OCCAM_HOST` | `hermes` | `hermes` or `cursor` connection snippet |
+| `OCCAM_SETUP` | `auto` (when unset) | `auto` \| `manual` \| `ask` — default install never prompts; `ask` shows menu only on a true interactive TTY |
+| `OCCAM_HOST` | `hermes` | Legacy preference for the **fallback** connection snippet when auto-connect does not apply (`hermes` or `cursor`) |
 | `OCCAM_INSTALL_DIR` | `~/.local/share/ff-occam` | Install root |
 | `OCCAM_VERSION` | `1.0.0-rc.2` | Release version |
 
-Example (Cursor, non-interactive):
+`OCCAM_HOST` does **not** replace `occam connect`. Prefer letting connect detect and configure validated hosts.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh \
-  | OCCAM_SETUP=auto OCCAM_HOST=cursor bash
-```
-
-```powershell
-$env:OCCAM_SETUP = "auto"
-$env:OCCAM_HOST = "cursor"
-irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
-```
-
-What the bootstrap does:
-
-1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + manifest from GitHub Releases  
-2. Verifies SHA-256  
-3. Runs doctor (`--skip-build`) — npm workers + Playwright  
-4. Runs `hermes-smoke.mjs`  
-5. Prints an MCP connection snippet  
+Interactive setup menu (Enter = Auto): set `OCCAM_SETUP=ask`.
 
 ---
 
@@ -62,27 +59,55 @@ What the bootstrap does:
 
 ```bash
 export OCCAM_HOME="${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}"
-node "$OCCAM_HOME/scripts/hermes-smoke.mjs"
+export PATH="$OCCAM_HOME/scripts:$PATH"
+occam smoke
+# or: node "$OCCAM_HOME/scripts/hermes-smoke.mjs"
 ```
 
 ```powershell
 $env:OCCAM_HOME = if ($env:OCCAM_INSTALL_DIR) { $env:OCCAM_INSTALL_DIR } else { Join-Path $env:USERPROFILE ".local\share\ff-occam" }
-node "$env:OCCAM_HOME\scripts\hermes-smoke.mjs"
+$env:PATH = "$env:OCCAM_HOME\scripts;$env:PATH"
+occam smoke
 ```
 
 Expect **exit 0** and **15** `occam_*` tools.
 
+Re-run host connection any time:
+
+```bash
+occam connect
+```
+
 ---
 
-## Wire MCP (after install)
+## Connect your AI (normal path)
 
-Use the snippet printed by bootstrap, or:
+```bash
+occam connect
+```
+
+- **Live validated** hosts are configured automatically when detected.  
+- **Config validated** hosts need an explicit name, e.g. `occam connect --only vscode`.  
+- **Assisted** hosts get paste guidance.  
+- **Model runtimes** (Ollama, etc.) are reported but never registered — they are not MCP hosts.  
+
+Statuses: **Ready**, **Almost ready** (restart the named app), **Action required** (trust/paste — not a broken install), **Not ready** (Occam itself failed to start).
+
+Safety: unmanaged `ff-occam` entries are left alone; configs are backed up; writes are atomic; CI does not mutate desktop configs by default. Details: [docs/mcp-hosts.md](docs/mcp-hosts.md).
+
+---
+
+## Manual / generic MCP (advanced)
+
+Only when connect cannot cover your client. Use the snippet printed as fallback, or:
 
 | Field | Value |
 |-------|-------|
 | Command | `node` |
 | Args | `["$OCCAM_HOME/scripts/launch-mcp-host.mjs"]` |
 | Env | `OCCAM_HOME=<install root>` |
+
+MCP server registration name: `ff-occam` (compatibility identifier — do not rename casually).
 
 Do **not** put LLM API keys in Occam's env.
 
@@ -95,7 +120,7 @@ Do **not** put LLM API keys in Occam's env.
 | `npx @ff-occam/mcp` | **Not** part of this RC |
 | `npm ci` / `npm run bootstrap` at repo root | Does not exist — doctor installs workers |
 | Bare `git clone` without .NET 10 SDK | Source only — no AOT binary |
-| `git clone` + `doctor --skip-build` without a release binary | Fails — no `OccamMcp.Core` |
+| `git clone` + `doctor --skip-build` without a release binary | Fails — no host binary |
 | Edit `TargetFramework` to net8.0 | Must stay `net10.0` |
 
 ---
@@ -110,6 +135,7 @@ cd occam
 export OCCAM_HOME="$(pwd)"
 ./scripts/occam-doctor.sh
 node scripts/hermes-smoke.mjs
+occam connect
 ```
 
 Windows: `.\scripts\occam-doctor.ps1`.
@@ -125,6 +151,7 @@ tar -xzf ff-occam-1.0.0-rc.2-<rid>.tar.gz -C "$INSTALL_DIR" --strip-components=1
 export OCCAM_HOME="$INSTALL_DIR"
 bash scripts/occam-doctor.sh --skip-build
 node scripts/hermes-smoke.mjs
+occam connect
 ```
 
 Expected asset names:
@@ -142,21 +169,22 @@ ff-occam-1.0.0-rc.2-win-x64-manifest.json
 
 ## More
 
-- [docs/getting-started.md](docs/getting-started.md)
-- [docs/troubleshooting.md](docs/troubleshooting.md)
+- [Quick Start](docs/quick-start.md)
+- [Getting started](docs/getting-started.md)
+- [MCP hosts / connect](docs/mcp-hosts.md)
+- [Troubleshooting](docs/troubleshooting.md)
 - [MCP_API_SPEC.md](MCP_API_SPEC.md)
 
 ---
 
-## Maintainer: publish a GitHub Release
-
-Operators need assets at  
-`https://github.com/ContextForgeAI/occam/releases/download/v<ver>/`.
-
-On tag `v*` matching SemVer, `.github/workflows/occam-release.yml` builds and uploads
-linux-x64, osx-arm64, and win-x64 tarballs + manifests.
+## Preview the documentation site (contributors)
 
 ```bash
-git tag v1.0.0-rc.2 <main-sha>
-git push origin v1.0.0-rc.2
+python -m venv .venv-docs
+# Windows: .\.venv-docs\Scripts\Activate.ps1
+source .venv-docs/bin/activate
+pip install -r docs/requirements.txt
+mkdocs serve
 ```
+
+Open http://127.0.0.1:8000/ — docs toolchain only; not required for product install.
