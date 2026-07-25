@@ -1,0 +1,34 @@
+/* Occam docs — minimal Material tweaks */
+:root {
+  --occam-accent: #0f766e;
+}
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #0f172a;
+  --md-accent-fg-color: var(--occam-accent);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #0f172a;
+  --md-accent-fg-color: #2dd4bf;
+}
+
+.md-typeset h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.md-typeset .admonition.trust,
+.md-typeset details.trust {
+  border-color: var(--occam-accent);
+}
+
+.md-typeset .admonition.trust > .admonition-title,
+.md-typeset details.trust > summary {
+  background-color: color-mix(in srgb, var(--occam-accent) 12%, transparent);
+}
+
+.md-typeset .admonition.trust > .admonition-title::before,
+.md-typeset details.trust > summary::before {
+  background-color: var(--occam-accent);
+}

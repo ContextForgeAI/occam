@@ -133,3 +133,5 @@ corpora/*gitea*
 corpora/quality-audit-reports/*gitea*
 # Local validation evidence packs (hostnames/paths/provider details; not for VCS)
 validation/
+site/
+.venv-docs/
