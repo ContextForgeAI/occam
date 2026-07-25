@@ -6,8 +6,31 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+### Added
+
+- **`occam connect` — detect AI tools and register Occam with the safe ones** — one command finds
+  installed MCP hosts and model runtimes, registers Occam through each host's own CLI or
+  configuration file, verifies the result, and reports per host what is still needed (restart,
+  trust prompt, manual paste). Automatic for Hermes, OpenClaw, Claude Code, Codex, Gemini, Cursor
+  and Claude Desktop; VS Code, Cline, Roo, Windsurf, Zed and OpenCode are configured only when
+  named with `--only <id>`, because no live end-to-end run has been recorded for them; Goose and
+  Junie print manual instructions. Model runtimes (Ollama, llama.cpp, LM Studio, MLX) are reported
+  but never registered. Config safety: backup, atomic write, no overwrite of entries Occam does not
+  own without `--force`, refusal to rewrite commented (JSONC) configs, rollback of a broken
+  registration that leaves host-side edits intact, and no desktop mutation in CI. See
+  [docs/mcp-hosts.md](docs/mcp-hosts.md).
+
 ### Fixed
 
+- **Doctor Playwright runtime — launch is the source of truth** — doctor no longer infers browser
+  availability from an `ms-playwright` cache directory or a resolvable `executablePath` (neither
+  proves the artifact Playwright launches for the current mode exists — headless shell vs full
+  chromium). A single launch probe decides: on Playwright's missing-runtime diagnostic it installs
+  Chromium and retries once; any other launch failure (permissions, crash, missing system
+  libraries) fails without installing.
+- **Manual MCP onboarding is host-neutral** — the paste-ready fallback shows the stable launcher
+  command and a generic stdio entry instead of Hermes YAML for every host; Hermes YAML appears only
+  when Hermes is the selected target.
 - **Release pipeline — Windows GitHub assets + signing** — `release-windows` now uploads
   `ff-occam-*-win-x64` tarball/manifest to the tag Release (same softprops path as linux/osx;
   waits on `release-linux` so the Release already exists). `sign-release` downloads assets from
