@@ -50,24 +50,9 @@ elseif ($env:OCCAM_BROWSER_EXECUTABLE_PATH -or $env:OCCAM_CHROME_PATH) {
 
 $browserWorker = Join-Path $root "workers\browser-extract"
 if ((Test-Path $browserWorker) -and -not $skipPlaywrightBundled) {
-    Push-Location $browserWorker
-    try {
-        & node $cacheScript has-chromium
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "playwright chromium: already installed (skip)" -ForegroundColor DarkGray
-        }
-        else {
-            Write-Host "playwright install chromium ..."
-            npx playwright install chromium
-        }
-
-        $cachePath = & node $cacheScript path 2>$null
-        if ($cachePath) {
-            Write-Host "playwright cache: $cachePath" -ForegroundColor DarkGray
-        }
-    }
-    finally {
-        Pop-Location
+    $cachePath = & node $cacheScript path 2>$null
+    if ($cachePath) {
+        Write-Host "playwright cache: $cachePath" -ForegroundColor DarkGray
     }
 }
 
@@ -108,14 +93,14 @@ if (Test-Path $ssrfSelftest) {
     }
 }
 
-$browserWorker = Join-Path $root "workers\browser-extract"
 if (Test-Path $browserWorker) {
-    Write-Host "browser launch smoke ..."
+    # Launch is the source of truth: it also installs a missing bundled runtime and retries once.
+    Write-Host "browser runtime check (launch probe) ..."
     Push-Location $browserWorker
     try {
-        & node (Join-Path $browserWorker "lib\verify-browser-launch.mjs")
+        & node (Join-Path $browserWorker "lib\ensure-chromium-usable.mjs")
         if ($LASTEXITCODE -ne 0) {
-            Write-Error "browser launch smoke failed"
+            Write-Error "browser runtime unavailable"
         }
     }
     finally {
