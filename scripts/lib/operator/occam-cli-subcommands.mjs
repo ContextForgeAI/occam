@@ -32,6 +32,14 @@ export const CLI_SUBCOMMANDS = [
     passthrough: true,
   },
   {
+    name: "connect",
+    summary: "Detect MCP hosts/runtimes and auto-connect validated hosts",
+    delegate: "node",
+    script: "occam-connect.mjs",
+    registryId: "occam-connect",
+    passthrough: true,
+  },
+  {
     name: "help",
     summary: "CLI catalog and command detail",
     delegate: "node",

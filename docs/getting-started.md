@@ -48,6 +48,28 @@ node scripts/launch-mcp-host.mjs
 
 ---
 
+## Connect your AI tools
+
+The installer runs this for you; run it again any time to re-check or to add a host:
+
+```bash
+occam connect
+```
+
+It detects the AI tools on the machine, registers Occam with the ones it can configure safely, and
+prints what each one still needs — a restart, a trust prompt, or a manual paste. Hosts that are
+implemented but not yet proven end-to-end are left alone until you name them:
+
+```bash
+occam connect --only vscode
+```
+
+Which hosts are automatic, which need `--only`, and what connect refuses to touch:
+[MCP hosts](mcp-hosts.md). On a build server connect reports what it found and changes nothing.
+The manual wiring below stays valid for anything connect does not cover.
+
+---
+
 ## Operator CLI
 
 After installation, add `$OCCAM_HOME/scripts` to `PATH`. Run `occam --help` for the live command
@@ -56,6 +78,7 @@ list; the table below is the task-oriented summary.
 | Command | Use it for |
 |---|---|
 | `occam` / `occam control` | Interactive operator menu in a TTY |
+| `occam connect` | Detect AI tools and register Occam with the validated ones |
 | `occam doctor` | Validate workers, browser, and the AOT host |
 | `occam onboard` | Create operator settings and an MCP connection snippet |
 | `occam snippet` | Print paste-ready MCP configuration |

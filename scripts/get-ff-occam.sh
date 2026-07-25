@@ -273,13 +273,40 @@ run_onboard() {
 
 print_connection_snippet() {
   echo ""
-  echo "=== Connection snippet (host=$HOST_TARGET) ==="
+  # Prefer auto-connect result; do not also dump a Hermes/wrapper YAML that contradicts Ready.
+  local last="$HOME/.occam/connect-last.json"
+  if [[ -f "$last" ]] && node -e '
+    const fs = require("fs");
+    const j = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+    const mutated = (j.connections || []).some(
+      (c) => c.apply && (c.apply.applied === true || c.apply.action === "noop")
+    );
+    process.exit(j.mutateHosts && mutated ? 0 : 1);
+  ' "$last"; then
+    echo "=== Auto-connect completed — skipping manual connection snippet ==="
+    echo "Docs: INSTALL.md"
+    echo "PATH: export PATH=\"$INSTALL_DIR/scripts:\$PATH\""
+    echo "Next: occam connect   # status / re-run"
+    echo "       occam smoke"
+    return 0
+  fi
+  echo "=== Connection snippet (fallback for hosts without auto-connect) ==="
   node "$INSTALL_DIR/scripts/lib/print-connection-snippet.mjs" "$INSTALL_DIR" "$HOST_TARGET"
   echo ""
   echo "Docs: INSTALL.md"
   echo "PATH: export PATH=\"$INSTALL_DIR/scripts:\$PATH\""
-  echo "Next: node \"$INSTALL_DIR/scripts/hermes-smoke.mjs\""
-  echo "       occam smoke   # after MCP reload"
+  echo "Next: occam connect   # re-run auto-connect"
+  echo "       occam smoke"
+}
+
+run_connect() {
+  if [[ ! -f "$INSTALL_DIR/scripts/occam-connect.mjs" ]]; then
+    return 0
+  fi
+  echo ""
+  echo "Auto-connecting detected MCP hosts..."
+  # CI/OCCAM_CONNECT=off skips mutation inside the script; do not fail the whole install on partial host failures.
+  node "$INSTALL_DIR/scripts/occam-connect.mjs" || true
 }
 
 main() {
@@ -299,6 +326,7 @@ main() {
   install_release
   post_install
   run_onboard
+  run_connect
   print_connection_snippet
 }
 

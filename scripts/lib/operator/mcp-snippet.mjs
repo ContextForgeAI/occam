@@ -1,6 +1,9 @@
 /**
  * Single source of truth for MCP host wiring snippets (stdio: command / args / env / cwd).
  * Aligns with https://modelcontextprotocol.io/docs/develop/connect-local-servers
+ *
+ * Default/manual fallback is host-neutral (stable launcher). Hermes YAML is opt-in
+ * only when the operator explicitly selects the Hermes host target.
  */
 import { join } from "node:path";
 
@@ -75,6 +78,15 @@ function mergeEnv(env) {
 }
 
 /**
+ * Host-neutral stable launch command for manual fallback.
+ * @param {string} occamHome
+ */
+export function stableLaunchCommand(occamHome) {
+  const home = normalizeHome(occamHome);
+  return `node ${launcherPath(home)}`;
+}
+
+/**
  * @param {{ occamHome: string, connectionKind: ConnectionKind, env?: Record<string, string>, workspaceFolder?: string }} params
  */
 export function buildMcpSnippet(params) {
@@ -87,7 +99,8 @@ export function buildMcpSnippet(params) {
       connectionKind: kind,
       format: "none",
       mcpConfig: null,
-      message: "cli-only — no MCP host wiring. Use: node scripts/hermes-smoke.mjs",
+      message: `cli-only — no MCP host wiring. Stable launcher: ${stableLaunchCommand(home)}`,
+      launchCommand: stableLaunchCommand(home),
     };
   }
 
@@ -99,6 +112,7 @@ export function buildMcpSnippet(params) {
       format: "yaml",
       mcpConfig: null,
       hermesYaml: yaml,
+      launchCommand: wrapper,
       mcpServers: {
         "ff-occam": {
           command: wrapper,
@@ -127,7 +141,12 @@ export function buildMcpSnippet(params) {
   } else {
     server.args = [launcher];
     server.cwd = home;
-    if (kind === "cursor-global" || kind === "claude-desktop" || kind === "openclaw" || kind === "generic-stdio") {
+    if (
+      kind === "cursor-global" ||
+      kind === "claude-desktop" ||
+      kind === "openclaw" ||
+      kind === "generic-stdio"
+    ) {
       if (!server.env.OCCAM_BANNER && !server.env.WT_OCCAM_BANNER) {
         server.env.OCCAM_BANNER = "0";
         server.env.WT_OCCAM_BANNER = "0";
@@ -147,6 +166,7 @@ export function buildMcpSnippet(params) {
     mcpConfig,
     hermesYaml: null,
     message: null,
+    launchCommand: `node ${server.args[0]}`,
   };
 }
 
@@ -189,37 +209,35 @@ export function getConnectionNextSteps(connectionKind) {
     case "cursor-workspace":
       return [
         "Copy .cursor/mcp.json.example → .cursor/mcp.json in the repo workspace.",
-        "Reload MCP in Cursor Settings → MCP (https://cursor.com/docs/context/mcp).",
-        "Run: node scripts/hermes-smoke.mjs",
+        "Reload MCP in Cursor Settings → MCP.",
+        "Prefer: node scripts/occam.mjs connect (auto) when available.",
       ];
     case "cursor-global":
       return [
         "Paste the JSON below into Cursor Settings → MCP → Edit config.",
         "Reload MCP servers.",
-        "Run: node scripts/hermes-smoke.mjs",
+        "Prefer: node scripts/occam.mjs connect (auto) when available.",
       ];
     case "hermes":
       return [
         "Merge the YAML below into ~/.hermes/config.yaml under mcp_servers.",
         "Disable legacy web-transcoder if present.",
         "Reload MCP in Hermes (/reload-mcp).",
-        "Run: node scripts/hermes-smoke.mjs",
       ];
     case "openclaw":
     case "claude-desktop":
     case "generic-stdio":
       return [
-        "Paste the JSON below into your host MCP registry.",
+        "Paste the JSON below into your host MCP registry (or use auto-connect).",
         "Reload or restart the MCP host.",
-        "Run: node scripts/hermes-smoke.mjs",
+        "Stable launcher is node scripts/launch-mcp-host.mjs under OCCAM_HOME.",
       ];
     case "cli-only":
       return [
-        "No MCP host wiring — scripts/smoke only.",
-        "Run: node scripts/hermes-smoke.mjs",
+        "No MCP host wiring — use the stable launcher for smoke checks.",
         "Docs: INSTALL.md",
       ];
     default:
-      return ["Run: node scripts/hermes-smoke.mjs"];
+      return ["Reload your MCP host after pasting the stable launcher registration."];
   }
 }

@@ -4,7 +4,6 @@
  * src/FFOccamMcp.Core/Workers/PlaywrightEnvironment.cs
  */
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -39,23 +38,6 @@ export function resolveDefaultBrowsersPath() {
   return candidate;
 }
 
-export function hasChromiumInstall(root) {
-  if (!root || !fs.existsSync(root)) {
-    return false;
-  }
-
-  try {
-    return fs
-      .readdirSync(root, { withFileTypes: true })
-      .some(
-        (entry) =>
-          entry.isDirectory() && entry.name.toLowerCase().startsWith("chromium"),
-      );
-  } catch {
-    return false;
-  }
-}
-
 function main() {
   const command = process.argv[2] ?? "path";
   const cacheRoot = resolveDefaultBrowsersPath();
@@ -66,16 +48,15 @@ function main() {
         console.log(cacheRoot);
       }
       break;
-    case "has-chromium":
-      process.exit(hasChromiumInstall(cacheRoot) ? 0 : 1);
-      break;
     default:
-      console.error(`Usage: node playwright-cache.mjs [path|has-chromium]`);
+      console.error(`Usage: node playwright-cache.mjs [path]`);
       process.exit(2);
   }
 }
 
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const isMain =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
   main();
 }
