@@ -53,16 +53,10 @@ if [[ -n "${OCCAM_BROWSER_EXECUTABLE_PATH:-}" || -n "${OCCAM_CHROME_PATH:-}" ]];
 fi
 
 if [[ -d "$ROOT/workers/browser-extract" && "$SKIP_PLAYWRIGHT_BUNDLED" -eq 0 ]]; then
-  if node "$CACHE_SCRIPT" has-chromium; then
-    echo "playwright chromium: already installed (skip)"
-  else
-    echo "playwright install chromium ..."
-    (cd "$ROOT/workers/browser-extract" && npx playwright install chromium)
-  fi
   # Chromium needs system shared libs (libnspr4/libnss3/libatk/…). The browser binary download
-  # does NOT install them, and a cached browser skips the install above — so ensure OS deps
-  # separately. Only on Linux as root (CI containers); idempotent. Dev machines (Win/macOS, or
-  # non-root Linux) are untouched: install-deps needs root+apt and isn't needed there.
+  # does NOT install them, so ensure OS deps separately, before the launch probe below. Only on
+  # Linux as root (CI containers); idempotent. Dev machines (Win/macOS, or non-root Linux) are
+  # untouched: install-deps needs root+apt and isn't needed there.
   if [[ "$(uname -s)" == "Linux" && "$(id -u)" == "0" ]]; then
     echo "playwright install-deps chromium (Linux root) ..."
     (cd "$ROOT/workers/browser-extract" && npx playwright install-deps chromium) \
@@ -102,9 +96,10 @@ if [[ -f "$SSRF_SELFTEST" ]]; then
 fi
 
 if [[ -d "$ROOT/workers/browser-extract" ]]; then
-  echo "browser launch smoke ..."
-  (cd "$ROOT/workers/browser-extract" && node lib/verify-browser-launch.mjs) || {
-    echo "error: browser launch smoke failed" >&2
+  # Launch is the source of truth: it also installs a missing bundled runtime and retries once.
+  echo "browser runtime check (launch probe) ..."
+  (cd "$ROOT/workers/browser-extract" && node lib/ensure-chromium-usable.mjs) || {
+    echo "error: browser runtime unavailable" >&2
     exit 1
   }
 fi

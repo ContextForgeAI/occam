@@ -207,8 +207,31 @@ if ($SetupMode -eq "manual") {
 }
 
 Write-Host ""
-Write-Host "=== Connection snippet (host=$HostTarget) ==="
-& node (Join-Path $InstallDir "scripts\lib\print-connection-snippet.mjs") $InstallDir $HostTarget
+Write-Host "Auto-connecting detected MCP hosts..."
+& node (Join-Path $InstallDir "scripts\occam-connect.mjs")
+# Do not fail the whole install on partial host connect failures.
+
+Write-Host ""
+$connectLast = Join-Path $env:USERPROFILE ".occam\connect-last.json"
+$skipSnippet = $false
+if (Test-Path $connectLast) {
+  & node -e @"
+const fs = require('fs');
+const j = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
+const mutated = (j.connections || []).some(
+  (c) => c.apply && (c.apply.applied === true || c.apply.action === 'noop')
+);
+process.exit(j.mutateHosts && mutated ? 0 : 1);
+"@ $connectLast
+  if ($LASTEXITCODE -eq 0) { $skipSnippet = $true }
+}
+if ($skipSnippet) {
+  Write-Host "=== Auto-connect completed — skipping manual connection snippet ==="
+} else {
+  Write-Host "=== Connection snippet (fallback for hosts without auto-connect) ==="
+  & node (Join-Path $InstallDir "scripts\lib\print-connection-snippet.mjs") $InstallDir $HostTarget
+}
 Write-Host ""
 Write-Host "OCCAM_HOME=$InstallDir"
-Write-Host "Next: node `"$InstallDir\scripts\hermes-smoke.mjs`""
+Write-Host "Next: occam connect"
+Write-Host "       occam smoke"

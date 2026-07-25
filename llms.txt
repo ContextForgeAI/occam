@@ -35,6 +35,7 @@ Non-negotiable rules:
 
 - [INSTALL.md](INSTALL.md): **Canonical install** — Linux/macOS `curl …/get-ff-occam.sh | bash`; Windows `irm …/get-ff-occam.ps1 | iex`. Read before any automated install.
 - [Getting started](docs/getting-started.md): Human-oriented MCP wiring, operator CLI, and first tool call.
+- [MCP hosts](docs/mcp-hosts.md): Which AI tools `occam connect` registers automatically, which need an explicit flag, and the config-safety rules.
 - [Troubleshooting](docs/troubleshooting.md): Symptom-to-fix runbook.
 
 ## Optional
