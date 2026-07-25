@@ -394,4 +394,4 @@ Alias: `http-then-browser`
 
 - [Choosing a tool](choosing-a-tool.md)
 - [Failure codes](failure-codes.md)
-- [MCP_API_SPEC.md](../MCP_API_SPEC.md) — full JSON contract
+- [MCP API](reference/mcp-api.md) — normative contract overview (full file on GitHub)

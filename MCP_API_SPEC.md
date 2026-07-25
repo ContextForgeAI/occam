@@ -1,4 +1,4 @@
-# MCP API Specification — FF-Occam MCP
+# MCP API Specification — Occam MCP
 
 **Version:** `1.0.0-rc.2` (fifteen tools + opt-in batch/watch/crosscheck; Agent-First Enhancements AF-1..AF-6; Receipt v1; live-only)
 **Transport:** stdio MCP + optional local WebSocket and authenticated WSS (see [docs/transports.md](docs/transports.md))

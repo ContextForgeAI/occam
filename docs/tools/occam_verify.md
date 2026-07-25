@@ -1,6 +1,6 @@
 # occam_verify
 
-Verify or cite an extraction receipt **without trusting FF-Occam**. Five modes: offline signature
+Verify or cite an extraction receipt **without trusting Occam's host process**. Five modes: offline signature
 check, live drift re-check, building a block citation proof, verifying such a proof, and verifying
 a watch history chain.
 

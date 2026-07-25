@@ -1,4 +1,4 @@
-# VISION.md — where FF-Occam MCP is going
+# VISION.md — where Occam is going
 
 A strategic brief: the north-star, the moat, and a four-layer growth plan. This is the product
 counterpart to [REVIEW_GUIDE.md](REVIEW_GUIDE.md) (which covers *how the code works* for a code
@@ -29,7 +29,7 @@ channel, not the paying pain.
 ## 2. The wedge — why this is different
 
 Most web-extraction tools (Firecrawl, Jina Reader, Crawl4AI) optimize for **coverage**: return
-*something* for every URL. FF-Occam optimizes for **honesty**:
+*something* for every URL. Occam optimizes for **honesty**:
 
 - `ok:false` = **unknown content** — the host never infers page content from model memory on
   failure. Typed failure codes (`thin_extract`, `captcha_or_challenge`, `requires_login`, …), a

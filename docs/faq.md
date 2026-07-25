@@ -50,7 +50,7 @@ No persistent file cache. Each call does a live fetch unless you opt in to a sho
 
 ## What license applies?
 
-AGPL-3.0-or-later. See the root [LICENSE](../LICENSE).
+AGPL-3.0-or-later. See the root [LICENSE](https://github.com/ContextForgeAI/occam/blob/main/LICENSE).
 
 ---
 
