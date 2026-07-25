@@ -59,6 +59,7 @@ If two pages disagree, use the higher-priority source and report the documentati
 | Page | Audience | Purpose |
 |---|---|---|
 | [Getting started](getting-started.md) | People, operators | Install, connect, operator CLI, first call |
+| [MCP hosts](mcp-hosts.md) | People, operators | Which AI tools connect automatically, and what connect will not touch |
 | [Concepts](concepts.md) | People, agents | Trust model, backends, playbooks, sessions |
 | [Choosing a tool](choosing-a-tool.md) | Agents, SDK users | Goal-to-tool routing and role-scoped tool sets |
 | [Per-tool index](tools/index.md) | Agents, people | Focused page for each core and opt-in tool |
