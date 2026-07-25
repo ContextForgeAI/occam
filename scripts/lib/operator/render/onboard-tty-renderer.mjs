@@ -58,10 +58,13 @@ export function renderOnboardComplete(result, mcpConfig) {
     result.verify?.skipped
       ? "  verify     skipped (--skip-doctor or CI)"
       : result.verify?.ok
-        ? "  verify     doctor + hermes-smoke OK"
+        ? "  verify     doctor OK"
         : `  verify     FAILED (${result.verify?.step ?? "unknown"})`;
 
   const nextSteps = getConnectionNextSteps(snippet.connectionKind);
+  const launch =
+    snippet.launchCommand ||
+    `node ${(result.occamHome || "").replace(/\\/g, "/")}/scripts/launch-mcp-host.mjs`;
 
   const lines = [
     "",
@@ -75,18 +78,21 @@ export function renderOnboardComplete(result, mcpConfig) {
     indent(`saved        ${result.configPath}`),
     verifyLine,
     "",
+    indent("Occam MCP command:"),
+    indent(`  ${launch}`),
+    "",
     indent("Environment preview (merged on MCP spawn):"),
     ...envLines,
     "",
-    indent("Next steps:"),
+    indent("Suggested next action:"),
     ...nextSteps.map((s, i) => indent(`${i + 1}. ${s}`, "    ")),
   ];
 
-  if (snippet.format === "yaml" && snippet.hermesYaml) {
+  if (snippet.format === "yaml" && snippet.hermesYaml && result.hostTarget === "hermes") {
     lines.push(
       "",
       horizontalRule("─"),
-      indent("Paste into ~/.hermes/config.yaml (mcp_servers):"),
+      indent(ONBOARD_COMPLETE.hermesTip),
       "",
       snippet.hermesYaml.trimEnd(),
       "",
@@ -95,7 +101,7 @@ export function renderOnboardComplete(result, mcpConfig) {
     lines.push(
       "",
       horizontalRule("─"),
-      indent("Paste into MCP host settings:"),
+      indent("Paste into MCP host settings (host-neutral JSON):"),
       "",
       JSON.stringify(mcpConfig, null, 2),
       "",
