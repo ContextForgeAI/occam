@@ -8,6 +8,7 @@
 
 | I want to… | Call | Notes |
 |------------|------|-------|
+| **Connect Occam to my AI** | `occam connect` (CLI) | Detect hosts; auto-connect live-validated ones — [MCP hosts](mcp-hosts.md) |
 | **Read one page as Markdown** | `occam_transcode` | Only `url` is required; add `focus_query` + `fit_markdown` to save tokens |
 | **Check if a URL is worth fetching** | `occam_probe` | Cheap; returns extractability score and recommended backend |
 | **Research several pages** | `occam_digest` | Up to 8 URLs; use `focus_query` for synthesis |

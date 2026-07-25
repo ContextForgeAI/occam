@@ -1,6 +1,6 @@
 # Concepts
 
-**What you'll learn:** the mental model behind FF-Occam MCP — live extraction, backends, playbooks, sessions, and receipts.
+**What you'll learn:** the mental model behind Occam — live extraction, backends, playbooks, sessions, and receipts. Prefer [How Occam works](how-occam-works.md) first if you are new.
 
 ---
 
