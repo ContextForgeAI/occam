@@ -64,6 +64,17 @@ export const COMMAND_REGISTRY = [
     cliAlias: "onboard",
   },
   {
+    id: "occam-connect",
+    summary: "Detect MCP hosts/runtimes; auto-connect Wave 1 (Hermes, OpenClaw)",
+    usage:
+      "node scripts/occam-connect.mjs [--json] [--detect-only] [--force] [--only hermes,openclaw]",
+    tier: "operator",
+    path: "scripts/occam-connect.mjs",
+    relatedEnv: ["OCCAM_HOME", "OCCAM_CONNECT", "OCCAM_CONNECT_FORCE", "CI"],
+    seeAlso: "docs/getting-started.md#operator-cli",
+    cliAlias: "connect",
+  },
+  {
     id: "launch-mcp-host",
     summary: "Cross-platform MCP launcher — prefers AOT publish, falls back to dotnet run",
     usage: "node scripts/launch-mcp-host.mjs",
