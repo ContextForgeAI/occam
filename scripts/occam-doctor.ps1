@@ -1,6 +1,7 @@
 #Requires -Version 5.1
 param(
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [switch]$Quiet
 )
 
 $ErrorActionPreference = "Stop"
@@ -8,8 +9,15 @@ $root = if ($env:OCCAM_HOME) { $env:OCCAM_HOME } else { Split-Path -Parent $PSSc
 $env:OCCAM_HOME = $root
 $cacheScript = Join-Path $PSScriptRoot "lib\playwright-cache.mjs"
 
-Write-Host "FF-Occam MCP doctor (L0 skeleton)" -ForegroundColor Cyan
-Write-Host "OCCAM_HOME=$root"
+if (-not $Quiet) {
+    if ($env:OCCAM_INSTALL_QUIET -eq "1" -or $env:OCCAM_INSTALL_QUIET -eq "true") { $Quiet = $true }
+}
+function Write-Doctor([string]$Message, [ConsoleColor]$Color = [ConsoleColor]::Gray) {
+    if (-not $Quiet) { Write-Host $Message -ForegroundColor $Color }
+}
+
+Write-Doctor "Occam doctor" Cyan
+Write-Doctor "OCCAM_HOME=$root"
 
 node (Join-Path $PSScriptRoot "lib\assert-net10-csproj.mjs") $root
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -18,7 +26,7 @@ $node = Get-Command node -ErrorAction SilentlyContinue
 if (-not $node) {
     Write-Error "node not found on PATH"
 }
-Write-Host "node: $($node.Source)"
+Write-Doctor "node: $($node.Source)"
 
 $workersRoot = Join-Path $root "workers"
 if (-not (Test-Path (Join-Path $workersRoot "package.json"))) {
@@ -28,8 +36,13 @@ if (-not (Test-Path (Join-Path $workersRoot "package.json"))) {
 Push-Location $workersRoot
 try {
     if (-not (Test-Path "node_modules")) {
-        Write-Host "npm install (workspace root) ..."
-        npm install --no-fund --no-audit
+        Write-Doctor "npm install (workspace root) ..."
+        if ($Quiet) {
+            npm install --no-fund --no-audit --silent 2>$null | Out-Null
+        } else {
+            npm install --no-fund --no-audit
+        }
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     }
 }
 finally {
@@ -41,64 +54,86 @@ $channelRaw = $env:OCCAM_BROWSER_CHANNEL
 $channel = if ($channelRaw) { $channelRaw.Trim().ToLowerInvariant() } else { "" }
 if ($channel -and $channel -ne "chromium" -and @("chrome", "msedge", "chrome-beta", "msedge-beta") -contains $channel) {
     $skipPlaywrightBundled = $true
-    Write-Host "playwright chromium: skip (OCCAM_BROWSER_CHANNEL=$channel)" -ForegroundColor DarkGray
+    Write-Doctor "playwright chromium: skip (OCCAM_BROWSER_CHANNEL=$channel)" DarkGray
 }
 elseif ($env:OCCAM_BROWSER_EXECUTABLE_PATH -or $env:OCCAM_CHROME_PATH) {
     $skipPlaywrightBundled = $true
-    Write-Host "playwright chromium: skip (system executable path set)" -ForegroundColor DarkGray
+    Write-Doctor "playwright chromium: skip (system executable path set)" DarkGray
 }
 
 $browserWorker = Join-Path $root "workers\browser-extract"
 if ((Test-Path $browserWorker) -and -not $skipPlaywrightBundled) {
     $cachePath = & node $cacheScript path 2>$null
     if ($cachePath) {
-        Write-Host "playwright cache: $cachePath" -ForegroundColor DarkGray
+        Write-Doctor "playwright cache: $cachePath" DarkGray
     }
 }
 
 $egressSelftest = Join-Path $root "workers\shared\lib\egress-proxy.selftest.mjs"
 if ($env:OCCAM_HTTP_PROXY -or $env:OCCAM_HTTPS_PROXY) {
-    Write-Host "egress proxy env detected (OCCAM_HTTP_PROXY / OCCAM_HTTPS_PROXY)" -ForegroundColor Yellow
+    Write-Doctor "egress proxy env detected (OCCAM_HTTP_PROXY / OCCAM_HTTPS_PROXY)" Yellow
     if (Test-Path $egressSelftest) {
-        Write-Host "egress proxy module selftest ..."
-        & node $egressSelftest
+        Write-Doctor "egress proxy module selftest ..."
+        if ($Quiet) {
+            & node $egressSelftest 2>&1 | Out-Null
+        } else {
+            & node $egressSelftest
+        }
         if ($LASTEXITCODE -ne 0) {
             Write-Host "warning: egress-proxy selftest failed - verify proxy URL and OCCAM_NO_PROXY bypass list" -ForegroundColor Yellow
         }
     }
-    Write-Host "If transcode fails behind proxy, run full gate (L2_EGRESS_OK) or check corporate PAC/NTLM (v2 sidecar)." -ForegroundColor Yellow
+    Write-Doctor "If transcode fails behind proxy, run full gate (L2_EGRESS_OK) or check corporate PAC/NTLM (v2 sidecar)." Yellow
 }
 
 $pdfSelftest = Join-Path $root "workers\shared\lib\pdf-extract.selftest.mjs"
 if (Test-Path $pdfSelftest) {
-    Write-Host "pdf-extract module selftest ..."
+    Write-Doctor "pdf-extract module selftest ..."
     Push-Location (Join-Path $root "workers\http-extract")
-    & node $pdfSelftest
-    $pdfExit = $LASTEXITCODE
+    if ($Quiet) {
+        $pdfOut = & node $pdfSelftest 2>&1 | Out-String
+        $pdfExit = $LASTEXITCODE
+    } else {
+        & node $pdfSelftest
+        $pdfExit = $LASTEXITCODE
+        $pdfOut = ""
+    }
     Pop-Location
     if ($pdfExit -ne 0) {
         Write-Host "warning: pdf-extract selftest failed - PDF transcode may be unavailable (is 'unpdf' installed?)" -ForegroundColor Yellow
+        if ($Quiet -and $pdfOut) { Write-Host $pdfOut }
     }
 }
 
 $ssrfSelftest = Join-Path $root "workers\shared\lib\private-ip.selftest.mjs"
 if (Test-Path $ssrfSelftest) {
-    Write-Host "private-ip (SSRF guard) module selftest ..."
+    Write-Doctor "private-ip (SSRF guard) module selftest ..."
     Push-Location (Join-Path $root "workers\http-extract")
-    & node $ssrfSelftest
-    $ssrfExit = $LASTEXITCODE
+    if ($Quiet) {
+        $ssrfOut = & node $ssrfSelftest 2>&1 | Out-String
+        $ssrfExit = $LASTEXITCODE
+    } else {
+        & node $ssrfSelftest
+        $ssrfExit = $LASTEXITCODE
+        $ssrfOut = ""
+    }
     Pop-Location
     if ($ssrfExit -ne 0) {
         Write-Host "warning: private-ip selftest failed - SSRF/private-URL protection may be degraded" -ForegroundColor Yellow
+        if ($Quiet -and $ssrfOut) { Write-Host $ssrfOut }
     }
 }
 
 if (Test-Path $browserWorker) {
     # Launch is the source of truth: it also installs a missing bundled runtime and retries once.
-    Write-Host "browser runtime check (launch probe) ..."
+    Write-Doctor "browser runtime check (launch probe) ..."
     Push-Location $browserWorker
     try {
-        & node (Join-Path $browserWorker "lib\ensure-chromium-usable.mjs")
+        if ($Quiet) {
+            & node (Join-Path $browserWorker "lib\ensure-chromium-usable.mjs") 2>&1 | Out-Null
+        } else {
+            & node (Join-Path $browserWorker "lib\ensure-chromium-usable.mjs")
+        }
         if ($LASTEXITCODE -ne 0) {
             Write-Error "browser runtime unavailable"
         }
@@ -110,8 +145,12 @@ if (Test-Path $browserWorker) {
 
 $verifyManifest = Join-Path $root "scripts\lib\verify-community-manifest.mjs"
 if (Test-Path $verifyManifest) {
-    Write-Host "community manifest sha256 verify ..."
-    & node $verifyManifest
+    Write-Doctor "community manifest sha256 verify ..."
+    if ($Quiet) {
+        & node $verifyManifest 2>&1 | Out-Null
+    } else {
+        & node $verifyManifest
+    }
     if ($LASTEXITCODE -ne 0) {
         Write-Error "verify-community-manifest failed"
     }
@@ -153,10 +192,10 @@ if (-not $SkipBuild) {
     }
     if (Test-Path $publishExe) {
         $built = Get-Item $publishExe
-        Write-Host "mcp host: $($built.FullName) ($($built.LastWriteTime))" -ForegroundColor DarkGray
+        Write-Doctor "mcp host: $($built.FullName) ($($built.LastWriteTime))" DarkGray
         $rootExe = Join-Path $root "OccamMcp.Core.exe"
         Copy-Item -Path $publishExe -Destination $rootExe -Force
-        Write-Host "mcp host (OCCAM_HOME root): $rootExe" -ForegroundColor DarkGray
+        Write-Doctor "mcp host (OCCAM_HOME root): $rootExe" DarkGray
     }
     else {
         Write-Error "publish output missing: $publishExe"
@@ -172,14 +211,14 @@ else {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
-Write-Host "doctor: OK" -ForegroundColor Green
+Write-Doctor "doctor: OK" Green
 $sessionsRoot = if ($env:OCCAM_SESSIONS_ROOT) { $env:OCCAM_SESSIONS_ROOT } else { Join-Path $env:USERPROFILE ".occam\sessions" }
-Write-Host "sessions: $sessionsRoot (optional: node scripts/occam-session.mjs init)" -ForegroundColor DarkGray
-Write-Host ""
-Write-Host "MCP host ready. Wire any MCP client (Cursor, Claude Desktop, VS Code, …):" -ForegroundColor Cyan
-Write-Host "  occam onboard"
-Write-Host "  # or: node scripts/lib/print-connection-snippet.mjs `"$root`" generic-stdio"
-Write-Host ""
-Write-Host "Canonical launcher: node scripts/launch-mcp-host.mjs with OCCAM_HOME=$root" -ForegroundColor DarkGray
-Write-Host "Avoid on git clone: packages/occam-mcp/bin/occam-mcp.js without OCCAM_HOME (npx/release path)." -ForegroundColor Yellow
-Write-Host "Reload MCP servers in your host after saving config." -ForegroundColor Yellow
+Write-Doctor "sessions: $sessionsRoot (optional: node scripts/occam-session.mjs init)" DarkGray
+if (-not $Quiet) {
+    Write-Host ""
+    Write-Host "Occam runtime is installed (self-check via doctor passed)." -ForegroundColor Cyan
+    Write-Host "Connect an AI app:  occam connect"
+    Write-Host "Manual snippet:     node scripts/lib/print-connection-snippet.mjs `"$root`" generic-stdio"
+    Write-Host ""
+    Write-Host "Canonical launcher: node scripts/launch-mcp-host.mjs with OCCAM_HOME=$root" -ForegroundColor DarkGray
+}

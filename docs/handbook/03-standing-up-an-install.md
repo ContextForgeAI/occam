@@ -23,7 +23,7 @@ You need: doctor → connect one MCP host → one successful `occam_transcode` �
    .\scripts\occam-doctor.ps1
    ```
    On Unix: `./scripts/occam-doctor.sh` with `export OCCAM_HOME="$(pwd)"`.
-3. **Wire MCP** — copy `.cursor/mcp.json.example` or use `occam connect` for your host. Canonical launcher: `node scripts/launch-mcp-host.mjs` (stdio). The launcher is stdio-only and forwards no CLI args to alternate transports.
+3. **Wire MCP** — prefer `occam connect` for your host (installer also runs this). Canonical launcher: `node scripts/launch-mcp-host.mjs` (stdio). The launcher is stdio-only and forwards no CLI args to alternate transports.
 4. **Declare client budget once** — `occam_client_capabilities(context_tokens=…)` sizes later reads to ~20% of that window when `max_tokens` is omitted.
 5. **First read** — `occam_transcode({ "url": "https://example.com/" })` or a docs index from your smoke corpus.
 
@@ -44,7 +44,7 @@ Install and connect are **destructive and persistent** in places:
 | **Cosign bundle alone** | Release metadata; no shipped install path verifies it (OD-2) |
 | **Docker HEALTHCHECK `--version`** | Unsupported verb; do not treat as production health signal |
 
-Use tarball + manifest **sha256** verification for Level B installs ([install.md](../install.md)).
+Use tarball + manifest **sha256** verification for release installs ([install.md](../install.md)).
 
 ### Task R step 0
 

@@ -42,15 +42,16 @@ curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/g
 irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
 ```
 
-No .NET SDK required on the install machine. Full reference: [INSTALL.md](INSTALL.md) · Walkthrough: [docs/quick-start.md](docs/quick-start.md)
+No .NET SDK required on the install machine. Quiet by default (install → verify → connect → Ready).  
+`OCCAM_VERBOSE=1` shows internals. Full reference: [INSTALL.md](INSTALL.md) · Walkthrough: [docs/quick-start.md](docs/quick-start.md)
 
 ### What the installer does
 
 1. Downloads and **SHA-256-verifies** the release archive against the release manifest  
 2. Runs **doctor** (Node workers + Playwright)  
 3. Verifies the Occam host starts and exposes core `occam_*` tools  
-4. Detects installed AI / MCP hosts and runs **`occam connect`** for validated ones  
-5. Tells you if a host needs a restart, trust prompt, or a manual paste  
+4. Detects installed AI / MCP hosts and runs **`occam connect`** (one host auto; multiple confirm)  
+5. Says **Ready** only after host verification — or Installed / Almost ready / Action required  
 
 You should not need to edit JSON by hand for a first success.
 

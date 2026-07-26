@@ -20,7 +20,7 @@ This page stays short on purpose: **install → doctor/connect → first read �
     irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
     ```
 
-Needs **Node.js 20+**. The bootstrap downloads a release archive and **SHA-256-verifies** it against the release manifest (Cosign is **not** enforced by the installer). Details: [Install](install.md).
+Needs **Node.js 20+**. The bootstrap downloads a release archive, **SHA-256-verifies** it, installs the runtime quietly, and connects a detected AI app. Default output is short; set `OCCAM_VERBOSE=1` for doctor/smoke internals. Details: [Install](install.md).
 
 **npm / npx is not a GA 1.0 install path.**
 
@@ -28,13 +28,18 @@ Needs **Node.js 20+**. The bootstrap downloads a release archive and **SHA-256-v
 
 ## 2. Occam connects your AI
 
-The installer detects supported AI / MCP hosts and configures **live-validated** ones (`occam connect`).
+The installer detects supported AI / MCP hosts (`occam connect`).
+
+- **One** supported host → connects automatically.  
+- **Several** → confirms before writing multiple configs (or use `OCCAM_CONNECT_ALL=1` for automation).  
+- **None** → Occam is still installed; connect later with `occam connect`.
 
 | Status | What to do |
 |--------|------------|
-| **Ready** | Continue |
+| **Ready** | Continue — host integration verified |
 | **Almost ready** | Restart the named app once |
 | **Action required** | Trust a folder, approve a prompt, or paste an entry — the install itself is fine |
+| **Installed** | Runtime OK; no host connected yet |
 | **Not ready** | Occam failed to start — see [Troubleshooting](troubleshooting.md) |
 
 ```bash

@@ -142,6 +142,12 @@ jobs:
       - name: Validate environment catalog against code
         run: node scripts/lib/operator/env-catalog.selftest.mjs
 
+      - name: Validate bootstrap OCCAM_SETUP contract
+        run: node scripts/lib/operator/bootstrap-setup.selftest.mjs
+
+      - name: Validate install UX (quiet default / Ready semantics)
+        run: node scripts/lib/operator/install-ux.selftest.mjs
+
       - name: Validate Playwright runtime recovery
         run: node workers/browser-extract/lib/ensure-chromium-usable.selftest.mjs
 

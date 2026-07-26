@@ -1,0 +1,29 @@
+# Excerpt from a real Windows Level B install transcript (2026-07-24).
+# Used as a regression checklist for quiet-default install UX.
+# Full log (UTF-16): artifacts/crossplat/win-full.log
+
+  FF-Occam MCP
+  Level B bootstrap (Windows)
+
+setup: auto (from OCCAM_SETUP)
+node: v24.16.0
+
+install_dir: C:\Users\Developer\.local\share\ff-occam
+host_target: cursor
+release_url: https://github.com/ContextForgeAI/occam/releases/download/v1.0.0-rc.2/ff-occam-1.0.0-rc.2-win-x64.tar.gz
+
+doctor (npm + Playwright, skip dotnet publish) ...
+FF-Occam MCP doctor (L0 skeleton)
+OCCAM_HOME=C:\Users\Developer\.local\share\ff-occam
+npm install (workspace root) ...
+Warning: Indexing all PDF objects
+private-ip (SSRF guard) module selftest ...
+  ok  127.0.0.1 is private
+playwright cache: C:\Users\Developer\AppData\Local\ms-playwright
+MCP host ready. Wire any MCP client (Cursor, Claude Desktop, VS Code, …):
+  occam onboard
+Canonical launcher: node scripts/launch-mcp-host.mjs with OCCAM_HOME=...
+Avoid on git clone: packages/occam-mcp/bin/occam-mcp.js without OCCAM_HOME (npx/release path).
+verify-install: commit=unknown
+Applying auto setup (profile=default host=cursor) ...
+Starting manual onboard wizard ...

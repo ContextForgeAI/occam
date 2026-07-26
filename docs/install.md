@@ -42,13 +42,13 @@ This page is the documentation-site copy of the same happy path.
 1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases  
 2. Verifies **SHA-256** of the archive against the manifest (**not** Cosign)  
 3. Extracts into `OCCAM_INSTALL_DIR` (default `~/.local/share/ff-occam`)  
-4. Runs **doctor** (`--skip-build`) — npm workers, Playwright Chromium, host binary check  
+4. Runs **doctor** (`--skip-build`) — npm workers, Playwright Chromium, host binary check (quiet by default)  
 5. Verifies the Occam host — expect **15** core `occam_*` tools  
-6. Runs onboard defaults → writes `~/.occam/onboard.json`  
-7. Runs **`occam connect`** for live-validated AI/MCP hosts  
-8. Reports Ready / Almost ready / Action required / Not ready (manual snippet only as fallback)
+6. Writes onboard defaults → `~/.occam/onboard.json` (known install path; no re-prompt)  
+7. Runs **`occam connect`** for live-validated AI/MCP hosts (one host auto; multiple confirm first)  
+8. Reports **Ready** only after host verification (or Installed / Almost ready / Action required)
 
-Human walkthrough: [Quick Start](quick-start.md) · Hosts: [MCP hosts](mcp-hosts.md)
+`OCCAM_VERBOSE=1` shows doctor/smoke internals. Human walkthrough: [Quick Start](quick-start.md) · Hosts: [MCP hosts](mcp-hosts.md)
 
 ## What install mutates
 
