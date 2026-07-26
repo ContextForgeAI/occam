@@ -3,7 +3,9 @@ name: Playbook Marketplace
 on:
   pull_request:
     paths:
+      # Align with the changed-file glob used in "Determine playbooks" (EF-052).
       - 'profiles/playbooks/community/**/*.json'
+      # Signature-only PRs must not auto-merge without a real L4 pass on the JSON.
       - 'profiles/playbooks/community/**/*.json.sig'
     types: [opened, synchronize, reopened, labeled]
   workflow_dispatch:
@@ -27,6 +29,9 @@ jobs:
     name: Validate Playbook
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      # Auto-merge must require an explicit L4 pass — skipped/empty is NOT success (EF-052).
+      l4_result: ${{ steps.l4-gate.outputs.result }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -70,8 +75,8 @@ jobs:
           if [ -n "${{ github.event.inputs.playbook_path }}" ]; then
             echo "playbooks=${{ github.event.inputs.playbook_path }}" >> $GITHUB_OUTPUT
           else
-            # Get changed community playbook files
-            CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'profiles/playbooks/community/*.json' | tr '\n' ' ')
+            # Nested community playbooks: match on.paths (**/*.json), not top-level only.
+            CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'profiles/playbooks/community/**/*.json' | tr '\n' ' ')
             echo "playbooks=$CHANGED" >> $GITHUB_OUTPUT
           fi
 
@@ -81,11 +86,12 @@ jobs:
           set -e
           PLAYBOOKS="${{ steps.playbooks.outputs.playbooks }}"
           if [ -z "$PLAYBOOKS" ]; then
-            echo "No community playbook changes detected"
+            echo "No community playbook JSON changes detected — L4 skipped (not a pass)."
             echo "result=skipped" >> $GITHUB_OUTPUT
+            # Job stays green so notify/signing stay quiet, but auto-merge will not run.
             exit 0
           fi
-          
+
           for PLAYBOOK in $PLAYBOOKS; do
             echo "Validating $PLAYBOOK..."
             # Run genome pilot with the specific playbook
@@ -139,7 +145,12 @@ jobs:
   auto-merge:
     name: Auto-merge on pass
     needs: validate
-    if: needs.validate.result == 'success' && github.event_name == 'pull_request'
+    # EF-052: require an explicit L4 pass. Skipped/empty playbook set must NOT auto-merge.
+    # Branch protection / required checks remain an EXTERNAL owner action (EA-052) — not claimed here.
+    if: >
+      needs.validate.result == 'success'
+      && needs.validate.outputs.l4_result == 'passed'
+      && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Enable auto-merge
