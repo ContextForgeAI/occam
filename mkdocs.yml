@@ -13,27 +13,29 @@ site_dir: site
 
 theme:
   name: material
+  custom_dir: overrides
   palette:
     - media: "(prefers-color-scheme)"
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-auto
         name: System theme
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: blue grey
-      accent: teal
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-sunny
         name: Light mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: blue grey
-      accent: teal
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-night
         name: Dark mode
   features:
-    - navigation.tabs
     - navigation.sections
     - navigation.expand
     - navigation.indexes
@@ -48,9 +50,7 @@ theme:
     - toc.follow
   icon:
     repo: fontawesome/brands/github
-  font:
-    text: Source Sans 3
-    code: Source Code Pro
+  font: false
 
 plugins:
   - search:
@@ -92,7 +92,6 @@ markdown_extensions:
 exclude_docs: |
   requirements.txt
   hooks.py
-  stylesheets/**
   rc2/**
   maintenance/**
   development/**
@@ -163,6 +162,7 @@ nav:
       - Experimental: experimental.md
       - Operators: operators.md
   - Reference:
+      - Documentation map: documentation-map.md
       - Concepts: concepts.md
       - Tool index: tools/index.md
       - occam_client_capabilities: tools/occam_client_capabilities.md
