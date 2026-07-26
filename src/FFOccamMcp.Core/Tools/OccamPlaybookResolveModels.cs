@@ -35,8 +35,10 @@ public sealed record OccamPlaybookResolveSuccessResponse(
     OccamPlaybookSignatureInfo? Signature,
     string Timestamp);
 
-// SI-08 consumer loop: signature status for the resolved recipe. score/passesGate are unsigned v1 claims.
-// status ∈ unsigned|verified|invalid|wrong_key|key_mismatch.
+// SI-08 consumer loop: signature status for the resolved recipe.
+// status ∈ unsigned|verified|invalid|wrong_key|key_mismatch|unsupported_version.
+// sigVersion ∈ 1|2|null. Under v1 score/passesGate are UNSIGNED claims; under v2 they are covered by
+// the signature (tamper-evident, not a proof of quality). See PLAYBOOK-SIGNATURE-V2-CONTRACT.md.
 public sealed record OccamPlaybookSignatureInfo(
     bool Present,
     string Status,
@@ -45,7 +47,9 @@ public sealed record OccamPlaybookSignatureInfo(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     int? Score,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    bool? PassesGate);
+    bool? PassesGate,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    int? SigVersion = null);
 
 public sealed record OccamGenomeFetchInfo(
     bool Ok,

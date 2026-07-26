@@ -55,6 +55,7 @@ public sealed class OccamPlaybookResolveTool(PlaybookSeedResolver playbookSeedRe
             status.Status,
             status.KeyId,
             status.Score,
-            status.PassesGate);
+            status.PassesGate,
+            status.SigVersion);
     }
 }
