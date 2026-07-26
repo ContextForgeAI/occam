@@ -257,6 +257,75 @@ run_legacy_step() {
   fi
 }
 
+# Install ~/.local/bin/occam and ensure current-shell PATH (prepend). Overlay connect
+# CLI from public main when the release tarball lacks occam-connect.
+install_occam_user_command() {
+  local home="$1"
+  local helper="$home/scripts/lib/operator/install-user-cli.mjs"
+  local helper_tmp=""
+  if [[ ! -f "$helper" ]]; then
+    helper_tmp="$(mktemp "${TMPDIR:-/tmp}/occam-install-user-cli.XXXXXX.mjs")"
+    local base="${OCCAM_OVERLAY_BASE_URL:-https://raw.githubusercontent.com/ContextForgeAI/occam/main}"
+    base="${base%/}"
+    if ! curl -fsSL "$base/scripts/lib/operator/install-user-cli.mjs" -o "$helper_tmp"; then
+      echo "✗ Could not install the occam command (download failed)." >&2
+      echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
+      rm -f "$helper_tmp"
+      exit 1
+    fi
+    helper="$helper_tmp"
+  fi
+
+  local json
+  set +e
+  if [[ -n "${OCCAM_OVERLAY_BASE_URL:-}" ]]; then
+    json="$(node "$helper" --home "$home" --base-url "${OCCAM_OVERLAY_BASE_URL%/}" --json 2>&1)"
+  else
+    json="$(node "$helper" --home "$home" --json 2>&1)"
+  fi
+  local code=$?
+  set -e
+  if [[ -n "$helper_tmp" ]]; then rm -f "$helper_tmp"; fi
+  if [[ "$code" -ne 0 ]]; then
+    echo "✗ Could not install the occam command." >&2
+    echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
+    printf '%s\n' "$json" | tail -n 30 >&2
+    exit "$code"
+  fi
+  if [[ "$VERBOSE" -eq 1 ]]; then
+    printf '%s\n' "$json"
+  fi
+
+  local bin_dir
+  bin_dir="$(node -e "const j=JSON.parse(process.argv[1]); process.stdout.write(j.pathForCurrentProcess||j.binDir||'')" "$json")"
+  if [[ -z "$bin_dir" ]]; then
+    bin_dir="$HOME/.local/bin"
+  fi
+  case ":$PATH:" in
+    *":$bin_dir:"*)
+      # Already present — move to front for this shell (parity with Windows).
+      PATH_WITHOUT=""
+      OLD_IFS="$IFS"
+      IFS=':'
+      for p in $PATH; do
+        if [[ "$p" != "$bin_dir" ]]; then
+          if [[ -z "$PATH_WITHOUT" ]]; then PATH_WITHOUT="$p"; else PATH_WITHOUT="$PATH_WITHOUT:$p"; fi
+        fi
+      done
+      IFS="$OLD_IFS"
+      export PATH="$bin_dir${PATH_WITHOUT:+:$PATH_WITHOUT}"
+      ;;
+    *) export PATH="$bin_dir:$PATH" ;;
+  esac
+
+  hash -r 2>/dev/null || true
+  if ! command -v occam >/dev/null 2>&1; then
+    echo "✗ occam command is not available on PATH after install." >&2
+    echo "Open a new shell, or run: export PATH=\"$bin_dir:\$PATH\"" >&2
+    exit 1
+  fi
+}
+
 run_post_install() {
   export OCCAM_HOME="$INSTALL_DIR"
   cd "$INSTALL_DIR"
@@ -266,6 +335,7 @@ run_post_install() {
 
   local post_ux="$INSTALL_DIR/scripts/lib/operator/post-install-ux.mjs"
   if [[ -f "$post_ux" ]]; then
+    install_occam_user_command "$INSTALL_DIR"
     local args=(--setup "$SETUP_MODE" --version "$VERSION" --download-ok)
     if [[ "$VERBOSE" -eq 1 ]]; then
       args+=(--verbose)
@@ -293,14 +363,14 @@ run_post_install() {
   run_legacy_step "Host verify" node "$INSTALL_DIR/scripts/lib/verify-install.mjs" --skip-build --version "$VERSION"
   run_legacy_step "Self-check" node "$INSTALL_DIR/scripts/hermes-smoke.mjs"
   echo "✓ Self-check passed"
+
+  install_occam_user_command "$INSTALL_DIR"
+
   echo ""
   echo "Occam is installed."
-  if [[ -f "$INSTALL_DIR/scripts/occam-connect.mjs" ]]; then
-    echo "Connecting to your AI app"
-    node "$INSTALL_DIR/scripts/occam-connect.mjs" || true
-  else
-    echo "Connect an AI app later with: occam connect"
-  fi
+  echo ""
+  echo "Connect an AI app later with:"
+  echo "  occam connect"
 }
 
 main() {

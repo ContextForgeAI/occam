@@ -306,6 +306,10 @@ function testNoPhantomHermesInManualDefault() {
   // PowerShell doctor uses Write-Host — must capture Information stream (*>&1), not only 2>&1.
   assert.match(ps1, /\*>&1/);
   assert.match(sh, /2>&1/);
+  assert.match(ps1, /Install-OccamUserCommand/);
+  assert.match(sh, /install_occam_user_command/);
+  assert.match(ps1, /install-user-cli\.mjs/);
+  assert.match(sh, /install-user-cli\.mjs/);
 }
 
 async function main() {

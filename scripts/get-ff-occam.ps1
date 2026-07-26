@@ -133,6 +133,98 @@ download failed — is the release tarball published?
   }
 }
 
+# Install ~/.local/bin/occam.cmd + occam.ps1 (+ User PATH). Overlay connect CLI from
+# public main when the release tarball predates occam-connect. Prepends bin onto
+# current-process PATH so PowerShell resolves this launcher first.
+function Install-OccamUserCommand([string]$OccamHome) {
+  $helper = Join-Path $OccamHome "scripts\lib\operator\install-user-cli.mjs"
+  $helperTmp = $null
+  if (-not (Test-Path $helper)) {
+    $helperTmp = Join-Path ([System.IO.Path]::GetTempPath()) ("occam-install-user-cli-" + [guid]::NewGuid().ToString("N") + ".mjs")
+    $helperUrl = if ($env:OCCAM_OVERLAY_BASE_URL) {
+      ($env:OCCAM_OVERLAY_BASE_URL.TrimEnd("/") + "/scripts/lib/operator/install-user-cli.mjs")
+    } else {
+      "https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/lib/operator/install-user-cli.mjs"
+    }
+    try {
+      Invoke-WebRequest -Uri $helperUrl -OutFile $helperTmp -UseBasicParsing
+      $helper = $helperTmp
+    } catch {
+      Write-Host "✗ Could not install the occam command (download failed)." -ForegroundColor Red
+      Write-Host "Re-run with `$env:OCCAM_VERBOSE=1 for details." -ForegroundColor Yellow
+      throw
+    }
+  }
+
+  $prevEap = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    $cliArgs = @($helper, "--home", $OccamHome, "--json")
+    if ($env:OCCAM_OVERLAY_BASE_URL) {
+      $cliArgs += @("--base-url", $env:OCCAM_OVERLAY_BASE_URL.TrimEnd("/").TrimEnd("\"))
+    }
+    $jsonOut = & node @cliArgs *>&1 | ForEach-Object { "$_" }
+    if ($LASTEXITCODE -ne 0) {
+      Write-Host "✗ Could not install the occam command." -ForegroundColor Red
+      Write-Host "Re-run with `$env:OCCAM_VERBOSE=1 for details." -ForegroundColor Yellow
+      if ($jsonOut) { $jsonOut | Select-Object -Last 30 | ForEach-Object { Write-Host $_ } }
+      exit $LASTEXITCODE
+    }
+    if ($VerboseInstall -and $jsonOut) {
+      Write-Host ($jsonOut | Out-String)
+    }
+  } finally {
+    $ErrorActionPreference = $prevEap
+    if ($helperTmp) { Remove-Item -Force $helperTmp -ErrorAction SilentlyContinue }
+  }
+
+  $binDir = $null
+  try {
+    $parsed = ($jsonOut | Out-String) | ConvertFrom-Json
+    $binDir = [string]$parsed.pathForCurrentProcess
+    if (-not $binDir) { $binDir = [string]$parsed.binDir }
+  } catch {
+    $binDir = Join-Path $env:USERPROFILE ".local\bin"
+  }
+
+  if ($binDir) {
+    $binDir = [System.IO.Path]::GetFullPath($binDir)
+    $parts = @($env:PATH -split ';' | Where-Object { $_ -and $_.Trim() -ne '' })
+    $hit = $false
+    foreach ($p in $parts) {
+      try {
+        if ([System.IO.Path]::GetFullPath($p).Equals($binDir, [StringComparison]::OrdinalIgnoreCase)) {
+          $hit = $true
+          break
+        }
+      } catch {}
+    }
+    if (-not $hit) {
+      # Prepend — same policy as User PATH persistence (see install-user-cli.mjs).
+      $env:PATH = (@($binDir) + $parts) -join ';'
+    } else {
+      # Already present later in PATH — move to front for this process so we win
+      # over an older OCCAM_HOME/scripts entry from prior manual installs.
+      $rest = @($parts | Where-Object {
+        try { -not [System.IO.Path]::GetFullPath($_).Equals($binDir, [StringComparison]::OrdinalIgnoreCase) }
+        catch { $true }
+      })
+      $env:PATH = (@($binDir) + $rest) -join ';'
+    }
+  }
+
+  # Drop cached command lookup so a stale miss from before PATH mutation is not reused.
+  if (Get-Command occam -ErrorAction SilentlyContinue) {
+    Remove-Item -Path "Function:occam" -ErrorAction SilentlyContinue
+  }
+  $cmd = Get-Command occam -ErrorAction SilentlyContinue
+  if (-not $cmd) {
+    Write-Host "✗ occam command is not available on PATH after install." -ForegroundColor Red
+    Write-Host "Open a new PowerShell, or run: `$env:PATH = '$binDir;' + `$env:PATH" -ForegroundColor Yellow
+    exit 1
+  }
+}
+
 # Run a legacy-tarball child step. Pre-quiet release packs ignore -Quiet/--quiet
 # flags (PowerShell also silently drops unknown -Quiet), so default mode MUST
 # capture stdout/stderr. Checks still run; diagnostics show only on failure or verbose.
@@ -242,6 +334,7 @@ $postArgs = @($postUx, "--setup", $SetupMode, "--version", $Version, "--download
 if ($VerboseInstall) { $postArgs += "--verbose" }
 
 if (Test-Path $postUx) {
+  Install-OccamUserCommand $InstallDir
   & node @postArgs
   if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 } else {
@@ -273,12 +366,12 @@ if (Test-Path $postUx) {
     & node $smokeJs
   }
   Write-Host "✓ Self-check passed"
+
+  Install-OccamUserCommand $InstallDir
+
   Write-Host ""
   Write-Host "Occam is installed."
-  if (Test-Path (Join-Path $InstallDir "scripts\occam-connect.mjs")) {
-    Write-Host "Connecting to your AI app"
-    & node (Join-Path $InstallDir "scripts\occam-connect.mjs")
-  } else {
-    Write-Host "Connect an AI app later with: occam connect"
-  }
+  Write-Host ""
+  Write-Host "Connect an AI app later with:"
+  Write-Host "  occam connect"
 }
