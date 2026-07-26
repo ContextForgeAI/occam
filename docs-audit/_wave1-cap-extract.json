@@ -1,0 +1,1844 @@
+[
+  {
+    "id": "CAP-001",
+    "name": "Process entry dual-path (CLI verbs vs MCP host)",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-002",
+    "name": "Offline CLI verb dispatch (pre-transport)",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-003",
+    "name": "Transport mode: stdio (default)",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-004",
+    "name": "Transport mode: local WebSocket MCP",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-005",
+    "name": "Transport mode: Remote WSS + JWT",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-006",
+    "name": "Transport mode: Batch HTTP server",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-007",
+    "name": "Core MCP catalog: 15 always-registered names (profile=full)",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-008",
+    "name": "`OCCAM_PROFILE` role-scoped registration",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-009",
+    "name": "Profile tool sets (exact)",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-010",
+    "name": "Profile-aware MCP `instructions` on initialize",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-011",
+    "name": "Opt-in MCP tools are not profile-filtered",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-012",
+    "name": "Opt-in: `OCCAM_BATCH_MCP` → batch_submit/status/results + hosted processor",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-013",
+    "name": "Opt-in: `OCCAM_WATCH_MCP` → `occam_watch`",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-014",
+    "name": "Opt-in: `OCCAM_CONSENSUS_MCP` → `occam_crosscheck`",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-015",
+    "name": "Opt-in: `OCCAM_ATLAS_MCP` → `occam_failure_atlas` + FailureAtlasSink DI wrap",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-016",
+    "name": "Digest `urls` input schema union (compat)",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-017",
+    "name": "Argument-binding guard → typed `invalid_arguments`",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-018",
+    "name": "HTTP daemon pre-warm on MCP server start",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-019",
+    "name": "Startup banner + worker path resolve at registration",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-020",
+    "name": "WebSocket message size cap",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-021",
+    "name": "Content-length framing helper (stdio protocol)",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-022",
+    "name": "Help text reports live profile tool count",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-023",
+    "name": "Remote session concurrency limit",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-024",
+    "name": "CLI bind policy asymmetry",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-025",
+    "name": "Surface taxonomy (code-derived, not docs)",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-026",
+    "name": "`AddOccamCore` DI always runs before tool registration",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-027",
+    "name": "Transport unit-test evidence for tool catalog length",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-028",
+    "name": "Stderr diagnostics / stdout MCP purity (host contract)",
+    "agent": "S0",
+    "report": "docs-audit/subsystems/runtime-mcp.md"
+  },
+  {
+    "id": "CAP-050",
+    "name": "`url` (required input, identity of the whole operation)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-051",
+    "name": "`backend_policy` (schema, parsing, effective set)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-052",
+    "name": "`http_then_browser` cascade (the actual default execution path)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-053",
+    "name": "Browser backend readiness / auto-provisioning gate",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-054",
+    "name": "Managed backend escalation subsystem (third-party scraping fallback)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-055",
+    "name": "Managed provider: Jina Reader",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-056",
+    "name": "Managed provider: Firecrawl",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-057",
+    "name": "Managed provider: Scrapfly",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-058",
+    "name": "Managed provider: Spider",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-059",
+    "name": "Transparent PDF extraction (implicit, not a parameter)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-060",
+    "name": "`max_tokens` ambient budget resolution",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-061",
+    "name": "Two-layer budget split (`BudgetOwnership`)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-062",
+    "name": "`ResponseBudgetPlanner` allocation and greedy sidecar trim",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-063",
+    "name": "`fit_markdown` (BM25 paragraph pruning)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-064",
+    "name": "`focus_query` (relevance targeting + honesty signal)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-065",
+    "name": "`content_selectors` (heading-anchor scoping)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-066",
+    "name": "`TokenBudget` truncation strategies + definitional-anchor preservation",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-067",
+    "name": "`OmittedManifest` (machine-readable \"what got cut\")",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-068",
+    "name": "`session_profile` (headers + cookies + browser storage state)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-069",
+    "name": "Session profile ID hardening",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-070",
+    "name": "`playbook_policy=auto` (genome-aware resolution subsystem)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-071",
+    "name": "Playbook overlay soft-apply + provenance stamp",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-072",
+    "name": "Playbook `preferred_backend` override",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-073",
+    "name": "Well-known site genome fetch (env-gated live network call)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-074",
+    "name": "`if_none_match` (conditional/differential response)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-075",
+    "name": "`semantic_chunking` (worker-side chunk plugin)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-076",
+    "name": "`capture_screenshot` (browser-only)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-077",
+    "name": "`json_blocks` (structured block extraction + selector provenance)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-078",
+    "name": "Always-on internal block/table collection (hidden subsystem, not a parameter)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-079",
+    "name": "`json_tables` (+ semantic record reconstruction)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-080",
+    "name": "`json_feed` (RSS/Atom/JSON-Feed short-circuit)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-081",
+    "name": "`translate_to` (host-side LibreTranslate codec)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-082",
+    "name": "`diff_against` (block-level delta codec)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-083",
+    "name": "HIDDEN: `diff_against` silently forces full `blocks[]` into the response",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-084",
+    "name": "`prefer_llms_txt` (probe-first codec)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-085",
+    "name": "`cache_ttl_s` (opt-in on-disk response cache)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-086",
+    "name": "`emit_capsule` (proof-carrying capsule encoding)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-087",
+    "name": "`rank_blocks` (BM25 salience tagging)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-088",
+    "name": "`tag_trust` (prompt-injection / boilerplate trust signal)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-089",
+    "name": "`delta_only` (suppress-full-body-when-diffing)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-090",
+    "name": "Receipt v1 positive signing",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-091",
+    "name": "Receipt v1 negative signing",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-092",
+    "name": "Time-anchor sidecar",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-093",
+    "name": "`MaterializationKey` / content-hash identity system",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-094",
+    "name": "PostProcessor pipeline ordering",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-095",
+    "name": "Challenge-page detection (post-processor + router-level parity)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-096",
+    "name": "Requires-login detection (`AccessClassifier`)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-097",
+    "name": "Thin-extract detection (`ExtractQualityEvaluator`)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-098",
+    "name": "Router recovery/attempt log",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-099",
+    "name": "Auto browser provisioning + timeout grace",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-100",
+    "name": "SSRF / private-network protections",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-101",
+    "name": "Response size cap / oversize mode",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-102",
+    "name": "Egress proxy support",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-103",
+    "name": "Robots.txt respect + host throttling",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-104",
+    "name": "Domain tier registry",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-105",
+    "name": "Failure code normalization/taxonomy",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-106",
+    "name": "Agent decision hints on failure",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-107",
+    "name": "Semantic outcome mapping (Access / Focus / Completeness)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-108",
+    "name": "Worker process lifecycle failure taxonomy",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-109",
+    "name": "Media references (always-on, not gated by any parameter)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-110",
+    "name": "Meta-refresh redirect following (client-side redirect layer)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-111",
+    "name": "Plain-text pass-through codec",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-112",
+    "name": "Worker feature-scope propagation (`OccamFeaturesScope`)",
+    "agent": "S1",
+    "report": "docs-audit/tools/occam_transcode.md"
+  },
+  {
+    "id": "CAP-150",
+    "name": "Literal pre-check blocks private/local hosts before any dispatch (Core)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-151",
+    "name": "DNS-rebinding-safe SSRF guard, HTTP worker",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-152",
+    "name": "Per-hop SSRF re-validation on `<meta refresh>` redirects (HTTP worker)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-153",
+    "name": "SSRF guard, browser worker (every navigation, not just the first)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-154",
+    "name": "SSRF guard on Core's own direct `HttpClient` egress (non-worker fetches)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-155",
+    "name": "Matching dual-stack private-range definitions (C# vs JS)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-156",
+    "name": "`OCCAM_ALLOW_PRIVATE_URLS` only relaxes rejection, never disables resolution/pinning",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-157",
+    "name": "Static HTTP/HTTPS/SOCKS5 proxy for Node worker egress",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-158",
+    "name": "Proxy URL validation + typed failure + connect-failure reclassification",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-159",
+    "name": "`NO_PROXY` bypass matching (exact / suffix / wildcard / global)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-160",
+    "name": "Playwright (browser backend) proxy support, incl. embedded credentials",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-161",
+    "name": "Proxy credential redaction (both languages)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-162",
+    "name": "Proxy rotation pool (round-robin, per-spawn)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-163",
+    "name": "Proxy list ingestion: URL-per-line and scraper-CSV export format",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-164",
+    "name": "Proxy rotation forces one-shot spawns, bypassing the daemon/pool",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-165",
+    "name": "ABSENT: rotation does not reach the persistent daemon / pool / CSS / dom-skeleton spawns",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-166",
+    "name": "ABSENT: Core's own C# `HttpClient`s never honor `OCCAM_HTTP_PROXY`/`HTTPS_PROXY`",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-167",
+    "name": "Local session-profile files (`OCCAM_SESSIONS_ROOT/<id>.json`)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-168",
+    "name": "`storageState` path resolution with containment check",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-169",
+    "name": "Global custom headers file merged under session-profile precedence",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-170",
+    "name": "`FetchHeadersScope`: ephemeral per-call header/storageState handoff to workers",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-171",
+    "name": "Cookie-header → Playwright cookie injection (session profile path)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-172",
+    "name": "Cross-origin credential stripping on redirect (HTTP worker)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-173",
+    "name": "Browser-path credential isolation for `extraHTTPHeaders`",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-174",
+    "name": "`occam-session.mjs` operator CLI (init / list / import / export-state)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-175",
+    "name": "Netscape `cookies.txt` import with risk warnings",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-176",
+    "name": "`export-state`: headed-browser login capture → Playwright storageState",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-177",
+    "name": "Recipe-based cookie injection (separate from `session_profile`)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-178",
+    "name": "Generic (non-per-site) consent/cookie-banner dismissal",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-179",
+    "name": "Two independent anti-bot/challenge detectors",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-180",
+    "name": "Browser stealth baseline (explicitly scoped, not full anti-detect)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-181",
+    "name": "Shared login/access-wall classifier (probe + transcode)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-182",
+    "name": "Automatic `requires_login` conversion when no session was supplied",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-183",
+    "name": "Access evidence collection is deliberately leak-resistant",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-184",
+    "name": "Redirect handling, Core probe (two client modes, both SSRF-guarded)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-185",
+    "name": "Redirect handling, HTTP extract worker",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-186",
+    "name": "Redirect handling, browser worker (every navigation type)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-187",
+    "name": "Fixed, non-negotiable-per-call backend timeouts",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-188",
+    "name": "ABSENT: no automatic retry/backoff on transient network failures",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-189",
+    "name": "Single shared default identity (User-Agent + Accept) across all three fetch paths",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-190",
+    "name": "Robots.txt / crawl-politeness layer (opt-in, off by default)",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-191",
+    "name": "`session_profile` is plumbed through nearly every URL-touching MCP tool, not just transcode",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-192",
+    "name": "Secret-hygiene defaults for local session storage",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-193",
+    "name": "CSS-extract worker also proxy-aware (egressFetch), confirming proxy plumbing is not HTML-only",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-194",
+    "name": "Managed-backend escalation: API-key authenticated fetch to third-party extraction services",
+    "agent": "S17",
+    "report": "docs-audit/subsystems/network-fetch-proxy.md"
+  },
+  {
+    "id": "CAP-200",
+    "name": "HTTP extract backend (`node_readability_turndown`).",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-201",
+    "name": "HTTP daemon (long-lived, amortized).",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-202",
+    "name": "HTTP one-shot fallback.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-203",
+    "name": "Browser extract backend (Playwright Chromium).",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-204",
+    "name": "Browser daemon pool (multi-slot).",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-205",
+    "name": "Browser one-shot fallback.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-206",
+    "name": "Auto-provision (branch 2): user-level chromium install.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-206b",
+    "name": "Provision-gate single-source-of-truth probe.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-207",
+    "name": "`occam install-browser` CLI.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-208",
+    "name": "System-browser / channel support.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-209",
+    "name": "\"Lean-A\" stealth baseline.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-210",
+    "name": "Challenge/CAPTCHA fail-fast wall detection (\"Q-019\").",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-211",
+    "name": "Generic consent/cookie-banner auto-dismiss.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-212",
+    "name": "CSS-hide fallback for unresolved consent overlays.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-213",
+    "name": "Recipe cookie injection (opt-in).",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-219",
+    "name": "Shadow DOM flattening.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-220",
+    "name": "Playbook-driven browser interaction plan.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-221",
+    "name": "Screenshot capture (opt-in).",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-222",
+    "name": "Per-host recipes.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-223",
+    "name": "Extract variants.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-224",
+    "name": "Playbook overlay application in the browser worker.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-225",
+    "name": "Oversized-HTML guard (browser path).",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-226",
+    "name": "Browser-side SSRF guard.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-227",
+    "name": "Pool session recycle policy.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-228",
+    "name": "Node worker lifecycle recycle.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-229",
+    "name": "Process-tree cleanup.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-230",
+    "name": "Browser concurrency limiting.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-231",
+    "name": "Round-robin slot selection + serialized spawn.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-232",
+    "name": "Idle-TTL auto-stop.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-234",
+    "name": "Proxy rotation forces one-shot.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-236",
+    "name": "`css-extract.mjs`.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-237",
+    "name": "PDF extraction (HTTP path only).",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-238",
+    "name": "Managed extract backend framework.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-239",
+    "name": "Firecrawl provider.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-240",
+    "name": "Jina Reader provider.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-241",
+    "name": "Spider provider.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-242",
+    "name": "Scrapfly provider.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-243",
+    "name": "Per-domain opt-in.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-244",
+    "name": "Reachability scope.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-245",
+    "name": "Node executable resolution.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-246",
+    "name": "Playwright browser-cache path resolution.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-247",
+    "name": "Silent-exit-13 guard.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-248a",
+    "name": "`IWorkerProcessSpawner`/`NodeWorkerProcessSpawner` is registered in DI (`OccamServiceCollectionExtensions.cs:30`) but ne",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-248b",
+    "name": "`BrowserConcurrencyGate` (`Workers/BrowserConcurrencyGate.cs`) is a second, independent concurrency-gate implementation.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-249",
+    "name": "Session/state isolation caveat.",
+    "agent": "S18",
+    "report": "docs-audit/subsystems/browser-workers.md"
+  },
+  {
+    "id": "CAP-250",
+    "name": "`ReceiptEnvelope` (Receipt v1 schema)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-251",
+    "name": "`ReceiptCanonicalizer` (hand-written canonical bytes)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-252",
+    "name": "`MerkleTree` (ordered SHA-256 Merkle tree over extraction blocks)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-253",
+    "name": "`Base64Url`",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-254",
+    "name": "`ReceiptSigner` (local ECDSA P-256 signer)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-255",
+    "name": "Key storage / lifecycle (`LoadOrCreate`)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-256",
+    "name": "`ReceiptSigner.CreateEphemeral`",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-257",
+    "name": "`ReceiptSigner.SignDetached` / generic detached-signature primitive",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-258",
+    "name": "`ReceiptVerification` result type + verdict vocabulary",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-259",
+    "name": "`ReceiptVerifier.VerifyOffline`",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-260",
+    "name": "`ReceiptVerifier.VerifyDetached`",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-261",
+    "name": "`TimeAnchorVerifier` (RFC3161 consumer)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-262",
+    "name": "Merkle membership proof (SI-02b): `MerkleTree.Proof` / `VerifyProof`",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-263",
+    "name": "`LeafSetComplete` / provable absence",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-264",
+    "name": "Negative receipts (SI-03): `OccamTranscodeResponseBuilder.BuildNegativeReceipt`",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-265",
+    "name": "`CapsuleCodec` / proof-carrying capsules (HARNESS-P0)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-266",
+    "name": "`ChunkStalenessEvaluator` (SI-12 per-chunk RAG expiry)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-267",
+    "name": "`ReceiptTimeAnchor` producer: `TimeAnchorService`",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-268",
+    "name": "`OccamVerifyTool` — mode dispatch",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-269",
+    "name": "mode=`offline` (default)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-270",
+    "name": "mode=`live`",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-271",
+    "name": "mode=`prove` (SI-02b producer)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-272",
+    "name": "mode=`citation` (SI-02b consumer)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-273",
+    "name": "mode=`history` (SI-05 consumer)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-274",
+    "name": "`OccamVerifyReceiptInput` flexible parsing",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-275",
+    "name": "`OccamCliVerbs.TryRun` dispatch + `occam keys export`",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-276",
+    "name": "`occam verify` CLI verb, 4 modes",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-277",
+    "name": "`occam version-surface` / `occam install-browser` / `occam lifecycle`",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-278",
+    "name": "`OccamTranscodeResponseBuilder.BuildReceipt` (the one shared builder)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-279",
+    "name": "`OccamTranscodeResponseBuilder.BuildNegativeReceipt` — fan-out to failure paths",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-280",
+    "name": "`ReceiptsPolicy` — the single global kill-switch",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-281",
+    "name": "`PlaybookSignature.BuildSignedJson` (producer, at `occam_playbook_save`)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-282",
+    "name": "`PlaybookSignature.Inspect` (consumer, at `occam_playbook_resolve`)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-283",
+    "name": "`DatasetManifestBuilder`",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-284",
+    "name": "`WatchHistoryEntry` / `WatchHistoryChain`",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-285",
+    "name": "`KnowledgeProvenance.ReceiptContentHash` / `BlockLeafHash`",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-286",
+    "name": "`MaterializedProvenanceResolver` — UNREACHABLE / dead code",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-287",
+    "name": "`occam_extract_knowledge`'s \"Receipt\" is NOT a signed Receipt v1 — finding",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-288",
+    "name": "No PKI / key-ownership registry (v1 explicit scope-cut)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-289",
+    "name": "Single key, many purposes",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-290",
+    "name": "Fail-closed vs fail-open posture (consistent, by design)",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-291",
+    "name": "Attacker-controlled input handling",
+    "agent": "S19",
+    "report": "docs-audit/subsystems/trust-receipts.md"
+  },
+  {
+    "id": "CAP-300",
+    "name": "Two-layer budget ownership: `BudgetOwnership` / `ResponseBudgetPlanner` / `MaterializationPlanner`",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-301",
+    "name": "`ResponseBudgetPlanner.TrimStructured`: greedy prefix trim order is fixed and undocumented in `MCP_API_SPEC.md`",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-302",
+    "name": "`ResponseBudgetPlanner.EstimateBlock/Table/Chunk/Media/Feed`: per-item cost estimators feed both allocation and trim",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-303",
+    "name": "`ResponseBudgetDiagnostics`: computed but never surfaced in any MCP response",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-304",
+    "name": "`max_tokens` client-ambient default via `occam_client_capabilities`",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-305",
+    "name": "Minimum token floor enforced at the parameter layer",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-306",
+    "name": "`TranscodeCompiler.Apply`: the exact live compile order",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-307",
+    "name": "`content_selectors`: heading-anchor scoping, not real CSS selectors",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-308",
+    "name": "`FitMarkdown.Apply`: BM25 paragraph prune, focused vs. unfocused thresholds differ",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-309",
+    "name": "`TokenBudget.Apply`: three truncation strategies, chosen by presence of `focus_query`",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-310",
+    "name": "`OmittedManifest` / `compile.omitted`: structured \"what was dropped\" record",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-311",
+    "name": "`MaterializationAssessment` / `focus`+`completeness` semantic verdict fields",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-312",
+    "name": "`SectionIndex` / `SectionRanker`: deterministic local focus-section resolver",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-313",
+    "name": "`AnswerUnitSelector`: minimum bounded heading+body unit",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-314",
+    "name": "`MaterializationKey`: deterministic content-addressed materialization identity",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-315",
+    "name": "BUG: `TranscodeCacheKey` omits `rank_blocks`/`tag_trust`/`emit_capsule` — cache-poisoning risk for block annotations",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-316",
+    "name": "`json_blocks`: DOM-derived structured blocks with real CSS `source_selector`",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-317",
+    "name": "`rank_blocks`/`tag_trust`: post-hoc block annotation, requires `json_blocks=true`",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-318",
+    "name": "`json_tables`: physical rows + optional reconstructed semantic `records[]`",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-319",
+    "name": "`json_feed`: RSS/Atom/JSON-Feed parse replaces article extraction entirely",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-320",
+    "name": "`semantic_chunking` (`chunks[]`): naive fixed-size line-accumulation, not semantic",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-321",
+    "name": "File-backed opt-in response cache: eligibility, key, storage",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-322",
+    "name": "Cache never expires proactively; TTL is checked only on read",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-323",
+    "name": "`if_none_match`: whole-body conditional via bare-hex content hash",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-324",
+    "name": "UNREACHABLE FROM LIVE CODE: `ResponseBudgetMode.Unchanged` / `ResponseBudgetMode.DeltaOnly` are exercised only by a unit",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-325",
+    "name": "`diff_against` / `delta_only`: block-level delta codec",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-326",
+    "name": "`occam_watch`: stateful wrapper reusing the same transcode options/diff plumbing",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-327",
+    "name": "Codec registry + selector: real extension point, but zero live selection surface",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-328",
+    "name": "DEAD (from live-traffic perspective): `CompactMarkdownCodec` and `JsonKnowledgeCodec` are registered but never selectabl",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-329",
+    "name": "`MarkdownPassthroughCodec`: the only codec that ever runs in production",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-330",
+    "name": "Canonical extraction runs on every live transcode call but its output is never serialized to any MCP response",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-331",
+    "name": "DEAD: `MaterializedProvenanceResolver` / `ProvenanceTrace` — fully-implemented claim→evidence→source→receipt-leaf chain,",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-332",
+    "name": "DEAD: `Fact`, `Entity`, `Relationship` Canonical types are defined but never instantiated anywhere",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-333",
+    "name": "`CanonicalRetention`: real, tested budget-aware retention logic — for output nobody reads (see CAP-330)",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-334",
+    "name": "`TableSemanticMaterializer`: compat/bench-only entry point, not the live table path",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-335",
+    "name": "`SurfaceSpanAttacher.Attach`: block→markdown-offset bridge, computed but not exposed",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-336",
+    "name": "Env vars actually read by this subsystem (confirmed via grep, cross-checked against `docs/configuration.md` — docs untru",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-337",
+    "name": "`OCCAM_CHUNK_SIZE` unit mismatch: chars vs. tokens",
+    "agent": "S20",
+    "report": "docs-audit/subsystems/materialization.md"
+  },
+  {
+    "id": "CAP-350",
+    "name": "`OCCAM_HOME` root discovery and worker-path resolution",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-351",
+    "name": "Worker script path overrides",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-352",
+    "name": "Node runtime + heap sizing",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-353",
+    "name": "Host process identity stamping",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-354",
+    "name": "Launcher binary-selection + dev fallback (`OCCAM_FORCE_DOTNET_RUN`)",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-355",
+    "name": "Onboard config → launcher env merge (`OCCAM_CONFIG`)",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-356",
+    "name": "Session profile root + header/cookie loading",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-357",
+    "name": "Extra request headers file",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-358",
+    "name": "Private/localhost URL blocking (SSRF policy)",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-359",
+    "name": "Playwright browser-cache path resolution",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-360",
+    "name": "Browser channel / executable selection",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-361",
+    "name": "Browser autoinstall / provisioning gate",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-362",
+    "name": "Browser execution mode (shared daemon vs isolated)",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-363",
+    "name": "Browser daemon pool sizing and port layout",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-364",
+    "name": "Browser concurrency gate",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-365",
+    "name": "Browser extract timeouts",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-366",
+    "name": "Tier-B goto-timeout cap (worker-only, no host-side counterpart)",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-367",
+    "name": "HTTP daemon lifecycle",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-368",
+    "name": "Response body size cap + oversize mode",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-369",
+    "name": "PDF body cap",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-370",
+    "name": "Robots.txt politeness + per-host throttle",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-371",
+    "name": "Transcode response cache directory",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-372",
+    "name": "Receipt v1 signing master switch + key storage",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-373",
+    "name": "RFC3161 time anchor (opt-in receipt enhancement)",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-374",
+    "name": "Playbook tier paths",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-375",
+    "name": "Well-known site genome auto-fetch",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-376",
+    "name": "Domain tier registry extra config",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-377",
+    "name": "Search provider selection",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-378",
+    "name": "Managed extract provider escalation",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-379",
+    "name": "Translation service",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-380",
+    "name": "Static egress proxy",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-381",
+    "name": "Rotating proxy pool",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-382",
+    "name": "Digest parallelism control",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-383",
+    "name": "Opt-in MCP tool-group flags",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-384",
+    "name": "Tool surface profile (`OCCAM_PROFILE`)",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-385",
+    "name": "Client capability env bootstrap",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-386",
+    "name": "Batch server settings",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-387",
+    "name": "Watch store path",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-388",
+    "name": "Remote MCP TLS configuration",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-389",
+    "name": "Remote MCP JWT configuration",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-390",
+    "name": "Remote transport limits",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-391",
+    "name": "Startup banner + diagnostic logging toggles",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-392",
+    "name": "Telemetry cost-display rate",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-393",
+    "name": "Internal per-call env plumbing (`OCCAM_FEATURES`, `OCCAM_HTTP_OVERSIZE_MODE`, `OCCAM_BROWSER_POOL_SLOT_ID`)",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-394",
+    "name": "Cookie injection / browser-extract-variant / virtual-scroll opt-ins",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  },
+  {
+    "id": "CAP-395",
+    "name": "Chunking plugin default size",
+    "agent": "S24",
+    "report": "docs-audit/subsystems/config-env.md"
+  }
+]

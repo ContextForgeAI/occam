@@ -1,0 +1,5379 @@
+{
+  "version": 1,
+  "phase": 5,
+  "generated": "2026-07-26",
+  "agent": "P5-R",
+  "summary": {
+    "nodes": 155,
+    "edges": 280,
+    "by_node_type": {
+      "PRODUCT_SYSTEM": 9,
+      "CAPABILITY_FAMILY": 39,
+      "BACKEND": 7,
+      "ENTRYPOINT": 28,
+      "ARTIFACT": 34,
+      "STATE": 12,
+      "TRUST_PRIMITIVE": 12,
+      "WORKFLOW": 14
+    },
+    "by_relation": {
+      "CONTAINS": 39,
+      "ESCALATES_TO": 2,
+      "EXPOSES": 49,
+      "USES": 30,
+      "PRODUCES": 38,
+      "CONSUMES": 29,
+      "READS_WRITES": 13,
+      "PROVES": 12,
+      "VERIFIES": 14,
+      "COMPOSES_INTO": 32,
+      "GATED_BY": 12,
+      "DEGRADES_TO": 10
+    },
+    "discovery_graph_preserved": {
+      "file": "docs-audit/capability-graph.json",
+      "nodes": 658,
+      "edges": 588,
+      "note": "untouched; this file is the normalized parallel graph"
+    },
+    "inclusion_rules": {
+      "entrypoints": "28 of 51 named entrypoints: all 15 core MCP + 4 opt-in MCP surfaces + BatchServer + CLI verify/keys + doctor/onboard/connect/session + launch-mcp-host + Level B install. Excluded: connect's 15 host adapters (mechanisms under EP:occam_connect), maintainer gate/bench scripts, help-registry-only rows.",
+      "artifacts": "34 of 39 ART-001…039 as nodes; 5 intentionally excluded (see art_intentionally_excluded).",
+      "state": "12 of 29 ST items: durable secrets, trust key, caches/stores that alter product behavior, browser pool, operator host mutation. Excluded: temp headers, genome/seed RAM caches, domain-tier cache, portable response-only artifacts already covered as ART, Playwright browser bits, skill trees, cosign-as-state, stderr, process-kill identity.",
+      "workflows": "14 load-bearing FLOW/CMP nodes covering handbook spines + opt-in + operator bootstrap; not all FLOW-001…022."
+    },
+    "art_intentionally_excluded": {
+      "ART-003": "Agent-only tables[]; no Merkle/claim consumer — omitted to keep graph readable (ARTIFACT-ONTOLOGY § orphan note).",
+      "ART-004": "Agent-only feed object; no trust path — omitted (same reason as ART-003).",
+      "ART-030": "Connect last-run bookkeeping; low structural load vs ART-031 — omitted.",
+      "ART-033": "Skill card consumed by external harnesses, not Core runtime — omitted.",
+      "ART-039": "translatedMarkdown lossy sidecar never enters receipt bytes — omitted."
+    }
+  },
+  "relations": [
+    {
+      "name": "CONTAINS",
+      "from_types": [
+        "PRODUCT_SYSTEM"
+      ],
+      "to_types": [
+        "CAPABILITY_FAMILY"
+      ],
+      "meaning": "Product system owns the capability family as a named product area (one family, one system)."
+    },
+    {
+      "name": "EXPOSES",
+      "from_types": [
+        "ENTRYPOINT"
+      ],
+      "to_types": [
+        "CAPABILITY_FAMILY"
+      ],
+      "meaning": "Named entrypoint is a primary caller surface for the family (MCP tool, CLI verb, or operator script)."
+    },
+    {
+      "name": "USES",
+      "from_types": [
+        "CAPABILITY_FAMILY",
+        "WORKFLOW"
+      ],
+      "to_types": [
+        "BACKEND",
+        "CAPABILITY_FAMILY"
+      ],
+      "meaning": "Family or workflow depends on a backend provider or another family at runtime (not ownership)."
+    },
+    {
+      "name": "PRODUCES",
+      "from_types": [
+        "CAPABILITY_FAMILY",
+        "BACKEND"
+      ],
+      "to_types": [
+        "ARTIFACT"
+      ],
+      "meaning": "Family/backend is the primary issuer of the artifact identity."
+    },
+    {
+      "name": "CONSUMES",
+      "from_types": [
+        "CAPABILITY_FAMILY",
+        "WORKFLOW",
+        "TRUST_PRIMITIVE"
+      ],
+      "to_types": [
+        "ARTIFACT"
+      ],
+      "meaning": "Family/workflow/trust path reads or requires the artifact as an input (not mere adjacency)."
+    },
+    {
+      "name": "READS_WRITES",
+      "from_types": [
+        "CAPABILITY_FAMILY"
+      ],
+      "to_types": [
+        "STATE"
+      ],
+      "meaning": "Family reads and/or mutates the named durable or process state item as part of its contract."
+    },
+    {
+      "name": "ESCALATES_TO",
+      "from_types": [
+        "BACKEND"
+      ],
+      "to_types": [
+        "BACKEND"
+      ],
+      "meaning": "Router may advance from one acquisition backend to another under the corrected cascade ladder (not dual-fail ranking)."
+    },
+    {
+      "name": "PROVES",
+      "from_types": [
+        "TRUST_PRIMITIVE"
+      ],
+      "to_types": [
+        "ARTIFACT"
+      ],
+      "meaning": "Trust primitive cryptographically or procedurally binds claims about the target artifact class — see TRUST-MODEL for exact scope (never overclaim)."
+    },
+    {
+      "name": "VERIFIES",
+      "from_types": [
+        "CAPABILITY_FAMILY",
+        "ENTRYPOINT"
+      ],
+      "to_types": [
+        "TRUST_PRIMITIVE"
+      ],
+      "meaning": "Family or entrypoint exercises the trust primitive as a checker (offline/live/prove/citation/history/manifest)."
+    },
+    {
+      "name": "COMPOSES_INTO",
+      "from_types": [
+        "CAPABILITY_FAMILY",
+        "ENTRYPOINT"
+      ],
+      "to_types": [
+        "WORKFLOW"
+      ],
+      "meaning": "Family/entrypoint is a load-bearing step in a proven FLOW/CMP composition (not every possible call order)."
+    },
+    {
+      "name": "GATED_BY",
+      "from_types": [
+        "CAPABILITY_FAMILY",
+        "ENTRYPOINT"
+      ],
+      "to_types": [
+        "STATE",
+        "ENTRYPOINT"
+      ],
+      "meaning": "Reachability requires an opt-in env gate, profile, or ambient state; absence removes the surface (not a soft preference)."
+    },
+    {
+      "name": "DEGRADES_TO",
+      "from_types": [
+        "CAPABILITY_FAMILY",
+        "BACKEND",
+        "ARTIFACT"
+      ],
+      "to_types": [
+        "CAPABILITY_FAMILY",
+        "ARTIFACT",
+        "TRUST_PRIMITIVE"
+      ],
+      "meaning": "Failure or honesty path: success path collapses to a typed failure family, negative receipt, or weaker trust primitive without inventing content."
+    }
+  ],
+  "nodes": [
+    {
+      "id": "PS-1",
+      "type": "PRODUCT_SYSTEM",
+      "name": "Acquisition",
+      "summary": "Obtain source content safely through HTTP, browser, managed, proxy, and session-aware paths.",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "canonical-capabilities.json#PS-1"
+      ]
+    },
+    {
+      "id": "PS-2",
+      "type": "PRODUCT_SYSTEM",
+      "name": "Materialization",
+      "summary": "Transform acquired content into bounded, focused, structured, differential, and quality-signalled responses.",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "canonical-capabilities.json#PS-2"
+      ]
+    },
+    {
+      "id": "PS-3",
+      "type": "PRODUCT_SYSTEM",
+      "name": "Discovery",
+      "summary": "Diagnose, find, map, rank, and synthesize web sources before or across extraction.",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "canonical-capabilities.json#PS-3"
+      ]
+    },
+    {
+      "id": "PS-4",
+      "type": "PRODUCT_SYSTEM",
+      "name": "Knowledge extraction",
+      "summary": "Map source content into caller-supplied typed schemas and the shipped canonical-knowledge implementation.",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "canonical-capabilities.json#PS-4"
+      ]
+    },
+    {
+      "id": "PS-5",
+      "type": "PRODUCT_SYSTEM",
+      "name": "Playbooks",
+      "summary": "Resolve, apply, heal, validate, sign, and persist extraction playbooks and genomes.",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "canonical-capabilities.json#PS-5"
+      ]
+    },
+    {
+      "id": "PS-6",
+      "type": "PRODUCT_SYSTEM",
+      "name": "Trust and provenance",
+      "summary": "Create and inspect receipts, proofs, claims, attestations, and auditable datasets without overstating guarantees.",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "canonical-capabilities.json#PS-6"
+      ]
+    },
+    {
+      "id": "PS-7",
+      "type": "PRODUCT_SYSTEM",
+      "name": "Monitoring and multi-source",
+      "summary": "Run durable or multi-source jobs: batch, watch, consensus, and failure aggregation.",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "canonical-capabilities.json#PS-7"
+      ]
+    },
+    {
+      "id": "PS-8",
+      "type": "PRODUCT_SYSTEM",
+      "name": "Runtime and exposure",
+      "summary": "Expose capabilities through MCP transports, profiles, gates, instructions, and ambient client context.",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "canonical-capabilities.json#PS-8"
+      ]
+    },
+    {
+      "id": "PS-9",
+      "type": "PRODUCT_SYSTEM",
+      "name": "Operator surface",
+      "summary": "Install, operate, connect, package, refresh, and distribute the host and its support assets.",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "canonical-capabilities.json#PS-9"
+      ]
+    },
+    {
+      "id": "FAM:acquisition-routing",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Acquisition routing",
+      "summary": "Select backends, short-circuit terminal cases, escalate, and choose the surfaced outcome.",
+      "caps": [
+        "CAP-052",
+        "CAP-050",
+        "CAP-051",
+        "CAP-052",
+        "CAP-104",
+        "CAP-112",
+        "CAP-084"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-056"
+      ],
+      "evidence": [
+        "OccamRouter.cs:134-182",
+        "EF-056",
+        "ACQUISITION-ROUTING-MODEL.md"
+      ],
+      "product_system": "PS-1",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:http-acquisition",
+      "type": "CAPABILITY_FAMILY",
+      "name": "HTTP acquisition",
+      "summary": "Fetch and extract through the HTTP worker and daemon paths.",
+      "caps": [
+        "CAP-200",
+        "CAP-059",
+        "CAP-200",
+        "CAP-201",
+        "CAP-202"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "HttpExtractBackend.cs:6-28",
+        "workers/http-extract/extract.mjs"
+      ],
+      "product_system": "PS-1",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:browser-acquisition",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Browser acquisition",
+      "summary": "Acquire rendered content through Playwright workers, daemons, and pools.",
+      "caps": [
+        "CAP-203",
+        "CAP-053",
+        "CAP-076",
+        "CAP-099",
+        "CAP-203",
+        "CAP-204",
+        "CAP-205"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-002",
+        "EF-041"
+      ],
+      "evidence": [
+        "BrowserExtractBackend.cs",
+        "EF-041",
+        "BrowserPoolManager.cs:45-48"
+      ],
+      "product_system": "PS-1",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:managed-acquisition",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Managed acquisition",
+      "summary": "Escalate successful requests to configured third-party extraction providers.",
+      "caps": [
+        "CAP-054",
+        "CAP-054",
+        "CAP-055",
+        "CAP-056",
+        "CAP-057",
+        "CAP-058",
+        "CAP-238"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-003"
+      ],
+      "evidence": [
+        "ManagedExtractBackend.cs:28-95",
+        "EF-003",
+        "OccamRouter.cs:163-175"
+      ],
+      "product_system": "PS-1",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:network-safety",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Network safety",
+      "summary": "Enforce URL, DNS, redirect, response-size, robots, and network failure policy.",
+      "caps": [
+        "CAP-151",
+        "CAP-073",
+        "CAP-100",
+        "CAP-101",
+        "CAP-103",
+        "CAP-110",
+        "CAP-150"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-042",
+        "EF-043"
+      ],
+      "evidence": [
+        "FetchPreflight",
+        "EF-042",
+        "EF-043"
+      ],
+      "product_system": "PS-1",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:proxy-egress",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Proxy and egress",
+      "summary": "Configure static or rotating proxies and define their path-specific reach.",
+      "caps": [
+        "CAP-157",
+        "CAP-102",
+        "CAP-157",
+        "CAP-158",
+        "CAP-159",
+        "CAP-160",
+        "CAP-161"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-007",
+        "EF-057"
+      ],
+      "evidence": [
+        "workers/shared/lib",
+        "EF-007",
+        "CAP-165",
+        "CAP-166"
+      ],
+      "product_system": "PS-1",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:session-fetch",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Session-aware fetch",
+      "summary": "Apply local session headers, cookies, and browser storage state where supported.",
+      "caps": [
+        "CAP-167",
+        "CAP-068",
+        "CAP-069",
+        "CAP-167",
+        "CAP-168",
+        "CAP-169",
+        "CAP-170"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-017",
+        "EF-039",
+        "EF-040",
+        "EF-054"
+      ],
+      "evidence": [
+        "SessionProfileHeaders.cs:115-129",
+        "EF-054",
+        "CAP-167"
+      ],
+      "product_system": "PS-1",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:access-consent",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Access and consent handling",
+      "summary": "Detect login/challenge walls and handle consent overlays without claiming universal bypass.",
+      "caps": [
+        "CAP-095",
+        "CAP-095",
+        "CAP-096",
+        "CAP-107",
+        "CAP-179",
+        "CAP-180",
+        "CAP-181"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ChallengePagePostProcessor",
+        "CAP-095"
+      ],
+      "product_system": "PS-1",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:token-budget",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Token budgeting",
+      "summary": "Allocate and enforce content and sidecar token budgets.",
+      "caps": [
+        "CAP-061",
+        "CAP-060",
+        "CAP-061",
+        "CAP-062",
+        "CAP-063",
+        "CAP-066",
+        "CAP-067"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "TokenBudget",
+        "FitMarkdown",
+        "CAP-061"
+      ],
+      "product_system": "PS-2",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:focus-selection",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Focus and selection",
+      "summary": "Select relevant sections, paragraphs, and blocks for a caller intent.",
+      "caps": [
+        "CAP-064",
+        "CAP-064",
+        "CAP-065",
+        "CAP-077",
+        "CAP-087",
+        "CAP-307",
+        "CAP-311"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "FocusMatcher",
+        "FocusIntent.FromUrl",
+        "CAP-064"
+      ],
+      "product_system": "PS-2",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:structured-materialization",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Structured materialization",
+      "summary": "Produce blocks, tables, feeds, chunks, media references, and codecs.",
+      "caps": [
+        "CAP-081",
+        "CAP-075",
+        "CAP-078",
+        "CAP-079",
+        "CAP-080",
+        "CAP-081",
+        "CAP-109"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-004",
+        "EF-010",
+        "EF-055"
+      ],
+      "evidence": [
+        "MaterializationPlanner",
+        "Codecs/*",
+        "CAP-081",
+        "EF-004"
+      ],
+      "product_system": "PS-2",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:differential-materialization",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Differential materialization",
+      "summary": "Produce conditional and block-level change responses.",
+      "caps": [
+        "CAP-074",
+        "CAP-074",
+        "CAP-082",
+        "CAP-083",
+        "CAP-089",
+        "CAP-323",
+        "CAP-324"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "if_none_match",
+        "diff_against",
+        "CAP-074"
+      ],
+      "product_system": "PS-2",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:response-cache",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Response cache",
+      "summary": "Persist and replay opt-in materialized response envelopes.",
+      "caps": [
+        "CAP-085",
+        "CAP-085",
+        "CAP-315",
+        "CAP-321",
+        "CAP-322"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-001",
+        "EF-045"
+      ],
+      "evidence": [
+        "TranscodeResponseCache.cs:24-145",
+        "EF-001",
+        "EF-045",
+        "CAP-085"
+      ],
+      "product_system": "PS-2",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:quality-failure-semantics",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Quality and failure semantics",
+      "summary": "Classify extraction quality, normalize failures, and expose recovery decisions.",
+      "caps": [
+        "CAP-094",
+        "CAP-094",
+        "CAP-097",
+        "CAP-098",
+        "CAP-105",
+        "CAP-106",
+        "CAP-108"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "OccamServiceCollectionExtensions.cs:34-36",
+        "TranscodePipeline.cs:152-174",
+        "CAP-094"
+      ],
+      "product_system": "PS-1",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:probe-diagnostics",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Probe diagnostics",
+      "summary": "Predict extractability and access characteristics with a bounded pre-fetch probe.",
+      "caps": [
+        "CAP-420",
+        "CAP-420",
+        "CAP-421",
+        "CAP-422",
+        "CAP-423",
+        "CAP-424",
+        "CAP-425"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ProbeService.cs",
+        "CAP-420"
+      ],
+      "product_system": "PS-3",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:site-mapping",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Site mapping",
+      "summary": "Discover and rank site links from homepages, sitemaps, and robots files.",
+      "caps": [
+        "CAP-510",
+        "CAP-510",
+        "CAP-511",
+        "CAP-512",
+        "CAP-513",
+        "CAP-514",
+        "CAP-515"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "MapService.cs",
+        "CAP-510"
+      ],
+      "product_system": "PS-3",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:web-search",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Web search",
+      "summary": "Search configured providers and rank results using extractability evidence.",
+      "caps": [
+        "CAP-620",
+        "CAP-620",
+        "CAP-621",
+        "CAP-622",
+        "CAP-623",
+        "CAP-624",
+        "CAP-625"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "SearchService.cs",
+        "CAP-620"
+      ],
+      "product_system": "PS-3",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:digest-synthesis",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Digest synthesis",
+      "summary": "Discover, fetch, and combine multiple sources into a bounded digest.",
+      "caps": [
+        "CAP-450",
+        "CAP-450",
+        "CAP-451",
+        "CAP-452",
+        "CAP-453",
+        "CAP-454",
+        "CAP-455"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "DigestService.cs:309",
+        "CAP-450"
+      ],
+      "product_system": "PS-7",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:schema-knowledge-extraction",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Schema-driven knowledge extraction",
+      "summary": "Resolve a schema and extract typed facts with the CSS worker.",
+      "caps": [
+        "CAP-590",
+        "CAP-590",
+        "CAP-591",
+        "CAP-592",
+        "CAP-593",
+        "CAP-594",
+        "CAP-595"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-013",
+        "EF-014",
+        "EF-055"
+      ],
+      "evidence": [
+        "KnowledgeExtractService.cs:10-114",
+        "CAP-590",
+        "EF-006"
+      ],
+      "product_system": "PS-4",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:canonical-knowledge-ir",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Canonical knowledge IR",
+      "summary": "Represent canonical facts, entities, relationships, spans, and semantic tables; much is shipped but unreachable.",
+      "caps": [
+        "CAP-328",
+        "CAP-330",
+        "CAP-332",
+        "CAP-333"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "TranscodePipeline.cs:44-47,259",
+        "CAP-328",
+        "DEAD_CLUSTER"
+      ],
+      "product_system": "PS-4",
+      "status": "DEAD_CLUSTER",
+      "public_relevance": "NONE"
+    },
+    {
+      "id": "FAM:playbook-resolution",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Playbook resolution",
+      "summary": "Resolve local, user, community, seed, and live-genome inputs with field-level precedence.",
+      "caps": [
+        "CAP-491",
+        "CAP-070",
+        "CAP-071",
+        "CAP-072",
+        "CAP-490",
+        "CAP-491",
+        "CAP-492"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "PlaybookSeedResolver",
+        "CAP-491"
+      ],
+      "product_system": "PS-5",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:playbook-authoring",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Playbook authoring",
+      "summary": "Verify, sign, persist, and journal local playbook drafts.",
+      "caps": [
+        "CAP-562",
+        "CAP-560",
+        "CAP-561",
+        "CAP-562",
+        "CAP-563",
+        "CAP-564",
+        "CAP-565"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-005",
+        "EF-044"
+      ],
+      "evidence": [
+        "PlaybookSaveService.cs:86-105",
+        "EF-005",
+        "CAP-562"
+      ],
+      "product_system": "PS-5",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:playbook-healing",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Playbook healing",
+      "summary": "Capture browser skeleton evidence and propose bounded repair anchors.",
+      "caps": [
+        "CAP-530",
+        "CAP-530",
+        "CAP-531",
+        "CAP-532",
+        "CAP-533",
+        "CAP-534",
+        "CAP-535"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "PlaybookHealService.cs",
+        "CAP-530"
+      ],
+      "product_system": "PS-5",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:playbook-validation",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Playbook validation",
+      "summary": "Lint and validate playbooks while exposing parser and sanitizer boundaries.",
+      "caps": [
+        "CAP-750",
+        "CAP-750",
+        "CAP-751",
+        "CAP-752",
+        "CAP-753",
+        "CAP-754",
+        "CAP-755"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-015",
+        "EF-047"
+      ],
+      "evidence": [
+        "PlaybookLinter",
+        "CAP-750",
+        "EF-047"
+      ],
+      "product_system": "PS-5",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:receipts",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Receipts and proofs",
+      "summary": "Build signed positive/negative receipts, Merkle proofs, capsules, and time-anchor sidecars.",
+      "caps": [
+        "CAP-090",
+        "CAP-090",
+        "CAP-091",
+        "CAP-092",
+        "CAP-093",
+        "CAP-250",
+        "CAP-251"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ReceiptSigner",
+        "ReceiptModels.cs:12-53",
+        "CAP-090",
+        "EF-044"
+      ],
+      "product_system": "PS-6",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:verification",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Receipt verification",
+      "summary": "Verify receipts, detached signatures, proofs, citations, histories, and live re-fetches.",
+      "caps": [
+        "CAP-268",
+        "CAP-258",
+        "CAP-259",
+        "CAP-260",
+        "CAP-262",
+        "CAP-268",
+        "CAP-274"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-011",
+        "EF-012"
+      ],
+      "evidence": [
+        "OccamVerifyTool.cs",
+        "CAP-268",
+        "EF-011"
+      ],
+      "product_system": "PS-6",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:claims-attestation",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Claims and attestation",
+      "summary": "Retrieve evidence for claims and aggregate citation status without implying stronger proof.",
+      "caps": [
+        "CAP-690",
+        "CAP-690",
+        "CAP-691",
+        "CAP-692",
+        "CAP-693",
+        "CAP-694",
+        "CAP-695"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ClaimCheckService.cs",
+        "AttestService.cs",
+        "CAP-690"
+      ],
+      "product_system": "PS-6",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:dataset-provenance",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Dataset provenance",
+      "summary": "Export auditable URL sets and manifests with explicit receipt limitations.",
+      "caps": [
+        "CAP-770",
+        "CAP-770",
+        "CAP-771",
+        "CAP-772",
+        "CAP-773",
+        "CAP-774",
+        "CAP-775"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-016",
+        "EF-018"
+      ],
+      "evidence": [
+        "DatasetExportService.cs:45-106",
+        "CAP-770",
+        "EF-018"
+      ],
+      "product_system": "PS-6",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:batch-jobs",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Batch jobs",
+      "summary": "Submit, process, persist, and retrieve asynchronous extraction jobs.",
+      "caps": [
+        "CAP-800",
+        "CAP-800",
+        "CAP-801",
+        "CAP-802",
+        "CAP-803",
+        "CAP-804",
+        "CAP-805"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-037",
+        "EF-038"
+      ],
+      "evidence": [
+        "BatchJobProcessor.cs",
+        "EF-037",
+        "CAP-800"
+      ],
+      "product_system": "PS-7",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:change-monitoring",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Change monitoring",
+      "summary": "Persist watch targets and append chained change history.",
+      "caps": [
+        "CAP-830",
+        "CAP-830",
+        "CAP-831",
+        "CAP-832",
+        "CAP-833",
+        "CAP-834",
+        "CAP-835"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-019",
+        "EF-020"
+      ],
+      "evidence": [
+        "WatchService.cs",
+        "EF-020",
+        "CAP-830"
+      ],
+      "product_system": "PS-7",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:consensus-crosscheck",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Consensus crosscheck",
+      "summary": "Compare multiple sources and return a consensus-oriented verdict.",
+      "caps": [
+        "CAP-850",
+        "CAP-850",
+        "CAP-851",
+        "CAP-852",
+        "CAP-853",
+        "CAP-854",
+        "CAP-855"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-031",
+        "EF-032"
+      ],
+      "evidence": [
+        "ConsensusService.cs:84-107",
+        "CAP-850",
+        "EF-032"
+      ],
+      "product_system": "PS-7",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:failure-atlas",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Failure atlas",
+      "summary": "Aggregate per-session failure observations and expose atlas summaries.",
+      "caps": [
+        "CAP-870",
+        "CAP-870",
+        "CAP-871",
+        "CAP-872",
+        "CAP-873",
+        "CAP-874",
+        "CAP-875"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "FailureAtlasStore.cs:5-17",
+        "CAP-870",
+        "C2"
+      ],
+      "product_system": "PS-7",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:runtime-transports",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Runtime transports",
+      "summary": "Run stdio, local WebSocket, remote authenticated WebSocket, and batch-server modes.",
+      "caps": [
+        "CAP-003",
+        "CAP-002",
+        "CAP-003",
+        "CAP-004",
+        "CAP-005",
+        "CAP-006",
+        "CAP-020"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "StdioMcpTransport",
+        "WebSocketMcpTransport",
+        "CAP-003",
+        "CAP-1000"
+      ],
+      "product_system": "PS-8",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:mcp-exposure",
+      "type": "CAPABILITY_FAMILY",
+      "name": "MCP exposure",
+      "summary": "Register core and gated tools under profiles and advertise runtime instructions.",
+      "caps": [
+        "CAP-007",
+        "CAP-001",
+        "CAP-007",
+        "CAP-008",
+        "CAP-009",
+        "CAP-010",
+        "CAP-011"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-033"
+      ],
+      "evidence": [
+        "OccamMcpServerRegistration.cs",
+        "CAP-007",
+        "EF-033"
+      ],
+      "product_system": "PS-8",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:client-context",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Client context",
+      "summary": "Store ambient client context and derive advisory profile and budget information.",
+      "caps": [
+        "CAP-400",
+        "CAP-400",
+        "CAP-401",
+        "CAP-402",
+        "CAP-403",
+        "CAP-404"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ClientCapabilityStore.cs:39-78",
+        "CAP-400"
+      ],
+      "product_system": "PS-8",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:operator-cli",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Operator CLI",
+      "summary": "Dispatch host and wrapper commands for lifecycle, sessions, refresh, keys, and inspection.",
+      "caps": [
+        "CAP-920",
+        "CAP-350",
+        "CAP-351",
+        "CAP-352",
+        "CAP-353",
+        "CAP-354",
+        "CAP-355"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-022",
+        "EF-023",
+        "EF-025",
+        "EF-049"
+      ],
+      "evidence": [
+        "scripts/occam.mjs",
+        "CAP-920",
+        "EF-049"
+      ],
+      "product_system": "PS-9",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:install-onboarding",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Install and onboarding",
+      "summary": "Diagnose prerequisites, install runtime assets, configure onboarding, and verify installations.",
+      "caps": [
+        "CAP-940",
+        "CAP-940",
+        "CAP-941",
+        "CAP-942",
+        "CAP-943",
+        "CAP-944",
+        "CAP-945"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-028",
+        "EF-029",
+        "EF-030",
+        "EF-050"
+      ],
+      "evidence": [
+        "occam-onboard.mjs",
+        "CAP-940",
+        "EF-029"
+      ],
+      "product_system": "PS-9",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:host-connectors",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Host connectors",
+      "summary": "Generate, apply, verify, and roll back host-specific MCP configuration.",
+      "caps": [
+        "CAP-980",
+        "CAP-980",
+        "CAP-981",
+        "CAP-982",
+        "CAP-983",
+        "CAP-984",
+        "CAP-985"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-021"
+      ],
+      "evidence": [
+        "occam-connect.mjs",
+        "CAP-980",
+        "EF-021"
+      ],
+      "product_system": "PS-9",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "FAM:packaging-distribution",
+      "type": "CAPABILITY_FAMILY",
+      "name": "Packaging and distribution",
+      "summary": "Build and distribute AOT, tarball, Docker, npm, skill, and CI release surfaces.",
+      "caps": [
+        "CAP-1020",
+        "CAP-1020",
+        "CAP-1021",
+        "CAP-1022",
+        "CAP-1023",
+        "CAP-1024",
+        "CAP-1025"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-034",
+        "EF-035",
+        "EF-036",
+        "EF-051",
+        "EF-052",
+        "EF-053"
+      ],
+      "evidence": [
+        "build-release",
+        "CAP-1020",
+        "EF-051",
+        "EF-053"
+      ],
+      "product_system": "PS-9",
+      "status": "LIVE",
+      "public_relevance": "HIGH"
+    },
+    {
+      "id": "BE:http",
+      "type": "BACKEND",
+      "name": "HTTP extract backend",
+      "summary": "HttpExtractBackend + http-extract worker / http-daemon",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "HttpExtractBackend.cs:6-28",
+        "CAP-200"
+      ]
+    },
+    {
+      "id": "BE:browser",
+      "type": "BACKEND",
+      "name": "Browser extract backend",
+      "summary": "BrowserExtractBackend + Playwright / browser-daemon pool",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "BrowserExtractBackend.cs",
+        "CAP-203",
+        "EF-041"
+      ]
+    },
+    {
+      "id": "BE:managed",
+      "type": "BACKEND",
+      "name": "Managed third-party backend",
+      "summary": "Env-gated managed provider; never public backend_policy value",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ManagedExtractBackend.cs:28-95",
+        "CAP-054",
+        "EF-003"
+      ]
+    },
+    {
+      "id": "BE:css-extract",
+      "type": "BACKEND",
+      "name": "CSS extract worker",
+      "summary": "Schema-driven field extract; bypasses TranscodePipeline",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CssExtractWorker.cs",
+        "CAP-592"
+      ]
+    },
+    {
+      "id": "BE:dom-skeleton",
+      "type": "BACKEND",
+      "name": "DOM skeleton worker",
+      "summary": "Heal analysis capture via dom-skeleton-capture.mjs",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "DomSkeletonWorker.cs:10,79",
+        "CAP-530"
+      ]
+    },
+    {
+      "id": "BE:probe-fetcher",
+      "type": "BACKEND",
+      "name": "HTTP probe fetcher",
+      "summary": "Shared by probe/map; never escalates to browser",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "HttpProbeFetcher",
+        "CAP-420",
+        "CAP-510"
+      ]
+    },
+    {
+      "id": "BE:search-provider",
+      "type": "BACKEND",
+      "name": "Search provider HTTP",
+      "summary": "OCCAM_SEARCH_PROVIDER-backed search; no extract escalation",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "SearchService.cs:22",
+        "CAP-620"
+      ]
+    },
+    {
+      "id": "EP:occam_transcode",
+      "type": "ENTRYPOINT",
+      "name": "occam_transcode",
+      "summary": "Flagship read-one-page MCP tool",
+      "caps": [
+        "CAP-050"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-050"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_probe",
+      "type": "ENTRYPOINT",
+      "name": "occam_probe",
+      "summary": "HTTP-only cheap triage",
+      "caps": [
+        "CAP-420"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-420"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_digest",
+      "type": "ENTRYPOINT",
+      "name": "occam_digest",
+      "summary": "Multi-URL synthesize via pipeline",
+      "caps": [
+        "CAP-450"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-450"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_map",
+      "type": "ENTRYPOINT",
+      "name": "occam_map",
+      "summary": "Site link discovery",
+      "caps": [
+        "CAP-510"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-510"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_search",
+      "type": "ENTRYPOINT",
+      "name": "occam_search",
+      "summary": "Provider web search",
+      "caps": [
+        "CAP-620"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-620"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_extract_knowledge",
+      "type": "ENTRYPOINT",
+      "name": "occam_extract_knowledge",
+      "summary": "Recipe D typed facts",
+      "caps": [
+        "CAP-590"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-590"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_playbook_resolve",
+      "type": "ENTRYPOINT",
+      "name": "occam_playbook_resolve",
+      "summary": "Tiered playbook resolve",
+      "caps": [
+        "CAP-491"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-491"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_playbook_heal",
+      "type": "ENTRYPOINT",
+      "name": "occam_playbook_heal",
+      "summary": "Heal draft from skeleton",
+      "caps": [
+        "CAP-530"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-530"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_playbook_save",
+      "type": "ENTRYPOINT",
+      "name": "occam_playbook_save",
+      "summary": "Persist signed playbook (always signs)",
+      "caps": [
+        "CAP-562",
+        "EF-005"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-562",
+        "EF-005"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_playbook_lint",
+      "type": "ENTRYPOINT",
+      "name": "occam_playbook_lint",
+      "summary": "Advisory playbook lint",
+      "caps": [
+        "CAP-750"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-750"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_verify",
+      "type": "ENTRYPOINT",
+      "name": "occam_verify",
+      "summary": "Four verify modes + CLI twin",
+      "caps": [
+        "CAP-268"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-268"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_claim_check",
+      "type": "ENTRYPOINT",
+      "name": "occam_claim_check",
+      "summary": "BM25 + Merkle claim matches",
+      "caps": [
+        "CAP-690"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-690"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_attest",
+      "type": "ENTRYPOINT",
+      "name": "occam_attest",
+      "summary": "Heuristic status over claim_check",
+      "caps": [
+        "CAP-728"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-728"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_dataset_export",
+      "type": "ENTRYPOINT",
+      "name": "occam_dataset_export",
+      "summary": "Auditable multi-URL export + manifest",
+      "caps": [
+        "CAP-770"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-770"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_client_capabilities",
+      "type": "ENTRYPOINT",
+      "name": "occam_client_capabilities",
+      "summary": "Ambient token budget store",
+      "caps": [
+        "CAP-400"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-400"
+      ],
+      "entrypoint_kind": "core"
+    },
+    {
+      "id": "EP:occam_batch_submit",
+      "type": "ENTRYPOINT",
+      "name": "occam_batch_*",
+      "summary": "Opt-in batch MCP trio (submit/status/results)",
+      "caps": [
+        "CAP-800",
+        "EF-037"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-800",
+        "EF-037"
+      ],
+      "entrypoint_kind": "optin"
+    },
+    {
+      "id": "EP:occam_watch",
+      "type": "ENTRYPOINT",
+      "name": "occam_watch",
+      "summary": "Opt-in change monitor",
+      "caps": [
+        "CAP-830",
+        "EF-020"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-830",
+        "EF-020"
+      ],
+      "entrypoint_kind": "optin"
+    },
+    {
+      "id": "EP:occam_crosscheck",
+      "type": "ENTRYPOINT",
+      "name": "occam_crosscheck",
+      "summary": "Opt-in multi-vantage consensus",
+      "caps": [
+        "CAP-850",
+        "EF-032"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-850",
+        "EF-032"
+      ],
+      "entrypoint_kind": "optin"
+    },
+    {
+      "id": "EP:occam_failure_atlas",
+      "type": "ENTRYPOINT",
+      "name": "occam_failure_atlas",
+      "summary": "Opt-in in-memory failure aggregate",
+      "caps": [
+        "CAP-870"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-870"
+      ],
+      "entrypoint_kind": "optin"
+    },
+    {
+      "id": "EP:cli_verify",
+      "type": "ENTRYPOINT",
+      "name": "CLI verify",
+      "summary": "Host offline/live/prove/citation/history/manifest verify",
+      "caps": [
+        "CAP-268"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-268"
+      ],
+      "entrypoint_kind": "cli"
+    },
+    {
+      "id": "EP:cli_keys",
+      "type": "ENTRYPOINT",
+      "name": "CLI keys export",
+      "summary": "Export public signing key PEM",
+      "caps": [
+        "CAP-254"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-254"
+      ],
+      "entrypoint_kind": "cli"
+    },
+    {
+      "id": "EP:batch_server",
+      "type": "ENTRYPOINT",
+      "name": "--batch-server",
+      "summary": "Loopback HTTP batch API (no MCP registration)",
+      "caps": [
+        "CAP-006"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-006"
+      ],
+      "entrypoint_kind": "advanced"
+    },
+    {
+      "id": "EP:occam_doctor",
+      "type": "ENTRYPOINT",
+      "name": "occam doctor",
+      "summary": "Dependency readiness (npm/playwright/dotnet)",
+      "caps": [
+        "CAP-920"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-920"
+      ],
+      "entrypoint_kind": "operator"
+    },
+    {
+      "id": "EP:occam_onboard",
+      "type": "ENTRYPOINT",
+      "name": "occam onboard",
+      "summary": "Write onboard.json + env injection",
+      "caps": [
+        "CAP-940",
+        "EF-029"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-940",
+        "EF-029"
+      ],
+      "entrypoint_kind": "operator"
+    },
+    {
+      "id": "EP:occam_connect",
+      "type": "ENTRYPOINT",
+      "name": "occam connect",
+      "summary": "Mutate host MCP configs (≤15 adapters)",
+      "caps": [
+        "CAP-980",
+        "EF-021"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-980",
+        "EF-021"
+      ],
+      "entrypoint_kind": "operator"
+    },
+    {
+      "id": "EP:occam_session",
+      "type": "ENTRYPOINT",
+      "name": "occam session",
+      "summary": "Import/export session profiles + storageState",
+      "caps": [
+        "CAP-167",
+        "EF-054"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-167",
+        "EF-054"
+      ],
+      "entrypoint_kind": "operator"
+    },
+    {
+      "id": "EP:launch_mcp_host",
+      "type": "ENTRYPOINT",
+      "name": "launch-mcp-host.mjs",
+      "summary": "Default stdio MCP host launcher",
+      "caps": [
+        "CAP-1001"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-1001"
+      ],
+      "entrypoint_kind": "runtime"
+    },
+    {
+      "id": "EP:install_level_b",
+      "type": "ENTRYPOINT",
+      "name": "get-ff-occam / Level B install",
+      "summary": "Tarball install path with sha256 manifest",
+      "caps": [
+        "CAP-1020",
+        "EF-028"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "ENTRYPOINT-MODEL.md",
+        "CAP-1020",
+        "EF-028"
+      ],
+      "entrypoint_kind": "operator"
+    },
+    {
+      "id": "ART-001",
+      "type": "ARTIFACT",
+      "name": "Markdown extract (compiled)",
+      "summary": "Primary agent-facing page body",
+      "caps": [
+        "CAP-306"
+      ],
+      "artifacts": [
+        "ART-001"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-001",
+        "CAP-306"
+      ]
+    },
+    {
+      "id": "ART-002",
+      "type": "ARTIFACT",
+      "name": "Structured blocks[]",
+      "summary": "DOM blocks → Merkle leaves / claim",
+      "caps": [
+        "CAP-078",
+        "CAP-316"
+      ],
+      "artifacts": [
+        "ART-002"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-002",
+        "CAP-078",
+        "CAP-316"
+      ]
+    },
+    {
+      "id": "ART-005",
+      "type": "ARTIFACT",
+      "name": "chunks[]",
+      "summary": "Fixed-size chunk sidecar",
+      "caps": [
+        "CAP-320"
+      ],
+      "artifacts": [
+        "ART-005"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-005",
+        "CAP-320"
+      ]
+    },
+    {
+      "id": "ART-006",
+      "type": "ARTIFACT",
+      "name": "Capsule URI",
+      "summary": "Unsigned wrapper over signed envelope + cargo",
+      "caps": [
+        "CAP-274"
+      ],
+      "artifacts": [
+        "ART-006"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-006",
+        "CAP-274"
+      ]
+    },
+    {
+      "id": "ART-007",
+      "type": "ARTIFACT",
+      "name": "Receipt v1 positive",
+      "summary": "ECDSA-signed extraction envelope",
+      "caps": [
+        "CAP-250",
+        "EF-044"
+      ],
+      "artifacts": [
+        "ART-007"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-007",
+        "CAP-250",
+        "EF-044"
+      ]
+    },
+    {
+      "id": "ART-008",
+      "type": "ARTIFACT",
+      "name": "Negative receipt",
+      "summary": "Signed failure envelope (subset of codes)",
+      "caps": [
+        "CAP-269"
+      ],
+      "artifacts": [
+        "ART-008"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-008",
+        "CAP-269"
+      ]
+    },
+    {
+      "id": "ART-009",
+      "type": "ARTIFACT",
+      "name": "Time-anchor sidecar",
+      "summary": "TSA imprint over sig bytes",
+      "caps": [
+        "CAP-261"
+      ],
+      "artifacts": [
+        "ART-009"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-009",
+        "CAP-261"
+      ]
+    },
+    {
+      "id": "ART-010",
+      "type": "ARTIFACT",
+      "name": "Digest combined + items",
+      "summary": "Multi-URL synthesize response",
+      "caps": [
+        "CAP-450"
+      ],
+      "artifacts": [
+        "ART-010"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-010",
+        "CAP-450"
+      ]
+    },
+    {
+      "id": "ART-011",
+      "type": "ARTIFACT",
+      "name": "Map link list",
+      "summary": "Discovery links",
+      "caps": [
+        "CAP-527"
+      ],
+      "artifacts": [
+        "ART-011"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-011",
+        "CAP-527"
+      ]
+    },
+    {
+      "id": "ART-012",
+      "type": "ARTIFACT",
+      "name": "Probe diagnosis",
+      "summary": "Extractability / agentHints",
+      "caps": [
+        "CAP-423"
+      ],
+      "artifacts": [
+        "ART-012"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-012",
+        "CAP-423"
+      ]
+    },
+    {
+      "id": "ART-013",
+      "type": "ARTIFACT",
+      "name": "Search hits",
+      "summary": "Provider hit list",
+      "caps": [
+        "CAP-628"
+      ],
+      "artifacts": [
+        "ART-013"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-013",
+        "CAP-628"
+      ]
+    },
+    {
+      "id": "ART-014",
+      "type": "ARTIFACT",
+      "name": "Knowledge facts[]",
+      "summary": "Typed facts; fake Receipt telemetry (EF-006)",
+      "caps": [
+        "CAP-590",
+        "EF-006"
+      ],
+      "artifacts": [
+        "ART-014"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-014",
+        "CAP-590",
+        "EF-006"
+      ]
+    },
+    {
+      "id": "ART-015",
+      "type": "ARTIFACT",
+      "name": "Playbook JSON local",
+      "summary": "Always-signed on-disk recipe",
+      "caps": [
+        "CAP-280",
+        "EF-005"
+      ],
+      "artifacts": [
+        "ART-015"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-015",
+        "CAP-280",
+        "EF-005"
+      ]
+    },
+    {
+      "id": "ART-016",
+      "type": "ARTIFACT",
+      "name": "Heal skeleton / candidates",
+      "summary": "Heal draft inputs",
+      "caps": [
+        "CAP-543"
+      ],
+      "artifacts": [
+        "ART-016"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-016",
+        "CAP-543"
+      ]
+    },
+    {
+      "id": "ART-017",
+      "type": "ARTIFACT",
+      "name": "Resolve overlay / genome",
+      "summary": "Winning playbook overlay",
+      "caps": [
+        "CAP-491"
+      ],
+      "artifacts": [
+        "ART-017"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-017",
+        "CAP-491"
+      ]
+    },
+    {
+      "id": "ART-018",
+      "type": "ARTIFACT",
+      "name": "Lint grade/issues",
+      "summary": "Advisory only",
+      "caps": [
+        "CAP-750",
+        "EF-047"
+      ],
+      "artifacts": [
+        "ART-018"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-018",
+        "CAP-750",
+        "EF-047"
+      ]
+    },
+    {
+      "id": "ART-019",
+      "type": "ARTIFACT",
+      "name": "Claim matches + proofs",
+      "summary": "BM25 matches + Merkle",
+      "caps": [
+        "CAP-690"
+      ],
+      "artifacts": [
+        "ART-019"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-019",
+        "CAP-690"
+      ]
+    },
+    {
+      "id": "ART-020",
+      "type": "ARTIFACT",
+      "name": "Attest status batch",
+      "summary": "Unsigned aggregate statuses",
+      "caps": [
+        "CAP-728"
+      ],
+      "artifacts": [
+        "ART-020"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-020",
+        "CAP-728"
+      ]
+    },
+    {
+      "id": "ART-021",
+      "type": "ARTIFACT",
+      "name": "Verify verdict",
+      "summary": "Verifier output (does not newly sign)",
+      "caps": [
+        "CAP-268"
+      ],
+      "artifacts": [
+        "ART-021"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-021",
+        "CAP-268"
+      ]
+    },
+    {
+      "id": "ART-022",
+      "type": "ARTIFACT",
+      "name": "Dataset rows + manifest",
+      "summary": "Export + detached manifest sig",
+      "caps": [
+        "CAP-770",
+        "EF-018"
+      ],
+      "artifacts": [
+        "ART-022"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-022",
+        "CAP-770",
+        "EF-018"
+      ]
+    },
+    {
+      "id": "ART-023",
+      "type": "ARTIFACT",
+      "name": "Client ambient budget",
+      "summary": "Process store for default max_tokens",
+      "caps": [
+        "CAP-304"
+      ],
+      "artifacts": [
+        "ART-023"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-023",
+        "CAP-304"
+      ]
+    },
+    {
+      "id": "ART-024",
+      "type": "ARTIFACT",
+      "name": "contentHash / MaterializationKey",
+      "summary": "Hash identity (MaterializationKey ≠ cache key)",
+      "caps": [
+        "CAP-314",
+        "EF-045"
+      ],
+      "artifacts": [
+        "ART-024"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-024",
+        "CAP-314",
+        "EF-045"
+      ]
+    },
+    {
+      "id": "ART-025",
+      "type": "ARTIFACT",
+      "name": "Watch history chain",
+      "summary": "Signed chain entries (capped 64)",
+      "caps": [
+        "CAP-836"
+      ],
+      "artifacts": [
+        "ART-025"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-025",
+        "CAP-836"
+      ]
+    },
+    {
+      "id": "ART-026",
+      "type": "ARTIFACT",
+      "name": "Session profile files",
+      "summary": "Operator cookies/headers",
+      "caps": [
+        "CAP-880"
+      ],
+      "artifacts": [
+        "ART-026"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-026",
+        "CAP-880"
+      ]
+    },
+    {
+      "id": "ART-027",
+      "type": "ARTIFACT",
+      "name": "Batch job snapshot",
+      "summary": "Persisted jobs; no Receipt v1",
+      "caps": [
+        "CAP-804",
+        "EF-037"
+      ],
+      "artifacts": [
+        "ART-027"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-027",
+        "CAP-804",
+        "EF-037"
+      ]
+    },
+    {
+      "id": "ART-028",
+      "type": "ARTIFACT",
+      "name": "Watch store",
+      "summary": "Durable watch.json",
+      "caps": [
+        "CAP-840",
+        "EF-020"
+      ],
+      "artifacts": [
+        "ART-028"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-028",
+        "CAP-840",
+        "EF-020"
+      ]
+    },
+    {
+      "id": "ART-029",
+      "type": "ARTIFACT",
+      "name": "Onboard state",
+      "summary": "onboard.json env injection",
+      "caps": [
+        "EF-029",
+        "EF-050"
+      ],
+      "artifacts": [
+        "ART-029"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-029",
+        "EF-029",
+        "EF-050"
+      ]
+    },
+    {
+      "id": "ART-031",
+      "type": "ARTIFACT",
+      "name": "Host MCP config + bak",
+      "summary": "Connect-mutated host configs",
+      "caps": [
+        "EF-021"
+      ],
+      "artifacts": [
+        "ART-031"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-031",
+        "EF-021"
+      ]
+    },
+    {
+      "id": "ART-032",
+      "type": "ARTIFACT",
+      "name": "Level B tarball + manifest",
+      "summary": "sha256 ship path",
+      "caps": [
+        "CAP-1026"
+      ],
+      "artifacts": [
+        "ART-032"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-032",
+        "CAP-1026"
+      ]
+    },
+    {
+      "id": "ART-034",
+      "type": "ARTIFACT",
+      "name": "Host signing key PEM",
+      "summary": "Always minted on DI (EF-044)",
+      "caps": [
+        "CAP-254",
+        "EF-044"
+      ],
+      "artifacts": [
+        "ART-034"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-034",
+        "CAP-254",
+        "EF-044"
+      ]
+    },
+    {
+      "id": "ART-035",
+      "type": "ARTIFACT",
+      "name": "Transcode response cache entry",
+      "summary": "Opt-in disk envelope replay",
+      "caps": [
+        "CAP-321",
+        "EF-001"
+      ],
+      "artifacts": [
+        "ART-035"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-035",
+        "CAP-321",
+        "EF-001"
+      ]
+    },
+    {
+      "id": "ART-036",
+      "type": "ARTIFACT",
+      "name": "Temp CSS field-spec JSON",
+      "summary": "Internal plan for css-extract",
+      "caps": [
+        "CAP-590"
+      ],
+      "artifacts": [
+        "ART-036"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-036",
+        "CAP-590"
+      ]
+    },
+    {
+      "id": "ART-037",
+      "type": "ARTIFACT",
+      "name": "Session import raw cookies",
+      "summary": "Retained plaintext imports",
+      "caps": [
+        "EF-054"
+      ],
+      "artifacts": [
+        "ART-037"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-037",
+        "EF-054"
+      ]
+    },
+    {
+      "id": "ART-038",
+      "type": "ARTIFACT",
+      "name": "Cosign release .bundle",
+      "summary": "Orphaned — no install consumer",
+      "caps": [
+        "EF-053"
+      ],
+      "artifacts": [
+        "ART-038"
+      ],
+      "findings": [],
+      "evidence": [
+        "ARTIFACT-ONTOLOGY.md#ART-038",
+        "EF-053"
+      ]
+    },
+    {
+      "id": "ST-01",
+      "type": "STATE",
+      "name": "Session profile JSON",
+      "summary": "Operator cookies/headers for fetch",
+      "caps": [
+        "CAP-884"
+      ],
+      "artifacts": [
+        "ART-026"
+      ],
+      "findings": [],
+      "evidence": [
+        "STATE-MODEL.md#ST-01",
+        "CAP-884"
+      ]
+    },
+    {
+      "id": "ST-06",
+      "type": "STATE",
+      "name": "Transcode response cache",
+      "summary": "Opt-in disk cache of full envelopes",
+      "caps": [
+        "EF-001",
+        "EF-045"
+      ],
+      "artifacts": [
+        "ART-035"
+      ],
+      "findings": [
+        "EF-001",
+        "EF-045"
+      ],
+      "evidence": [
+        "STATE-MODEL.md#ST-06",
+        "EF-001",
+        "EF-045"
+      ]
+    },
+    {
+      "id": "ST-07",
+      "type": "STATE",
+      "name": "Local playbooks",
+      "summary": "Signed playbook store",
+      "caps": [
+        "EF-005"
+      ],
+      "artifacts": [
+        "ART-015"
+      ],
+      "findings": [
+        "EF-005"
+      ],
+      "evidence": [
+        "STATE-MODEL.md#ST-07",
+        "EF-005"
+      ]
+    },
+    {
+      "id": "ST-13",
+      "type": "STATE",
+      "name": "Watch store + history",
+      "summary": "Durable watch + capped history",
+      "caps": [
+        "EF-020"
+      ],
+      "artifacts": [
+        "ART-028",
+        "ART-025"
+      ],
+      "findings": [
+        "EF-020"
+      ],
+      "evidence": [
+        "STATE-MODEL.md#ST-13",
+        "EF-020"
+      ]
+    },
+    {
+      "id": "ST-15",
+      "type": "STATE",
+      "name": "Host signing key",
+      "summary": "Always-minted PEM identity",
+      "caps": [
+        "EF-044"
+      ],
+      "artifacts": [
+        "ART-034"
+      ],
+      "findings": [
+        "EF-044"
+      ],
+      "evidence": [
+        "STATE-MODEL.md#ST-15",
+        "EF-044"
+      ]
+    },
+    {
+      "id": "ST-17",
+      "type": "STATE",
+      "name": "Batch job store",
+      "summary": "jobs.json; no eviction; no Receipt v1",
+      "caps": [
+        "EF-037"
+      ],
+      "artifacts": [
+        "ART-027"
+      ],
+      "findings": [
+        "EF-037"
+      ],
+      "evidence": [
+        "STATE-MODEL.md#ST-17",
+        "EF-037"
+      ]
+    },
+    {
+      "id": "ST-18",
+      "type": "STATE",
+      "name": "Failure atlas",
+      "summary": "In-memory per DI session only",
+      "caps": [
+        "CAP-870"
+      ],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "STATE-MODEL.md#ST-18",
+        "CAP-870"
+      ]
+    },
+    {
+      "id": "ST-19",
+      "type": "STATE",
+      "name": "Client ambient budget",
+      "summary": "Process ClientCapabilityStore",
+      "caps": [
+        "CAP-400"
+      ],
+      "artifacts": [
+        "ART-023"
+      ],
+      "findings": [],
+      "evidence": [
+        "STATE-MODEL.md#ST-19",
+        "CAP-400"
+      ]
+    },
+    {
+      "id": "ST-20",
+      "type": "STATE",
+      "name": "Browser pool / daemon",
+      "summary": "Process-wide shared slots",
+      "caps": [
+        "EF-041"
+      ],
+      "artifacts": [],
+      "findings": [
+        "EF-041"
+      ],
+      "evidence": [
+        "STATE-MODEL.md#ST-20",
+        "EF-041"
+      ]
+    },
+    {
+      "id": "ST-22",
+      "type": "STATE",
+      "name": "Onboard config",
+      "summary": "Silent env injection into launches",
+      "caps": [
+        "EF-029",
+        "EF-050"
+      ],
+      "artifacts": [
+        "ART-029"
+      ],
+      "findings": [
+        "EF-029",
+        "EF-050"
+      ],
+      "evidence": [
+        "STATE-MODEL.md#ST-22",
+        "EF-029",
+        "EF-050"
+      ]
+    },
+    {
+      "id": "ST-24",
+      "type": "STATE",
+      "name": "Host MCP config + bak",
+      "summary": "Connect mutations",
+      "caps": [
+        "EF-021"
+      ],
+      "artifacts": [
+        "ART-031"
+      ],
+      "findings": [
+        "EF-021"
+      ],
+      "evidence": [
+        "STATE-MODEL.md#ST-24",
+        "EF-021"
+      ]
+    },
+    {
+      "id": "ST-26",
+      "type": "STATE",
+      "name": "Install tree / Level B",
+      "summary": "OCCAM_HOME extract",
+      "caps": [
+        "EF-028"
+      ],
+      "artifacts": [
+        "ART-032"
+      ],
+      "findings": [
+        "EF-028"
+      ],
+      "evidence": [
+        "STATE-MODEL.md#ST-26",
+        "EF-028"
+      ]
+    },
+    {
+      "id": "TP:acquisition-fact",
+      "type": "TRUST_PRIMITIVE",
+      "name": "C1 Acquisition fact",
+      "summary": "Host ran an extract; no independent witness artifact",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "TRUST-MODEL.md§2",
+        "TP:acquisition-fact"
+      ]
+    },
+    {
+      "id": "TP:content-hash",
+      "type": "TRUST_PRIMITIVE",
+      "name": "C2 Content hash",
+      "summary": "SHA-256 of compiled markdown; identity only",
+      "caps": [],
+      "artifacts": [
+        "ART-024"
+      ],
+      "findings": [],
+      "evidence": [
+        "TRUST-MODEL.md§2",
+        "TP:content-hash"
+      ]
+    },
+    {
+      "id": "TP:receipt",
+      "type": "TRUST_PRIMITIVE",
+      "name": "C3 Receipt",
+      "summary": "Signed ReceiptEnvelope (positive/negative)",
+      "caps": [],
+      "artifacts": [
+        "ART-007",
+        "ART-008"
+      ],
+      "findings": [],
+      "evidence": [
+        "TRUST-MODEL.md§2",
+        "TP:receipt"
+      ]
+    },
+    {
+      "id": "TP:signature",
+      "type": "TRUST_PRIMITIVE",
+      "name": "C4 Signature",
+      "summary": "ECDSA P-256 over canonical bytes",
+      "caps": [],
+      "artifacts": [
+        "ART-034"
+      ],
+      "findings": [],
+      "evidence": [
+        "TRUST-MODEL.md§2",
+        "TP:signature"
+      ]
+    },
+    {
+      "id": "TP:merkle",
+      "type": "TRUST_PRIMITIVE",
+      "name": "C5 Merkle inclusion",
+      "summary": "Block leaf membership under root",
+      "caps": [],
+      "artifacts": [
+        "ART-002"
+      ],
+      "findings": [],
+      "evidence": [
+        "TRUST-MODEL.md§2",
+        "TP:merkle"
+      ]
+    },
+    {
+      "id": "TP:capsule",
+      "type": "TRUST_PRIMITIVE",
+      "name": "C6 Capsule",
+      "summary": "Unsigned wrapper; nested envelope signed",
+      "caps": [],
+      "artifacts": [
+        "ART-006"
+      ],
+      "findings": [],
+      "evidence": [
+        "TRUST-MODEL.md§2",
+        "TP:capsule"
+      ]
+    },
+    {
+      "id": "TP:citation",
+      "type": "TRUST_PRIMITIVE",
+      "name": "C7 Citation",
+      "summary": "Leaf+proof package for one block",
+      "caps": [],
+      "artifacts": [
+        "ART-019"
+      ],
+      "findings": [],
+      "evidence": [
+        "TRUST-MODEL.md§2",
+        "TP:citation"
+      ]
+    },
+    {
+      "id": "TP:claim-check",
+      "type": "TRUST_PRIMITIVE",
+      "name": "C8 Claim check",
+      "summary": "BM25 retrieval + proofs; verdict not_evaluated",
+      "caps": [],
+      "artifacts": [
+        "ART-019"
+      ],
+      "findings": [],
+      "evidence": [
+        "TRUST-MODEL.md§2",
+        "TP:claim-check"
+      ]
+    },
+    {
+      "id": "TP:attestation",
+      "type": "TRUST_PRIMITIVE",
+      "name": "C9 Attestation",
+      "summary": "Heuristic status; aggregate unsigned",
+      "caps": [],
+      "artifacts": [
+        "ART-020"
+      ],
+      "findings": [],
+      "evidence": [
+        "TRUST-MODEL.md§2",
+        "TP:attestation"
+      ]
+    },
+    {
+      "id": "TP:consensus",
+      "type": "TRUST_PRIMITIVE",
+      "name": "C10 Consensus",
+      "summary": "Same-host multi-vantage fingerprint compare; verdict unsigned",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "TRUST-MODEL.md§2",
+        "TP:consensus"
+      ]
+    },
+    {
+      "id": "TP:live-verify",
+      "type": "TRUST_PRIMITIVE",
+      "name": "C11 Live verification",
+      "summary": "Re-fetch drift check; no second receipt",
+      "caps": [],
+      "artifacts": [
+        "ART-021"
+      ],
+      "findings": [],
+      "evidence": [
+        "TRUST-MODEL.md§2",
+        "TP:live-verify"
+      ]
+    },
+    {
+      "id": "TP:offline-verify",
+      "type": "TRUST_PRIMITIVE",
+      "name": "C12 Offline verification",
+      "summary": "Pure crypto over supplied bytes + PEM",
+      "caps": [],
+      "artifacts": [
+        "ART-021"
+      ],
+      "findings": [],
+      "evidence": [
+        "TRUST-MODEL.md§2",
+        "TP:offline-verify"
+      ]
+    },
+    {
+      "id": "FLOW-001",
+      "type": "WORKFLOW",
+      "name": "Read one page with proof",
+      "summary": "transcode → optional receipt → verify",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CODE-DERIVED-WORKFLOWS.md",
+        "CMP-005"
+      ]
+    },
+    {
+      "id": "FLOW-002",
+      "type": "WORKFLOW",
+      "name": "Cheap triage then read",
+      "summary": "probe → transcode",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CODE-DERIVED-WORKFLOWS.md",
+        "CMP-001"
+      ]
+    },
+    {
+      "id": "FLOW-003",
+      "type": "WORKFLOW",
+      "name": "Discover then multi-read",
+      "summary": "map/search → digest",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CODE-DERIVED-WORKFLOWS.md",
+        "CMP-003"
+      ]
+    },
+    {
+      "id": "FLOW-005",
+      "type": "WORKFLOW",
+      "name": "Playbook authoring loop",
+      "summary": "heal → lint → save",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CODE-DERIVED-WORKFLOWS.md",
+        "CMP-012"
+      ]
+    },
+    {
+      "id": "FLOW-006",
+      "type": "WORKFLOW",
+      "name": "Schema-driven facts",
+      "summary": "resolve → extract_knowledge",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CODE-DERIVED-WORKFLOWS.md",
+        "CMP-004"
+      ]
+    },
+    {
+      "id": "FLOW-007",
+      "type": "WORKFLOW",
+      "name": "Claim grounding + attest",
+      "summary": "claim_check / attest",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CODE-DERIVED-WORKFLOWS.md",
+        "CMP-006",
+        "CMP-007a"
+      ]
+    },
+    {
+      "id": "FLOW-008",
+      "type": "WORKFLOW",
+      "name": "Auditable corpus handoff",
+      "summary": "dataset_export → manifest verify",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CODE-DERIVED-WORKFLOWS.md",
+        "CMP-008"
+      ]
+    },
+    {
+      "id": "FLOW-009",
+      "type": "WORKFLOW",
+      "name": "Authenticated / session read",
+      "summary": "session CLI → session_profile fetch",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CODE-DERIVED-WORKFLOWS.md",
+        "CMP-009"
+      ]
+    },
+    {
+      "id": "FLOW-012",
+      "type": "WORKFLOW",
+      "name": "Batch job lifecycle",
+      "summary": "batch submit → processor → results",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CODE-DERIVED-WORKFLOWS.md",
+        "CMP-015"
+      ]
+    },
+    {
+      "id": "FLOW-013",
+      "type": "WORKFLOW",
+      "name": "Watch then history verify",
+      "summary": "watch → verify history",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CODE-DERIVED-WORKFLOWS.md",
+        "CMP-010"
+      ]
+    },
+    {
+      "id": "FLOW-014",
+      "type": "WORKFLOW",
+      "name": "Crosscheck consensus",
+      "summary": "multi-backend compare",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CODE-DERIVED-WORKFLOWS.md",
+        "CMP-011"
+      ]
+    },
+    {
+      "id": "FLOW-015",
+      "type": "WORKFLOW",
+      "name": "Doctor → onboard → connect",
+      "summary": "operator bootstrap",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CODE-DERIVED-WORKFLOWS.md",
+        "CMP-014"
+      ]
+    },
+    {
+      "id": "FLOW-019",
+      "type": "WORKFLOW",
+      "name": "Opt-in cache replay",
+      "summary": "cache_ttl_s hit path",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "CODE-DERIVED-WORKFLOWS.md",
+        "CMP-013"
+      ]
+    },
+    {
+      "id": "CMP-013",
+      "type": "WORKFLOW",
+      "name": "Ambient client token budget",
+      "summary": "client_capabilities → default max_tokens",
+      "caps": [],
+      "artifacts": [],
+      "findings": [],
+      "evidence": [
+        "COMPOSITION-MODEL.md",
+        "FLOW-001"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "PS-1",
+      "rel": "CONTAINS",
+      "to": "FAM:acquisition-routing",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#acquisition-routing"
+      ]
+    },
+    {
+      "from": "PS-1",
+      "rel": "CONTAINS",
+      "to": "FAM:http-acquisition",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#http-acquisition"
+      ]
+    },
+    {
+      "from": "PS-1",
+      "rel": "CONTAINS",
+      "to": "FAM:browser-acquisition",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#browser-acquisition"
+      ]
+    },
+    {
+      "from": "PS-1",
+      "rel": "CONTAINS",
+      "to": "FAM:managed-acquisition",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#managed-acquisition"
+      ]
+    },
+    {
+      "from": "PS-1",
+      "rel": "CONTAINS",
+      "to": "FAM:network-safety",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#network-safety"
+      ]
+    },
+    {
+      "from": "PS-1",
+      "rel": "CONTAINS",
+      "to": "FAM:proxy-egress",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#proxy-egress"
+      ]
+    },
+    {
+      "from": "PS-1",
+      "rel": "CONTAINS",
+      "to": "FAM:session-fetch",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#session-fetch"
+      ]
+    },
+    {
+      "from": "PS-1",
+      "rel": "CONTAINS",
+      "to": "FAM:access-consent",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#access-consent"
+      ]
+    },
+    {
+      "from": "PS-2",
+      "rel": "CONTAINS",
+      "to": "FAM:token-budget",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#token-budget"
+      ]
+    },
+    {
+      "from": "PS-2",
+      "rel": "CONTAINS",
+      "to": "FAM:focus-selection",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#focus-selection"
+      ]
+    },
+    {
+      "from": "PS-2",
+      "rel": "CONTAINS",
+      "to": "FAM:structured-materialization",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#structured-materialization"
+      ]
+    },
+    {
+      "from": "PS-2",
+      "rel": "CONTAINS",
+      "to": "FAM:differential-materialization",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#differential-materialization"
+      ]
+    },
+    {
+      "from": "PS-2",
+      "rel": "CONTAINS",
+      "to": "FAM:response-cache",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#response-cache"
+      ]
+    },
+    {
+      "from": "PS-1",
+      "rel": "CONTAINS",
+      "to": "FAM:quality-failure-semantics",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#quality-failure-semantics"
+      ]
+    },
+    {
+      "from": "PS-3",
+      "rel": "CONTAINS",
+      "to": "FAM:probe-diagnostics",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#probe-diagnostics"
+      ]
+    },
+    {
+      "from": "PS-3",
+      "rel": "CONTAINS",
+      "to": "FAM:site-mapping",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#site-mapping"
+      ]
+    },
+    {
+      "from": "PS-3",
+      "rel": "CONTAINS",
+      "to": "FAM:web-search",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#web-search"
+      ]
+    },
+    {
+      "from": "PS-7",
+      "rel": "CONTAINS",
+      "to": "FAM:digest-synthesis",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#digest-synthesis"
+      ]
+    },
+    {
+      "from": "PS-4",
+      "rel": "CONTAINS",
+      "to": "FAM:schema-knowledge-extraction",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#schema-knowledge-extraction"
+      ]
+    },
+    {
+      "from": "PS-4",
+      "rel": "CONTAINS",
+      "to": "FAM:canonical-knowledge-ir",
+      "note": "retained dead evidence cluster",
+      "evidence": [
+        "canonical-capabilities.json#canonical-knowledge-ir"
+      ]
+    },
+    {
+      "from": "PS-5",
+      "rel": "CONTAINS",
+      "to": "FAM:playbook-resolution",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#playbook-resolution"
+      ]
+    },
+    {
+      "from": "PS-5",
+      "rel": "CONTAINS",
+      "to": "FAM:playbook-authoring",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#playbook-authoring"
+      ]
+    },
+    {
+      "from": "PS-5",
+      "rel": "CONTAINS",
+      "to": "FAM:playbook-healing",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#playbook-healing"
+      ]
+    },
+    {
+      "from": "PS-5",
+      "rel": "CONTAINS",
+      "to": "FAM:playbook-validation",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#playbook-validation"
+      ]
+    },
+    {
+      "from": "PS-6",
+      "rel": "CONTAINS",
+      "to": "FAM:receipts",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#receipts"
+      ]
+    },
+    {
+      "from": "PS-6",
+      "rel": "CONTAINS",
+      "to": "FAM:verification",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#verification"
+      ]
+    },
+    {
+      "from": "PS-6",
+      "rel": "CONTAINS",
+      "to": "FAM:claims-attestation",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#claims-attestation"
+      ]
+    },
+    {
+      "from": "PS-6",
+      "rel": "CONTAINS",
+      "to": "FAM:dataset-provenance",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#dataset-provenance"
+      ]
+    },
+    {
+      "from": "PS-7",
+      "rel": "CONTAINS",
+      "to": "FAM:batch-jobs",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#batch-jobs"
+      ]
+    },
+    {
+      "from": "PS-7",
+      "rel": "CONTAINS",
+      "to": "FAM:change-monitoring",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#change-monitoring"
+      ]
+    },
+    {
+      "from": "PS-7",
+      "rel": "CONTAINS",
+      "to": "FAM:consensus-crosscheck",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#consensus-crosscheck"
+      ]
+    },
+    {
+      "from": "PS-7",
+      "rel": "CONTAINS",
+      "to": "FAM:failure-atlas",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#failure-atlas"
+      ]
+    },
+    {
+      "from": "PS-8",
+      "rel": "CONTAINS",
+      "to": "FAM:runtime-transports",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#runtime-transports"
+      ]
+    },
+    {
+      "from": "PS-8",
+      "rel": "CONTAINS",
+      "to": "FAM:mcp-exposure",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#mcp-exposure"
+      ]
+    },
+    {
+      "from": "PS-8",
+      "rel": "CONTAINS",
+      "to": "FAM:client-context",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#client-context"
+      ]
+    },
+    {
+      "from": "PS-9",
+      "rel": "CONTAINS",
+      "to": "FAM:operator-cli",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#operator-cli"
+      ]
+    },
+    {
+      "from": "PS-9",
+      "rel": "CONTAINS",
+      "to": "FAM:install-onboarding",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#install-onboarding"
+      ]
+    },
+    {
+      "from": "PS-9",
+      "rel": "CONTAINS",
+      "to": "FAM:host-connectors",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#host-connectors"
+      ]
+    },
+    {
+      "from": "PS-9",
+      "rel": "CONTAINS",
+      "to": "FAM:packaging-distribution",
+      "note": "",
+      "evidence": [
+        "canonical-capabilities.json#packaging-distribution"
+      ]
+    },
+    {
+      "from": "BE:http",
+      "rel": "ESCALATES_TO",
+      "to": "BE:browser",
+      "note": "http_then_browser non-terminal fail",
+      "evidence": [
+        "OccamRouter.cs:154-161"
+      ]
+    },
+    {
+      "from": "BE:browser",
+      "rel": "ESCALATES_TO",
+      "to": "BE:managed",
+      "note": "both locals fail + managed configured; managed fail never surfaces",
+      "evidence": [
+        "OccamRouter.cs:163-182",
+        "EF-056"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:acquisition-routing",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:http-acquisition",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:browser-acquisition",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:quality-failure-semantics",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:token-budget",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:focus-selection",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:structured-materialization",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:differential-materialization",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:response-cache",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:receipts",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:network-safety",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:session-fetch",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:access-consent",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:playbook-resolution",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_probe",
+      "rel": "EXPOSES",
+      "to": "FAM:probe-diagnostics",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_probe",
+      "rel": "EXPOSES",
+      "to": "FAM:network-safety",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_digest",
+      "rel": "EXPOSES",
+      "to": "FAM:digest-synthesis",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_digest",
+      "rel": "EXPOSES",
+      "to": "FAM:acquisition-routing",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_map",
+      "rel": "EXPOSES",
+      "to": "FAM:site-mapping",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_search",
+      "rel": "EXPOSES",
+      "to": "FAM:web-search",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_extract_knowledge",
+      "rel": "EXPOSES",
+      "to": "FAM:schema-knowledge-extraction",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_extract_knowledge",
+      "rel": "EXPOSES",
+      "to": "FAM:playbook-resolution",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_playbook_resolve",
+      "rel": "EXPOSES",
+      "to": "FAM:playbook-resolution",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_playbook_heal",
+      "rel": "EXPOSES",
+      "to": "FAM:playbook-healing",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_playbook_save",
+      "rel": "EXPOSES",
+      "to": "FAM:playbook-authoring",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_playbook_lint",
+      "rel": "EXPOSES",
+      "to": "FAM:playbook-validation",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_verify",
+      "rel": "EXPOSES",
+      "to": "FAM:verification",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_claim_check",
+      "rel": "EXPOSES",
+      "to": "FAM:claims-attestation",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_attest",
+      "rel": "EXPOSES",
+      "to": "FAM:claims-attestation",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_dataset_export",
+      "rel": "EXPOSES",
+      "to": "FAM:dataset-provenance",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_client_capabilities",
+      "rel": "EXPOSES",
+      "to": "FAM:client-context",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_batch_submit",
+      "rel": "EXPOSES",
+      "to": "FAM:batch-jobs",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_watch",
+      "rel": "EXPOSES",
+      "to": "FAM:change-monitoring",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_crosscheck",
+      "rel": "EXPOSES",
+      "to": "FAM:consensus-crosscheck",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_failure_atlas",
+      "rel": "EXPOSES",
+      "to": "FAM:failure-atlas",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:cli_verify",
+      "rel": "EXPOSES",
+      "to": "FAM:verification",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:cli_keys",
+      "rel": "EXPOSES",
+      "to": "FAM:receipts",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:batch_server",
+      "rel": "EXPOSES",
+      "to": "FAM:batch-jobs",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_doctor",
+      "rel": "EXPOSES",
+      "to": "FAM:operator-cli",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_onboard",
+      "rel": "EXPOSES",
+      "to": "FAM:install-onboarding",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_connect",
+      "rel": "EXPOSES",
+      "to": "FAM:host-connectors",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_session",
+      "rel": "EXPOSES",
+      "to": "FAM:session-fetch",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_session",
+      "rel": "EXPOSES",
+      "to": "FAM:operator-cli",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:launch_mcp_host",
+      "rel": "EXPOSES",
+      "to": "FAM:runtime-transports",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:launch_mcp_host",
+      "rel": "EXPOSES",
+      "to": "FAM:mcp-exposure",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:install_level_b",
+      "rel": "EXPOSES",
+      "to": "FAM:packaging-distribution",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:install_level_b",
+      "rel": "EXPOSES",
+      "to": "FAM:install-onboarding",
+      "note": "",
+      "evidence": [
+        "ENTRYPOINT-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:managed-acquisition",
+      "note": "env-gated last rung only",
+      "evidence": [
+        "OccamRouter.cs:163-175"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "EXPOSES",
+      "to": "FAM:proxy-egress",
+      "note": "worker egress when proxy env set",
+      "evidence": [
+        "CAP-157"
+      ]
+    },
+    {
+      "from": "FAM:http-acquisition",
+      "rel": "USES",
+      "to": "BE:http",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:browser-acquisition",
+      "rel": "USES",
+      "to": "BE:browser",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:managed-acquisition",
+      "rel": "USES",
+      "to": "BE:managed",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:schema-knowledge-extraction",
+      "rel": "USES",
+      "to": "BE:css-extract",
+      "note": "bypasses TranscodePipeline",
+      "evidence": []
+    },
+    {
+      "from": "FAM:playbook-healing",
+      "rel": "USES",
+      "to": "BE:dom-skeleton",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:probe-diagnostics",
+      "rel": "USES",
+      "to": "BE:probe-fetcher",
+      "note": "HTTP-only",
+      "evidence": []
+    },
+    {
+      "from": "FAM:site-mapping",
+      "rel": "USES",
+      "to": "BE:probe-fetcher",
+      "note": "HTTP-only",
+      "evidence": []
+    },
+    {
+      "from": "FAM:web-search",
+      "rel": "USES",
+      "to": "BE:search-provider",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:acquisition-routing",
+      "rel": "USES",
+      "to": "FAM:http-acquisition",
+      "note": "first rung",
+      "evidence": []
+    },
+    {
+      "from": "FAM:acquisition-routing",
+      "rel": "USES",
+      "to": "FAM:browser-acquisition",
+      "note": "cascade",
+      "evidence": []
+    },
+    {
+      "from": "FAM:acquisition-routing",
+      "rel": "USES",
+      "to": "FAM:managed-acquisition",
+      "note": "optional last rung",
+      "evidence": []
+    },
+    {
+      "from": "FAM:acquisition-routing",
+      "rel": "USES",
+      "to": "FAM:quality-failure-semantics",
+      "note": "post-processors on router result",
+      "evidence": []
+    },
+    {
+      "from": "FAM:digest-synthesis",
+      "rel": "USES",
+      "to": "FAM:acquisition-routing",
+      "note": "per-URL pipeline.TranscodeAsync",
+      "evidence": []
+    },
+    {
+      "from": "FAM:digest-synthesis",
+      "rel": "USES",
+      "to": "FAM:site-mapping",
+      "note": "source_url discovery delegates MapService",
+      "evidence": []
+    },
+    {
+      "from": "FAM:claims-attestation",
+      "rel": "USES",
+      "to": "FAM:acquisition-routing",
+      "note": "forces json_blocks + pipeline",
+      "evidence": []
+    },
+    {
+      "from": "FAM:dataset-provenance",
+      "rel": "USES",
+      "to": "FAM:acquisition-routing",
+      "note": "per-URL pipeline",
+      "evidence": []
+    },
+    {
+      "from": "FAM:change-monitoring",
+      "rel": "USES",
+      "to": "FAM:acquisition-routing",
+      "note": "WatchService → pipeline",
+      "evidence": []
+    },
+    {
+      "from": "FAM:change-monitoring",
+      "rel": "USES",
+      "to": "FAM:differential-materialization",
+      "note": "diff plumbing",
+      "evidence": []
+    },
+    {
+      "from": "FAM:consensus-crosscheck",
+      "rel": "USES",
+      "to": "FAM:acquisition-routing",
+      "note": "per-vantage pipeline",
+      "evidence": []
+    },
+    {
+      "from": "FAM:batch-jobs",
+      "rel": "USES",
+      "to": "FAM:acquisition-routing",
+      "note": "BatchJobProcessor → pipeline",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "USES",
+      "to": "FAM:acquisition-routing",
+      "note": "live mode only",
+      "evidence": []
+    },
+    {
+      "from": "FAM:playbook-resolution",
+      "rel": "USES",
+      "to": "FAM:playbook-authoring",
+      "note": "reads saved local playbooks",
+      "evidence": []
+    },
+    {
+      "from": "FAM:schema-knowledge-extraction",
+      "rel": "USES",
+      "to": "FAM:playbook-resolution",
+      "note": "Recipe D resolve→schema",
+      "evidence": []
+    },
+    {
+      "from": "FAM:token-budget",
+      "rel": "USES",
+      "to": "FAM:client-context",
+      "note": "ambient max_tokens when omitted",
+      "evidence": []
+    },
+    {
+      "from": "FAM:response-cache",
+      "rel": "USES",
+      "to": "FAM:structured-materialization",
+      "note": "caches post-materialize envelope",
+      "evidence": []
+    },
+    {
+      "from": "FAM:receipts",
+      "rel": "USES",
+      "to": "FAM:structured-materialization",
+      "note": "signs after materialize",
+      "evidence": []
+    },
+    {
+      "from": "FLOW-001",
+      "rel": "USES",
+      "to": "FAM:acquisition-routing",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FLOW-001",
+      "rel": "USES",
+      "to": "FAM:receipts",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FLOW-006",
+      "rel": "USES",
+      "to": "FAM:schema-knowledge-extraction",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FLOW-014",
+      "rel": "USES",
+      "to": "FAM:consensus-crosscheck",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:structured-materialization",
+      "rel": "PRODUCES",
+      "to": "ART-001",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:structured-materialization",
+      "rel": "PRODUCES",
+      "to": "ART-002",
+      "note": "json_blocks",
+      "evidence": []
+    },
+    {
+      "from": "FAM:structured-materialization",
+      "rel": "PRODUCES",
+      "to": "ART-005",
+      "note": "semantic_chunking",
+      "evidence": []
+    },
+    {
+      "from": "FAM:structured-materialization",
+      "rel": "PRODUCES",
+      "to": "ART-024",
+      "note": "contentHash always",
+      "evidence": []
+    },
+    {
+      "from": "FAM:receipts",
+      "rel": "PRODUCES",
+      "to": "ART-007",
+      "note": "when ReceiptsPolicy on",
+      "evidence": []
+    },
+    {
+      "from": "FAM:receipts",
+      "rel": "PRODUCES",
+      "to": "ART-008",
+      "note": "negative subset",
+      "evidence": []
+    },
+    {
+      "from": "FAM:receipts",
+      "rel": "PRODUCES",
+      "to": "ART-006",
+      "note": "emit_capsule",
+      "evidence": []
+    },
+    {
+      "from": "FAM:receipts",
+      "rel": "PRODUCES",
+      "to": "ART-009",
+      "note": "time anchor env",
+      "evidence": []
+    },
+    {
+      "from": "FAM:receipts",
+      "rel": "PRODUCES",
+      "to": "ART-034",
+      "note": "LoadOrCreate on DI",
+      "evidence": []
+    },
+    {
+      "from": "FAM:digest-synthesis",
+      "rel": "PRODUCES",
+      "to": "ART-010",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:site-mapping",
+      "rel": "PRODUCES",
+      "to": "ART-011",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:probe-diagnostics",
+      "rel": "PRODUCES",
+      "to": "ART-012",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:web-search",
+      "rel": "PRODUCES",
+      "to": "ART-013",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:schema-knowledge-extraction",
+      "rel": "PRODUCES",
+      "to": "ART-014",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:schema-knowledge-extraction",
+      "rel": "PRODUCES",
+      "to": "ART-036",
+      "note": "temp field spec",
+      "evidence": []
+    },
+    {
+      "from": "FAM:playbook-authoring",
+      "rel": "PRODUCES",
+      "to": "ART-015",
+      "note": "always signed",
+      "evidence": []
+    },
+    {
+      "from": "FAM:playbook-healing",
+      "rel": "PRODUCES",
+      "to": "ART-016",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:playbook-resolution",
+      "rel": "PRODUCES",
+      "to": "ART-017",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:playbook-validation",
+      "rel": "PRODUCES",
+      "to": "ART-018",
+      "note": "advisory",
+      "evidence": []
+    },
+    {
+      "from": "FAM:claims-attestation",
+      "rel": "PRODUCES",
+      "to": "ART-019",
+      "note": "claim_check",
+      "evidence": []
+    },
+    {
+      "from": "FAM:claims-attestation",
+      "rel": "PRODUCES",
+      "to": "ART-020",
+      "note": "attest",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "PRODUCES",
+      "to": "ART-021",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:dataset-provenance",
+      "rel": "PRODUCES",
+      "to": "ART-022",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:client-context",
+      "rel": "PRODUCES",
+      "to": "ART-023",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:change-monitoring",
+      "rel": "PRODUCES",
+      "to": "ART-025",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:change-monitoring",
+      "rel": "PRODUCES",
+      "to": "ART-028",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:session-fetch",
+      "rel": "PRODUCES",
+      "to": "ART-026",
+      "note": "via operator session CLI authoring",
+      "evidence": []
+    },
+    {
+      "from": "FAM:operator-cli",
+      "rel": "PRODUCES",
+      "to": "ART-037",
+      "note": "import retain",
+      "evidence": []
+    },
+    {
+      "from": "FAM:batch-jobs",
+      "rel": "PRODUCES",
+      "to": "ART-027",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:response-cache",
+      "rel": "PRODUCES",
+      "to": "ART-035",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:install-onboarding",
+      "rel": "PRODUCES",
+      "to": "ART-029",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:host-connectors",
+      "rel": "PRODUCES",
+      "to": "ART-031",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:packaging-distribution",
+      "rel": "PRODUCES",
+      "to": "ART-032",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:packaging-distribution",
+      "rel": "PRODUCES",
+      "to": "ART-038",
+      "note": "CI cosign; dead consumer",
+      "evidence": []
+    },
+    {
+      "from": "BE:http",
+      "rel": "PRODUCES",
+      "to": "ART-001",
+      "note": "raw extract path into pipeline",
+      "evidence": []
+    },
+    {
+      "from": "BE:browser",
+      "rel": "PRODUCES",
+      "to": "ART-001",
+      "note": "rendered extract path",
+      "evidence": []
+    },
+    {
+      "from": "BE:css-extract",
+      "rel": "PRODUCES",
+      "to": "ART-014",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "BE:dom-skeleton",
+      "rel": "PRODUCES",
+      "to": "ART-016",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "CONSUMES",
+      "to": "ART-007",
+      "note": "offline/live/prove",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "CONSUMES",
+      "to": "ART-008",
+      "note": "negative",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "CONSUMES",
+      "to": "ART-006",
+      "note": "capsule parse",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "CONSUMES",
+      "to": "ART-009",
+      "note": "time anchor path",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "CONSUMES",
+      "to": "ART-019",
+      "note": "citation/prove",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "CONSUMES",
+      "to": "ART-022",
+      "note": "manifest mode",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "CONSUMES",
+      "to": "ART-025",
+      "note": "history mode",
+      "evidence": []
+    },
+    {
+      "from": "FAM:claims-attestation",
+      "rel": "CONSUMES",
+      "to": "ART-002",
+      "note": "needs blocks",
+      "evidence": []
+    },
+    {
+      "from": "FAM:claims-attestation",
+      "rel": "CONSUMES",
+      "to": "ART-007",
+      "note": "optional nested",
+      "evidence": []
+    },
+    {
+      "from": "FAM:dataset-provenance",
+      "rel": "CONSUMES",
+      "to": "ART-001",
+      "note": "rows",
+      "evidence": []
+    },
+    {
+      "from": "FAM:dataset-provenance",
+      "rel": "CONSUMES",
+      "to": "ART-007",
+      "note": "row receipts",
+      "evidence": []
+    },
+    {
+      "from": "FAM:differential-materialization",
+      "rel": "CONSUMES",
+      "to": "ART-024",
+      "note": "if_none_match uses contentHash",
+      "evidence": []
+    },
+    {
+      "from": "FAM:response-cache",
+      "rel": "CONSUMES",
+      "to": "ART-035",
+      "note": "lookup",
+      "evidence": []
+    },
+    {
+      "from": "FAM:playbook-resolution",
+      "rel": "CONSUMES",
+      "to": "ART-015",
+      "note": "local tier",
+      "evidence": []
+    },
+    {
+      "from": "FAM:schema-knowledge-extraction",
+      "rel": "CONSUMES",
+      "to": "ART-015",
+      "note": "schema source",
+      "evidence": []
+    },
+    {
+      "from": "FAM:schema-knowledge-extraction",
+      "rel": "CONSUMES",
+      "to": "ART-017",
+      "note": "resolve overlay",
+      "evidence": []
+    },
+    {
+      "from": "FAM:acquisition-routing",
+      "rel": "CONSUMES",
+      "to": "ART-026",
+      "note": "session_profile",
+      "evidence": []
+    },
+    {
+      "from": "FAM:http-acquisition",
+      "rel": "CONSUMES",
+      "to": "ART-026",
+      "note": "Tier-2 headers",
+      "evidence": []
+    },
+    {
+      "from": "FAM:browser-acquisition",
+      "rel": "CONSUMES",
+      "to": "ART-026",
+      "note": "Tier-1 storageState",
+      "evidence": []
+    },
+    {
+      "from": "FAM:token-budget",
+      "rel": "CONSUMES",
+      "to": "ART-023",
+      "note": "ambient budget",
+      "evidence": []
+    },
+    {
+      "from": "FAM:digest-synthesis",
+      "rel": "CONSUMES",
+      "to": "ART-011",
+      "note": "source_url discovery",
+      "evidence": []
+    },
+    {
+      "from": "FAM:web-search",
+      "rel": "CONSUMES",
+      "to": "ART-012",
+      "note": "optional probe scoring",
+      "evidence": []
+    },
+    {
+      "from": "TP:receipt",
+      "rel": "CONSUMES",
+      "to": "ART-007",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "TP:capsule",
+      "rel": "CONSUMES",
+      "to": "ART-006",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "TP:merkle",
+      "rel": "CONSUMES",
+      "to": "ART-002",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "TP:offline-verify",
+      "rel": "CONSUMES",
+      "to": "ART-021",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FLOW-001",
+      "rel": "CONSUMES",
+      "to": "ART-007",
+      "note": "optional proof",
+      "evidence": []
+    },
+    {
+      "from": "FLOW-008",
+      "rel": "CONSUMES",
+      "to": "ART-022",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FLOW-013",
+      "rel": "CONSUMES",
+      "to": "ART-025",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:session-fetch",
+      "rel": "READS_WRITES",
+      "to": "ST-01",
+      "note": "",
+      "evidence": [
+        "STATE-MODEL.md#ST-01"
+      ]
+    },
+    {
+      "from": "FAM:response-cache",
+      "rel": "READS_WRITES",
+      "to": "ST-06",
+      "note": "",
+      "evidence": [
+        "STATE-MODEL.md#ST-06"
+      ]
+    },
+    {
+      "from": "FAM:playbook-authoring",
+      "rel": "READS_WRITES",
+      "to": "ST-07",
+      "note": "",
+      "evidence": [
+        "STATE-MODEL.md#ST-07"
+      ]
+    },
+    {
+      "from": "FAM:playbook-resolution",
+      "rel": "READS_WRITES",
+      "to": "ST-07",
+      "note": "read",
+      "evidence": [
+        "STATE-MODEL.md#ST-07"
+      ]
+    },
+    {
+      "from": "FAM:change-monitoring",
+      "rel": "READS_WRITES",
+      "to": "ST-13",
+      "note": "",
+      "evidence": [
+        "STATE-MODEL.md#ST-13"
+      ]
+    },
+    {
+      "from": "FAM:receipts",
+      "rel": "READS_WRITES",
+      "to": "ST-15",
+      "note": "LoadOrCreate always",
+      "evidence": [
+        "STATE-MODEL.md#ST-15"
+      ]
+    },
+    {
+      "from": "FAM:batch-jobs",
+      "rel": "READS_WRITES",
+      "to": "ST-17",
+      "note": "",
+      "evidence": [
+        "STATE-MODEL.md#ST-17"
+      ]
+    },
+    {
+      "from": "FAM:failure-atlas",
+      "rel": "READS_WRITES",
+      "to": "ST-18",
+      "note": "",
+      "evidence": [
+        "STATE-MODEL.md#ST-18"
+      ]
+    },
+    {
+      "from": "FAM:client-context",
+      "rel": "READS_WRITES",
+      "to": "ST-19",
+      "note": "",
+      "evidence": [
+        "STATE-MODEL.md#ST-19"
+      ]
+    },
+    {
+      "from": "FAM:browser-acquisition",
+      "rel": "READS_WRITES",
+      "to": "ST-20",
+      "note": "pool",
+      "evidence": [
+        "STATE-MODEL.md#ST-20"
+      ]
+    },
+    {
+      "from": "FAM:install-onboarding",
+      "rel": "READS_WRITES",
+      "to": "ST-22",
+      "note": "",
+      "evidence": [
+        "STATE-MODEL.md#ST-22"
+      ]
+    },
+    {
+      "from": "FAM:host-connectors",
+      "rel": "READS_WRITES",
+      "to": "ST-24",
+      "note": "",
+      "evidence": [
+        "STATE-MODEL.md#ST-24"
+      ]
+    },
+    {
+      "from": "FAM:packaging-distribution",
+      "rel": "READS_WRITES",
+      "to": "ST-26",
+      "note": "",
+      "evidence": [
+        "STATE-MODEL.md#ST-26"
+      ]
+    },
+    {
+      "from": "TP:content-hash",
+      "rel": "PROVES",
+      "to": "ART-024",
+      "note": "byte identity of compiled markdown only",
+      "evidence": [
+        "TRUST-MODEL.md"
+      ]
+    },
+    {
+      "from": "TP:receipt",
+      "rel": "PROVES",
+      "to": "ART-007",
+      "note": "signed field set together; not page truth",
+      "evidence": [
+        "TRUST-MODEL.md"
+      ]
+    },
+    {
+      "from": "TP:receipt",
+      "rel": "PROVES",
+      "to": "ART-008",
+      "note": "signed negative envelope",
+      "evidence": [
+        "TRUST-MODEL.md"
+      ]
+    },
+    {
+      "from": "TP:signature",
+      "rel": "PROVES",
+      "to": "ART-034",
+      "note": "key holder signed canonical bytes",
+      "evidence": [
+        "TRUST-MODEL.md"
+      ]
+    },
+    {
+      "from": "TP:merkle",
+      "rel": "PROVES",
+      "to": "ART-002",
+      "note": "leaf membership under root",
+      "evidence": [
+        "TRUST-MODEL.md"
+      ]
+    },
+    {
+      "from": "TP:capsule",
+      "rel": "PROVES",
+      "to": "ART-006",
+      "note": "only nested envelope; wrapper unsigned",
+      "evidence": [
+        "TRUST-MODEL.md"
+      ]
+    },
+    {
+      "from": "TP:citation",
+      "rel": "PROVES",
+      "to": "ART-019",
+      "note": "quoted text at selector in signed extract",
+      "evidence": [
+        "TRUST-MODEL.md"
+      ]
+    },
+    {
+      "from": "TP:claim-check",
+      "rel": "PROVES",
+      "to": "ART-019",
+      "note": "BM25 floor + Merkle; no stance",
+      "evidence": [
+        "TRUST-MODEL.md"
+      ]
+    },
+    {
+      "from": "TP:attestation",
+      "rel": "PROVES",
+      "to": "ART-020",
+      "note": "heuristic status only; aggregate unsigned",
+      "evidence": [
+        "TRUST-MODEL.md"
+      ]
+    },
+    {
+      "from": "TP:live-verify",
+      "rel": "PROVES",
+      "to": "ART-021",
+      "note": "same-process drift; no new receipt",
+      "evidence": [
+        "TRUST-MODEL.md"
+      ]
+    },
+    {
+      "from": "TP:offline-verify",
+      "rel": "PROVES",
+      "to": "ART-021",
+      "note": "crypto over supplied bytes + PEM",
+      "evidence": [
+        "TRUST-MODEL.md"
+      ]
+    },
+    {
+      "from": "TP:consensus",
+      "rel": "PROVES",
+      "to": "ART-001",
+      "note": "same-host fingerprint equality only (via content/Merkle)",
+      "evidence": [
+        "TRUST-MODEL.md"
+      ]
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "VERIFIES",
+      "to": "TP:offline-verify",
+      "note": "modes offline/prove/citation/history/manifest",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "VERIFIES",
+      "to": "TP:live-verify",
+      "note": "mode=live",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "VERIFIES",
+      "to": "TP:receipt",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "VERIFIES",
+      "to": "TP:merkle",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "VERIFIES",
+      "to": "TP:capsule",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "VERIFIES",
+      "to": "TP:citation",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "EP:occam_verify",
+      "rel": "VERIFIES",
+      "to": "TP:offline-verify",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "EP:occam_verify",
+      "rel": "VERIFIES",
+      "to": "TP:live-verify",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "EP:cli_verify",
+      "rel": "VERIFIES",
+      "to": "TP:offline-verify",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:claims-attestation",
+      "rel": "VERIFIES",
+      "to": "TP:claim-check",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:claims-attestation",
+      "rel": "VERIFIES",
+      "to": "TP:attestation",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:claims-attestation",
+      "rel": "VERIFIES",
+      "to": "TP:merkle",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:consensus-crosscheck",
+      "rel": "VERIFIES",
+      "to": "TP:consensus",
+      "note": "",
+      "evidence": []
+    },
+    {
+      "from": "FAM:dataset-provenance",
+      "rel": "VERIFIES",
+      "to": "TP:signature",
+      "note": "manifest SignDetached",
+      "evidence": []
+    },
+    {
+      "from": "FAM:acquisition-routing",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-001",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "FAM:receipts",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-001",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "FAM:verification",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-001",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-001",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_probe",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-002",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_transcode",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-002",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "FAM:probe-diagnostics",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-002",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_map",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-003",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_digest",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-003",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "FAM:digest-synthesis",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-003",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_playbook_heal",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-005",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_playbook_lint",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-005",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_playbook_save",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-005",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_playbook_resolve",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-006",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_extract_knowledge",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-006",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_claim_check",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-007",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_attest",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-007",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_dataset_export",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-008",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:cli_verify",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-008",
+      "note": "manifest",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_session",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-009",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "FAM:session-fetch",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-009",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_batch_submit",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-012",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_watch",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-013",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_verify",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-013",
+      "note": "history",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_crosscheck",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-014",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_doctor",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-015",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_onboard",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-015",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_connect",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-015",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "FAM:response-cache",
+      "rel": "COMPOSES_INTO",
+      "to": "FLOW-019",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_client_capabilities",
+      "rel": "COMPOSES_INTO",
+      "to": "CMP-013",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "FAM:client-context",
+      "rel": "COMPOSES_INTO",
+      "to": "CMP-013",
+      "note": "",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "FAM:token-budget",
+      "rel": "COMPOSES_INTO",
+      "to": "CMP-013",
+      "note": "consumes ambient",
+      "evidence": [
+        "COMPOSITION-MODEL.md"
+      ]
+    },
+    {
+      "from": "EP:occam_batch_submit",
+      "rel": "GATED_BY",
+      "to": "ST-17",
+      "note": "OCCAM_BATCH_MCP=1 also starts processor",
+      "evidence": [
+        "CONFIG-NEGATIVE-SPACE.md"
+      ]
+    },
+    {
+      "from": "FAM:batch-jobs",
+      "rel": "GATED_BY",
+      "to": "EP:occam_batch_submit",
+      "note": "opt-in MCP / batch-server",
+      "evidence": [
+        "CONFIG-NEGATIVE-SPACE.md"
+      ]
+    },
+    {
+      "from": "EP:occam_watch",
+      "rel": "GATED_BY",
+      "to": "ST-13",
+      "note": "OCCAM_WATCH_MCP=1",
+      "evidence": [
+        "CONFIG-NEGATIVE-SPACE.md"
+      ]
+    },
+    {
+      "from": "FAM:change-monitoring",
+      "rel": "GATED_BY",
+      "to": "EP:occam_watch",
+      "note": "",
+      "evidence": [
+        "CONFIG-NEGATIVE-SPACE.md"
+      ]
+    },
+    {
+      "from": "EP:occam_crosscheck",
+      "rel": "GATED_BY",
+      "to": "EP:launch_mcp_host",
+      "note": "OCCAM_CONSENSUS_MCP=1 (host env)",
+      "evidence": [
+        "CONFIG-NEGATIVE-SPACE.md"
+      ]
+    },
+    {
+      "from": "FAM:consensus-crosscheck",
+      "rel": "GATED_BY",
+      "to": "EP:occam_crosscheck",
+      "note": "",
+      "evidence": [
+        "CONFIG-NEGATIVE-SPACE.md"
+      ]
+    },
+    {
+      "from": "EP:occam_failure_atlas",
+      "rel": "GATED_BY",
+      "to": "ST-18",
+      "note": "OCCAM_ATLAS_MCP=1",
+      "evidence": [
+        "CONFIG-NEGATIVE-SPACE.md"
+      ]
+    },
+    {
+      "from": "FAM:failure-atlas",
+      "rel": "GATED_BY",
+      "to": "EP:occam_failure_atlas",
+      "note": "",
+      "evidence": [
+        "CONFIG-NEGATIVE-SPACE.md"
+      ]
+    },
+    {
+      "from": "FAM:managed-acquisition",
+      "rel": "GATED_BY",
+      "to": "EP:occam_transcode",
+      "note": "env OCCAM_MANAGED_* + cascade only",
+      "evidence": [
+        "CONFIG-NEGATIVE-SPACE.md"
+      ]
+    },
+    {
+      "from": "FAM:web-search",
+      "rel": "GATED_BY",
+      "to": "EP:occam_search",
+      "note": "needs OCCAM_SEARCH_PROVIDER",
+      "evidence": [
+        "CONFIG-NEGATIVE-SPACE.md"
+      ]
+    },
+    {
+      "from": "FAM:response-cache",
+      "rel": "GATED_BY",
+      "to": "EP:occam_transcode",
+      "note": "cache_ttl_s > 0",
+      "evidence": [
+        "CONFIG-NEGATIVE-SPACE.md"
+      ]
+    },
+    {
+      "from": "FAM:receipts",
+      "rel": "GATED_BY",
+      "to": "ST-15",
+      "note": "signing key always present; policy incomplete master switch EF-005/044",
+      "evidence": [
+        "CONFIG-NEGATIVE-SPACE.md"
+      ]
+    },
+    {
+      "from": "FAM:quality-failure-semantics",
+      "rel": "DEGRADES_TO",
+      "to": "ART-008",
+      "note": "typed fail may issue negative receipt; never invent content",
+      "evidence": [
+        "FAILURE-BEHAVIOR-MAP.md"
+      ]
+    },
+    {
+      "from": "FAM:http-acquisition",
+      "rel": "DEGRADES_TO",
+      "to": "FAM:quality-failure-semantics",
+      "note": "thin/challenge/login post-processors after router",
+      "evidence": [
+        "FAILURE-BEHAVIOR-MAP.md"
+      ]
+    },
+    {
+      "from": "FAM:browser-acquisition",
+      "rel": "DEGRADES_TO",
+      "to": "FAM:quality-failure-semantics",
+      "note": "same post-processor chain",
+      "evidence": [
+        "FAILURE-BEHAVIOR-MAP.md"
+      ]
+    },
+    {
+      "from": "BE:http",
+      "rel": "DEGRADES_TO",
+      "to": "FAM:quality-failure-semantics",
+      "note": "404/410 terminate; no escalate (EF-056)",
+      "evidence": [
+        "FAILURE-BEHAVIOR-MAP.md"
+      ]
+    },
+    {
+      "from": "FAM:managed-acquisition",
+      "rel": "DEGRADES_TO",
+      "to": "FAM:quality-failure-semantics",
+      "note": "managed fail never wins surface; ranked local fail",
+      "evidence": [
+        "FAILURE-BEHAVIOR-MAP.md"
+      ]
+    },
+    {
+      "from": "ART-014",
+      "rel": "DEGRADES_TO",
+      "to": "TP:acquisition-fact",
+      "note": "facts[] carry fake Receipt telemetry — not Receipt v1 (EF-006)",
+      "evidence": [
+        "FAILURE-BEHAVIOR-MAP.md"
+      ]
+    },
+    {
+      "from": "FAM:claims-attestation",
+      "rel": "DEGRADES_TO",
+      "to": "TP:attestation",
+      "note": "aggregate unsigned; Merkle ≠ semantic truth",
+      "evidence": [
+        "FAILURE-BEHAVIOR-MAP.md"
+      ]
+    },
+    {
+      "from": "FAM:consensus-crosscheck",
+      "rel": "DEGRADES_TO",
+      "to": "TP:consensus",
+      "note": "verdict unsigned; same-host only",
+      "evidence": [
+        "FAILURE-BEHAVIOR-MAP.md"
+      ]
+    },
+    {
+      "from": "ART-038",
+      "rel": "DEGRADES_TO",
+      "to": "ART-032",
+      "note": "cosign bundle unused; install trusts sha256 of tarball (EF-053)",
+      "evidence": [
+        "FAILURE-BEHAVIOR-MAP.md"
+      ]
+    },
+    {
+      "from": "FAM:canonical-knowledge-ir",
+      "rel": "DEGRADES_TO",
+      "to": "FAM:structured-materialization",
+      "note": "IR built then discarded; live bundle Canonical:null",
+      "evidence": [
+        "FAILURE-BEHAVIOR-MAP.md"
+      ]
+    }
+  ]
+}

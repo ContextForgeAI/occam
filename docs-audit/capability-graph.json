@@ -1,0 +1,8073 @@
+{
+  "version": 1,
+  "wave": 3,
+  "generated": "2026-07-26",
+  "summary": {
+    "nodes": 658,
+    "edges": 588,
+    "wave3_new_caps": 184,
+    "total_caps": 674,
+    "wave3_nodes_added": 184,
+    "wave3_edges_added": 9
+  },
+  "nodes": [
+    {
+      "id": "TOOL:occam_attest",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_claim_check",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_client_capabilities",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_dataset_export",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_digest",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_extract_knowledge",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_map",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_playbook_heal",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_playbook_lint",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_playbook_resolve",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_playbook_save",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_probe",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_search",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_transcode",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_verify",
+      "type": "tool"
+    },
+    {
+      "id": "CAP-720",
+      "type": "capability",
+      "name": "`occam_attest` three-layer orchestration (the tool's core product idea)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-721",
+      "type": "capability",
+      "name": "`ClaimSemanticClassifier` (the actual semantic engine — new, not in Wave-1 inventory)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-722",
+      "type": "capability",
+      "name": "Claim shape grammar is a closed, hand-authored set (scope-cut, not a bug)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-723",
+      "type": "capability",
+      "name": "Negation-aware entailment (contradiction detection, not just absence)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-724",
+      "type": "capability",
+      "name": "Incompatible type-head assertion (implicit contradiction without negation)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-725",
+      "type": "capability",
+      "name": "Reason-code taxonomy attached to every non-`supported` result",
+      "wave": 2
+    },
+    {
+      "id": "CAP-726",
+      "type": "capability",
+      "name": "Aggregation / summary counts model (named partition + compat aliases)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-727",
+      "type": "capability",
+      "name": "`claims` batch input contract (1–50 rows, fail-closed on the whole batch)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-728",
+      "type": "capability",
+      "name": "Per-claim serial fan-out of shared `backend_policy`/`session_profile`",
+      "wave": 2
+    },
+    {
+      "id": "CAP-729",
+      "type": "capability",
+      "name": "Extraction failure → `status=unknown` (fail-closed, never \"refuted\")",
+      "wave": 2
+    },
+    {
+      "id": "CAP-730",
+      "type": "capability",
+      "name": "`retrievalComplete` gate: distinguishes \"provably absent\" from \"couldn't check\"",
+      "wave": 2
+    },
+    {
+      "id": "CAP-690",
+      "type": "capability",
+      "name": "`occam_claim_check` as a fact-grounding primitive (SI-16)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-691",
+      "type": "capability",
+      "name": "HIDDEN: `occam_claim_check` extraction is always fully uncapped (no token budget, ever)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-692",
+      "type": "capability",
+      "name": "`json_blocks` forced on, unconditionally, not caller-controlled",
+      "wave": 2
+    },
+    {
+      "id": "CAP-693",
+      "type": "capability",
+      "name": "HIDDEN: `playbook_policy` is forced to `Auto` on every call, no opt-out",
+      "wave": 2
+    },
+    {
+      "id": "CAP-694",
+      "type": "capability",
+      "name": "`max_matches` — silent clamp, not a validated range",
+      "wave": 2
+    },
+    {
+      "id": "CAP-695",
+      "type": "capability",
+      "name": "`ClaimBlockRanker` — dedicated BM25 relevance-floor ranker (distinct from `MapLinkRanker`/`FitMarkdown`)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-696",
+      "type": "capability",
+      "name": "Retrieval/stance decoupling contract (`Found` / `Retrieved` / `Verdict`)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-697",
+      "type": "capability",
+      "name": "`LeafSetComplete` → `Proven` wiring (consumption of CAP-263)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-698",
+      "type": "capability",
+      "name": "HIDDEN: `occam_claim_check` is never cached, with no way to request caching",
+      "wave": 2
+    },
+    {
+      "id": "CAP-699",
+      "type": "capability",
+      "name": "Merkle root/proof survive `OCCAM_RECEIPTS=off` (signature-independent citation math)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-700",
+      "type": "capability",
+      "name": "Failure-path negative-receipt reuse (SI-03, unmodified from CAP-264)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-701",
+      "type": "capability",
+      "name": "Sidecar surface is deliberately narrow (no capsule, no time anchor, no media/tables/feed/chunks)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-702",
+      "type": "capability",
+      "name": "Full inherited transport/security/routing stack (edges only, no new behavior)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-703",
+      "type": "capability",
+      "name": "Per-match citation self-sufficiency (compact proof, no full `blocks[]` leak)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-400",
+      "type": "capability",
+      "name": "Idempotent inspect-only read (no side effects)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-401",
+      "type": "capability",
+      "name": "`clear=true` reset action (env re-bootstrap, silent precedence over `context_tokens`)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-402",
+      "type": "capability",
+      "name": "`model_id` free-text label: stored, echoed, never consumed elsewhere",
+      "wave": 2
+    },
+    {
+      "id": "CAP-403",
+      "type": "capability",
+      "name": "`suggestedProfile`: advisory string sharing vocabulary with `OCCAM_PROFILE`, zero automated linkage",
+      "wave": 2
+    },
+    {
+      "id": "CAP-404",
+      "type": "capability",
+      "name": "Ambient budget mutates transcode/digest cache & materialization identity for calls that omit `max_tokens`",
+      "wave": 2
+    },
+    {
+      "id": "CAP-770",
+      "type": "capability",
+      "name": "Tool entry point: schema, validation, dispatch",
+      "wave": 2
+    },
+    {
+      "id": "CAP-771",
+      "type": "capability",
+      "name": "HIDDEN: per-row transcode bypasses almost the entire `occam_transcode` parameter surface",
+      "wave": 2
+    },
+    {
+      "id": "CAP-772",
+      "type": "capability",
+      "name": "Two hardcoded per-row options: forced `json_blocks` + forced `playbook_policy=auto`",
+      "wave": 2
+    },
+    {
+      "id": "CAP-773",
+      "type": "capability",
+      "name": "HIDDEN: top-level `ok` is always `true` once argument validation passes, independent of row outcomes",
+      "wave": 2
+    },
+    {
+      "id": "CAP-774",
+      "type": "capability",
+      "name": "Manifest signs identity + outcome, not success; failed rows are still bound into the root",
+      "wave": 2
+    },
+    {
+      "id": "CAP-775",
+      "type": "capability",
+      "name": "Per-row receipts only exist for a narrow \"provable failure\" allow-list; most failures get `receipt: null`",
+      "wave": 2
+    },
+    {
+      "id": "CAP-776",
+      "type": "capability",
+      "name": "Success-row receipts are capsule-less and time-anchor-less by construction (no opt-in path)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-777",
+      "type": "capability",
+      "name": "`contentHash` field format diverges from `occam_transcode`'s own `contentHash` field",
+      "wave": 2
+    },
+    {
+      "id": "CAP-778",
+      "type": "capability",
+      "name": "Sequential (non-parallel) row processing — latency is linear in URL count",
+      "wave": 2
+    },
+    {
+      "id": "CAP-779",
+      "type": "capability",
+      "name": "Profile-gated tool: only in `full` and `auditor`, not `reader`/`researcher`",
+      "wave": 2
+    },
+    {
+      "id": "CAP-450",
+      "type": "capability",
+      "name": "`urls` schema union + \"urls and/or source_url\" input contract",
+      "wave": 2
+    },
+    {
+      "id": "CAP-451",
+      "type": "capability",
+      "name": "`urls` normalization: array path vs. legacy string path have different capabilities",
+      "wave": 2
+    },
+    {
+      "id": "CAP-452",
+      "type": "capability",
+      "name": "Per-URL SSRF/session preflight is a whole-batch gate, not per-item",
+      "wave": 2
+    },
+    {
+      "id": "CAP-453",
+      "type": "capability",
+      "name": "`max_urls` / `max_links` clamps and silent truncation",
+      "wave": 2
+    },
+    {
+      "id": "CAP-454",
+      "type": "capability",
+      "name": "`per_url_max_tokens` ambient-budget resolution + floor",
+      "wave": 2
+    },
+    {
+      "id": "CAP-455",
+      "type": "capability",
+      "name": "Digest fan-out: reduced per-URL `OccamTranscodeOptions` + parallel HTTP one-shot routing",
+      "wave": 2
+    },
+    {
+      "id": "CAP-456",
+      "type": "capability",
+      "name": "Response shape: `items[]`, `stats`, `combined`, `digestId`",
+      "wave": 2
+    },
+    {
+      "id": "CAP-457",
+      "type": "capability",
+      "name": "Per-item Receipt v1 signing (reduced: content-hash-only, no block leaves, no time anchor)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-458",
+      "type": "capability",
+      "name": "`if_none_match` (digest-level, whole-`combined`-body conditional)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-459",
+      "type": "capability",
+      "name": "AF-5: `source_url` link auto-discovery (focused vs. unfocused strategies)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-460",
+      "type": "capability",
+      "name": "Digest-level agent hints: `suggestedReadOrder` + focus-honesty warnings/decisions",
+      "wave": 2
+    },
+    {
+      "id": "CAP-590",
+      "type": "capability",
+      "name": "Recipe D: resolve → schema-match → CSS-extract (the actual pipeline)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-591",
+      "type": "capability",
+      "name": "`occam_extract_knowledge` bypasses `TranscodePipeline`/`OccamRouter` entirely",
+      "wave": 2
+    },
+    {
+      "id": "CAP-592",
+      "type": "capability",
+      "name": "`css-extract.mjs`: HTTP-only by default, no daemon, 45s hardcoded worker-side timeout",
+      "wave": 2
+    },
+    {
+      "id": "CAP-593",
+      "type": "capability",
+      "name": "Browser-fallback bypasses the browser pool/daemon entirely (per-call throwaway Playwright session)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-594",
+      "type": "capability",
+      "name": "HIDDEN: `session_profile` silently does not reach the browser-fallback leg",
+      "wave": 2
+    },
+    {
+      "id": "CAP-595",
+      "type": "capability",
+      "name": "`confidence` is a dead field: always `0.0` on success, never assigned",
+      "wave": 2
+    },
+    {
+      "id": "CAP-596",
+      "type": "capability",
+      "name": "Fake \"Receipt\": `OccamExtractKnowledgeReceiptInfo` is not a signed `ReceiptEnvelope`",
+      "wave": 2
+    },
+    {
+      "id": "CAP-597",
+      "type": "capability",
+      "name": "Per-call fresh Node process, no daemon, for the CSS-extract worker",
+      "wave": 2
+    },
+    {
+      "id": "CAP-598",
+      "type": "capability",
+      "name": "`readNuxtPath`: `eval()` over page-controlled Nuxt SSR state (attr=`nuxt`)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-599",
+      "type": "capability",
+      "name": "`attr: \"regex\"` / `attr: \"const\"` field extraction modes (undocumented on the MCP surface)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-600",
+      "type": "capability",
+      "name": "`base_selector` row-mode: structured list/table extraction distinct from flat facts",
+      "wave": 2
+    },
+    {
+      "id": "CAP-601",
+      "type": "capability",
+      "name": "`occam_extract_knowledge` failure taxonomy is a distinct, narrower set",
+      "wave": 2
+    },
+    {
+      "id": "CAP-602",
+      "type": "capability",
+      "name": "Partial facts on failure",
+      "wave": 2
+    },
+    {
+      "id": "CAP-510",
+      "type": "capability",
+      "name": "HTTP-only design, no backend escalation ever",
+      "wave": 2
+    },
+    {
+      "id": "CAP-511",
+      "type": "capability",
+      "name": "Homepage link extraction (`source=homepage`, default)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-512",
+      "type": "capability",
+      "name": "Sitemap / robots discovery (`source=sitemap` / `source=robots`)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-513",
+      "type": "capability",
+      "name": "Discovery deadline is a shared TOTAL budget, not per-fetch",
+      "wave": 2
+    },
+    {
+      "id": "CAP-514",
+      "type": "capability",
+      "name": "`filter_nonsense` composite noise filter",
+      "wave": 2
+    },
+    {
+      "id": "CAP-515",
+      "type": "capability",
+      "name": "`focus_query` entity-first link ranking",
+      "wave": 2
+    },
+    {
+      "id": "CAP-516",
+      "type": "capability",
+      "name": "Second-level hub expansion (auto-crawl on weak focus hit)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-517",
+      "type": "capability",
+      "name": "Primary-anchor enrichment scan (unbounded by DOM-order cap)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-518",
+      "type": "capability",
+      "name": "Focus-aware over-fetch candidate pool sizing",
+      "wave": 2
+    },
+    {
+      "id": "CAP-519",
+      "type": "capability",
+      "name": "`same_domain` off-origin exclusion toggle",
+      "wave": 2
+    },
+    {
+      "id": "CAP-520",
+      "type": "capability",
+      "name": "Neighbor-text context extraction (soft ranking signal, not in response)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-521",
+      "type": "capability",
+      "name": "Hardcoded `agentHints.suggestedNext = occam_digest` (always emitted)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-522",
+      "type": "capability",
+      "name": "Map-specific failure taxonomy",
+      "wave": 2
+    },
+    {
+      "id": "CAP-523",
+      "type": "capability",
+      "name": "Response byte caps per fetch kind (map-tuned, not the transcode defaults)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-524",
+      "type": "capability",
+      "name": "`Partial` honesty flag (sitemap walk truncated by budget)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-525",
+      "type": "capability",
+      "name": "Redundant double bounds-checking (tool-level reject vs service-level clamp)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-526",
+      "type": "capability",
+      "name": "Anchor title sanitization (SVG/CSS garbage rejection)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-527",
+      "type": "capability",
+      "name": "`session_profile` on `occam_map` is headers-only; `storageState` is resolved but unused",
+      "wave": 2
+    },
+    {
+      "id": "CAP-528",
+      "type": "capability",
+      "name": "PDF short-circuit before any network fetch",
+      "wave": 2
+    },
+    {
+      "id": "CAP-529",
+      "type": "capability",
+      "name": "Shared discovery engine: `occam_digest` reuses `MapService`/`MapLinkRanker` directly",
+      "wave": 2
+    },
+    {
+      "id": "CAP-530",
+      "type": "capability",
+      "name": "`url` + `failure_reason` (required inputs, identity of the heal attempt)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-531",
+      "type": "capability",
+      "name": "`max_skeleton_nodes` clamp (50–600, default 600)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-532",
+      "type": "capability",
+      "name": "Terminal-failure gate (`PlaybookHealPolicy.IsTerminalFailure`)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-533",
+      "type": "capability",
+      "name": "Heal-eligibility matrix (`ShouldOfferHeal` / `HealFailureCodes`)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-534",
+      "type": "capability",
+      "name": "Challenge-URL heuristic reuse blocks heal on anti-bot URLs",
+      "wave": 2
+    },
+    {
+      "id": "CAP-535",
+      "type": "capability",
+      "name": "`requires_login`/`http_401`/`http_403` heal gated on `session_profile` presence",
+      "wave": 2
+    },
+    {
+      "id": "CAP-536",
+      "type": "capability",
+      "name": "Browser-pool daemon skeleton-capture path (fast path)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-537",
+      "type": "capability",
+      "name": "One-shot Playwright fallback capture path",
+      "wave": 2
+    },
+    {
+      "id": "CAP-538",
+      "type": "capability",
+      "name": "`buildDomSkeleton` algorithm: capped DFS + landmark/testid/main-candidate scoring",
+      "wave": 2
+    },
+    {
+      "id": "CAP-539",
+      "type": "capability",
+      "name": "Shadow DOM flattening before skeleton walk",
+      "wave": 2
+    },
+    {
+      "id": "CAP-540",
+      "type": "capability",
+      "name": "Main-landmark wait heuristic + fixed settle delay",
+      "wave": 2
+    },
+    {
+      "id": "CAP-541",
+      "type": "capability",
+      "name": "Resource-type blocking during skeleton navigation",
+      "wave": 2
+    },
+    {
+      "id": "CAP-542",
+      "type": "capability",
+      "name": "Browser-side per-navigation SSRF re-validation (skeleton worker)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-543",
+      "type": "capability",
+      "name": "HIDDEN: `session_profile` → Cookie-header-only injection; browser `storageState` NOT wired",
+      "wave": 2
+    },
+    {
+      "id": "CAP-544",
+      "type": "capability",
+      "name": "Anchors payload surfaced to caller (landmarks / data-testids / main candidates)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-545",
+      "type": "capability",
+      "name": "`agentHints`: fixed `suggested_next` / `do_not` / `max_verify_retries`",
+      "wave": 2
+    },
+    {
+      "id": "CAP-546",
+      "type": "capability",
+      "name": "HIDDEN GAP: failure-hint coverage is incomplete for this tool's own failure codes",
+      "wave": 2
+    },
+    {
+      "id": "CAP-547",
+      "type": "capability",
+      "name": "Profile-gated exposure: `occam_playbook_heal` is full-profile-only",
+      "wave": 2
+    },
+    {
+      "id": "CAP-548",
+      "type": "capability",
+      "name": "No `backend_policy` parameter — heal is browser-only by construction",
+      "wave": 2
+    },
+    {
+      "id": "CAP-549",
+      "type": "capability",
+      "name": "Bypasses `OccamRouter`/`TranscodePipeline` entirely — confirmed absent subsystems",
+      "wave": 2
+    },
+    {
+      "id": "CAP-550",
+      "type": "capability",
+      "name": "`WorkerPaths.DomSkeletonScript` resolution + env override",
+      "wave": 2
+    },
+    {
+      "id": "CAP-551",
+      "type": "capability",
+      "name": "Daemon-path failure silently falls back to one-shot (double-attempt, no combined telemetry)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-552",
+      "type": "capability",
+      "name": "DEAD CODE: unused `CreateHeadersScope` helper in `DomSkeletonWorker`",
+      "wave": 2
+    },
+    {
+      "id": "CAP-553",
+      "type": "capability",
+      "name": "HIDDEN/DEAD: worker's `--consent-aggressive` flag is unreachable from the MCP tool",
+      "wave": 2
+    },
+    {
+      "id": "CAP-554",
+      "type": "capability",
+      "name": "Pool slot ok/fail bookkeeping tied into shared pool health tracking",
+      "wave": 2
+    },
+    {
+      "id": "CAP-750",
+      "type": "capability",
+      "name": "Pure, network-free, single-shot validation contract",
+      "wave": 2
+    },
+    {
+      "id": "CAP-751",
+      "type": "capability",
+      "name": "Grade computation from issue counts",
+      "wave": 2
+    },
+    {
+      "id": "CAP-752",
+      "type": "capability",
+      "name": "`schema_version` check",
+      "wave": 2
+    },
+    {
+      "id": "CAP-753",
+      "type": "capability",
+      "name": "`id` check",
+      "wave": 2
+    },
+    {
+      "id": "CAP-754",
+      "type": "capability",
+      "name": "`hosts` array check (+ non-bare-host warning)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-755",
+      "type": "capability",
+      "name": "`extract.contentSelectors` check",
+      "wave": 2
+    },
+    {
+      "id": "CAP-756",
+      "type": "capability",
+      "name": "`routing.preferred_backend` validation (BUG: allow-list is stale vs. the real parser)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-757",
+      "type": "capability",
+      "name": "`knowledge_schema` unrouted-class cross-check",
+      "wave": 2
+    },
+    {
+      "id": "CAP-758",
+      "type": "capability",
+      "name": "`meta.title` / `agent_notes` soft nudges",
+      "wave": 2
+    },
+    {
+      "id": "CAP-759",
+      "type": "capability",
+      "name": "FINDING: three independent hand-rolled playbook-schema readers, no shared source of truth",
+      "wave": 2
+    },
+    {
+      "id": "CAP-760",
+      "type": "capability",
+      "name": "FINDING: the tool's own description overstates what its errors guarantee",
+      "wave": 2
+    },
+    {
+      "id": "CAP-761",
+      "type": "capability",
+      "name": "FINDING: zero coverage of the save-path's secret-key hygiene rejection",
+      "wave": 2
+    },
+    {
+      "id": "CAP-762",
+      "type": "capability",
+      "name": "FINDING: `content_selectors` (snake_case) alias silently unsupported by lint",
+      "wave": 2
+    },
+    {
+      "id": "CAP-763",
+      "type": "capability",
+      "name": "Tool-surface exposure: `full` + `auditor` profiles only",
+      "wave": 2
+    },
+    {
+      "id": "CAP-490",
+      "type": "capability",
+      "name": "`url` accepts bare hostname, not just absolute URL (reused: CAP-050-adjacent, new behavior)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-491",
+      "type": "capability",
+      "name": "Four-tier resolution with fallback-per-field, not per-document, override",
+      "wave": 2
+    },
+    {
+      "id": "CAP-492",
+      "type": "capability",
+      "name": "Community tier: manifest-gated sha256 allow-list (distinct from user/local/seed trust model)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-493",
+      "type": "capability",
+      "name": "Signature inspection is consumer-only at resolve time (reuse: CAP-282)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-494",
+      "type": "capability",
+      "name": "Genome merge (playbook genome ⊕ live site genome), not full document merge",
+      "wave": 2
+    },
+    {
+      "id": "CAP-495",
+      "type": "capability",
+      "name": "Live `.well-known` genome fetch is fully caller-gated here (opposite of CAP-070's transcode finding)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-496",
+      "type": "capability",
+      "name": "`page_class` / `knowledge_schema` matching runs, but its own failure codes are swallowed here",
+      "wave": 2
+    },
+    {
+      "id": "CAP-497",
+      "type": "capability",
+      "name": "`include_lessons`: local-tier-only, redacted, capped export",
+      "wave": 2
+    },
+    {
+      "id": "CAP-560",
+      "type": "capability",
+      "name": "`url` (host-key resolution input, not the write target)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-561",
+      "type": "capability",
+      "name": "`playbook_json` (draft input, schema + hygiene gated)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-562",
+      "type": "capability",
+      "name": "`verify=true` dry-run quality gate (the tool's own headline behavior)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-563",
+      "type": "capability",
+      "name": "`verify=false` bypass (unverified save still writes AND signs)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-564",
+      "type": "capability",
+      "name": "`verify_url` (independent verify target + host-match enforcement)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-565",
+      "type": "capability",
+      "name": "`lesson_note` (bounded lesson journal with rotation)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-566",
+      "type": "capability",
+      "name": "`failure_reason` / `host_id` (lesson metadata, never secrets by construction)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-567",
+      "type": "capability",
+      "name": "Local-tier-only write confinement (path traversal + bundled-seed protection)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-568",
+      "type": "capability",
+      "name": "`PlaybookVerifyScope` (draft-overlay dry-run mechanism)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-569",
+      "type": "capability",
+      "name": "`QualityGate.AssessExtraction` (shared heuristic quality scorer)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-570",
+      "type": "capability",
+      "name": "Host-match enforcement is host-suffix, not exact",
+      "wave": 2
+    },
+    {
+      "id": "CAP-571",
+      "type": "capability",
+      "name": "HIDDEN/EF-005 RESOLVED: unconditional Receipt v1 signing, `OCCAM_RECEIPTS` NOT consulted",
+      "wave": 2
+    },
+    {
+      "id": "CAP-572",
+      "type": "capability",
+      "name": "Signature scope: canonical hash excludes `provenance` (idempotent re-sign)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-573",
+      "type": "capability",
+      "name": "`SignedKeyId` self-authentication echo (response-level trust signal)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-574",
+      "type": "capability",
+      "name": "Verify-gate proof is embedded inside the signed payload, not just alongside it",
+      "wave": 2
+    },
+    {
+      "id": "CAP-575",
+      "type": "capability",
+      "name": "HIDDEN: immediate in-process resolver cache invalidation on save (mislabeled \"ForTests\")",
+      "wave": 2
+    },
+    {
+      "id": "CAP-576",
+      "type": "capability",
+      "name": "Failure-code agent hints on save rejection",
+      "wave": 2
+    },
+    {
+      "id": "CAP-577",
+      "type": "capability",
+      "name": "Best-effort JSON pretty-printing on write (silent fallback to raw on parse failure)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-420",
+      "type": "capability",
+      "name": "Core capability: cheap pre-fetch diagnosis, confirmed HTTP-only / backend-isolated",
+      "wave": 2
+    },
+    {
+      "id": "CAP-421",
+      "type": "capability",
+      "name": "`timeout_ms` (probe fetch timeout)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-422",
+      "type": "capability",
+      "name": "`include_social_meta` (OpenGraph/Twitter head-only extraction)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-423",
+      "type": "capability",
+      "name": "`session_profile` on probe: headers-only forwarding (narrower than transcode)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-424",
+      "type": "capability",
+      "name": "HIDDEN: `export-state`-created session profiles are inert for `occam_probe`",
+      "wave": 2
+    },
+    {
+      "id": "CAP-425",
+      "type": "capability",
+      "name": "Shared extractability scorer (0–1) — also backs `occam_search` reranking",
+      "wave": 2
+    },
+    {
+      "id": "CAP-426",
+      "type": "capability",
+      "name": "Backend recommendation heuristic (advisory only, not enforced)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-427",
+      "type": "capability",
+      "name": "`httpOnlyRoute` advisory flag (`DomainTierRegistry.PreferHttpOnlyRoute`)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-428",
+      "type": "capability",
+      "name": "Tri-state Access assessment surfaced on probe (`access` field)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-429",
+      "type": "capability",
+      "name": "Challenge-kind taxonomy on probe (independent detection instance)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-430",
+      "type": "capability",
+      "name": "Manual redirect-chain capture with bounded hop count (probe-specific implementation)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-431",
+      "type": "capability",
+      "name": "PDF short-circuit classification (metadata-only, no real analysis)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-432",
+      "type": "capability",
+      "name": "Byte-capped HTML sampling, shared ceiling across 4 call sites",
+      "wave": 2
+    },
+    {
+      "id": "CAP-433",
+      "type": "capability",
+      "name": "`unsupported_content_type` short-circuit (non-HTML, non-PDF refusal)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-434",
+      "type": "capability",
+      "name": "Probe-specific proactive agent hints (distinct nudge set from transcode's)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-435",
+      "type": "capability",
+      "name": "`HttpProbeFetcher` as shared cross-tool infrastructure (indirect probe reuse)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-436",
+      "type": "capability",
+      "name": "DEAD/UNREACHABLE: `probe.autoRedirect` HttpClient is registered but never selected",
+      "wave": 2
+    },
+    {
+      "id": "CAP-437",
+      "type": "capability",
+      "name": "`domainTier` provenance field (read-only curated-tier stamp)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-620",
+      "type": "capability",
+      "name": "`query` (required input) + validation",
+      "wave": 2
+    },
+    {
+      "id": "CAP-621",
+      "type": "capability",
+      "name": "`max_results` bounds (1–20, default 8)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-622",
+      "type": "capability",
+      "name": "Provider selection via `OCCAM_SEARCH_PROVIDER` (off by default)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-623",
+      "type": "capability",
+      "name": "SearXNG provider (self-hosted meta-search, keyless)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-624",
+      "type": "capability",
+      "name": "Brave Search provider",
+      "wave": 2
+    },
+    {
+      "id": "CAP-625",
+      "type": "capability",
+      "name": "Tavily provider (AI-agent search API)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-626",
+      "type": "capability",
+      "name": "Provider failure taxonomy + timeout",
+      "wave": 2
+    },
+    {
+      "id": "CAP-627",
+      "type": "capability",
+      "name": "`rerank` (opt-in extractability-based reordering via live probe fan-out)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-628",
+      "type": "capability",
+      "name": "`SearchExtractabilityScorer` (deterministic probe→score mapping)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-629",
+      "type": "capability",
+      "name": "Rerank output annotation (`extractability` + `recommendedBackend` fields)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-630",
+      "type": "capability",
+      "name": "`agentHints.suggestedNext` (result-set-aware next-step text)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-631",
+      "type": "capability",
+      "name": "Response shape (`{ok, query, provider, count, results[], agentHints}`)",
+      "wave": 2
+    },
+    {
+      "id": "CAP-650",
+      "type": "capability",
+      "name": "Capsule auto-detection is universal across modes, not offline-only",
+      "wave": 2
+    },
+    {
+      "id": "CAP-651",
+      "type": "capability",
+      "name": "Unrecognized `mode` value silently falls back to offline verification",
+      "wave": 2
+    },
+    {
+      "id": "CAP-652",
+      "type": "capability",
+      "name": "`live` mode re-fetch drops session/playbook/budget context from the original request",
+      "wave": 2
+    },
+    {
+      "id": "CAP-653",
+      "type": "capability",
+      "name": "`live` mode collapses every re-fetch failure into one generic verdict, discarding the detailed failure taxonomy",
+      "wave": 2
+    },
+    {
+      "id": "TOOL",
+      "type": "other"
+    },
+    {
+      "id": "CAP-262",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-263",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-278",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-279",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-051",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-068",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-191",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-008",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-384",
+      "type": "capability"
+    },
+    {
+      "id": "PARAM:claims",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:backend_policy",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:session_profile",
+      "type": "param"
+    },
+    {
+      "id": "occam_claim_check",
+      "type": "other"
+    },
+    {
+      "id": "ClaimCheckService",
+      "type": "other"
+    },
+    {
+      "id": "OccamAttestResponse",
+      "type": "other"
+    },
+    {
+      "id": "receipt",
+      "type": "other"
+    },
+    {
+      "id": "merkle_proof",
+      "type": "other"
+    },
+    {
+      "id": "http_extract_backend",
+      "type": "other"
+    },
+    {
+      "id": "browser_extract_backend",
+      "type": "other"
+    },
+    {
+      "id": "managed_extract_backend",
+      "type": "other"
+    },
+    {
+      "id": "session",
+      "type": "other"
+    },
+    {
+      "id": "playbook_genome",
+      "type": "other"
+    },
+    {
+      "id": "TranscodePipeline",
+      "type": "other"
+    },
+    {
+      "id": "OccamRouter",
+      "type": "other"
+    },
+    {
+      "id": "CAP-052",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-069",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-070",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-078",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-090",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-091",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-094",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-095",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-096",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-097",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-100",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-103",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-104",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-107",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-250",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-252",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-264",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-280",
+      "type": "capability"
+    },
+    {
+      "id": "PARAM:claim",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:url",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:max_matches",
+      "type": "param"
+    },
+    {
+      "id": "BudgetOwnership.PrepareSurfaceBudget(null)",
+      "type": "other"
+    },
+    {
+      "id": "blocks",
+      "type": "other"
+    },
+    {
+      "id": "PlaybookSeedResolver",
+      "type": "other"
+    },
+    {
+      "id": "ClaimBlockRank[]",
+      "type": "other"
+    },
+    {
+      "id": "proven",
+      "type": "other"
+    },
+    {
+      "id": "no-cache (live extraction every call)",
+      "type": "other"
+    },
+    {
+      "id": "BlockMerkleRoot",
+      "type": "other"
+    },
+    {
+      "id": "MerkleProofStep[]",
+      "type": "other"
+    },
+    {
+      "id": "negative-receipt",
+      "type": "other"
+    },
+    {
+      "id": "(nothing: capsule/timeAnchor/media/tables/feed/chunks absent by design)",
+      "type": "other"
+    },
+    {
+      "id": "HttpExtractBackend",
+      "type": "other"
+    },
+    {
+      "id": "BrowserExtractBackend",
+      "type": "other"
+    },
+    {
+      "id": "ManagedExtractBackend",
+      "type": "other"
+    },
+    {
+      "id": "citation-proof (per-match)",
+      "type": "other"
+    },
+    {
+      "id": "CAP-007",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-009",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-010",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-304",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-305",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-385",
+      "type": "capability"
+    },
+    {
+      "id": "PARAM:context_tokens",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:model_id",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:clear",
+      "type": "param"
+    },
+    {
+      "id": "client_capability_snapshot(read-only)",
+      "type": "other"
+    },
+    {
+      "id": "env:OCCAM_CLIENT_CONTEXT_TOKENS",
+      "type": "other"
+    },
+    {
+      "id": "env:OCCAM_CLIENT_MODEL_ID",
+      "type": "other"
+    },
+    {
+      "id": "OccamTranscodeTool",
+      "type": "other"
+    },
+    {
+      "id": "OccamDigestTool",
+      "type": "other"
+    },
+    {
+      "id": "TranscodeCacheKey-shift",
+      "type": "other"
+    },
+    {
+      "id": "MaterializationKey-shift",
+      "type": "other"
+    },
+    {
+      "id": "suggestedProfile(advisory,unenforced)",
+      "type": "other"
+    },
+    {
+      "id": "CAP-283",
+      "type": "capability"
+    },
+    {
+      "id": "PARAM:urls",
+      "type": "param"
+    },
+    {
+      "id": "unbounded_markdown_per_row",
+      "type": "other"
+    },
+    {
+      "id": "manifest",
+      "type": "other"
+    },
+    {
+      "id": "null_receipt",
+      "type": "other"
+    },
+    {
+      "id": "no_capsule",
+      "type": "other"
+    },
+    {
+      "id": "no_time_anchor",
+      "type": "other"
+    },
+    {
+      "id": "manifestRoot",
+      "type": "other"
+    },
+    {
+      "id": "rowLeaf",
+      "type": "other"
+    },
+    {
+      "id": "CAP-257",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-254",
+      "type": "capability"
+    },
+    {
+      "id": "contentHash",
+      "type": "other"
+    },
+    {
+      "id": "CAP-060",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-064",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-098",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-102",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-105",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-109",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-086",
+      "type": "capability"
+    },
+    {
+      "id": "PARAM:source_url",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:max_links",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:focus_query",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:per_url_max_tokens",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:if_none_match",
+      "type": "param"
+    },
+    {
+      "id": "source_url",
+      "type": "other"
+    },
+    {
+      "id": "DigestUrlEntry[]",
+      "type": "other"
+    },
+    {
+      "id": "FetchPreflight",
+      "type": "other"
+    },
+    {
+      "id": "http_daemon_bypass_one_shot",
+      "type": "other"
+    },
+    {
+      "id": "OCCAM_DIGEST_PARALLEL",
+      "type": "other"
+    },
+    {
+      "id": "OCCAM_DIGEST_MAX_PARALLEL",
+      "type": "other"
+    },
+    {
+      "id": "OCCAM_BROWSER_MAX_PARALLEL",
+      "type": "other"
+    },
+    {
+      "id": "digestId",
+      "type": "other"
+    },
+    {
+      "id": "combined",
+      "type": "other"
+    },
+    {
+      "id": "OCCAM_RECEIPTS",
+      "type": "other"
+    },
+    {
+      "id": "unchanged",
+      "type": "other"
+    },
+    {
+      "id": "MapService",
+      "type": "other"
+    },
+    {
+      "id": "SitemapDiscovery",
+      "type": "other"
+    },
+    {
+      "id": "HtmlLinkExtractor",
+      "type": "other"
+    },
+    {
+      "id": "discoveredLinks",
+      "type": "other"
+    },
+    {
+      "id": "agentHints",
+      "type": "other"
+    },
+    {
+      "id": "css-extract.mjs",
+      "type": "other"
+    },
+    {
+      "id": "not_applicable",
+      "type": "other"
+    },
+    {
+      "id": "proxy",
+      "type": "other"
+    },
+    {
+      "id": "browser-session.mjs",
+      "type": "other"
+    },
+    {
+      "id": "throwaway_chromium_context",
+      "type": "other"
+    },
+    {
+      "id": "hidden_gap",
+      "type": "other"
+    },
+    {
+      "id": "dead_field",
+      "type": "other"
+    },
+    {
+      "id": "fake_receipt",
+      "type": "other"
+    },
+    {
+      "id": "attacker_controlled_html",
+      "type": "other"
+    },
+    {
+      "id": "playbook_field_spec",
+      "type": "other"
+    },
+    {
+      "id": "unreachable_row_mode",
+      "type": "other"
+    },
+    {
+      "id": "failure_taxonomy",
+      "type": "other"
+    },
+    {
+      "id": "partial_facts",
+      "type": "other"
+    },
+    {
+      "id": "CAP-050",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-157",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-236",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-287",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-150",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-154",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-156",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-167",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-169",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-170",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-184",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-188",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-189",
+      "type": "capability"
+    },
+    {
+      "id": "PARAM:source",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:same_domain",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:filter_nonsense",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:timeout_ms",
+      "type": "param"
+    },
+    {
+      "id": "HttpProbeFetcher",
+      "type": "other"
+    },
+    {
+      "id": "html_response",
+      "type": "other"
+    },
+    {
+      "id": "MappedLink[]",
+      "type": "other"
+    },
+    {
+      "id": "partial_results",
+      "type": "other"
+    },
+    {
+      "id": "FocusQueryDecomposition",
+      "type": "other"
+    },
+    {
+      "id": "occam_digest",
+      "type": "other"
+    },
+    {
+      "id": "occam_transcode",
+      "type": "other"
+    },
+    {
+      "id": "occam_map",
+      "type": "other"
+    },
+    {
+      "id": "CAP-059",
+      "type": "capability"
+    },
+    {
+      "id": "ssrf_guard",
+      "type": "other"
+    },
+    {
+      "id": "CAP-171",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-204",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-219",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-226",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-229",
+      "type": "capability"
+    },
+    {
+      "id": "PARAM:failure_reason",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:max_skeleton_nodes",
+      "type": "param"
+    },
+    {
+      "id": "browser_daemon_pool",
+      "type": "other"
+    },
+    {
+      "id": "browser_one_shot_playwright",
+      "type": "other"
+    },
+    {
+      "id": "heal_not_applicable_or_terminal_failure",
+      "type": "other"
+    },
+    {
+      "id": "domSkeleton",
+      "type": "other"
+    },
+    {
+      "id": "anchors",
+      "type": "other"
+    },
+    {
+      "id": "not_applicable_no_managed_backend",
+      "type": "other"
+    },
+    {
+      "id": "OCCAM_PROFILE=full_only",
+      "type": "other"
+    },
+    {
+      "id": "PARAM:playbook_json",
+      "type": "param"
+    },
+    {
+      "id": "PlaybookLintReport(json)",
+      "type": "other"
+    },
+    {
+      "id": "issues[]",
+      "type": "other"
+    },
+    {
+      "id": "occam_playbook_save:PlaybookDocument.TryParse",
+      "type": "other"
+    },
+    {
+      "id": "occam_playbook_resolve:PlaybookSeedResolver.TryParseSeed",
+      "type": "other"
+    },
+    {
+      "id": "PlaybookCommunityHygiene.ContainsForbiddenKeys",
+      "type": "other"
+    },
+    {
+      "id": "none(no session, no proxy, no worker, no cache)",
+      "type": "other"
+    },
+    {
+      "id": "advisory-only-grade",
+      "type": "other"
+    },
+    {
+      "id": "CAP-282",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-374",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-375",
+      "type": "capability"
+    },
+    {
+      "id": "PARAM:schema_version",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:include_lessons",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:fetch_site_genome",
+      "type": "param"
+    },
+    {
+      "id": "filesystem:local-tier",
+      "type": "other"
+    },
+    {
+      "id": "filesystem:user-tier(WT_PLAYBOOKS_PATH)",
+      "type": "other"
+    },
+    {
+      "id": "filesystem:community-tier",
+      "type": "other"
+    },
+    {
+      "id": "filesystem:seed-tier",
+      "type": "other"
+    },
+    {
+      "id": "manifest.json",
+      "type": "other"
+    },
+    {
+      "id": "hygiene-verdict",
+      "type": "other"
+    },
+    {
+      "id": "ReceiptSigner.KeyId",
+      "type": "other"
+    },
+    {
+      "id": "ReceiptSigner.ExportPublicKeyPem",
+      "type": "other"
+    },
+    {
+      "id": "Signature(status,keyId,score,passesGate)",
+      "type": "other"
+    },
+    {
+      "id": "Genome(merged)",
+      "type": "other"
+    },
+    {
+      "id": "KnowledgeSchema(merged)",
+      "type": "other"
+    },
+    {
+      "id": "WellKnownGenomeFetcher",
+      "type": "other"
+    },
+    {
+      "id": "local-tier-only-result",
+      "type": "other"
+    },
+    {
+      "id": "PageClass",
+      "type": "other"
+    },
+    {
+      "id": "KnowledgeSchemaPlanner",
+      "type": "other"
+    },
+    {
+      "id": "Lessons(redacted,max10)",
+      "type": "other"
+    },
+    {
+      "id": "CAP-073",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-281",
+      "type": "capability"
+    },
+    {
+      "id": "provenance.signature(at save, out of scope)",
+      "type": "other"
+    },
+    {
+      "id": "provenance.signature(at resolve)",
+      "type": "other"
+    },
+    {
+      "id": "CAP-106",
+      "type": "capability"
+    },
+    {
+      "id": "PARAM:verify",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:verify_url",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:lesson_note",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:host_id",
+      "type": "param"
+    },
+    {
+      "id": "PlaybookVerifyMetrics",
+      "type": "other"
+    },
+    {
+      "id": "markdown",
+      "type": "other"
+    },
+    {
+      "id": "ReceiptSigner",
+      "type": "other"
+    },
+    {
+      "id": "signed-playbook-provenance",
+      "type": "other"
+    },
+    {
+      "id": "none (OCCAM_RECEIPTS not checked)",
+      "type": "other"
+    },
+    {
+      "id": "signedKeyId",
+      "type": "other"
+    },
+    {
+      "id": "resolver-cache-invalidation",
+      "type": "other"
+    },
+    {
+      "id": "OCCAM_PLAYBOOKS_LOCAL_ROOT",
+      "type": "other"
+    },
+    {
+      "id": "playbook_save_rejected",
+      "type": "other"
+    },
+    {
+      "id": "playbook_schema_invalid",
+      "type": "other"
+    },
+    {
+      "id": "playbook_verify_failed",
+      "type": "other"
+    },
+    {
+      "id": "playbook_verify_low_score",
+      "type": "other"
+    },
+    {
+      "id": "playbook_verify_high_noise",
+      "type": "other"
+    },
+    {
+      "id": "PARAM:include_social_meta",
+      "type": "param"
+    },
+    {
+      "id": "http",
+      "type": "backend"
+    },
+    {
+      "id": "(none — no browser/managed rung on probe)",
+      "type": "other"
+    },
+    {
+      "id": "PARAM:json_tables",
+      "type": "other"
+    },
+    {
+      "id": "PARAM:prefer_llms_txt",
+      "type": "other"
+    },
+    {
+      "id": "PARAM:json_feed",
+      "type": "other"
+    },
+    {
+      "id": "PARAM:max_tokens",
+      "type": "other"
+    },
+    {
+      "id": "live_traffic",
+      "type": "other"
+    },
+    {
+      "id": "(none — browser and managed backends are unreachable from this tool)",
+      "type": "other"
+    },
+    {
+      "id": "PARAM:query",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:max_results",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:rerank",
+      "type": "param"
+    },
+    {
+      "id": "env:OCCAM_SEARCH_URL",
+      "type": "other"
+    },
+    {
+      "id": "env:OCCAM_SEARCH_API_KEY",
+      "type": "other"
+    },
+    {
+      "id": "env:OCCAM_SEARCH_TIMEOUT_MS",
+      "type": "other"
+    },
+    {
+      "id": "ProbeService.AnalyzeAsync",
+      "type": "other"
+    },
+    {
+      "id": "ProbeAnalysis",
+      "type": "other"
+    },
+    {
+      "id": "artifact:extractability_score",
+      "type": "other"
+    },
+    {
+      "id": "none (no backend cascade; single provider call, no retry-on-same-provider)",
+      "type": "other"
+    },
+    {
+      "id": "occam_probe-subsystem",
+      "type": "other"
+    },
+    {
+      "id": "CAP-251",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-259",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-261",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-265",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-266",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-268",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-269",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-270",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-271",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-272",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-273",
+      "type": "capability"
+    },
+    {
+      "id": "CAP-274",
+      "type": "capability"
+    },
+    {
+      "id": "PARAM:receipt",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:mode",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:mode=live",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:chunks",
+      "type": "param"
+    },
+    {
+      "id": "PARAM:public_key",
+      "type": "param"
+    },
+    {
+      "id": "OccamRouter/http_then_browser_cascade",
+      "type": "other"
+    },
+    {
+      "id": "thin_extract/requires_login/captcha_or_challenge (post-processors, silently collapsed — CAP-653)",
+      "type": "other"
+    },
+    {
+      "id": "occam://capsule/... (produced by CAP-265, occam_transcode emit_capsule)",
+      "type": "other"
+    },
+    {
+      "id": "citation_proof (leaf+MerkleProofStep[])",
+      "type": "other"
+    },
+    {
+      "id": "citation_proof",
+      "type": "other"
+    },
+    {
+      "id": "watch_history_chain (opt-in occam_watch, CAP-284)",
+      "type": "other"
+    },
+    {
+      "id": "ReceiptVerifier.VerifyOffline (CAP-259)",
+      "type": "other"
+    },
+    {
+      "id": "WatchHistoryChain.Verify (CAP-284)",
+      "type": "other"
+    },
+    {
+      "id": "CAP:CAP-800",
+      "type": "capability",
+      "wave": 3,
+      "name": "Batch execution core is code-shared, instance-isolated"
+    },
+    {
+      "id": "CAP:CAP-801",
+      "type": "capability",
+      "wave": 3,
+      "name": "BatchServer is a distinct execution model, not an MCP transport"
+    },
+    {
+      "id": "CAP:CAP-802",
+      "type": "capability",
+      "wave": 3,
+      "name": "HTTP endpoint contract (BatchServer)"
+    },
+    {
+      "id": "CAP:CAP-803",
+      "type": "capability",
+      "wave": 3,
+      "name": "Batch reuses the full `TranscodePipeline`/`OccamRouter`, not a stripped-down path"
+    },
+    {
+      "id": "CAP:CAP-804",
+      "type": "capability",
+      "wave": 3,
+      "name": "Batch structurally never produces a Receipt v1"
+    },
+    {
+      "id": "CAP:CAP-805",
+      "type": "capability",
+      "wave": 3,
+      "name": "Batch strips all structured sidecars"
+    },
+    {
+      "id": "CAP:CAP-806",
+      "type": "capability",
+      "wave": 3,
+      "name": "Concurrency model (shared code, per-instance semaphore)"
+    },
+    {
+      "id": "CAP:CAP-807",
+      "type": "capability",
+      "wave": 3,
+      "name": "Persistence model: whole-snapshot JSON file, load-once"
+    },
+    {
+      "id": "CAP:CAP-808",
+      "type": "capability",
+      "wave": 3,
+      "name": "No retention/eviction — batch results persist indefinitely"
+    },
+    {
+      "id": "CAP:CAP-809",
+      "type": "capability",
+      "wave": 3,
+      "name": "Idempotency window is per-store-instance, not global"
+    },
+    {
+      "id": "CAP:CAP-810",
+      "type": "capability",
+      "wave": 3,
+      "name": "Two independent registration call sites for the same trio of services"
+    },
+    {
+      "id": "CAP:CAP-811",
+      "type": "capability",
+      "wave": 3,
+      "name": "Per-connection multiplication under WebSocket/Remote transports"
+    },
+    {
+      "id": "CAP:CAP-812",
+      "type": "capability",
+      "wave": 3,
+      "name": "[HIDDEN / RISK] Cross-instance last-writer-wins clobber on the batch job file"
+    },
+    {
+      "id": "CAP:CAP-813",
+      "type": "capability",
+      "wave": 3,
+      "name": "Submit validation is whole-batch fail-closed"
+    },
+    {
+      "id": "CAP:CAP-814",
+      "type": "capability",
+      "wave": 3,
+      "name": "Per-item `on_oversize=partial` reuses the exact one-shot ambient scopes"
+    },
+    {
+      "id": "CAP:CAP-815",
+      "type": "capability",
+      "wave": 3,
+      "name": "Failure code hygiene gap: `transcode_failed` is off-taxonomy"
+    },
+    {
+      "id": "CAP:CAP-816",
+      "type": "capability",
+      "wave": 3,
+      "name": "BatchServer bind/port policy"
+    },
+    {
+      "id": "CAP:CAP-817",
+      "type": "capability",
+      "wave": 3,
+      "name": "BatchServer is unauthenticated plain HTTP"
+    },
+    {
+      "id": "CAP:CAP-818",
+      "type": "capability",
+      "wave": 3,
+      "name": "`OCCAM_BATCH_MAX_URLS` enforced once, shared by both surfaces"
+    },
+    {
+      "id": "CAP:CAP-830",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam_watch` forces block collection unconditionally (JsonBlocks=true always)"
+    },
+    {
+      "id": "CAP:CAP-831",
+      "type": "capability",
+      "wave": 3,
+      "name": "Watch parameter surface is a strict curated subset of transcode (8 params; fit_markdown implicit via focus_query)"
+    },
+    {
+      "id": "CAP:CAP-832",
+      "type": "capability",
+      "wave": 3,
+      "name": "WatchStore corrupt/unreadable file silently resets to empty (no diagnostic)"
+    },
+    {
+      "id": "CAP:CAP-833",
+      "type": "capability",
+      "wave": 3,
+      "name": "WatchStore key has no URL normalization beyond Trim() (case/slash/query variance = different pages)"
+    },
+    {
+      "id": "CAP:CAP-834",
+      "type": "capability",
+      "wave": 3,
+      "name": "Full block-diff is always computed server-side, `include_diff` only gates the response"
+    },
+    {
+      "id": "CAP:CAP-835",
+      "type": "capability",
+      "wave": 3,
+      "name": "`reset=true` is destructive and non-archival — prior signed history is permanently discarded"
+    },
+    {
+      "id": "CAP:CAP-836",
+      "type": "capability",
+      "wave": 3,
+      "name": "SI-05 append-only-on-event policy: unchanged calls are a no-op on the history chain"
+    },
+    {
+      "id": "CAP:CAP-837",
+      "type": "capability",
+      "wave": 3,
+      "name": "SI-05 canonical entry encoding pins the signature into the next chain link (tamper-sig breaks link too)"
+    },
+    {
+      "id": "CAP:CAP-838",
+      "type": "capability",
+      "wave": 3,
+      "name": "History is a bounded, silently-truncated window (MaxHistoryEntries=64); verify is window-aware"
+    },
+    {
+      "id": "CAP:CAP-839",
+      "type": "capability",
+      "wave": 3,
+      "name": "Two independent hash families per watch cycle: BlockDiff.Hash (detection) vs MerkleTree.Root (signed root), uncorrelated"
+    },
+    {
+      "id": "CAP:CAP-840",
+      "type": "capability",
+      "wave": 3,
+      "name": "DEAD: `IWatchStore.Remove` is unreachable from every live surface — no way to un-watch a URL"
+    },
+    {
+      "id": "CAP:CAP-841",
+      "type": "capability",
+      "wave": 3,
+      "name": "No scheduling/daemon/TTL anywhere in Watch — OCCAM_WATCH_MCP gates registration only, records never expire"
+    },
+    {
+      "id": "CAP:CAP-842",
+      "type": "capability",
+      "wave": 3,
+      "name": "A failing watch call never touches persisted state — no failure event type exists in the history chain"
+    },
+    {
+      "id": "CAP:CAP-843",
+      "type": "capability",
+      "wave": 3,
+      "name": "Response exposes serving backend (http/browser) for cross-call escalation visibility"
+    },
+    {
+      "id": "CAP:CAP-844",
+      "type": "capability",
+      "wave": 3,
+      "name": "Receipt-signing gate reconfirmed EF-005-compliant for Watch; unsigned chain still links under OCCAM_RECEIPTS=off"
+    },
+    {
+      "id": "CAP:CAP-845",
+      "type": "capability",
+      "wave": 3,
+      "name": "Multi-process race beyond CAP-387: in-CLR lock only, no OS file lock/atomic rename on watch.json"
+    },
+    {
+      "id": "CAP:CAP-846",
+      "type": "capability",
+      "wave": 3,
+      "name": "Store growth is O(records) per call (whole-file rewrite); no per-store URL cap or eviction"
+    },
+    {
+      "id": "CAP:CAP-847",
+      "type": "capability",
+      "wave": 3,
+      "name": "`content_delta_tokens` uses FocusMatcher.Tokenize, distinct from the response token-budget system"
+    },
+    {
+      "id": "CAP:CAP-848",
+      "type": "capability",
+      "wave": 3,
+      "name": "Watch inherits FULL session support via canonical TranscodePipeline, unlike the headers-only path (EF-017) used by probe/map/heal/extract_knowledge"
+    },
+    {
+      "id": "CAP:CAP-850",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam_crosscheck` MCP tool surface"
+    },
+    {
+      "id": "CAP:CAP-851",
+      "type": "capability",
+      "wave": 3,
+      "name": "`ConsensusEvaluator.Evaluate` verdict algorithm"
+    },
+    {
+      "id": "CAP:CAP-852",
+      "type": "capability",
+      "wave": 3,
+      "name": "Vantage generation: backend axis × session axis"
+    },
+    {
+      "id": "CAP:CAP-853",
+      "type": "capability",
+      "wave": 3,
+      "name": "`PlaybookPolicy.Off` forced for every vantage"
+    },
+    {
+      "id": "CAP:CAP-854",
+      "type": "capability",
+      "wave": 3,
+      "name": "Crosscheck bypasses cascade `backend_policy`; calls each vantage backend directly"
+    },
+    {
+      "id": "CAP:CAP-855",
+      "type": "capability",
+      "wave": 3,
+      "name": "Per-vantage receipts reuse the shared `BuildReceipt`/`BuildNegativeReceipt` builder"
+    },
+    {
+      "id": "CAP:CAP-856",
+      "type": "capability",
+      "wave": 3,
+      "name": "The consensus verdict is not itself signed — re-derivable-by-design"
+    },
+    {
+      "id": "CAP:CAP-857",
+      "type": "capability",
+      "wave": 3,
+      "name": "`DivergencePair` block-overlap math (usable-only, union-based)"
+    },
+    {
+      "id": "CAP:CAP-858",
+      "type": "capability",
+      "wave": 3,
+      "name": "`access_divergent` priority rule (wall beats content-divergence)"
+    },
+    {
+      "id": "CAP:CAP-859",
+      "type": "capability",
+      "wave": 3,
+      "name": "Trust-model scope: single-node \"local jury\", not a distributed jury"
+    },
+    {
+      "id": "CAP:CAP-860",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam_crosscheck` registration is orthogonal to `OCCAM_PROFILE`"
+    },
+    {
+      "id": "CAP:CAP-861",
+      "type": "capability",
+      "wave": 3,
+      "name": "No `OccamServerInstructions`/agentHints coverage for crosscheck — discoverability gap"
+    },
+    {
+      "id": "CAP:CAP-862",
+      "type": "capability",
+      "wave": 3,
+      "name": "Relation to `occam_claim_check` / `occam_attest`: siblings, not collaborators"
+    },
+    {
+      "id": "CAP:CAP-863",
+      "type": "capability",
+      "wave": 3,
+      "name": "What a `consensus` verdict does NOT prove (semantics ledger)"
+    },
+    {
+      "id": "CAP:CAP-864",
+      "type": "capability",
+      "wave": 3,
+      "name": "Dead `\"paywall\"` failure-code branch, duplicated a second time"
+    },
+    {
+      "id": "CAP:CAP-865",
+      "type": "capability",
+      "wave": 3,
+      "name": "`OCCAM_RECEIPTS` flag re-implemented locally instead of via `ReceiptsPolicy.Enabled()`"
+    },
+    {
+      "id": "CAP:CAP-866",
+      "type": "capability",
+      "wave": 3,
+      "name": "`vantages` parsing: dedup, order-preservation, default-pair fallback"
+    },
+    {
+      "id": "CAP:CAP-867",
+      "type": "capability",
+      "wave": 3,
+      "name": "Gate coverage: pure-evaluator only, no pipeline/signing/MCP-surface integration test"
+    },
+    {
+      "id": "CAP:CAP-868",
+      "type": "capability",
+      "wave": 3,
+      "name": "869 reserved, not allocated."
+    },
+    {
+      "id": "CAP:CAP-870",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam_failure_atlas` tool contract"
+    },
+    {
+      "id": "CAP:CAP-871",
+      "type": "capability",
+      "wave": 3,
+      "name": "`FailureAtlasStore` bounded in-memory aggregation"
+    },
+    {
+      "id": "CAP:CAP-872",
+      "type": "capability",
+      "wave": 3,
+      "name": "`FailureAtlasClassifier`: closure taxonomy + walled/closureRate math"
+    },
+    {
+      "id": "CAP:CAP-873",
+      "type": "capability",
+      "wave": 3,
+      "name": "Atlas silently aggregates across every `TranscodePipeline`-routed tool, not just `occam_transcode`"
+    },
+    {
+      "id": "CAP:CAP-874",
+      "type": "capability",
+      "wave": 3,
+      "name": "Non-persistence is real and total (persistence claim verified TRUE)"
+    },
+    {
+      "id": "CAP:CAP-875",
+      "type": "capability",
+      "wave": 3,
+      "name": "Enabling the atlas replaces the host's entire telemetry sink (DI last-registration-wins), not an addition"
+    },
+    {
+      "id": "CAP:CAP-876",
+      "type": "capability",
+      "wave": 3,
+      "name": "No alternate read surface for atlas state"
+    },
+    {
+      "id": "CAP:CAP-877",
+      "type": "capability",
+      "wave": 3,
+      "name": "Cross-feature interaction: Batch mode feeds the same singleton atlas"
+    },
+    {
+      "id": "CAP:CAP-878",
+      "type": "capability",
+      "wave": 3,
+      "name": "Gate coverage is unit/pure-function only; no live proof of the registration path or wire shape"
+    },
+    {
+      "id": "CAP:CAP-879",
+      "type": "capability",
+      "wave": 3,
+      "name": "Tool description accuracy audit (persistence claim + full contract)"
+    },
+    {
+      "id": "CAP:CAP-880",
+      "type": "capability",
+      "wave": 3,
+      "name": "Session support is bifurcated into three tiers, not one uniform contract"
+    },
+    {
+      "id": "CAP:CAP-881",
+      "type": "capability",
+      "wave": 3,
+      "name": "HIDDEN: per-call GUID header temp-file defeats browser-pool warm reuse for any headered/session call"
+    },
+    {
+      "id": "CAP:CAP-882",
+      "type": "capability",
+      "wave": 3,
+      "name": "Refined EF-002: the real bleed vector is anonymous-to-anonymous context sharing, not `session_profile`-to-`session_profile`"
+    },
+    {
+      "id": "CAP:CAP-883",
+      "type": "capability",
+      "wave": 3,
+      "name": "`L2_SESSION_OK` gate covers 4 of 12 session-carrying surfaces; zero coverage of pool-recycle/cookie-persistence behavior"
+    },
+    {
+      "id": "CAP:CAP-884",
+      "type": "capability",
+      "wave": 3,
+      "name": "Operator CLI and MCP host resolve the identical sessions-root default (no split-brain)"
+    },
+    {
+      "id": "CAP:CAP-885",
+      "type": "capability",
+      "wave": 3,
+      "name": "HIDDEN: `export-state`'s browser-only hint is the sole place the storageState/backend_policy dependency is surfaced"
+    },
+    {
+      "id": "CAP:CAP-900",
+      "type": "capability",
+      "wave": 3,
+      "name": "`OccamCliVerbs.InstallBrowser` (verified end-to-end trace)"
+    },
+    {
+      "id": "CAP:CAP-901",
+      "type": "capability",
+      "wave": 3,
+      "name": "Producer↔consumer wiring: `browser-launch-options.mjs` emits the literal string the CLI verb answers"
+    },
+    {
+      "id": "CAP:CAP-902",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam` (operator wrapper) has no route to `verify` / `keys export` / `install-browser` / `lifecycle`"
+    },
+    {
+      "id": "CAP:CAP-903",
+      "type": "capability",
+      "wave": 3,
+      "name": "Stale binary name `FFOccamMcp.Core` in 3 doc files (actual `AssemblyName` is `OccamMcp.Core`)"
+    },
+    {
+      "id": "CAP:CAP-904",
+      "type": "capability",
+      "wave": 3,
+      "name": "Normative Merkle-leaf spec embeds a raw NUL control byte instead of an escaped `\\0`"
+    },
+    {
+      "id": "CAP:CAP-920",
+      "type": "capability",
+      "wave": 3,
+      "name": "`version-surface` deployment diagnostic (Surface A)"
+    },
+    {
+      "id": "CAP:CAP-921",
+      "type": "capability",
+      "wave": 3,
+      "name": "`lifecycle self` — read-only `HostIdentityDescriptor` (INV-10)"
+    },
+    {
+      "id": "CAP:CAP-922",
+      "type": "capability",
+      "wave": 3,
+      "name": "`lifecycle diagnose` — caller-supplied peer overlap warnings, no OS process scan/kill"
+    },
+    {
+      "id": "CAP:CAP-923",
+      "type": "capability",
+      "wave": 3,
+      "name": "Unified operator CLI dispatcher — data-only `CLI_SUBCOMMANDS` + node/shell/internal delegate kinds"
+    },
+    {
+      "id": "CAP:CAP-924",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam control` — interactive TTY soft menu (numeric/letter keys → actions)"
+    },
+    {
+      "id": "CAP:CAP-925",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam status` — install summary (version + onboard meta + update) with `--json`"
+    },
+    {
+      "id": "CAP:CAP-926",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam update` — read-only GitHub Releases check, `OCCAM_LATEST_VERSION`/`OCCAM_RELEASE_ALLOW_HTTP` escape hatches"
+    },
+    {
+      "id": "CAP:CAP-927",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam help` / `help next-steps` — `COMMAND_REGISTRY`-driven catalog, tty/json/plain renderers, `relatedCommands` via shared `seeAlso`"
+    },
+    {
+      "id": "CAP:CAP-928",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam refresh`/`restart` — stop running host processes, re-run doctor, print manual reload hint (Cursor/Hermes reload is NOT automated)"
+    },
+    {
+      "id": "CAP:CAP-929",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam contract`/`version-surface` — full public-contract pipeline (schema fingerprint pin, stdio/WS parity, RC1 invoke-smoke); internally spawns Surface-A `ver"
+    },
+    {
+      "id": "CAP:CAP-930",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam snippet` implicit-arg injection (`occamHome` auto-appended when no passthrough args)"
+    },
+    {
+      "id": "CAP:CAP-931",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam skill` install entrypoint (delegates to `occam-skill-install.mjs`)"
+    },
+    {
+      "id": "CAP:CAP-932",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam-playbook-publish` maintainer CLI (PB4c) — sanitize + `--ack-community-review` gate, zero auto-upload, zero MCP surface"
+    },
+    {
+      "id": "CAP:CAP-933",
+      "type": "capability",
+      "wave": 3,
+      "name": "Global `--json` flag uniformly reshapes stdout for every Surface-B subcommand"
+    },
+    {
+      "id": "CAP:CAP-934",
+      "type": "capability",
+      "wave": 3,
+      "name": "Bare `occam` (no subcommand) auto-launches `control` loop only when `stdin.isTTY && !json && CI!=1/true`; else usage+exit 1"
+    },
+    {
+      "id": "CAP:CAP-935",
+      "type": "capability",
+      "wave": 3,
+      "name": "Level B auto-`--skip-build` injection for `doctor` shell delegate (`isLevelBInstall` = has `VERSION`, no `.git`)"
+    },
+    {
+      "id": "CAP:CAP-936",
+      "type": "capability",
+      "wave": 3,
+      "name": "`COMMAND_REGISTRY` tier taxonomy (`operator`\\"
+    },
+    {
+      "id": "CAP:CAP-937",
+      "type": "capability",
+      "wave": 3,
+      "name": "Dual-name command resolution — `findCommand`/`findSubcommand` match by id, alias, or path-suffix"
+    },
+    {
+      "id": "CAP:CAP-938",
+      "type": "capability",
+      "wave": 3,
+      "name": "EF-019 anchor: `occam-refresh-host.mjs` hardcodes a stale post-reload tool count"
+    },
+    {
+      "id": "CAP:CAP-939",
+      "type": "capability",
+      "wave": 3,
+      "name": "EF-020 anchor: `version-surface` name collision between Surface A (raw verb) and Surface B (`contract` alias, full pipeline)"
+    },
+    {
+      "id": "CAP:CAP-940",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam-doctor.ps1` / `.sh` unified preflight pipeline"
+    },
+    {
+      "id": "CAP:CAP-941",
+      "type": "capability",
+      "wave": 3,
+      "name": "`OCCAM_HOME` resolution + env stamping as a doctor side effect"
+    },
+    {
+      "id": "CAP:CAP-942",
+      "type": "capability",
+      "wave": 3,
+      "name": "net10.0 `TargetFramework` downgrade guard"
+    },
+    {
+      "id": "CAP:CAP-943",
+      "type": "capability",
+      "wave": 3,
+      "name": "Workers npm workspace bootstrap"
+    },
+    {
+      "id": "CAP:CAP-944",
+      "type": "capability",
+      "wave": 3,
+      "name": "Playwright bundled-chromium skip decision"
+    },
+    {
+      "id": "CAP:CAP-945",
+      "type": "capability",
+      "wave": 3,
+      "name": "Playwright cache path diagnostic"
+    },
+    {
+      "id": "CAP:CAP-946",
+      "type": "capability",
+      "wave": 3,
+      "name": "Linux-root `install-deps chromium` (bash doctor only, asymmetric with `.ps1`)"
+    },
+    {
+      "id": "CAP:CAP-947",
+      "type": "capability",
+      "wave": 3,
+      "name": "Egress-proxy selftest gate (advisory, conditional)"
+    },
+    {
+      "id": "CAP:CAP-948",
+      "type": "capability",
+      "wave": 3,
+      "name": "PDF-extract selftest gate (advisory, unconditional)"
+    },
+    {
+      "id": "CAP:CAP-949",
+      "type": "capability",
+      "wave": 3,
+      "name": "SSRF / private-IP guard selftest gate (advisory, unconditional)"
+    },
+    {
+      "id": "CAP:CAP-950",
+      "type": "capability",
+      "wave": 3,
+      "name": "Chromium launch-probe with one-shot auto-install-and-retry"
+    },
+    {
+      "id": "CAP:CAP-951",
+      "type": "capability",
+      "wave": 3,
+      "name": "Community playbook manifest sha256 integrity gate"
+    },
+    {
+      "id": "CAP:CAP-952",
+      "type": "capability",
+      "wave": 3,
+      "name": "Runtime-identifier (RID) resolution, single source of truth"
+    },
+    {
+      "id": "CAP:CAP-953",
+      "type": "capability",
+      "wave": 3,
+      "name": "Publish-lock advisory (Windows-only, best-effort, non-blocking)"
+    },
+    {
+      "id": "CAP:CAP-954",
+      "type": "capability",
+      "wave": 3,
+      "name": "MSVC toolchain auto-load for Native AOT publish (Windows-only)"
+    },
+    {
+      "id": "CAP:CAP-955",
+      "type": "capability",
+      "wave": 3,
+      "name": "`--skip-build` / Level B (tarball) doctor mode, auto-injected by the CLI"
+    },
+    {
+      "id": "CAP:CAP-956",
+      "type": "capability",
+      "wave": 3,
+      "name": "`dotnet publish` + canonical root-binary copy (bootstrap/repair core)"
+    },
+    {
+      "id": "CAP:CAP-957",
+      "type": "capability",
+      "wave": 3,
+      "name": "`assert-host-binary.mjs` final presence gate"
+    },
+    {
+      "id": "CAP:CAP-958",
+      "type": "capability",
+      "wave": 3,
+      "name": "Doctor completion banner + onboarding hand-off"
+    },
+    {
+      "id": "CAP:CAP-959",
+      "type": "capability",
+      "wave": 3,
+      "name": "`hermes-smoke.mjs` stdio MCP fidelity smoke"
+    },
+    {
+      "id": "CAP:CAP-960",
+      "type": "capability",
+      "wave": 3,
+      "name": "Level A: clone-pinned-ref install."
+    },
+    {
+      "id": "CAP:CAP-961",
+      "type": "capability",
+      "wave": 3,
+      "name": "Level B: tarball install delegation."
+    },
+    {
+      "id": "CAP:CAP-962",
+      "type": "capability",
+      "wave": 3,
+      "name": "`release-install.mjs`: download/verify/extract."
+    },
+    {
+      "id": "CAP:CAP-963",
+      "type": "capability",
+      "wave": 3,
+      "name": "Independent download/verify/extract implementation (duplicated, not shared)."
+    },
+    {
+      "id": "CAP:CAP-964",
+      "type": "capability",
+      "wave": 3,
+      "name": "Non-interactive/CI detection is inconsistent across the five entrypoints."
+    },
+    {
+      "id": "CAP:CAP-965",
+      "type": "capability",
+      "wave": 3,
+      "name": "Destructive tarball extract with no rollback (rmSync installDir before extract)"
+    },
+    {
+      "id": "CAP:CAP-966",
+      "type": "capability",
+      "wave": 3,
+      "name": "`verify-install.mjs`: binary + browser + optional supply-chain checks."
+    },
+    {
+      "id": "CAP:CAP-967",
+      "type": "capability",
+      "wave": 3,
+      "name": "Core flow: interactive wizard vs `--non-interactive` vs `--skip`."
+    },
+    {
+      "id": "CAP:CAP-968",
+      "type": "capability",
+      "wave": 3,
+      "name": "`--write-config`: opt-in, confirmed, merge-only host-config mutation."
+    },
+    {
+      "id": "CAP:CAP-969",
+      "type": "capability",
+      "wave": 3,
+      "name": "`runVerify()`: doctor + smoke re-check, order-of-operations gap."
+    },
+    {
+      "id": "CAP:CAP-970",
+      "type": "capability",
+      "wave": 3,
+      "name": "Onboard config schema versioning (`onboard-schema.mjs`)."
+    },
+    {
+      "id": "CAP:CAP-971",
+      "type": "capability",
+      "wave": 3,
+      "name": "get-ff-occam post-install orchestration order."
+    },
+    {
+      "id": "CAP:CAP-972",
+      "type": "capability",
+      "wave": 3,
+      "name": "`install-preflight.mjs` shared prerequisite gate."
+    },
+    {
+      "id": "CAP:CAP-973",
+      "type": "capability",
+      "wave": 3,
+      "name": "`host-install-gate.mjs`: shared fail-fast messaging, extends CAP-354."
+    },
+    {
+      "id": "CAP:CAP-974",
+      "type": "capability",
+      "wave": 3,
+      "name": "`resolve-host-binary.mjs`: binary discovery, intentionally forked not imported."
+    },
+    {
+      "id": "CAP:CAP-975",
+      "type": "capability",
+      "wave": 3,
+      "name": "No installer persists `PATH` on any platform."
+    },
+    {
+      "id": "CAP:CAP-976",
+      "type": "capability",
+      "wave": 3,
+      "name": "Eager `-ForcePlaywright`/`--force-playwright` browser install."
+    },
+    {
+      "id": "CAP:CAP-977",
+      "type": "capability",
+      "wave": 3,
+      "name": "`verify-community-manifest.mjs` runs unconditionally inside every doctor invocation."
+    },
+    {
+      "id": "CAP:CAP-978",
+      "type": "capability",
+      "wave": 3,
+      "name": "Stale install-surface copy: verify-install.ps1 source-uri + welcome 14-tools drift"
+    },
+    {
+      "id": "CAP:CAP-979",
+      "type": "capability",
+      "wave": 3,
+      "name": "`verify-install.ps1` is a static command-reference file, not an executable installer\n  step."
+    },
+    {
+      "id": "CAP:CAP-980",
+      "type": "capability",
+      "wave": 3,
+      "name": "occam connect orchestrator (runConnect) — multi-adapter plan/apply/verify"
+    },
+    {
+      "id": "CAP:CAP-981",
+      "type": "capability",
+      "wave": 3,
+      "name": "Stable launch spec (launch-spec.mjs) for all connect adapters"
+    },
+    {
+      "id": "CAP:CAP-982",
+      "type": "capability",
+      "wave": 3,
+      "name": "Ownership guard before add/update (skip-unmanaged)"
+    },
+    {
+      "id": "CAP:CAP-983",
+      "type": "capability",
+      "wave": 3,
+      "name": "Shared config-file JSON merge engine"
+    },
+    {
+      "id": "CAP:CAP-984",
+      "type": "capability",
+      "wave": 3,
+      "name": "Verification ladder + ready aggregation (EXPECTED_MIN_TOOLS=15)"
+    },
+    {
+      "id": "CAP:CAP-985",
+      "type": "capability",
+      "wave": 3,
+      "name": "Post-verify cleanup/rollback (decidePostVerifyCleanup)"
+    },
+    {
+      "id": "CAP:CAP-986",
+      "type": "capability",
+      "wave": 3,
+      "name": "CI/desktop mutate gating policy"
+    },
+    {
+      "id": "CAP:CAP-987",
+      "type": "capability",
+      "wave": 3,
+      "name": "Hermes Agent connect adapter (`hermes`)"
+    },
+    {
+      "id": "CAP:CAP-988",
+      "type": "capability",
+      "wave": 3,
+      "name": "OpenClaw connect adapter (`openclaw`)"
+    },
+    {
+      "id": "CAP:CAP-989",
+      "type": "capability",
+      "wave": 3,
+      "name": "Claude Code connect adapter (`claude-code`)"
+    },
+    {
+      "id": "CAP:CAP-990",
+      "type": "capability",
+      "wave": 3,
+      "name": "Codex CLI connect adapter (`codex`)"
+    },
+    {
+      "id": "CAP:CAP-991",
+      "type": "capability",
+      "wave": 3,
+      "name": "Gemini CLI connect adapter (`gemini`)"
+    },
+    {
+      "id": "CAP:CAP-992",
+      "type": "capability",
+      "wave": 3,
+      "name": "Cursor connect adapter (`cursor`)"
+    },
+    {
+      "id": "CAP:CAP-993",
+      "type": "capability",
+      "wave": 3,
+      "name": "Claude Desktop connect adapter (`claude-desktop`)"
+    },
+    {
+      "id": "CAP:CAP-994",
+      "type": "capability",
+      "wave": 3,
+      "name": "VS Code / GitHub Copilot connect adapter (`vscode`)"
+    },
+    {
+      "id": "CAP:CAP-995",
+      "type": "capability",
+      "wave": 3,
+      "name": "Cline connect adapter (`cline`)"
+    },
+    {
+      "id": "CAP:CAP-996",
+      "type": "capability",
+      "wave": 3,
+      "name": "Windsurf connect adapter (`windsurf`)"
+    },
+    {
+      "id": "CAP:CAP-997",
+      "type": "capability",
+      "wave": 3,
+      "name": "Zed connect adapter (`zed`)"
+    },
+    {
+      "id": "CAP:CAP-998",
+      "type": "capability",
+      "wave": 3,
+      "name": "OpenCode connect adapter (`opencode`)"
+    },
+    {
+      "id": "CAP:CAP-999",
+      "type": "capability",
+      "wave": 3,
+      "name": "Goose connect adapter (`goose`)"
+    },
+    {
+      "id": "CAP:CAP-1000",
+      "type": "capability",
+      "wave": 3,
+      "name": "Per-connection DI container isolation on WS/Remote transports"
+    },
+    {
+      "id": "CAP:CAP-1001",
+      "type": "capability",
+      "wave": 3,
+      "name": "Canonical launcher is stdio-only; never forwards CLI args"
+    },
+    {
+      "id": "CAP:CAP-1002",
+      "type": "capability",
+      "wave": 3,
+      "name": "npm entrypoint independently re-implements WS-mode arg forwarding"
+    },
+    {
+      "id": "CAP:CAP-1003",
+      "type": "capability",
+      "wave": 3,
+      "name": "Outer `AddOccamMcpServer()` call in WS transport is protocol-dead"
+    },
+    {
+      "id": "CAP:CAP-1020",
+      "type": "capability",
+      "wave": 3,
+      "name": "`@ff-occam/mcp` npm bin: download-or-delegate host launcher"
+    },
+    {
+      "id": "CAP:CAP-1021",
+      "type": "capability",
+      "wave": 3,
+      "name": "`@ff-occam/mcp` TypeScript client (`OccamMcpClient`)"
+    },
+    {
+      "id": "CAP:CAP-1022",
+      "type": "capability",
+      "wave": 3,
+      "name": "Clone/tarball auto-detect + refuse-on-in-repo-npx guard"
+    },
+    {
+      "id": "CAP:CAP-1023",
+      "type": "capability",
+      "wave": 3,
+      "name": "`@ff-occam/agent-sdk` high-level recipe wrappers"
+    },
+    {
+      "id": "CAP:CAP-1024",
+      "type": "capability",
+      "wave": 3,
+      "name": "`@ff-occam/skill` portable installer (10 harness targets)"
+    },
+    {
+      "id": "CAP:CAP-1025",
+      "type": "capability",
+      "wave": 3,
+      "name": "`occam skill install` operator-CLI installer (duplicate implementation)"
+    },
+    {
+      "id": "CAP:CAP-1026",
+      "type": "capability",
+      "wave": 3,
+      "name": "Level B release tarball composition (canonical \"what ships\")"
+    },
+    {
+      "id": "CAP:CAP-1027",
+      "type": "capability",
+      "wave": 3,
+      "name": "GitHub Releases publish pipeline, asymmetric per-OS trigger"
+    },
+    {
+      "id": "CAP:CAP-1028",
+      "type": "capability",
+      "wave": 3,
+      "name": "Release signing (cosign keyless, post-publish)"
+    },
+    {
+      "id": "CAP:CAP-1029",
+      "type": "capability",
+      "wave": 3,
+      "name": "Dockerfile: 3-stage AOT + Node + Playwright image"
+    },
+    {
+      "id": "CAP:CAP-1030",
+      "type": "capability",
+      "wave": 3,
+      "name": "docker-compose.yml (local dev convenience only)"
+    },
+    {
+      "id": "CAP:CAP-1031",
+      "type": "capability",
+      "wave": 3,
+      "name": "Playbook Marketplace CI (community content shipping boundary, distinct from host shipping)"
+    },
+    {
+      "id": "CAP:CAP-1032",
+      "type": "capability",
+      "wave": 3,
+      "name": "npm packages exist in repo but are not published to any registry (repo-only scaffolding)"
+    },
+    {
+      "id": "CAP:CAP-1033",
+      "type": "capability",
+      "wave": 3,
+      "name": "`@ff-occam/mcp` published `bin` entrypoint imports outside its own npm `files` set (latent DOA-on-publish)"
+    },
+    {
+      "id": "CAP:CAP-1034",
+      "type": "capability",
+      "wave": 3,
+      "name": "`packages/*` test suites are fully excluded from CI"
+    },
+    {
+      "id": "CAP:CAP-1035",
+      "type": "capability",
+      "wave": 3,
+      "name": "Two operator CLI subcommands ship a dangling delegate script in the Level B tarball"
+    },
+    {
+      "id": "CAP:CAP-1036",
+      "type": "capability",
+      "wave": 3,
+      "name": "Level B tarball ships the entire operator surface, not just the MCP host"
+    },
+    {
+      "id": "CAP:CAP-1037",
+      "type": "capability",
+      "wave": 3,
+      "name": "Bootstrap installers materialize a Level B tree without git or .NET SDK"
+    },
+    {
+      "id": "CAP:CAP-1038",
+      "type": "capability",
+      "wave": 3,
+      "name": "RID coverage gap: npm wrapper advertises `osx-x64` support that CI never builds"
+    },
+    {
+      "id": "CAP:CAP-1039",
+      "type": "capability",
+      "wave": 3,
+      "name": "Shipped skill metadata is out of sync with the product version / core tool count"
+    },
+    {
+      "id": "CAP:CAP-1040",
+      "type": "capability",
+      "wave": 3,
+      "name": "Roo Code connect adapter (`roo`) [reminted from CAP-995]"
+    },
+    {
+      "id": "CAP:CAP-1041",
+      "type": "capability",
+      "wave": 3,
+      "name": "JetBrains Junie connect adapter (`junie`) [reminted from CAP-999]"
+    },
+    {
+      "id": "TOOL:occam_batch_submit",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_watch",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_crosscheck",
+      "type": "tool"
+    },
+    {
+      "id": "TOOL:occam_failure_atlas",
+      "type": "tool"
+    },
+    {
+      "id": "CLI:occam connect",
+      "type": "cli"
+    },
+    {
+      "id": "PACKAGE:@ff-occam/mcp",
+      "type": "package"
+    },
+    {
+      "id": "ART:ART-027",
+      "type": "art"
+    },
+    {
+      "id": "ART:ART-032",
+      "type": "art"
+    }
+  ],
+  "edges": [
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-720",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-721",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-722",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-723",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-724",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-725",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-726",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-727",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-728",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-729",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-730",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-262",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-263",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-278",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-279",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-051",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-068",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-191",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-008",
+      "tools": [
+        "occam_attest",
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-384",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "PARAM:claims",
+      "rel": "ENABLES",
+      "to": "CAP-727",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "PARAM:backend_policy",
+      "rel": "ENABLES",
+      "to": "CAP-051",
+      "tools": [
+        "occam_attest",
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "PARAM:session_profile",
+      "rel": "ENABLES",
+      "to": "CAP-068",
+      "tools": [
+        "occam_attest",
+        "occam_claim_check",
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-720",
+      "rel": "ROUTES_TO",
+      "to": "occam_claim_check",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "CAP-720",
+      "rel": "CONSUMES",
+      "to": "ClaimCheckService",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "CAP-729",
+      "rel": "CONSUMES",
+      "to": "ClaimCheckService",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "CAP-730",
+      "rel": "CONSUMES",
+      "to": "CAP-263",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "CAP-720",
+      "rel": "PRODUCES",
+      "to": "OccamAttestResponse",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "CAP-726",
+      "rel": "PRODUCES",
+      "to": "OccamAttestResponse",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "CAP-720",
+      "rel": "PRODUCES",
+      "to": "receipt",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "CAP-720",
+      "rel": "PRODUCES",
+      "to": "merkle_proof",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "CAP-262",
+      "rel": "PRODUCES",
+      "to": "merkle_proof",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "CAP-720",
+      "rel": "ROUTES_TO",
+      "to": "http_extract_backend",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "CAP-720",
+      "rel": "ROUTES_TO",
+      "to": "browser_extract_backend",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "CAP-720",
+      "rel": "FALLS_BACK_TO",
+      "to": "managed_extract_backend",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "CAP-720",
+      "rel": "CONSUMES",
+      "to": "session",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "CAP-720",
+      "rel": "CONSUMES",
+      "to": "playbook_genome",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "occam_claim_check",
+      "rel": "ROUTES_TO",
+      "to": "TranscodePipeline",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TranscodePipeline",
+      "rel": "ROUTES_TO",
+      "to": "OccamRouter",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "OccamRouter",
+      "rel": "FALLS_BACK_TO",
+      "to": "managed_extract_backend",
+      "tools": [
+        "occam_attest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-690",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-691",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-692",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-693",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-694",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-695",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-696",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-697",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-698",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-699",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-700",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-701",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-702",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-703",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-051",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-052",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-068",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-069",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-070",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-078",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-090",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-091",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-094",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-095",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-096",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-097",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-100",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-103",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-104",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-107",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-250",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-252",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-262",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-263",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-264",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-278",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-279",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL:occam_claim_check",
+      "rel": "USES",
+      "to": "CAP-280",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "PARAM:claim",
+      "rel": "ENABLES",
+      "to": "CAP-690",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "PARAM:url",
+      "rel": "ENABLES",
+      "to": "CAP-690",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "PARAM:max_matches",
+      "rel": "ENABLES",
+      "to": "CAP-694",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-690",
+      "rel": "ROUTES_TO",
+      "to": "TranscodePipeline",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-691",
+      "rel": "ROUTES_TO",
+      "to": "BudgetOwnership.PrepareSurfaceBudget(null)",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-692",
+      "rel": "PRODUCES",
+      "to": "blocks",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-693",
+      "rel": "ROUTES_TO",
+      "to": "PlaybookSeedResolver",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-695",
+      "rel": "CONSUMES",
+      "to": "blocks",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-695",
+      "rel": "PRODUCES",
+      "to": "ClaimBlockRank[]",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-697",
+      "rel": "CONSUMES",
+      "to": "CAP-263",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-697",
+      "rel": "PRODUCES",
+      "to": "proven",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-698",
+      "rel": "FALLS_BACK_TO",
+      "to": "no-cache (live extraction every call)",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-699",
+      "rel": "PRODUCES",
+      "to": "BlockMerkleRoot",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-699",
+      "rel": "PRODUCES",
+      "to": "MerkleProofStep[]",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-699",
+      "rel": "CONSUMES",
+      "to": "CAP-280",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-700",
+      "rel": "PRODUCES",
+      "to": "negative-receipt",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-700",
+      "rel": "CONSUMES",
+      "to": "CAP-264",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-701",
+      "rel": "PRODUCES",
+      "to": "(nothing: capsule/timeAnchor/media/tables/feed/chunks absent by design)",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-702",
+      "rel": "ROUTES_TO",
+      "to": "HttpExtractBackend",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-702",
+      "rel": "ROUTES_TO",
+      "to": "BrowserExtractBackend",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-702",
+      "rel": "FALLS_BACK_TO",
+      "to": "ManagedExtractBackend",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-703",
+      "rel": "PRODUCES",
+      "to": "citation-proof (per-match)",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "CAP-703",
+      "rel": "CONSUMES",
+      "to": "CAP-262",
+      "tools": [
+        "occam_claim_check"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-007",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-009",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-010",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-304",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-305",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-385",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-400",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-401",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-402",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-403",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-404",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "PARAM:context_tokens",
+      "rel": "ENABLES",
+      "to": "CAP-304",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "PARAM:context_tokens",
+      "rel": "ENABLES",
+      "to": "CAP-403",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "PARAM:model_id",
+      "rel": "ENABLES",
+      "to": "CAP-402",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "PARAM:clear",
+      "rel": "ENABLES",
+      "to": "CAP-401",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "CAP-400",
+      "rel": "PRODUCES",
+      "to": "client_capability_snapshot(read-only)",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "CAP-401",
+      "rel": "CONSUMES",
+      "to": "env:OCCAM_CLIENT_CONTEXT_TOKENS",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "CAP-401",
+      "rel": "CONSUMES",
+      "to": "env:OCCAM_CLIENT_MODEL_ID",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "CAP-304",
+      "rel": "ROUTES_TO",
+      "to": "OccamTranscodeTool",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "CAP-304",
+      "rel": "ROUTES_TO",
+      "to": "OccamDigestTool",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "CAP-304",
+      "rel": "FALLS_BACK_TO",
+      "to": "env:OCCAM_CLIENT_CONTEXT_TOKENS",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "CAP-404",
+      "rel": "PRODUCES",
+      "to": "TranscodeCacheKey-shift",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "CAP-404",
+      "rel": "PRODUCES",
+      "to": "MaterializationKey-shift",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "CAP-403",
+      "rel": "PRODUCES",
+      "to": "suggestedProfile(advisory,unenforced)",
+      "tools": [
+        "occam_client_capabilities"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-770",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-771",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-772",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-773",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-774",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-775",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-776",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-777",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-778",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-779",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-283",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-090",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-091",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-280",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-068",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-069",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-070",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-078",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-100",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_dataset_export",
+      "rel": "USES",
+      "to": "CAP-052",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "PARAM:urls",
+      "rel": "ENABLES",
+      "to": "CAP-770",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "PARAM:backend_policy",
+      "rel": "ENABLES",
+      "to": "CAP-052",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "PARAM:backend_policy",
+      "rel": "ROUTES_TO",
+      "to": "http_extract_backend",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "PARAM:backend_policy",
+      "rel": "ROUTES_TO",
+      "to": "browser_extract_backend",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "PARAM:backend_policy",
+      "rel": "FALLS_BACK_TO",
+      "to": "managed_extract_backend",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "PARAM:session_profile",
+      "rel": "CONSUMES",
+      "to": "session",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-770",
+      "rel": "ROUTES_TO",
+      "to": "TranscodePipeline",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-771",
+      "rel": "PRODUCES",
+      "to": "unbounded_markdown_per_row",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-772",
+      "rel": "ENABLES",
+      "to": "CAP-070",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-772",
+      "rel": "ENABLES",
+      "to": "CAP-078",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-774",
+      "rel": "PRODUCES",
+      "to": "manifest",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-774",
+      "rel": "CONSUMES",
+      "to": "CAP-283",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-775",
+      "rel": "PRODUCES",
+      "to": "receipt",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-775",
+      "rel": "FALLS_BACK_TO",
+      "to": "null_receipt",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-776",
+      "rel": "PRODUCES",
+      "to": "receipt",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-776",
+      "rel": "FALLS_BACK_TO",
+      "to": "no_capsule",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-776",
+      "rel": "FALLS_BACK_TO",
+      "to": "no_time_anchor",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-283",
+      "rel": "PRODUCES",
+      "to": "manifestRoot",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-283",
+      "rel": "PRODUCES",
+      "to": "rowLeaf",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-283",
+      "rel": "CONSUMES",
+      "to": "CAP-252",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-283",
+      "rel": "CONSUMES",
+      "to": "CAP-257",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-283",
+      "rel": "CONSUMES",
+      "to": "CAP-254",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-777",
+      "rel": "PRODUCES",
+      "to": "contentHash",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-779",
+      "rel": "CONSUMES",
+      "to": "CAP-008",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "CAP-779",
+      "rel": "CONSUMES",
+      "to": "CAP-009",
+      "tools": [
+        "occam_dataset_export"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-450",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-451",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-452",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-453",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-454",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-455",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-456",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-457",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-458",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-459",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-460",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-052",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-060",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-064",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-068",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-069",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-078",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-094",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-095",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-096",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-097",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-098",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-100",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-102",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-103",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-104",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-105",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-107",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-109",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "USES",
+      "to": "CAP-280",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "DOES_NOT_USE",
+      "to": "CAP-070",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL:occam_digest",
+      "rel": "DOES_NOT_USE",
+      "to": "CAP-086",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "PARAM:urls",
+      "rel": "ENABLES",
+      "to": "CAP-450",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "PARAM:urls",
+      "rel": "ENABLES",
+      "to": "CAP-451",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "PARAM:source_url",
+      "rel": "ENABLES",
+      "to": "CAP-459",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "PARAM:max_links",
+      "rel": "ENABLES",
+      "to": "CAP-459",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "PARAM:focus_query",
+      "rel": "ENABLES",
+      "to": "CAP-064",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "PARAM:per_url_max_tokens",
+      "rel": "ENABLES",
+      "to": "CAP-454",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "PARAM:if_none_match",
+      "rel": "ENABLES",
+      "to": "CAP-458",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "PARAM:backend_policy",
+      "rel": "ROUTES_TO",
+      "to": "CAP-052",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-450",
+      "rel": "CONSUMES",
+      "to": "source_url",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-451",
+      "rel": "PRODUCES",
+      "to": "DigestUrlEntry[]",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-452",
+      "rel": "CONSUMES",
+      "to": "session",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-452",
+      "rel": "ROUTES_TO",
+      "to": "FetchPreflight",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-455",
+      "rel": "ROUTES_TO",
+      "to": "TranscodePipeline",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-455",
+      "rel": "FALLS_BACK_TO",
+      "to": "http_daemon_bypass_one_shot",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-455",
+      "rel": "CONSUMES",
+      "to": "OCCAM_DIGEST_PARALLEL",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-455",
+      "rel": "CONSUMES",
+      "to": "OCCAM_DIGEST_MAX_PARALLEL",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-455",
+      "rel": "CONSUMES",
+      "to": "OCCAM_BROWSER_MAX_PARALLEL",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-456",
+      "rel": "PRODUCES",
+      "to": "digestId",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-456",
+      "rel": "PRODUCES",
+      "to": "combined",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-457",
+      "rel": "PRODUCES",
+      "to": "receipt",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-457",
+      "rel": "CONSUMES",
+      "to": "OCCAM_RECEIPTS",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-458",
+      "rel": "PRODUCES",
+      "to": "unchanged",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-459",
+      "rel": "ROUTES_TO",
+      "to": "MapService",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-459",
+      "rel": "ROUTES_TO",
+      "to": "SitemapDiscovery",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-459",
+      "rel": "ROUTES_TO",
+      "to": "HtmlLinkExtractor",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-459",
+      "rel": "PRODUCES",
+      "to": "discoveredLinks",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "CAP-460",
+      "rel": "PRODUCES",
+      "to": "agentHints",
+      "tools": [
+        "occam_digest"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-590",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-591",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-590",
+      "rel": "CONSUMES",
+      "to": "session",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-590",
+      "rel": "ROUTES_TO",
+      "to": "css-extract.mjs",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "PARAM:url",
+      "rel": "ENABLES",
+      "to": "CAP-590",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "PARAM:backend_policy",
+      "rel": "ENABLES",
+      "to": "CAP-593",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "PARAM:session_profile",
+      "rel": "ENABLES",
+      "to": "CAP-594",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-591",
+      "rel": "FALLS_BACK_TO",
+      "to": "not_applicable",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-592",
+      "rel": "CONSUMES",
+      "to": "proxy",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-593",
+      "rel": "ROUTES_TO",
+      "to": "browser-session.mjs",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-593",
+      "rel": "FALLS_BACK_TO",
+      "to": "throwaway_chromium_context",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-594",
+      "rel": "PRODUCES",
+      "to": "hidden_gap",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-595",
+      "rel": "PRODUCES",
+      "to": "dead_field",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-596",
+      "rel": "PRODUCES",
+      "to": "fake_receipt",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-597",
+      "rel": "ROUTES_TO",
+      "to": "css-extract.mjs",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-598",
+      "rel": "CONSUMES",
+      "to": "attacker_controlled_html",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-599",
+      "rel": "CONSUMES",
+      "to": "playbook_field_spec",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-600",
+      "rel": "PRODUCES",
+      "to": "unreachable_row_mode",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-601",
+      "rel": "PRODUCES",
+      "to": "failure_taxonomy",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-602",
+      "rel": "PRODUCES",
+      "to": "partial_facts",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-590",
+      "rel": "USES",
+      "to": "CAP-050",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-590",
+      "rel": "USES",
+      "to": "CAP-068",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-590",
+      "rel": "USES",
+      "to": "CAP-069",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-590",
+      "rel": "USES",
+      "to": "CAP-070",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-590",
+      "rel": "USES",
+      "to": "CAP-100",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-592",
+      "rel": "USES",
+      "to": "CAP-102",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-592",
+      "rel": "USES",
+      "to": "CAP-157",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-593",
+      "rel": "USES",
+      "to": "CAP-236",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-596",
+      "rel": "USES",
+      "to": "CAP-287",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "CAP-596",
+      "rel": "USES",
+      "to": "CAP-090",
+      "tools": [
+        "occam_extract_knowledge"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-510",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-511",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-512",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-513",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-514",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-515",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-516",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-517",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-518",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-519",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-520",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-521",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-522",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-523",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-524",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-525",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-526",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-527",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-528",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-150",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-154",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-156",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-167",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-169",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-170",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-184",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-188",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-189",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_map",
+      "rel": "USES",
+      "to": "CAP-191",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "PARAM:source",
+      "rel": "ENABLES",
+      "to": "CAP-511",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "PARAM:source",
+      "rel": "ENABLES",
+      "to": "CAP-512",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "PARAM:focus_query",
+      "rel": "ENABLES",
+      "to": "CAP-515",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "PARAM:focus_query",
+      "rel": "ENABLES",
+      "to": "CAP-516",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "PARAM:focus_query",
+      "rel": "ENABLES",
+      "to": "CAP-517",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "PARAM:focus_query",
+      "rel": "ENABLES",
+      "to": "CAP-518",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "PARAM:same_domain",
+      "rel": "ENABLES",
+      "to": "CAP-519",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "PARAM:filter_nonsense",
+      "rel": "ENABLES",
+      "to": "CAP-514",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "PARAM:session_profile",
+      "rel": "ENABLES",
+      "to": "CAP-527",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "PARAM:timeout_ms",
+      "rel": "ENABLES",
+      "to": "CAP-513",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-510",
+      "rel": "ROUTES_TO",
+      "to": "HttpProbeFetcher",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-511",
+      "rel": "CONSUMES",
+      "to": "html_response",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-512",
+      "rel": "ROUTES_TO",
+      "to": "HttpProbeFetcher",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-512",
+      "rel": "PRODUCES",
+      "to": "MappedLink[]",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-513",
+      "rel": "FALLS_BACK_TO",
+      "to": "partial_results",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-515",
+      "rel": "CONSUMES",
+      "to": "FocusQueryDecomposition",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-516",
+      "rel": "ROUTES_TO",
+      "to": "HttpProbeFetcher",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-521",
+      "rel": "ROUTES_TO",
+      "to": "occam_digest",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-522",
+      "rel": "ROUTES_TO",
+      "to": "occam_transcode",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-522",
+      "rel": "ROUTES_TO",
+      "to": "occam_map",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-527",
+      "rel": "CONSUMES",
+      "to": "session",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-528",
+      "rel": "CONSUMES",
+      "to": "CAP-059",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-529",
+      "rel": "ROUTES_TO",
+      "to": "occam_digest",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-184",
+      "rel": "PRODUCES",
+      "to": "ssrf_guard",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "CAP-154",
+      "rel": "PRODUCES",
+      "to": "ssrf_guard",
+      "tools": [
+        "occam_map"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-530",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-531",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-532",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-533",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-534",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-535",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-536",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-537",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-538",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-539",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-540",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-541",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-542",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-543",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-544",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-545",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-546",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-547",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-548",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-549",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-550",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-551",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-552",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-553",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-554",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-100",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-150",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-069",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-167",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-170",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-171",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-204",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-219",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-226",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_heal",
+      "rel": "USES",
+      "to": "CAP-229",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "PARAM:url",
+      "rel": "ENABLES",
+      "to": "CAP-530",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "PARAM:failure_reason",
+      "rel": "ENABLES",
+      "to": "CAP-530",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "PARAM:failure_reason",
+      "rel": "ENABLES",
+      "to": "CAP-533",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "PARAM:max_skeleton_nodes",
+      "rel": "ENABLES",
+      "to": "CAP-531",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "PARAM:session_profile",
+      "rel": "ENABLES",
+      "to": "CAP-535",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "PARAM:session_profile",
+      "rel": "ENABLES",
+      "to": "CAP-543",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "CAP-536",
+      "rel": "ROUTES_TO",
+      "to": "browser_daemon_pool",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "CAP-537",
+      "rel": "ROUTES_TO",
+      "to": "browser_one_shot_playwright",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "CAP-536",
+      "rel": "FALLS_BACK_TO",
+      "to": "CAP-537",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "CAP-532",
+      "rel": "FALLS_BACK_TO",
+      "to": "heal_not_applicable_or_terminal_failure",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "CAP-538",
+      "rel": "PRODUCES",
+      "to": "domSkeleton",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "CAP-538",
+      "rel": "PRODUCES",
+      "to": "anchors",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "CAP-544",
+      "rel": "PRODUCES",
+      "to": "anchors",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "CAP-545",
+      "rel": "PRODUCES",
+      "to": "agentHints",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "CAP-543",
+      "rel": "CONSUMES",
+      "to": "session",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "CAP-536",
+      "rel": "CONSUMES",
+      "to": "session",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "CAP-537",
+      "rel": "CONSUMES",
+      "to": "session",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "CAP-549",
+      "rel": "FALLS_BACK_TO",
+      "to": "not_applicable_no_managed_backend",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "CAP-547",
+      "rel": "ROUTES_TO",
+      "to": "OCCAM_PROFILE=full_only",
+      "tools": [
+        "occam_playbook_heal"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-750",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-751",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-752",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-753",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-754",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-755",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-756",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-757",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-758",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "PARAM:playbook_json",
+      "rel": "ENABLES",
+      "to": "CAP-752",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "PARAM:playbook_json",
+      "rel": "ENABLES",
+      "to": "CAP-753",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "PARAM:playbook_json",
+      "rel": "ENABLES",
+      "to": "CAP-754",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "PARAM:playbook_json",
+      "rel": "ENABLES",
+      "to": "CAP-755",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "PARAM:playbook_json",
+      "rel": "ENABLES",
+      "to": "CAP-756",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "PARAM:playbook_json",
+      "rel": "ENABLES",
+      "to": "CAP-757",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "PARAM:playbook_json",
+      "rel": "ENABLES",
+      "to": "CAP-758",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "CAP-750",
+      "rel": "PRODUCES",
+      "to": "PlaybookLintReport(json)",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "CAP-751",
+      "rel": "CONSUMES",
+      "to": "issues[]",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "CAP-756",
+      "rel": "DIVERGES_FROM",
+      "to": "CAP-051",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "CAP-755",
+      "rel": "DIVERGES_FROM",
+      "to": "occam_playbook_save:PlaybookDocument.TryParse",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "CAP-755",
+      "rel": "DIVERGES_FROM",
+      "to": "occam_playbook_resolve:PlaybookSeedResolver.TryParseSeed",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "CAP-761",
+      "rel": "ABSENT_VS",
+      "to": "PlaybookCommunityHygiene.ContainsForbiddenKeys",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "CAP-762",
+      "rel": "DIVERGES_FROM",
+      "to": "occam_playbook_resolve:PlaybookSeedResolver.TryParseSeed",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "CAP-763",
+      "rel": "GATED_BY",
+      "to": "CAP-009",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "CONSUMES",
+      "to": "none(no session, no proxy, no worker, no cache)",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "PRODUCES",
+      "to": "advisory-only-grade",
+      "tools": [
+        "occam_playbook_lint"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_resolve",
+      "rel": "USES",
+      "to": "CAP-490",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_resolve",
+      "rel": "USES",
+      "to": "CAP-491",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_resolve",
+      "rel": "USES",
+      "to": "CAP-492",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_resolve",
+      "rel": "USES",
+      "to": "CAP-493",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_resolve",
+      "rel": "USES",
+      "to": "CAP-494",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_resolve",
+      "rel": "USES",
+      "to": "CAP-495",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_resolve",
+      "rel": "USES",
+      "to": "CAP-496",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_resolve",
+      "rel": "USES",
+      "to": "CAP-497",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_resolve",
+      "rel": "USES",
+      "to": "CAP-070",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_resolve",
+      "rel": "USES",
+      "to": "CAP-282",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_resolve",
+      "rel": "USES",
+      "to": "CAP-374",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "TOOL:occam_playbook_resolve",
+      "rel": "USES",
+      "to": "CAP-375",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "PARAM:url",
+      "rel": "ENABLES",
+      "to": "CAP-490",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "PARAM:schema_version",
+      "rel": "ENABLES",
+      "to": "CAP-491",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "PARAM:include_lessons",
+      "rel": "ENABLES",
+      "to": "CAP-497",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "PARAM:fetch_site_genome",
+      "rel": "ENABLES",
+      "to": "CAP-495",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-491",
+      "rel": "ROUTES_TO",
+      "to": "filesystem:local-tier",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-491",
+      "rel": "ROUTES_TO",
+      "to": "filesystem:user-tier(WT_PLAYBOOKS_PATH)",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-491",
+      "rel": "ROUTES_TO",
+      "to": "filesystem:community-tier",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-491",
+      "rel": "ROUTES_TO",
+      "to": "filesystem:seed-tier",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-492",
+      "rel": "CONSUMES",
+      "to": "manifest.json",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-492",
+      "rel": "PRODUCES",
+      "to": "hygiene-verdict",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-493",
+      "rel": "CONSUMES",
+      "to": "ReceiptSigner.KeyId",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-493",
+      "rel": "CONSUMES",
+      "to": "ReceiptSigner.ExportPublicKeyPem",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-493",
+      "rel": "PRODUCES",
+      "to": "Signature(status,keyId,score,passesGate)",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-494",
+      "rel": "PRODUCES",
+      "to": "Genome(merged)",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-494",
+      "rel": "PRODUCES",
+      "to": "KnowledgeSchema(merged)",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-495",
+      "rel": "ROUTES_TO",
+      "to": "WellKnownGenomeFetcher",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-495",
+      "rel": "FALLS_BACK_TO",
+      "to": "local-tier-only-result",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-496",
+      "rel": "PRODUCES",
+      "to": "PageClass",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-496",
+      "rel": "CONSUMES",
+      "to": "KnowledgeSchemaPlanner",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-497",
+      "rel": "PRODUCES",
+      "to": "Lessons(redacted,max10)",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-070",
+      "rel": "ROUTES_TO",
+      "to": "PlaybookSeedResolver",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-073",
+      "rel": "ROUTES_TO",
+      "to": "WellKnownGenomeFetcher",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-281",
+      "rel": "PRODUCES",
+      "to": "provenance.signature(at save, out of scope)",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "CAP-282",
+      "rel": "CONSUMES",
+      "to": "provenance.signature(at resolve)",
+      "tools": [
+        "occam_playbook_resolve"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-560",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-561",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-562",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-563",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-564",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-565",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-566",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-567",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-568",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-569",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-570",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-571",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-572",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-573",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-574",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-575",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-576",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-577",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-281",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-069",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-106",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "PARAM:url",
+      "rel": "ENABLES",
+      "to": "CAP-560",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "PARAM:playbook_json",
+      "rel": "ENABLES",
+      "to": "CAP-561",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "PARAM:verify",
+      "rel": "ENABLES",
+      "to": "CAP-562",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "PARAM:verify",
+      "rel": "DISABLES",
+      "to": "CAP-562",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "PARAM:verify_url",
+      "rel": "ENABLES",
+      "to": "CAP-564",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "PARAM:lesson_note",
+      "rel": "ENABLES",
+      "to": "CAP-565",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "PARAM:failure_reason",
+      "rel": "ENABLES",
+      "to": "CAP-566",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "PARAM:host_id",
+      "rel": "ENABLES",
+      "to": "CAP-566",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-562",
+      "rel": "ROUTES_TO",
+      "to": "TranscodePipeline",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-562",
+      "rel": "CONSUMES",
+      "to": "CAP-568",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-562",
+      "rel": "PRODUCES",
+      "to": "PlaybookVerifyMetrics",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-569",
+      "rel": "CONSUMES",
+      "to": "markdown",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-571",
+      "rel": "CONSUMES",
+      "to": "ReceiptSigner",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-571",
+      "rel": "PRODUCES",
+      "to": "signed-playbook-provenance",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-571",
+      "rel": "FALLS_BACK_TO",
+      "to": "none (OCCAM_RECEIPTS not checked)",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-572",
+      "rel": "PRODUCES",
+      "to": "contentHash",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-573",
+      "rel": "PRODUCES",
+      "to": "signedKeyId",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-574",
+      "rel": "CONSUMES",
+      "to": "CAP-562",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-575",
+      "rel": "PRODUCES",
+      "to": "resolver-cache-invalidation",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-575",
+      "rel": "ROUTES_TO",
+      "to": "PlaybookSeedResolver",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-567",
+      "rel": "CONSUMES",
+      "to": "OCCAM_PLAYBOOKS_LOCAL_ROOT",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-561",
+      "rel": "FALLS_BACK_TO",
+      "to": "playbook_save_rejected",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-561",
+      "rel": "FALLS_BACK_TO",
+      "to": "playbook_schema_invalid",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-562",
+      "rel": "FALLS_BACK_TO",
+      "to": "playbook_verify_failed",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-562",
+      "rel": "FALLS_BACK_TO",
+      "to": "playbook_verify_low_score",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "CAP-562",
+      "rel": "FALLS_BACK_TO",
+      "to": "playbook_verify_high_noise",
+      "tools": [
+        "occam_playbook_save"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-420",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "PARAM:timeout_ms",
+      "rel": "ENABLES",
+      "to": "CAP-421",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "PARAM:include_social_meta",
+      "rel": "ENABLES",
+      "to": "CAP-422",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "PARAM:session_profile",
+      "rel": "ENABLES",
+      "to": "CAP-423",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-423",
+      "rel": "FALLS_SHORT_OF",
+      "to": "CAP-424",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-424",
+      "rel": "CONSUMES",
+      "to": "session",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "PRODUCES",
+      "to": "CAP-425",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-425",
+      "rel": "CONSUMED_BY",
+      "to": "TOOL:occam_search",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-426",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-427",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-427",
+      "rel": "USES",
+      "to": "CAP-104",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "PRODUCES",
+      "to": "CAP-428",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-428",
+      "rel": "USES",
+      "to": "CAP-096",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-429",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-429",
+      "rel": "USES",
+      "to": "CAP-104",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-430",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-430",
+      "rel": "ROUTES_TO",
+      "to": "http",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-430",
+      "rel": "FALLS_BACK_TO",
+      "to": "(none — no browser/managed rung on probe)",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-431",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-431",
+      "rel": "ROUTES_TO",
+      "to": "http",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-432",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-432",
+      "rel": "CONSUMED_BY",
+      "to": "TOOL:occam_map",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-432",
+      "rel": "CONSUMED_BY",
+      "to": "TOOL:occam_digest",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-433",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "PRODUCES",
+      "to": "CAP-434",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-434",
+      "rel": "ENABLES",
+      "to": "PARAM:json_tables",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-434",
+      "rel": "ENABLES",
+      "to": "PARAM:prefer_llms_txt",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-434",
+      "rel": "ENABLES",
+      "to": "PARAM:json_feed",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-434",
+      "rel": "ENABLES",
+      "to": "PARAM:max_tokens",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-435",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-435",
+      "rel": "CONSUMED_BY",
+      "to": "TOOL:occam_map",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-435",
+      "rel": "CONSUMED_BY",
+      "to": "TOOL:occam_digest",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-435",
+      "rel": "CONSUMED_BY",
+      "to": "TOOL:occam_search",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-436",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-436",
+      "rel": "ABSENT_FROM",
+      "to": "live_traffic",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "PRODUCES",
+      "to": "CAP-437",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "CAP-437",
+      "rel": "USES",
+      "to": "CAP-104",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-100",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-154",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-068",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-069",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-059",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "USES",
+      "to": "CAP-105",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "ROUTES_TO",
+      "to": "http",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL:occam_probe",
+      "rel": "FALLS_BACK_TO",
+      "to": "(none — browser and managed backends are unreachable from this tool)",
+      "tools": [
+        "occam_probe"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-620",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-621",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-622",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-626",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-630",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "USES",
+      "to": "CAP-631",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "PARAM:query",
+      "rel": "ENABLES",
+      "to": "CAP-620",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "PARAM:max_results",
+      "rel": "ENABLES",
+      "to": "CAP-621",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "PARAM:rerank",
+      "rel": "ENABLES",
+      "to": "CAP-627",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-622",
+      "rel": "ROUTES_TO",
+      "to": "CAP-623",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-622",
+      "rel": "ROUTES_TO",
+      "to": "CAP-624",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-622",
+      "rel": "ROUTES_TO",
+      "to": "CAP-625",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-623",
+      "rel": "CONSUMES",
+      "to": "env:OCCAM_SEARCH_URL",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-624",
+      "rel": "CONSUMES",
+      "to": "env:OCCAM_SEARCH_API_KEY",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-625",
+      "rel": "CONSUMES",
+      "to": "env:OCCAM_SEARCH_API_KEY",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-626",
+      "rel": "CONSUMES",
+      "to": "env:OCCAM_SEARCH_TIMEOUT_MS",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-627",
+      "rel": "USES",
+      "to": "CAP-100",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-627",
+      "rel": "ROUTES_TO",
+      "to": "ProbeService.AnalyzeAsync",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-627",
+      "rel": "PRODUCES",
+      "to": "CAP-628",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-628",
+      "rel": "CONSUMES",
+      "to": "ProbeAnalysis",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-628",
+      "rel": "PRODUCES",
+      "to": "CAP-629",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-629",
+      "rel": "PRODUCES",
+      "to": "artifact:extractability_score",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "TOOL",
+      "rel": "FALLS_BACK_TO",
+      "to": "none (no backend cascade; single provider call, no retry-on-same-provider)",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "CAP-627",
+      "rel": "ROUTES_TO",
+      "to": "occam_probe-subsystem",
+      "tools": [
+        "occam_search"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-250",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-251",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-252",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-259",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-261",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-262",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-263",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-265",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-266",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-268",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-269",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-270",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-271",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-272",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-273",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-274",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-650",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-651",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-652",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_verify",
+      "rel": "USES",
+      "to": "CAP-653",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "PARAM:receipt",
+      "rel": "ENABLES",
+      "to": "CAP-650",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "PARAM:mode",
+      "rel": "ENABLES",
+      "to": "CAP-651",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "PARAM:mode=live",
+      "rel": "ENABLES",
+      "to": "CAP-652",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "PARAM:chunks",
+      "rel": "ENABLES",
+      "to": "CAP-266",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "PARAM:public_key",
+      "rel": "ENABLES",
+      "to": "CAP-259",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "CAP-652",
+      "rel": "ROUTES_TO",
+      "to": "TranscodePipeline",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "CAP-652",
+      "rel": "ROUTES_TO",
+      "to": "OccamRouter/http_then_browser_cascade",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "CAP-652",
+      "rel": "FALLS_BACK_TO",
+      "to": "thin_extract/requires_login/captcha_or_challenge (post-processors, silently collapsed — CAP-653)",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "CAP-269",
+      "rel": "CONSUMES",
+      "to": "occam://capsule/... (produced by CAP-265, occam_transcode emit_capsule)",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "CAP-271",
+      "rel": "PRODUCES",
+      "to": "citation_proof (leaf+MerkleProofStep[])",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "CAP-272",
+      "rel": "CONSUMES",
+      "to": "citation_proof",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "CAP-273",
+      "rel": "CONSUMES",
+      "to": "watch_history_chain (opt-in occam_watch, CAP-284)",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "CAP-268",
+      "rel": "ROUTES_TO",
+      "to": "ReceiptVerifier.VerifyOffline (CAP-259)",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "CAP-268",
+      "rel": "ROUTES_TO",
+      "to": "WatchHistoryChain.Verify (CAP-284)",
+      "tools": [
+        "occam_verify"
+      ]
+    },
+    {
+      "from": "TOOL:occam_batch_submit",
+      "rel": "USES",
+      "to": "CAP:CAP-803",
+      "wave": 3
+    },
+    {
+      "from": "TOOL:occam_watch",
+      "rel": "USES",
+      "to": "CAP:CAP-830",
+      "wave": 3
+    },
+    {
+      "from": "TOOL:occam_crosscheck",
+      "rel": "USES",
+      "to": "CAP:CAP-850",
+      "wave": 3
+    },
+    {
+      "from": "TOOL:occam_failure_atlas",
+      "rel": "USES",
+      "to": "CAP:CAP-870",
+      "wave": 3
+    },
+    {
+      "from": "CLI:occam connect",
+      "rel": "USES",
+      "to": "CAP:CAP-980",
+      "wave": 3
+    },
+    {
+      "from": "CLI:occam connect",
+      "rel": "BROKEN_IN",
+      "to": "CAP:CAP-985",
+      "wave": 3
+    },
+    {
+      "from": "PACKAGE:@ff-occam/mcp",
+      "rel": "BLOCKED_BY",
+      "to": "CAP:CAP-1033",
+      "wave": 3
+    },
+    {
+      "from": "ART:ART-027",
+      "rel": "PRODUCED_BY",
+      "to": "CAP:CAP-807",
+      "wave": 3
+    },
+    {
+      "from": "ART:ART-032",
+      "rel": "PRODUCED_BY",
+      "to": "CAP:CAP-1026",
+      "wave": 3
+    }
+  ]
+}
