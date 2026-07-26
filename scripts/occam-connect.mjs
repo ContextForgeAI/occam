@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
- * occam connect — detect MCP hosts/runtimes and auto-connect Tier A adapters.
+ * occam connect — detect MCP hosts/runtimes and connect with human-first UX.
  *
- *   node scripts/occam-connect.mjs [--json] [--detect-only] [--force]
+ *   node scripts/occam-connect.mjs [--json] [--detect-only] [--force] [--verbose]
  *   OCCAM_CONNECT=off|detect|auto
+ *   OCCAM_CONNECT_ALL=1 — non-interactive connect-all
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -15,6 +16,8 @@ import {
   renderConnectTranscript,
   resolveConnectMode,
 } from "./lib/operator/connect/index.mjs";
+import { runConnectOnboarding, allowConnectAll } from "./lib/operator/connect-onboarding.mjs";
+import { isInstallVerbose } from "./lib/operator/install-ux.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const defaultHome = process.env.OCCAM_HOME?.trim() || join(scriptDir, "..");
@@ -24,6 +27,7 @@ function parseArgs(argv) {
   let detectOnly = false;
   let force = false;
   let skipOccamVerify = false;
+  let verbose = false;
   /** @type {string[]} */
   const only = [];
 
@@ -32,6 +36,7 @@ function parseArgs(argv) {
     if (arg === "--json") format = "json";
     else if (arg === "--detect-only") detectOnly = true;
     else if (arg === "--force") force = true;
+    else if (arg === "--verbose" || arg === "--debug") verbose = true;
     else if (arg === "--skip-occam-verify") skipOccamVerify = true;
     else if (arg === "--only") {
       const v = argv[++i];
@@ -41,7 +46,7 @@ function parseArgs(argv) {
       process.exit(0);
     }
   }
-  return { format, detectOnly, force, skipOccamVerify, only };
+  return { format, detectOnly, force, skipOccamVerify, only, verbose };
 }
 
 /**
@@ -72,6 +77,7 @@ Options:
   --detect-only          Detect hosts/runtimes; do not mutate configs
   --force                Re-apply even when registration already matches / overwrite unmanaged
   --only IDS             Comma list, e.g. hermes,cursor,claude-desktop,vscode,zed
+  --verbose              Engineering detail (confidence, levels, launcher paths)
   --skip-occam-verify    Skip Occam stdio tools/list (tests only)
   -h, --help             Show help
 
@@ -79,6 +85,7 @@ Env:
   OCCAM_HOME             Install root (default: repo/install dir)
   OCCAM_CONNECT          auto|off|detect — CI ignores auto/on without FORCE
   OCCAM_CONNECT_FORCE    1 — allow host mutation when CI=1 (explicit override)
+  OCCAM_CONNECT_ALL      1 — non-interactive connect-all for multiple hosts
 `);
 }
 
@@ -99,29 +106,69 @@ function writeConnectLast(report) {
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
-  /** @type {ReturnType<typeof resolveConnectMode>} */
-  let connectMode = resolveConnectMode(process.env);
-  if (opts.detectOnly) {
-    connectMode = { mode: "detect-only", mutateHosts: false, reason: "--detect-only" };
-  }
+  const verbose = opts.verbose || isInstallVerbose(process.env, process.argv);
+  const interactive = process.stdin.isTTY === true && process.stdout.isTTY === true;
 
-  const report = await runConnect({
-    occamHome: defaultHome,
-    connectMode,
-    force: opts.force,
-    only: opts.only.length ? opts.only : undefined,
-    skipOccamVerify: opts.skipOccamVerify,
-  });
-  writeConnectLast(report);
-
+  // JSON / explicit --only / detect-only-with-json: keep raw engine path.
   if (opts.format === "json") {
+    /** @type {ReturnType<typeof resolveConnectMode>} */
+    let connectMode = resolveConnectMode(process.env);
+    if (opts.detectOnly) {
+      connectMode = { mode: "detect-only", mutateHosts: false, reason: "--detect-only" };
+    }
+    const report = await runConnect({
+      occamHome: defaultHome,
+      connectMode,
+      force: opts.force,
+      only: opts.only.length ? opts.only : undefined,
+      skipOccamVerify: opts.skipOccamVerify,
+    });
+    writeConnectLast(report);
     console.log(JSON.stringify(report, null, 2));
-  } else {
-    console.log(renderConnectTranscript(report));
+    const hardFail = report.connections.some(
+      (c) => c.apply && c.apply.ok === false && c.readyState?.requiresUserAction !== true,
+    );
+    const occamFail = report.occamVerify && report.occamVerify.ok === false && !report.occamVerify.skipped;
+    const rollbackFail = report.connections.some((c) => c.rollback && c.rollback.ok === false);
+    process.exit(hardFail || occamFail || rollbackFail ? 1 : 0);
   }
 
-  // Exit 0 for install/detect success paths; 1 only when mutate attempted and
-  // failed hard. A host that merely needs a user action is not a failure.
+  // Human path — shared with installer first-run.
+  /** @type {string[]} */
+  const emitted = [];
+  const result = await runConnectOnboarding({
+    occamHome: defaultHome,
+    setupMode: "auto",
+    verbose,
+    interactive,
+    forceConnect: opts.force,
+    skipOccamVerify: opts.skipOccamVerify,
+    connectAll: allowConnectAll(process.env),
+    detectOnly: opts.detectOnly,
+    only: opts.only.length ? opts.only : undefined,
+    source: "connect",
+    emit: (line) => {
+      emitted.push(line);
+      console.log(line);
+    },
+  });
+
+  if (result.connectReport) {
+    writeConnectLast(result.connectReport);
+  }
+
+  // Final summary (discovery/progress already emitted).
+  if (result.transcript) {
+    // Avoid duplicating discovery lines already printed via emit.
+    const summary = result.transcript;
+    console.log("");
+    console.log(summary);
+  }
+
+  const report = result.connectReport;
+  if (!report) {
+    process.exit(0);
+  }
   const hardFail = report.connections.some(
     (c) => c.apply && c.apply.ok === false && c.readyState?.requiresUserAction !== true,
   );

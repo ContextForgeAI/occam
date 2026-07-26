@@ -96,6 +96,65 @@ export function failLine(message) {
   return `✗ ${message}`;
 }
 
+/** Active-state line during long install/connect steps (quiet-safe). */
+export function progressLine(message) {
+  return `  ${message}`;
+}
+
+/**
+ * Read-only discovery block — registration targets only by default.
+ * @param {{
+ *   candidates: Array<{ name: string }>,
+ *   runtimes?: Array<{ name: string }>,
+ *   verbose?: boolean,
+ * }} opts
+ */
+export function renderDiscoverySection(opts) {
+  const lines = ["Looking for AI apps..."];
+  if (!opts.candidates.length) {
+    lines.push("· None found for automatic connection");
+  } else {
+    for (const h of opts.candidates) {
+      lines.push(okLine(h.name));
+    }
+    lines.push("");
+    lines.push(
+      opts.candidates.length === 1
+        ? "Occam can connect to 1 app."
+        : `Occam can connect to ${opts.candidates.length} apps.`,
+    );
+  }
+  if (opts.verbose && opts.runtimes?.length) {
+    lines.push("");
+    lines.push("Related tools (not MCP registration targets):");
+    for (const r of opts.runtimes) {
+      lines.push(`  · ${r.name}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+/**
+ * Pre-consent plan — only promise what connect actually does.
+ * @param {Array<{ name: string }>} hosts
+ */
+export function renderConnectPlan(hosts) {
+  const n = hosts.length;
+  return [
+    n === 1
+      ? "Occam found 1 AI app it can configure."
+      : `Occam found ${n} AI apps it can configure.`,
+    "",
+    "What will happen:",
+    "• Occam will add or update its connection.",
+    "• Existing configurations will be preserved when already correct.",
+    "• Backups are created before config-file changes.",
+    "• Some apps may need to be restarted afterward.",
+    "",
+    "No AI app configurations have been changed yet.",
+  ].join("\n");
+}
+
 /**
  * @param {string} text
  * @returns {string[]}
@@ -198,11 +257,12 @@ export function resolveInstallOutcome(input) {
   }
 
   if (mutated) {
+    // Prefer a concrete human state over a vague "configured".
     return {
-      state: /** @type {InstallReadyState} */ ("CONNECTED"),
+      state: /** @type {InstallReadyState} */ ("ACTION_REQUIRED"),
       ready: false,
-      headline: "Occam configured.",
-      detail: report.message || "Host configuration was applied; verification is incomplete.",
+      headline: "Action required.",
+      detail: report.message || "Some apps need attention before Occam is fully ready.",
     };
   }
 
@@ -282,12 +342,10 @@ export function renderInstallConnectSection(opts) {
  * @param {Array<{ id: string, name: string }>} hosts
  */
 export function renderHostChoiceMenu(hosts) {
-  const lines = ["Connect Occam to:", ""];
+  const lines = ["Choose apps to connect:", ""];
   hosts.forEach((h, i) => {
     lines.push(`${i + 1}. ${h.name}`);
   });
-  lines.push(`${hosts.length + 1}. Connect to all detected apps`);
-  lines.push(`${hosts.length + 2}. Skip for now`);
   lines.push("");
   return lines.join("\n");
 }
@@ -298,12 +356,25 @@ export function renderHostChoiceMenu(hosts) {
  * @returns {"all"|"skip"|string[]|null} host ids, all, skip, or null if invalid
  */
 export function parseHostChoice(raw, hosts) {
-  const choice = (raw ?? "").trim();
-  if (!choice) return null;
+  const choice = (raw ?? "").trim().toLowerCase();
+  if (!choice || choice === "q" || choice === "quit" || choice === "skip" || choice === "n" || choice === "no") {
+    return "skip";
+  }
+  if (choice === "all" || choice === "a") return "all";
+
+  if (choice.includes(",")) {
+    /** @type {string[]} */
+    const ids = [];
+    for (const part of choice.split(",")) {
+      const n = Number(part.trim());
+      if (!Number.isInteger(n) || n < 1 || n > hosts.length) return null;
+      ids.push(hosts[n - 1].id);
+    }
+    return [...new Set(ids)];
+  }
+
   const n = Number(choice);
   if (!Number.isInteger(n) || n < 1) return null;
-  if (n === hosts.length + 1) return "all";
-  if (n === hosts.length + 2) return "skip";
   if (n >= 1 && n <= hosts.length) return [hosts[n - 1].id];
   return null;
 }
@@ -316,6 +387,17 @@ export function parseYesNoDefaultYes(raw) {
   const v = (raw ?? "").trim().toLowerCase();
   if (!v || v === "y" || v === "yes") return true;
   if (v === "n" || v === "no") return false;
+  return null;
+}
+
+/**
+ * Multi-host safety confirm. Empty / n / no → false (default NO).
+ * @param {string} raw
+ */
+export function parseYesNoDefaultNo(raw) {
+  const v = (raw ?? "").trim().toLowerCase();
+  if (!v || v === "n" || v === "no") return false;
+  if (v === "y" || v === "yes") return true;
   return null;
 }
 

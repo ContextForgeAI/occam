@@ -211,7 +211,7 @@ export function aggregateConnectionReady(connections) {
 
   return {
     ready: false,
-    status: "Partial",
+    status: "Action required",
     message: connections
       .map((c) => `${c.name}: ${c.readyState?.status || "unknown"}`)
       .join("; "),

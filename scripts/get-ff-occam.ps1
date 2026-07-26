@@ -349,6 +349,7 @@ if (Test-Path $postUx) {
   $env:OCCAM_BANNER = "0"
   $env:WT_OCCAM_BANNER = "0"
 
+  Write-Host "  Installing runtime…"
   $doctorPs1 = Join-Path $InstallDir "scripts\occam-doctor.ps1"
   Invoke-LegacyInstallStep -Label "Runtime setup (doctor)" -Action {
     & $doctorPs1 -SkipBuild
@@ -356,6 +357,7 @@ if (Test-Path $postUx) {
   Write-Host "✓ Runtime installed"
   Write-Host "✓ Browser ready"
 
+  Write-Host "  Running self-check…"
   $verifyJs = Join-Path $InstallDir "scripts\lib\verify-install.mjs"
   Invoke-LegacyInstallStep -Label "Host verify" -Action {
     & node $verifyJs --skip-build --version $Version
@@ -367,11 +369,21 @@ if (Test-Path $postUx) {
   }
   Write-Host "✓ Self-check passed"
 
+  # Overlay brings current connect CLI + onboarding from public main.
   Install-OccamUserCommand $InstallDir
 
-  Write-Host ""
-  Write-Host "Occam is installed."
-  Write-Host ""
-  Write-Host "Connect an AI app later with:"
-  Write-Host "  occam connect"
+  # Continue into the SAME connect onboarding as modern post-install-ux.
+  $connectJs = Join-Path $InstallDir "scripts\occam-connect.mjs"
+  if (Test-Path $connectJs) {
+    $connectArgs = @($connectJs)
+    if ($VerboseInstall) { $connectArgs += "--verbose" }
+    & node @connectArgs
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  } else {
+    Write-Host ""
+    Write-Host "Occam is installed."
+    Write-Host ""
+    Write-Host "Connect an AI app later with:"
+    Write-Host "  occam connect"
+  }
 }

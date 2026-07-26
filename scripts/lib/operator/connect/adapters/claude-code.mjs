@@ -105,7 +105,44 @@ export function createClaudeCodeAdapter(ctx) {
     args.push("--", desired.command, ...(desired.args || []));
     const result = runClaude(args, { timeoutMs: 180_000 });
     const combined = `${result.stdout}\n${result.stderr}`;
+    const alreadyExists = /already exists/i.test(combined);
     const saved = /Added stdio MCP server/i.test(combined) || result.status === 0;
+    if (!saved && alreadyExists) {
+      // Existing registration is often the desired end state — inspect before failing.
+      const after = readClaudeUserServer(serverName);
+      if (after.registered) {
+        const desired = meta.plan?.desired;
+        const matches =
+          desired &&
+          after.entry &&
+          normalizePathish(after.entry.command || "") === normalizePathish(desired.command || "") &&
+          argsEqual(after.entry.args || [], desired.args || []) &&
+          envEqual(after.entry.env || {}, desired.env || {});
+        const managed = looksLikeOccamManagedEntry(after.entry, occamHome);
+        if (matches || managed) {
+          return {
+            ok: true,
+            applied: false,
+            action: "noop",
+            requiresRestart: false,
+            plan: meta.plan,
+            result,
+            inspect: after,
+          };
+        }
+        return {
+          ok: false,
+          applied: false,
+          action: meta.action,
+          requiresUserAction: true,
+          error:
+            "Claude Code already has an Occam-named server with a different configuration — review it or re-run with --force",
+          plan: meta.plan,
+          result,
+          inspect: after,
+        };
+      }
+    }
     if (!saved) {
       return {
         ok: false,

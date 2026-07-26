@@ -152,7 +152,7 @@ function testAggregateReady() {
     },
   ]);
   assert.equal(partial.ready, false);
-  assert.equal(partial.status, "Partial");
+  assert.equal(partial.status, "Action required");
   assert.match(partial.message, /B:/);
 
   const applyFailDoesNotHide = aggregateConnectionReady([
@@ -160,7 +160,7 @@ function testAggregateReady() {
     { name: "B", readyState: { ready: false, status: "Apply failed" } },
   ]);
   assert.equal(applyFailDoesNotHide.ready, false);
-  assert.equal(applyFailDoesNotHide.status, "Partial");
+  assert.equal(applyFailDoesNotHide.status, "Action required");
 
   // Mixed: Hermes Ready + OpenClaw verify-fail → not Ready; A success does not mask B.
   const mixed = aggregateConnectionReady([
@@ -175,7 +175,7 @@ function testAggregateReady() {
     },
   ]);
   assert.equal(mixed.ready, false);
-  assert.equal(mixed.status, "Partial");
+  assert.equal(mixed.status, "Action required");
   assert.match(mixed.message, /OpenClaw:/);
   assert.match(mixed.message, /Hermes Agent:/);
 

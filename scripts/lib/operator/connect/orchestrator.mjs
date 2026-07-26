@@ -33,6 +33,15 @@ import { OCCAM_MCP_SERVER_NAME } from "./kinds.mjs";
  *   only?: string[],
  *   connectMode?: ReturnType<typeof resolveConnectMode>,
  *   skipOccamVerify?: boolean,
+ *   onProgress?: (ev: {
+ *     phase: string,
+ *     name?: string,
+ *     ok?: boolean,
+ *     already?: boolean,
+ *     restart?: boolean,
+ *     action?: boolean,
+ *     message?: string,
+ *   }) => void,
  * }} opts
  */
 /**
@@ -87,6 +96,7 @@ export async function runConnect(opts) {
   const occamHome = opts.occamHome;
   const mode = opts.connectMode ?? resolveConnectMode(process.env);
   const mutateHosts = opts.mutateHosts ?? mode.mutateHosts;
+  const progress = typeof opts.onProgress === "function" ? opts.onProgress : () => {};
 
   /** @type {object} */
   const report = {
@@ -154,7 +164,17 @@ export async function runConnect(opts) {
 
   const occamVerify = opts.skipOccamVerify
     ? { ok: true, level: VERIFICATION_LEVELS.TOOLS_LIST_OK, toolCount: 15, skipped: true }
-    : await verifyOccamMcp(occamHome);
+    : await (async () => {
+        progress({ phase: "verify-start", name: "Occam" });
+        const v = await verifyOccamMcp(occamHome);
+        progress({
+          phase: "verify-done",
+          name: "Occam",
+          ok: v.ok === true,
+          message: v.error || undefined,
+        });
+        return v;
+      })();
   report.occamVerify = occamVerify;
 
   if (targets.length === 0 && mutateHosts) {
@@ -195,6 +215,7 @@ export async function runConnect(opts) {
     };
 
     try {
+      progress({ phase: "configure-start", name: adapter.name });
       const plan = adapter.plan({ force: opts.force });
       row.plan = {
         action: plan.action,
@@ -214,6 +235,13 @@ export async function runConnect(opts) {
             plan.skipReason ||
             `Existing ${OCCAM_MCP_SERVER_NAME} looks user-owned; pass --force to overwrite`,
         };
+        progress({
+          phase: "configure-done",
+          name: adapter.name,
+          ok: false,
+          action: true,
+          message: "existing configuration needs your decision",
+        });
         report.connections.push(row);
         continue;
       }
@@ -234,6 +262,13 @@ export async function runConnect(opts) {
           status: "Action required — manual setup",
           message: plan.skipReason || `${adapter.name} requires user action`,
         };
+        progress({
+          phase: "configure-done",
+          name: adapter.name,
+          ok: false,
+          action: true,
+          message: plan.skipReason || "needs your action",
+        });
         report.connections.push(row);
         continue;
       }
@@ -247,6 +282,14 @@ export async function runConnect(opts) {
         error: applied.error ?? null,
         requiresRestart: applied.requiresRestart ?? plan.requiresRestart,
       };
+
+      progress({
+        phase: "configure-done",
+        name: adapter.name,
+        ok: applied.ok !== false,
+        already: applied.action === "noop" || (applied.ok && applied.applied === false),
+        message: applied.error || undefined,
+      });
 
       if (!applied.ok) {
         if (applied.requiresUserAction === true) {
@@ -269,6 +312,7 @@ export async function runConnect(opts) {
         continue;
       }
 
+      progress({ phase: "verify-start", name: adapter.name });
       const hostVerify = adapter.verifyHost();
       row.hostVerify = {
         ok: hostVerify.ok,
@@ -299,6 +343,18 @@ export async function runConnect(opts) {
       if (hostVerify.sessionHint || plan.sessionHint) {
         readyState.sessionHint = hostVerify.sessionHint || plan.sessionHint;
       }
+
+      progress({
+        phase: "verify-done",
+        name: adapter.name,
+        ok: hostVerify.ok === true && readyState.ready !== false,
+        restart:
+          hostVerify.requiresRestart === true ||
+          /restart required/i.test(readyState.status || ""),
+        action:
+          hostVerify.requiresUserAction === true && hostVerify.hostBlocked === true,
+        message: readyState.message || hostVerify.message || undefined,
+      });
 
       const cleanup = decidePostVerifyCleanup({
         applied: applied.applied === true,
@@ -373,6 +429,12 @@ export async function runConnect(opts) {
         status: "Error",
         message: err instanceof Error ? err.message : String(err),
       };
+      progress({
+        phase: "configure-done",
+        name: adapter.name,
+        ok: false,
+        message: err instanceof Error ? err.message : String(err),
+      });
     }
 
     report.connections.push(row);

@@ -90,11 +90,11 @@ function testReadySemantics() {
     installOk: true,
     connectReport: {
       ready: false,
-      status: "Partial",
+      status: "Action required",
       connections: [{ apply: { ok: true, applied: true } }],
     },
   });
-  assert.equal(connected.state, "CONNECTED");
+  assert.equal(connected.state, "ACTION_REQUIRED");
   assert.equal(connected.ready, false);
 }
 
@@ -119,23 +119,20 @@ function testHostMenus() {
   ];
   const menu = renderHostChoiceMenu(hosts);
   assert.match(menu, /1\. Cursor/);
-  assert.match(menu, /4\. Connect to all detected apps/);
-  assert.match(menu, /5\. Skip for now/);
+  assert.match(menu, /Choose apps to connect/);
   assert.doesNotMatch(menu, /Tier A|Tier B|hermes/i);
 
   assert.deepEqual(parseHostChoice("1", hosts), ["cursor"]);
-  assert.equal(parseHostChoice("4", hosts), "all");
-  assert.equal(parseHostChoice("5", hosts), "skip");
-  assert.equal(parseHostChoice("", hosts), null);
+  assert.deepEqual(parseHostChoice("1,3", hosts), ["cursor", "codex"]);
+  assert.equal(parseHostChoice("all", hosts), "all");
+  assert.equal(parseHostChoice("q", hosts), "skip");
+  assert.equal(parseHostChoice("", hosts), "skip");
 
   assert.equal(parseYesNoDefaultYes(""), true);
   assert.equal(parseYesNoDefaultYes("y"), true);
   assert.equal(parseYesNoDefaultYes("n"), false);
 
-  assert.match(
-    renderMultiHostConfirmPrompt(hosts),
-    /Connect Occam to Cursor, Claude Desktop, and Codex\? \[Y\/n\]/,
-  );
+  assert.match(renderMultiHostConfirmPrompt(hosts), /Connect Occam to all 3 apps\? \[y\/N\]/);
   assert.equal(allowConnectAll({}), false);
   assert.equal(allowConnectAll({ OCCAM_CONNECT_ALL: "1" }), true);
 }
@@ -166,7 +163,7 @@ async function testMultiHostDoesNotSilentConnectAll() {
       { name: "Claude Desktop" },
       { name: "Codex" },
     ]),
-    /Cursor, Claude Desktop, and Codex/,
+    /Connect Occam to all 3 apps\? \[y\/N\]/,
   );
 }
 
@@ -310,6 +307,13 @@ function testNoPhantomHermesInManualDefault() {
   assert.match(sh, /install_occam_user_command/);
   assert.match(ps1, /install-user-cli\.mjs/);
   assert.match(sh, /install-user-cli\.mjs/);
+  // First-run must show life during long steps and continue into connect.
+  assert.match(ps1, /Installing runtime/);
+  assert.match(sh, /Installing runtime/);
+  assert.match(ps1, /Running self-check/);
+  assert.match(sh, /Running self-check/);
+  assert.match(ps1, /occam-connect\.mjs/);
+  assert.match(sh, /occam-connect\.mjs/);
 }
 
 async function main() {
