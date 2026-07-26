@@ -27,6 +27,9 @@ public static class MaterializationKey
         bool rankBlocks = false,
         bool tagTrust = false)
     {
+        // Fragment drives local focus (same as TranscodeCacheKey) — must split identity (EF-045).
+        var focusFragment = FocusIntent.FromUrl(url).Fragment
+            ?? options.FocusFragment;
         var canonical = new StringBuilder(512);
         canonical.Append("schema=").Append(SchemaVersion).Append('\n');
         canonical.Append(TranscodeCacheKey.NormalizeUrl(url)).Append('\n');
@@ -34,6 +37,7 @@ public static class MaterializationKey
         canonical.Append("max_tokens=").Append(options.MaxTokens?.ToString() ?? string.Empty).Append('\n');
         canonical.Append("fit_markdown=").Append(options.FitMarkdown ? '1' : '0').Append('\n');
         canonical.Append("focus_query=").Append(options.FocusQuery ?? string.Empty).Append('\n');
+        canonical.Append("focus_fragment=").Append(focusFragment ?? string.Empty).Append('\n');
         canonical.Append("content_selectors=").Append(options.ContentSelectors.Length);
         foreach (var selector in options.ContentSelectors)
         {

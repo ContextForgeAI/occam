@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using OccamMcp.Core.Compile;
 using OccamMcp.Core.Routing;
 
 namespace OccamMcp.Core.Caching;
@@ -13,20 +14,25 @@ public static class TranscodeCacheKey
     /// <summary>
     /// Builds a deterministic sha256-hex key from the request URL, backend selection, and all
     /// output-affecting <see cref="OccamTranscodeOptions"/>. The URL is normalized (lowercased
-    /// scheme+host, default port stripped, fragment dropped) so trivial spelling differences
-    /// hit the same entry; the path and query are preserved verbatim because they change content.
+    /// scheme+host, default port stripped) so trivial spelling differences hit the same entry;
+    /// path and query are preserved verbatim. The URL fragment is keyed separately via
+    /// <see cref="FocusIntent"/> because it drives local focus (EF-045) even though it is
+    /// stripped from the fetch URL.
     /// </summary>
     public static string Compute(
         string url,
         string backendPolicy,
         OccamTranscodeOptions options)
     {
+        var focusFragment = FocusIntent.FromUrl(url).Fragment
+            ?? options.FocusFragment;
         var canonical = new StringBuilder();
         canonical.Append(NormalizeUrl(url)).Append('\n');
         canonical.Append("backend=").Append(backendPolicy ?? string.Empty).Append('\n');
         canonical.Append("max_tokens=").Append(options.MaxTokens?.ToString() ?? string.Empty).Append('\n');
         canonical.Append("fit_markdown=").Append(options.FitMarkdown ? '1' : '0').Append('\n');
         canonical.Append("focus_query=").Append(options.FocusQuery ?? string.Empty).Append('\n');
+        canonical.Append("focus_fragment=").Append(focusFragment ?? string.Empty).Append('\n');
         // Length-prefixed + newline-framed so selector text can never forge a key collision.
         canonical.Append("content_selectors=").Append(options.ContentSelectors.Length);
         foreach (var selector in options.ContentSelectors)
@@ -48,8 +54,9 @@ public static class TranscodeCacheKey
     }
 
     /// <summary>
-    /// Normalizes a URL for cache keying. Falls back to the trimmed raw string if the URL does
-    /// not parse (an unparseable URL would have failed preflight, so this path is defensive).
+    /// Normalizes a URL for cache keying (scheme+host lowercased, default port stripped,
+    /// fragment omitted — fragment is folded separately as focus_fragment). Falls back to the
+    /// trimmed raw string if the URL does not parse (defensive; unparseable URLs fail preflight).
     /// </summary>
     internal static string NormalizeUrl(string url)
     {
