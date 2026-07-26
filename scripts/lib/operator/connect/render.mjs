@@ -28,7 +28,7 @@ function wrapList(names, width) {
  */
 export function renderConnectTranscript(report) {
   const lines = [];
-  lines.push("FF-Occam — Connect");
+  lines.push("Occam — Connect");
   lines.push("");
   lines.push(`✓ Occam home: ${report.occamHome}`);
   if (report.launch?.launcherPath) {

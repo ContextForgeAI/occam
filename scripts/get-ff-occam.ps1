@@ -1,17 +1,18 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  FF-Occam MCP — Level B one-liner bootstrap for Windows (irm | iex).
+  Occam — one-liner bootstrap for Windows (irm | iex).
 
 .DESCRIPTION
   Node 20+ only — NO git, NO .NET SDK on the install machine.
   Mirrors scripts/get-ff-occam.sh.
+  Quiet by default. Set OCCAM_VERBOSE=1 for doctor/smoke internals.
 
 .EXAMPLE
   irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
 
 .EXAMPLE
-  $env:OCCAM_SETUP='auto'; $env:OCCAM_HOST='cursor'
+  $env:OCCAM_SETUP='manual'
   irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
 #>
 $ErrorActionPreference = "Stop"
@@ -21,9 +22,12 @@ $Rid = if ($env:OCCAM_RID) { $env:OCCAM_RID } else { "win-x64" }
 $InstallDir = if ($env:OCCAM_INSTALL_DIR) { $env:OCCAM_INSTALL_DIR } else {
   Join-Path $env:USERPROFILE ".local\share\ff-occam"
 }
-$HostTarget = if ($env:OCCAM_HOST) { $env:OCCAM_HOST } else { "hermes" }
+# Legacy fallback for connection snippet only — never printed as a selected host before connect.
+$HostTarget = if ($env:OCCAM_HOST) { $env:OCCAM_HOST } else { "" }
 $AllowHttp = if ($env:OCCAM_RELEASE_ALLOW_HTTP) { $env:OCCAM_RELEASE_ALLOW_HTTP } else { "0" }
 $SetupMode = if ($env:OCCAM_SETUP) { $env:OCCAM_SETUP.Trim().ToLowerInvariant() } else { "" }
+$VerboseInstall = ($env:OCCAM_VERBOSE -eq "1" -or $env:OCCAM_VERBOSE -eq "true" -or
+                   $env:OCCAM_DEBUG -eq "1" -or $env:OCCAM_DEBUG -eq "true")
 
 $ReleaseBase = if ($env:OCCAM_RELEASE_BASE) {
   $env:OCCAM_RELEASE_BASE
@@ -62,30 +66,51 @@ function Test-NodeVersion {
   if ($major -lt $MinNodeMajor) {
     throw "Node.js $MinNodeMajor+ required (found $(node -v))"
   }
-  Write-Host "node: $(node -v)"
+  if ($VerboseInstall) { Write-Host "node: $(node -v)" }
+}
+
+function Test-TrulyInteractive {
+  if ($env:CI -or $env:GITHUB_ACTIONS) { return $false }
+  if (-not [Environment]::UserInteractive) { return $false }
+  if ([Console]::IsInputRedirected) { return $false }
+  if ([Console]::IsOutputRedirected) { return $false }
+  return $true
 }
 
 function Resolve-SetupMode {
-  if ($SetupMode -eq "auto" -or $SetupMode -eq "1") { $script:SetupMode = "auto"; Write-Host "setup: auto (from OCCAM_SETUP)"; return }
-  if ($SetupMode -eq "manual" -or $SetupMode -eq "2") { $script:SetupMode = "manual"; Write-Host "setup: manual (from OCCAM_SETUP)"; return }
-  if ($SetupMode -ne "") { throw "OCCAM_SETUP must be auto or manual (got $SetupMode)" }
-
-  # Non-interactive pipe / irm|iex → auto
-  if ([Console]::IsInputRedirected -or -not [Environment]::UserInteractive) {
+  # Contract: unset|auto|1 → auto; manual|2 → manual; ask → menu only if truly interactive else auto.
+  if ($SetupMode -eq "" -or $SetupMode -eq "auto" -or $SetupMode -eq "1") {
     $script:SetupMode = "auto"
-    Write-Host "setup: auto (non-interactive)"
+    if ($VerboseInstall) {
+      if ($env:OCCAM_SETUP) { Write-Host "setup: auto (from OCCAM_SETUP)" }
+      else { Write-Host "setup: auto (default)" }
+    }
+    return
+  }
+  if ($SetupMode -eq "manual" -or $SetupMode -eq "2") {
+    $script:SetupMode = "manual"
+    if ($VerboseInstall) { Write-Host "setup: manual (from OCCAM_SETUP)" }
+    return
+  }
+  if ($SetupMode -ne "ask") {
+    throw "OCCAM_SETUP must be auto|manual|ask (got $SetupMode)"
+  }
+
+  if (-not (Test-TrulyInteractive)) {
+    $script:SetupMode = "auto"
+    if ($VerboseInstall) { Write-Host "setup: auto (ask ignored: non-interactive)" }
     return
   }
 
   Write-Host ""
   Write-Host "  First-run setup"
-  Write-Host "  [1] Auto   — defaults from OCCAM_HOST (default: hermes)"
-  Write-Host "  [2] Manual — guided wizard (occam-onboard)"
+  Write-Host "  [1] Auto   — detect and connect supported AI apps"
+  Write-Host "  [2] Manual — choose which AI app to connect"
   Write-Host ""
   $choice = Read-Host "  Setup [1]"
   if ([string]::IsNullOrWhiteSpace($choice)) { $choice = "1" }
   if ($choice -match '^(2|manual)$') { $script:SetupMode = "manual" } else { $script:SetupMode = "auto" }
-  Write-Host "setup: $($script:SetupMode)"
+  if ($VerboseInstall) { Write-Host "setup: $($script:SetupMode)" }
 }
 
 function Get-Sha256Hex([string]$Path) {
@@ -94,7 +119,7 @@ function Get-Sha256Hex([string]$Path) {
 
 function Download-File([string]$Url, [string]$Dest) {
   Assert-UrlScheme $Url
-  Write-Host "download: $Url"
+  if ($VerboseInstall) { Write-Host "download: $Url" }
   try {
     Invoke-WebRequest -Uri $Url -OutFile $Dest -UseBasicParsing
   } catch {
@@ -108,24 +133,20 @@ download failed — is the release tarball published?
   }
 }
 
-Write-Host ""
-Write-Host "  FF-Occam MCP"
-Write-Host "  Level B bootstrap (Windows)"
-Write-Host ""
-
 Resolve-SetupMode
 Test-NodeVersion
 
-# tar.exe ships with Windows 10+
 if (-not (Get-Command tar.exe -ErrorAction SilentlyContinue)) {
   throw "required command not found: tar.exe"
 }
 
-Write-Host ""
-Write-Host "install_dir: $InstallDir"
-Write-Host "host_target: $HostTarget"
-Write-Host "release_url: $ReleaseUrl"
-Write-Host ""
+if ($VerboseInstall) {
+  Write-Host ""
+  Write-Host "install_dir: $InstallDir"
+  if ($HostTarget) { Write-Host "host_hint: $HostTarget" }
+  Write-Host "release_url: $ReleaseUrl"
+  Write-Host ""
+}
 
 $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("ff-occam-get-" + [guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Path $tmp -Force | Out-Null
@@ -144,15 +165,16 @@ try {
   if ($actualSha -ne $expectedSha) {
     throw "sha256 mismatch`n  expected: $expectedSha`n  actual:   $actualSha"
   }
-  Write-Host "sha256: OK"
-  Write-Host "release: version=$($manifest.version) rid=$($manifest.rid)"
+  if ($VerboseInstall) {
+    Write-Host "sha256: OK"
+    Write-Host "release: version=$($manifest.version) rid=$($manifest.rid)"
+  }
 
   $parent = Split-Path -Parent $InstallDir
   if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
   if (Test-Path $InstallDir) { Remove-Item -Recurse -Force $InstallDir }
   New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
 
-  # strip-components=1 equivalent: extract then flatten one root folder if present
   $extractTmp = Join-Path $tmp "extract"
   New-Item -ItemType Directory -Path $extractTmp -Force | Out-Null
   tar.exe -xzf $tarballPath -C $extractTmp
@@ -167,71 +189,49 @@ try {
       Move-Item -LiteralPath $_.FullName -Destination $InstallDir -Force
     }
   }
-  Write-Host "extracted: $InstallDir"
+  if ($VerboseInstall) { Write-Host "extracted: $InstallDir" }
 } finally {
   Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
 }
 
 $env:OCCAM_HOME = $InstallDir
 Set-Location $InstallDir
+if ($HostTarget) { $env:OCCAM_HOST = $HostTarget }
 
-Write-Host ""
-Write-Host "doctor (npm + Playwright, skip dotnet publish) ..."
-& (Join-Path $InstallDir "scripts\occam-doctor.ps1") -SkipBuild
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+$postUx = Join-Path $InstallDir "scripts\lib\operator\post-install-ux.mjs"
+$postArgs = @($postUx, "--setup", $SetupMode, "--version", $Version, "--download-ok")
+if ($VerboseInstall) { $postArgs += "--verbose" }
 
-Write-Host ""
-Write-Host "verify-install ..."
-& node (Join-Path $InstallDir "scripts\lib\verify-install.mjs") --skip-build
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-Write-Host ""
-Write-Host "smoke (core tools) ..."
-& node (Join-Path $InstallDir "scripts\hermes-smoke.mjs")
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-$env:OCCAM_HOST = $HostTarget
-Write-Host ""
-if ($SetupMode -eq "manual") {
-  Write-Host "Starting manual onboard wizard ..."
-  & node (Join-Path $InstallDir "scripts\occam-onboard.mjs") --skip-doctor --skip-welcome
+if (Test-Path $postUx) {
+  & node @postArgs
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 } else {
-  $profile = if ($HostTarget -eq "cursor") { "default" } else { "hermes-headless" }
-  Write-Host "Applying auto setup (profile=$profile host=$HostTarget) ..."
-  & node (Join-Path $InstallDir "scripts\occam-onboard.mjs") `
-    --non-interactive `
-    --profile $profile `
-    --host-target $HostTarget `
-    --skip-doctor `
-    --plain
+  # Legacy tarball fallback — still quiet when possible.
+  Write-Host ""
+  Write-Host "Occam $Version"
+  Write-Host ""
+  Write-Host "Installing Occam"
+  Write-Host "✓ Download verified"
+  $env:OCCAM_INSTALL_QUIET = if ($VerboseInstall) { "0" } else { "1" }
+  & (Join-Path $InstallDir "scripts\occam-doctor.ps1") -SkipBuild -Quiet:(-not $VerboseInstall)
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  Write-Host "✓ Runtime installed"
+  Write-Host "✓ Browser ready"
+  $verifyArgs = @((Join-Path $InstallDir "scripts\lib\verify-install.mjs"), "--skip-build", "--version", $Version)
+  if (-not $VerboseInstall) { $verifyArgs += "--quiet" }
+  & node @verifyArgs
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  $smokeArgs = @((Join-Path $InstallDir "scripts\hermes-smoke.mjs"))
+  if (-not $VerboseInstall) { $smokeArgs += "--quiet" }
+  & node @smokeArgs
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  Write-Host "✓ Self-check passed"
+  Write-Host ""
+  Write-Host "Occam is installed."
+  if (Test-Path (Join-Path $InstallDir "scripts\occam-connect.mjs")) {
+    Write-Host "Connecting to your AI app"
+    & node (Join-Path $InstallDir "scripts\occam-connect.mjs")
+  } else {
+    Write-Host "Connect an AI app later with: occam connect"
+  }
 }
-
-Write-Host ""
-Write-Host "Auto-connecting detected MCP hosts..."
-& node (Join-Path $InstallDir "scripts\occam-connect.mjs")
-# Do not fail the whole install on partial host connect failures.
-
-Write-Host ""
-$connectLast = Join-Path $env:USERPROFILE ".occam\connect-last.json"
-$skipSnippet = $false
-if (Test-Path $connectLast) {
-  & node -e @"
-const fs = require('fs');
-const j = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
-const mutated = (j.connections || []).some(
-  (c) => c.apply && (c.apply.applied === true || c.apply.action === 'noop')
-);
-process.exit(j.mutateHosts && mutated ? 0 : 1);
-"@ $connectLast
-  if ($LASTEXITCODE -eq 0) { $skipSnippet = $true }
-}
-if ($skipSnippet) {
-  Write-Host "=== Auto-connect completed — skipping manual connection snippet ==="
-} else {
-  Write-Host "=== Connection snippet (fallback for hosts without auto-connect) ==="
-  & node (Join-Path $InstallDir "scripts\lib\print-connection-snippet.mjs") $InstallDir $HostTarget
-}
-Write-Host ""
-Write-Host "OCCAM_HOME=$InstallDir"
-Write-Host "Next: occam connect"
-Write-Host "       occam smoke"

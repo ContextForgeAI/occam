@@ -6,6 +6,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+### Changed
+
+- **Install UX — one quiet command to Ready** — public bootstrap (`get-ff-occam.ps1` / `.sh`) no longer
+  prints Level B / phantom `host_target` / doctor fixture dumps / `commit=unknown` / premature
+  “MCP host ready” / duplicate onboard instructions. Default install is ~15–25 lines:
+  download → runtime → self-check → connect → **Ready** only after host verification.
+  One detected host auto-connects; multiple hosts confirm first (`OCCAM_CONNECT_ALL=1` for
+  non-interactive automation). Internals behind `OCCAM_VERBOSE=1`. See [INSTALL.md](INSTALL.md).
+
 ### Added
 
 - **`occam connect` — detect AI tools and register Occam with the safe ones** — one command finds

@@ -45,11 +45,13 @@ irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-o
 1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases  
 2. Verifies **SHA-256** of the archive against the manifest (**not** Cosign)  
 3. Extracts into `OCCAM_INSTALL_DIR` (default `~/.local/share/ff-occam`)  
-4. Runs **doctor** (`--skip-build`) — npm workers + Playwright  
-5. Verifies the Occam host (`verify-install` + `hermes-smoke.mjs`) — expect **15** `occam_*` tools  
-6. Runs operator onboard → writes `~/.occam/onboard.json`  
-7. Runs **`occam connect`** — detects installed AI/MCP hosts and configures **live-validated** ones  
-8. Reports **Ready / Almost ready / Action required / Not ready**, and prints a manual snippet only as a fallback when auto-connect did not land a registration  
+4. Runs **doctor** (`--skip-build`) — npm workers + Playwright (quiet by default)  
+5. Verifies the Occam host (`verify-install` + smoke) — expect **15** `occam_*` tools  
+6. Writes operator defaults to `~/.occam/onboard.json` (no second `OCCAM_HOME` prompt)  
+7. Runs **`occam connect`** — detects AI/MCP hosts; one host auto-connects; multiple hosts confirm first (or `OCCAM_CONNECT_ALL=1` for automation)  
+8. Reports **Ready** only after host verification — or **Installed** / **Almost ready** / **Action required** as appropriate  
+
+Default output is quiet (~15–25 lines). Internals: `OCCAM_VERBOSE=1`.
 
 **What install mutates:** install tree under `OCCAM_HOME`, `~/.occam/onboard.json`, signing key on first host start (`~/.occam/keys/`), host MCP configs (+ backups), Playwright cache. Removing the install directory alone does **not** remove all `~/.occam/` state or host configs.
 
@@ -60,7 +62,9 @@ Optional env (compatibility — same on all platforms):
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `OCCAM_SETUP` | `auto` (when unset) | `auto` \| `manual` \| `ask` — default install never prompts; `ask` shows menu only on a true interactive TTY |
-| `OCCAM_HOST` | `hermes` | Legacy preference for the **fallback** connection snippet when auto-connect does not apply (`hermes` or `cursor`) |
+| `OCCAM_CONNECT_ALL` | unset | `1` — non-interactive installs may configure every detected Tier-A host; without it, multiple hosts are left for an explicit confirm / `occam connect` |
+| `OCCAM_VERBOSE` | unset | `1` — show doctor/smoke/connect internals during install |
+| `OCCAM_HOST` | (none) | Legacy preference for the **fallback** connection snippet only (`hermes` or `cursor`) — not a phantom pre-selected host |
 | `OCCAM_INSTALL_DIR` | `~/.local/share/ff-occam` | Install root |
 | `OCCAM_VERSION` | `1.0.0-rc.2` | Release version |
 

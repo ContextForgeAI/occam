@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# FF-Occam MCP — Level B one-liner bootstrap (curl | bash).
+# Occam — one-liner bootstrap (curl | bash).
 # Target: Node 20+ only — NO git, NO .NET SDK on the install machine.
 #
 #   curl -fsSL "$OCCAM_GET_URL" | bash
-#   curl -fsSL "$OCCAM_GET_URL" | OCCAM_HOST=cursor OCCAM_RELEASE_ALLOW_HTTP=1 bash
 #
-# Flow: product welcome → auto|manual → download → doctor → onboard → connection snippet
+# Quiet by default. OCCAM_VERBOSE=1 shows doctor/smoke internals.
+# Flow: download → extract → post-install-ux (verify → connect → Ready)
 set -euo pipefail
 
 ROOT_DIR=""
@@ -13,8 +13,6 @@ if [[ -n "${BASH_SOURCE[0]:-}" ]] && [[ -f "${BASH_SOURCE[0]}" ]]; then
   ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
 
-# Map the host OS/arch to a .NET RID (same set the npx wrapper + build-release.mjs use).
-# OCCAM_RID overrides; unknown platforms fall back to linux-x64 (the historical default).
 detect_rid() {
   local os arch
   os="$(uname -s 2>/dev/null || echo Linux)"
@@ -34,92 +32,70 @@ detect_rid() {
 VERSION="${OCCAM_VERSION:-1.0.0-rc.2}"
 RID="${OCCAM_RID:-$(detect_rid)}"
 INSTALL_DIR="${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}"
-HOST_TARGET="${OCCAM_HOST:-hermes}"
+# Legacy snippet hint only — never printed as a selected host before the user chooses.
+HOST_TARGET="${OCCAM_HOST:-}"
 ALLOW_HTTP="${OCCAM_RELEASE_ALLOW_HTTP:-0}"
 SETUP_MODE="${OCCAM_SETUP:-}"
+VERBOSE=0
+if [[ "${OCCAM_VERBOSE:-}" == "1" || "${OCCAM_VERBOSE:-}" == "true" ||
+      "${OCCAM_DEBUG:-}" == "1" || "${OCCAM_DEBUG:-}" == "true" ]]; then
+  VERBOSE=1
+fi
 
 RELEASE_BASE="${OCCAM_RELEASE_BASE:-https://github.com/ContextForgeAI/occam/releases/download/v${VERSION}}"
 RELEASE_URL="${OCCAM_RELEASE_URL:-${RELEASE_BASE}/ff-occam-${VERSION}-${RID}.tar.gz}"
 MANIFEST_URL="${OCCAM_RELEASE_MANIFEST_URL:-${RELEASE_BASE}/ff-occam-${VERSION}-${RID}-manifest.json}"
 
 MIN_NODE_MAJOR=20
-WIDTH=52
 
-use_color() {
-  [[ -t 1 ]] && [[ "${OCCAM_NO_COLOR:-0}" != "1" ]]
-}
-
-c_gray() { use_color && printf '\033[38;5;244m%s\033[0m' "$1" || printf '%s' "$1"; }
-c_white() { use_color && printf '\033[38;5;255m%s\033[0m' "$1" || printf '%s' "$1"; }
-c_cyan() { use_color && printf '\033[38;5;45m%s\033[0m' "$1" || printf '%s' "$1"; }
-c_green() { use_color && printf '\033[38;5;46m%s\033[0m' "$1" || printf '%s' "$1"; }
-
-print_product_welcome() {
-  if [[ -n "$ROOT_DIR" ]] && [[ -f "$ROOT_DIR/scripts/lib/operator/get-install-welcome.mjs" ]]; then
-    node "$ROOT_DIR/scripts/lib/operator/get-install-welcome.mjs" print
-    return
+v_echo() {
+  if [[ "$VERBOSE" -eq 1 ]]; then
+    echo "$@"
   fi
-  echo ""
-  c_cyan "  FF-Occam MCP"
-  c_gray "$(printf '─%.0s' $(seq 1 "$WIDTH"))"
-  printf "  "; c_gray "ARCHITECTURE"; printf "   "; c_white ".NET 10 Core (Native AOT)"; echo ""
-  printf "  "; c_gray "MODE"; printf "           "; c_white "L0 extract-only"; echo ""
-  printf "  "; c_gray "WORKERS"; printf "        "; c_white "Node http + browser"; echo ""
-  c_gray "$(printf '─%.0s' $(seq 1 "$WIDTH"))"
-  printf "  "; c_green "✓"; printf " "; c_gray "Extract"; printf "      "; c_white "Live only"; echo ""
-  printf "  "; c_green "✓"; printf " "; c_gray "Tools"; printf "        "; c_white "14 occam_*"; echo ""
-  printf "  "; c_green "✓"; printf " "; c_gray "Playbooks"; printf "    "; c_white "seeds + heal/save"; echo ""
-  c_gray "$(printf '─%.0s' $(seq 1 "$WIDTH"))"
-  c_gray "  One URL → honest Markdown. Typed failures, no file cache."
-  echo ""
 }
 
 resolve_setup_mode() {
-  if [[ -n "$SETUP_MODE" ]]; then
-    case "$SETUP_MODE" in
-      auto|1) SETUP_MODE=auto ;;
-      manual|2) SETUP_MODE=manual ;;
-      *)
-        echo "error: OCCAM_SETUP must be auto or manual (got $SETUP_MODE)" >&2
-        exit 1
-        ;;
-    esac
-    echo "setup: $SETUP_MODE (from OCCAM_SETUP)"
-    return
-  fi
-
-  if [[ -n "$ROOT_DIR" ]] && [[ -f "$ROOT_DIR/scripts/lib/operator/get-install-welcome.mjs" ]]; then
-    if [[ -t 0 ]] && [[ -t 1 ]]; then
-      SETUP_MODE="$(node "$ROOT_DIR/scripts/lib/operator/get-install-welcome.mjs" prompt | tail -n1)"
-    else
-      SETUP_MODE="$(node "$ROOT_DIR/scripts/lib/operator/get-install-welcome.mjs" resolve | tail -n1)"
-      echo "setup: $SETUP_MODE"
-    fi
-    return
-  fi
+  local raw="${SETUP_MODE}"
+  local normalized
+  normalized="$(printf '%s' "$raw" | tr '[:upper:]' '[:lower:]')"
+  case "$normalized" in
+    ""|auto|1)
+      SETUP_MODE=auto
+      v_echo "setup: auto"
+      return
+      ;;
+    manual|2)
+      SETUP_MODE=manual
+      v_echo "setup: manual"
+      return
+      ;;
+    ask)
+      ;;
+    *)
+      echo "error: OCCAM_SETUP must be auto|manual|ask (got $raw)" >&2
+      exit 1
+      ;;
+  esac
 
   if [[ ! -t 0 ]] || [[ ! -t 1 ]]; then
     SETUP_MODE=auto
-    echo "setup: auto (non-interactive pipe — set OCCAM_SETUP=manual to override)"
+    v_echo "setup: auto (ask ignored: non-interactive)"
     return
   fi
 
   echo ""
-  c_white "  First-run setup"
-  c_gray "$(printf '─%.0s' $(seq 1 "$WIDTH"))"
-  echo "  Install the release bundle, then wire your MCP host."
-  echo "  [1] Auto   — defaults from OCCAM_HOST (default: hermes)"
-  echo "  [2] Manual — guided wizard (occam-onboard)"
+  echo "  First-run setup"
+  echo "  [1] Auto   — detect and connect supported AI apps"
+  echo "  [2] Manual — choose which AI app to connect"
   echo ""
-  printf "  › Setup [1]: "
+  printf "  Setup [1]: "
   read -r choice
   choice="${choice:-1}"
   case "$choice" in
     2|manual|Manual|MANUAL) SETUP_MODE=manual ;;
     *) SETUP_MODE=auto ;;
   esac
-  echo ""
-  echo "setup: $SETUP_MODE"
+  v_echo "setup: $SETUP_MODE"
 }
 
 need_cmd() {
@@ -129,7 +105,21 @@ need_cmd() {
   fi
 }
 
+ensure_node_on_path() {
+  if command -v node >/dev/null 2>&1; then
+    return 0
+  fi
+  local d
+  for d in /opt/homebrew/bin /usr/local/bin "${HOME}/.local/bin"; do
+    if [[ -x "${d}/node" ]]; then
+      export PATH="${d}:${PATH}"
+      return 0
+    fi
+  done
+}
+
 check_node() {
+  ensure_node_on_path
   need_cmd node
   local major
   major="$(node -p "process.versions.node.split('.')[0]")"
@@ -137,7 +127,7 @@ check_node() {
     echo "error: Node.js ${MIN_NODE_MAJOR}+ required (found $(node -v))" >&2
     exit 1
   fi
-  echo "node: $(node -v)"
+  v_echo "node: $(node -v)"
 }
 
 assert_url_scheme() {
@@ -146,7 +136,7 @@ assert_url_scheme() {
     https://*) return 0 ;;
     http://*)
       if [[ "$ALLOW_HTTP" == "1" ]]; then
-        echo "warning: OCCAM_RELEASE_ALLOW_HTTP=1 — HTTP release URL (LAN/trusted forge only)" >&2
+        echo "warning: OCCAM_RELEASE_ALLOW_HTTP=1 — HTTP release URL" >&2
         return 0
       fi
       echo "error: release URL must be HTTPS, or set OCCAM_RELEASE_ALLOW_HTTP=1" >&2
@@ -183,7 +173,7 @@ json_field() {
 download() {
   local url="$1" dest="$2"
   assert_url_scheme "$url"
-  echo "download: $url"
+  v_echo "download: $url"
   if ! curl -fsSL "$url" -o "$dest"; then
     echo "" >&2
     echo "error: download failed — is the release tarball published?" >&2
@@ -197,7 +187,8 @@ download() {
 install_release() {
   local tmp
   tmp="$(mktemp -d "${TMPDIR:-/tmp}/ff-occam-get.XXXXXX")"
-  trap 'rm -rf "$tmp"' EXIT
+  # shellcheck disable=SC2064
+  trap "rm -rf $(printf '%q' "$tmp")" EXIT
 
   local manifest_path="$tmp/manifest.json"
   local tarball_path="$tmp/release.tar.gz"
@@ -217,8 +208,8 @@ install_release() {
     echo "  actual:   $actual_sha" >&2
     exit 1
   fi
-  echo "sha256: OK"
-  echo "release: version=$manifest_version rid=$rid"
+  v_echo "sha256: OK"
+  v_echo "release: version=$manifest_version rid=$rid"
 
   local parent
   parent="$(dirname "$INSTALL_DIR")"
@@ -228,106 +219,77 @@ install_release() {
   fi
   mkdir -p "$INSTALL_DIR"
   tar -xzf "$tarball_path" -C "$INSTALL_DIR" --strip-components=1
-  echo "extracted: $INSTALL_DIR"
+  v_echo "extracted: $INSTALL_DIR"
+
+  rm -rf "$tmp"
+  trap - EXIT
 }
 
-post_install() {
+run_post_install() {
   export OCCAM_HOME="$INSTALL_DIR"
   cd "$INSTALL_DIR"
+  if [[ -n "$HOST_TARGET" ]]; then
+    export OCCAM_HOST="$HOST_TARGET"
+  fi
 
-  echo ""
-  echo "doctor (npm + Playwright, skip dotnet publish) ..."
-  bash "$INSTALL_DIR/scripts/occam-doctor.sh" --skip-build
-
-  echo ""
-  echo "verify-install ..."
-  node "$INSTALL_DIR/scripts/lib/verify-install.mjs" --skip-build
-
-  echo ""
-  echo "smoke (core tools) ..."
-  node "$INSTALL_DIR/scripts/hermes-smoke.mjs"
-}
-
-run_onboard() {
-  export OCCAM_HOME="$INSTALL_DIR"
-  export OCCAM_HOST="${HOST_TARGET}"
-
-  echo ""
-  if [[ "$SETUP_MODE" == "manual" ]]; then
-    echo "Starting manual onboard wizard ..."
-    node "$INSTALL_DIR/scripts/occam-onboard.mjs" --skip-doctor --skip-welcome
-  else
-    local profile="hermes-headless"
-    if [[ "$HOST_TARGET" == "cursor" ]]; then
-      profile="default"
+  local post_ux="$INSTALL_DIR/scripts/lib/operator/post-install-ux.mjs"
+  if [[ -f "$post_ux" ]]; then
+    local args=(--setup "$SETUP_MODE" --version "$VERSION" --download-ok)
+    if [[ "$VERBOSE" -eq 1 ]]; then
+      args+=(--verbose)
     fi
-    echo "Applying auto setup (profile=$profile host=$HOST_TARGET) ..."
-    node "$INSTALL_DIR/scripts/occam-onboard.mjs" \
-      --non-interactive \
-      --profile "$profile" \
-      --host-target "$HOST_TARGET" \
-      --skip-doctor \
-      --plain
+    node "$post_ux" "${args[@]}"
+    return
   fi
-}
 
-print_connection_snippet() {
+  # Legacy tarball fallback
   echo ""
-  # Prefer auto-connect result; do not also dump a Hermes/wrapper YAML that contradicts Ready.
-  local last="$HOME/.occam/connect-last.json"
-  if [[ -f "$last" ]] && node -e '
-    const fs = require("fs");
-    const j = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
-    const mutated = (j.connections || []).some(
-      (c) => c.apply && (c.apply.applied === true || c.apply.action === "noop")
-    );
-    process.exit(j.mutateHosts && mutated ? 0 : 1);
-  ' "$last"; then
-    echo "=== Auto-connect completed — skipping manual connection snippet ==="
-    echo "Docs: INSTALL.md"
-    echo "PATH: export PATH=\"$INSTALL_DIR/scripts:\$PATH\""
-    echo "Next: occam connect   # status / re-run"
-    echo "       occam smoke"
-    return 0
+  echo "Occam $VERSION"
+  echo ""
+  echo "Installing Occam"
+  echo "✓ Download verified"
+  export OCCAM_INSTALL_QUIET=1
+  if [[ "$VERBOSE" -eq 1 ]]; then
+    export OCCAM_INSTALL_QUIET=0
   fi
-  echo "=== Connection snippet (fallback for hosts without auto-connect) ==="
-  node "$INSTALL_DIR/scripts/lib/print-connection-snippet.mjs" "$INSTALL_DIR" "$HOST_TARGET"
+  bash "$INSTALL_DIR/scripts/occam-doctor.sh" --skip-build --quiet
+  echo "✓ Runtime installed"
+  echo "✓ Browser ready"
+  local vargs=(--skip-build --version "$VERSION")
+  if [[ "$VERBOSE" -eq 0 ]]; then vargs+=(--quiet); fi
+  node "$INSTALL_DIR/scripts/lib/verify-install.mjs" "${vargs[@]}"
+  local sargs=()
+  if [[ "$VERBOSE" -eq 0 ]]; then sargs+=(--quiet); fi
+  node "$INSTALL_DIR/scripts/hermes-smoke.mjs" "${sargs[@]}"
+  echo "✓ Self-check passed"
   echo ""
-  echo "Docs: INSTALL.md"
-  echo "PATH: export PATH=\"$INSTALL_DIR/scripts:\$PATH\""
-  echo "Next: occam connect   # re-run auto-connect"
-  echo "       occam smoke"
-}
-
-run_connect() {
-  if [[ ! -f "$INSTALL_DIR/scripts/occam-connect.mjs" ]]; then
-    return 0
+  echo "Occam is installed."
+  if [[ -f "$INSTALL_DIR/scripts/occam-connect.mjs" ]]; then
+    echo "Connecting to your AI app"
+    node "$INSTALL_DIR/scripts/occam-connect.mjs" || true
+  else
+    echo "Connect an AI app later with: occam connect"
   fi
-  echo ""
-  echo "Auto-connecting detected MCP hosts..."
-  # CI/OCCAM_CONNECT=off skips mutation inside the script; do not fail the whole install on partial host failures.
-  node "$INSTALL_DIR/scripts/occam-connect.mjs" || true
 }
 
 main() {
-  print_product_welcome
   resolve_setup_mode
-
   need_cmd curl
   need_cmd tar
   check_node
 
-  echo ""
-  echo "install_dir: $INSTALL_DIR"
-  echo "host_target: $HOST_TARGET"
-  echo "release_url: $RELEASE_URL"
-  echo ""
+  if [[ "$VERBOSE" -eq 1 ]]; then
+    echo ""
+    echo "install_dir: $INSTALL_DIR"
+    if [[ -n "$HOST_TARGET" ]]; then
+      echo "host_hint: $HOST_TARGET"
+    fi
+    echo "release_url: $RELEASE_URL"
+    echo ""
+  fi
 
   install_release
-  post_install
-  run_onboard
-  run_connect
-  print_connection_snippet
+  run_post_install
 }
 
 main "$@"

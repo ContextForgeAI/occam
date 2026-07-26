@@ -161,7 +161,15 @@ async function main() {
 
     report.ok = report.errors.length === 0;
     report.finishedAt = new Date().toISOString();
-    console.log(JSON.stringify(report));
+    const quiet =
+      process.argv.includes("--quiet") ||
+      process.env.OCCAM_INSTALL_QUIET === "1" ||
+      process.env.OCCAM_INSTALL_QUIET === "true";
+    if (quiet) {
+      if (!report.ok) console.error(JSON.stringify(report));
+    } else {
+      console.log(JSON.stringify(report));
+    }
     process.exit(report.ok ? 0 : 1);
   } catch (err) {
     report.errors.push(String(err?.message ?? err));

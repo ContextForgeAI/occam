@@ -1,33 +1,32 @@
-/** Copy for get-ff-occam.sh welcome — mirrors honest logger banner rows. */
+/** Public copy for get-ff-occam welcome / setup menu. */
 
 export const GET_INSTALL_WELCOME = {
-  title: "FF-Occam MCP",
+  title: "Occam",
   tagline: "One URL → honest Markdown. Typed failures, no file cache.",
+  // Kept for verbose/internal banner compatibility; public installer uses title only.
   architecture: ".NET 10 Core (Native AOT)",
-  mode: "L0 extract-only",
+  mode: "extract-only",
   workers: "Node http + browser",
   statusRows: [
     { label: "Extract", value: "Live only" },
-    { label: "Tools", value: "14 occam_*" },
+    { label: "Tools", value: "15 occam_*" },
     { label: "Playbooks", value: "seeds + heal/save" },
   ],
 };
 
 export const SETUP_MODE_COPY = {
   title: "First-run setup",
-  description:
-    "Install the release bundle, then configure your MCP host.\n" +
-    "Core MCP tools — see INSTALL.md.",
+  description: "Install Occam, then connect it to your AI app.",
   auto: {
     id: "auto",
     label: "Auto",
-    summary: "Defaults from OCCAM_HOST (hermes → wrapper; cursor → global JSON snippet)",
+    summary: "Detect and connect supported AI apps",
   },
   manual: {
     id: "manual",
     label: "Manual",
-    summary: "Guided wizard — host, browser, profile, MCP snippet (occam-onboard)",
+    summary: "Choose which AI app to connect",
   },
-  hint: "Press 1 or 2, then Enter. Ctrl+C aborts.",
+  hint: "OCCAM_SETUP=ask only. Press 1 or 2, then Enter (default Auto). Ctrl+C aborts.",
   defaultChoice: "auto",
 };

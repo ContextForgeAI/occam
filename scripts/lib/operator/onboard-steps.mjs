@@ -85,6 +85,7 @@ export const STEP_DEFS = [
         ? null
         : `Choose ${HOST_TARGET_IDS.join(", ")}`,
   },
+  // Prefer `occam connect` for live host registration; onboard hostTarget is snippet preference only.
   {
     id: "browser",
     label: "Browser · bundled | system-dev",
@@ -158,11 +159,18 @@ export async function collectInteractiveAnswers(defaults, options = {}) {
   const rl = createInterface({ input, output });
   /** @type {Record<string, string>} */
   const answers = { ...defaults };
-  const total = STEP_DEFS.length;
+  const skip = new Set(options.skipSteps || []);
+  // Installer already knows OCCAM_HOME — never re-ask.
+  if (defaults.occamHome?.trim()) {
+    skip.add("occamHome");
+    answers.occamHome = defaults.occamHome.trim();
+  }
+  const steps = STEP_DEFS.filter((s) => !skip.has(s.id));
+  const total = steps.length;
 
   try {
-    for (let i = 0; i < STEP_DEFS.length; i++) {
-      const step = STEP_DEFS[i];
+    for (let i = 0; i < steps.length; i++) {
+      const step = steps[i];
       const def = defaults[step.id] ?? "";
       answers[step.id] = await promptStep(rl, step, i + 1, total, def);
     }
