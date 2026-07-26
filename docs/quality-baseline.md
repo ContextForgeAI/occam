@@ -30,7 +30,7 @@ clean public clone. Prefer writing new drafts under `artifacts/quality-audit/` (
 | `not-found` | frozen | Honest `http_404` |
 
 Inputs: `corpora/visual-matrix.jsonl`, `corpora/l0-smoke.jsonl`, L9 fixtures under
-`benchmarks/l0-gate/fixtures/golden/` ([sources](maintenance/FIXTURE_SOURCES.md)).
+`benchmarks/l0-gate/fixtures/golden/` ([sources](https://github.com/ContextForgeAI/occam/blob/main/docs/maintenance/FIXTURE_SOURCES.md)).
 
 ---
 

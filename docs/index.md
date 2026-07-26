@@ -1,89 +1,121 @@
-# FF-Occam MCP documentation
+# Occam documentation
 
-FF-Occam MCP turns live public URLs into compact Markdown on your machine. A success can carry a
-locally signed receipt. A failure is explicit: **`ok: false` means the page content is unknown**.
+**Occam** is a locally run host that helps AI agents acquire usable web content, shape it for context windows, fail honestly when content is unknown, and optionally attach integrity artifacts verifiable against a key.
 
-**Version:** 1.0.0-rc.2 · **Core tools:** 15 · **License:** AGPL-3.0-or-later  
-**Distribution (RC):** GitHub release archives for **Linux x64**, **macOS arm64**, and **Windows x64** (no npm / NuGet / VSIX in this RC).
-**LLM-readable map:** [`llms.txt`](../llms.txt)
+**Version:** 1.0.0-rc.2 · **License:** AGPL-3.0-or-later  
+**Docs site:** [https://contextforgeai.github.io/occam/](https://contextforgeai.github.io/occam/)  
+**LLM map:** [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt) · [Ask AI](ask-ai.md)
 
-## Choose your path
+Core MCP tools are registry-defined; runtime `tools/list` varies by **profile** and **opt-in** flags — do not treat a fixed “15” as a health check by itself.
 
-| You are… | Start here | Then |
-|---|---|---|
-| **A person trying the product** | [Getting started](getting-started.md) | [Choose a tool](choosing-a-tool.md) |
-| **An operator installing on Hermes/server** | [INSTALL.md](../INSTALL.md) | [Troubleshooting](troubleshooting.md) |
-| **An LLM agent using the MCP tools** | [`llms.txt`](../llms.txt) | [Tool router](choosing-a-tool.md) → [one tool page](tools/index.md) |
-| **A TypeScript SDK user** | [Programmatic client](getting-started.md#programmatic-typescript-client) | [Package README](../packages/occam-agent-sdk/README.md) |
-| **A verifier or auditor** | [Receipts](receipts.md) | [Normative receipt format](receipt_verification.md) |
-| **A contributor changing this repository** | [AGENTS.md](../AGENTS.md) | [Quality baseline](quality-baseline.md) |
+## Start here
 
-## First success in one minute
+| You want… | Go to |
+|-----------|-------|
+| First success in minutes | [Quick Start](quick-start.md) |
+| Product explanation | [What is Occam?](what-is-occam.md) |
+| Architecture overview | [How Occam works](how-occam-works.md) |
+| Install / operators | [Install](install.md) · [Operators](operators.md) |
+| Connect AI hosts | [Connect](connect/index.md) · [Supported hosts](mcp-hosts.md) |
+| Task → tool | [Choosing a tool](choosing-a-tool.md) |
+| Trust questions | [Trust & Safety](trust-and-safety.md) |
+| Deep understanding | [Handbook](handbook/index.md) |
+| Ask an assistant | [Ask AI](ask-ai.md) |
 
-1. Install or build the host using [Getting started](getting-started.md).
-2. Connect it to an MCP client over stdio.
-3. Call `occam_transcode` with only `{"url":"https://example.com"}`.
-4. If `ok` is false, follow [Failure codes](failure-codes.md). Do not summarize the missing page.
+## What do you want to do?
 
-## LLM reading order
+| Task | Guide |
+|------|-------|
+| Read a web page | [Read a page](guides/read-a-page.md) → `occam_transcode` |
+| Research several sources | [Research](guides/research-multiple.md) → `occam_digest` |
+| Find pages / search | [Search & discover](guides/search-and-discover.md) |
+| Login walls | [Sessions](sessions.md) · [Sessions guide](guides/sessions.md) |
+| Verify integrity artifacts | [Verify](guides/verify-sources.md) → receipts + `occam_verify` |
+| Evidence for a claim | [Claims](guides/claims.md) → `occam_claim_check` / `occam_attest` |
+| Structured fields | [Structured extraction](guides/structured-extraction.md) |
+| Site recipes | [Playbooks](playbooks.md) |
+| Experimental tools | [Experimental](experimental.md) |
+| Connect Occam to my AI | [Connect](connect/index.md) |
 
-Keep the context small and deterministic:
+## Capabilities (by system, not a flat CAP list)
 
-1. Read [`llms.txt`](../llms.txt) once.
-2. Use [Choosing a tool](choosing-a-tool.md) to select the smallest workflow.
-3. Open only that tool's page in the [per-tool index](tools/index.md).
-4. Open [Failure codes](failure-codes.md) only after `ok: false`, or
-   [Configuration](configuration.md) when setup is required.
-5. Use [MCP_API_SPEC.md](../MCP_API_SPEC.md) only for contract-level detail.
-
-Runtime rules for agents:
-
-- `tools/list` wins for available tools and input schemas.
-- Use snake_case parameter names exactly as exposed by the server.
-- Do not enter the heal/lint/save loop unless the user asked to author a playbook.
-- Do not treat token reduction as evidence of extraction quality.
+| System | Pages |
+|--------|-------|
+| Acquisition & networking | [Acquisition](acquisition.md) · [Networking](networking.md) · [Sessions](sessions.md) |
+| Materialization | [Materialization](materialization.md) |
+| Trust & verification | [Trust & Safety](trust-and-safety.md) · [Receipts](receipts.md) |
+| Playbooks & datasets | [Playbooks](playbooks.md) · [Datasets](datasets.md) |
+| Experimental | [Experimental](experimental.md) |
+| Operators | [Operators](operators.md) · [Connect](connect/index.md) |
 
 ## Source-of-truth order
 
 | Priority | Source | Use it for |
 |---|---|---|
 | 1 | Runtime `tools/list` | Tool availability and input JSON Schema |
-| 2 | [MCP API contract](../MCP_API_SPEC.md) | Response shapes and cross-tool semantics |
-| 3 | [Per-tool pages](tools/index.md) | Human/agent usage, examples, failure handling |
-| 4 | Narrative guides below | Learning, installation, and task workflows |
+| 2 | [MCP API contract](reference/mcp-api.md) | Response shapes and cross-tool semantics |
+| 3 | [Per-tool pages](tools/index.md) | Usage, examples, failure handling |
+| 4 | Guides / examples / handbook | Learning and workflows |
 
-If two pages disagree, use the higher-priority source and report the documentation drift.
+If two pages disagree, prefer the higher-priority source and report drift.
 
 ## Documentation map
 
-| Page | Audience | Purpose |
-|---|---|---|
-| [Getting started](getting-started.md) | People, operators | Install, connect, operator CLI, first call |
-| [MCP hosts](mcp-hosts.md) | People, operators | Which AI tools connect automatically, and what connect will not touch |
-| [Concepts](concepts.md) | People, agents | Trust model, backends, playbooks, sessions |
-| [Choosing a tool](choosing-a-tool.md) | Agents, SDK users | Goal-to-tool routing and role-scoped tool sets |
-| [Per-tool index](tools/index.md) | Agents, people | Focused page for each core and opt-in tool |
-| [Compact tools reference](tools-reference.md) | People | All tools on one searchable page |
-| [Recipes](recipes.md) | People, agents | Exact multi-tool workflows |
-| [Configuration](configuration.md) | Operators | Environment variables and defaults |
-| [Transports](transports.md) | Operators, integrators | stdio, WebSocket, remote WSS, batch HTTP |
-| [Receipts](receipts.md) | Verifiers | Receipt concepts and verification workflow |
-| [Receipt verification](receipt_verification.md) | Implementers | Normative byte-level receipt format |
-| [Failure codes](failure-codes.md) | Agents, operators | Retry, stop, and remediation actions |
-| [Troubleshooting](troubleshooting.md) | Operators | Symptom-to-fix runbook |
-| [FAQ](faq.md) | Everyone | Short operational answers |
-| [Quality baseline](quality-baseline.md) | Contributors | Public quality claims and how to reproduce them |
-| [Roadmap](roadmap.md) | Everyone | Shipped, active, and explicitly unshipped work |
-| [Semantic contract](architecture/semantic-contract.md) | Contributors | Durable access/focus/budget invariants |
-| [Repository map](maintenance/REPOSITORY_MAP.md) | Contributors | Public tree layout |
-| [Fixture sources](maintenance/FIXTURE_SOURCES.md) | Contributors | Golden fixture attribution and immutability |
+| Page | Purpose |
+|------|---------|
+| [Quick Start](quick-start.md) | First success |
+| [What is Occam?](what-is-occam.md) | Product mental model |
+| [How Occam works](how-occam-works.md) | User-level architecture |
+| [Getting started](getting-started.md) | First web read + operator CLI |
+| [Install](install.md) | Canonical install reference |
+| [Operators](operators.md) | CLI, doctor, connect, packaging |
+| [MCP hosts](mcp-hosts.md) | Connect tiers and safety |
+| [Connect](connect/index.md) | Automatic / `--only` / manual |
+| [Choosing a tool](choosing-a-tool.md) | Task router |
+| [Guides](guides/read-a-page.md) | Task-oriented how-tos |
+| [Examples](examples/index.md) | Copy/paste workflows |
+| [Recipes](recipes.md) | Additional multi-tool flows |
+| [Concepts](concepts.md) | Backends, playbooks, sessions, receipts |
+| [Acquisition](acquisition.md) | Gated HTTP→browser ladder |
+| [Materialization](materialization.md) | Token budgets and structured output |
+| [Networking](networking.md) | Proxies and SSRF scope |
+| [Sessions](sessions.md) | Authenticated access tiers |
+| [Experimental](experimental.md) | Watch / crosscheck / batch / atlas |
+| [Trust & Safety](trust-and-safety.md) | Honesty, local-first, install safety |
+| [Receipts](receipts.md) | Human receipt guide |
+| [Receipt verification](receipt_verification.md) | Normative receipt format |
+| [Playbooks](playbooks.md) | Site recipes and signature v1/v2 |
+| [Datasets](datasets.md) | Auditable multi-URL export |
+| [Handbook](handbook/index.md) | Deep technical textbook |
+| [Per-tool index](tools/index.md) | One page per tool |
+| [Tools reference](tools-reference.md) | Compact reference |
+| [Configuration](configuration.md) | Environment variables |
+| [Transports](transports.md) | stdio, WebSocket, batch HTTP |
+| [Failure codes](failure-codes.md) | Typed failures |
+| [Troubleshooting](troubleshooting.md) | Symptom → fix |
+| [FAQ](faq.md) | Short answers |
+| [Ask AI](ask-ai.md) | LLM / assistant entry |
+| [Quality baseline](quality-baseline.md) | Public quality claims |
+| [Roadmap](roadmap.md) | Shipped / not shipped |
+| [Semantic contract](architecture/semantic-contract.md) | Developer invariants |
 
-## Packages and release state
+## LLM reading order
 
-Package sources live under `packages/`. GitHub Release/npm publication is an owner-controlled release
-step; check [Roadmap](roadmap.md#active-engineering-maintainer) before assuming a registry command is
-available. From a source checkout, use the documented git-clone path.
+1. [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt) once  
+2. [Choosing a tool](choosing-a-tool.md)  
+3. One page under [tools/](tools/index.md)  
+4. [Failure codes](failure-codes.md) only after `ok: false`  
+5. [Handbook](handbook/index.md) for deep comprehension  
+6. [MCP API](reference/mcp-api.md) for contract-level detail  
 
-- [`@ff-occam/mcp`](../packages/occam-mcp/README.md) — MCP launcher and low-level client.
-- [`@ff-occam/agent-sdk`](../packages/occam-agent-sdk/README.md) — high-level TypeScript workflows.
-- [`@ff-occam/skill`](../packages/occam-skill/README.md) — portable lazy-loaded agent skill.
+## Packages
+
+This RC ships via **GitHub Release** archives — **npm is not a GA 1.0 channel.**
+
+- [`@ff-occam/mcp`](https://github.com/ContextForgeAI/occam/tree/main/packages/occam-mcp) — launcher package (non-GA)  
+- [`@ff-occam/agent-sdk`](https://github.com/ContextForgeAI/occam/tree/main/packages/occam-agent-sdk) — TypeScript workflows  
+- [`@ff-occam/skill`](https://github.com/ContextForgeAI/occam/tree/main/packages/occam-skill) — portable agent skill  
+
+## Review artifacts (repo only)
+
+Maintainer usability tests — not in site navigation: [friend-test.md](friend-test.md)

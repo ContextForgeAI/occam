@@ -95,8 +95,6 @@ Notes:
   order. The fragment is not sent over HTTP. Missing fragments fall back to an explicit miss internally
   and may still use `focus_query`; PR-F owns the additive public focus-status fields.
 
-  `retryable` is dropped and the decision becomes stop — the page is genuinely near-empty.
-
 ## Backend behaviour
 
 - `http_then_browser` (default): HTTP worker first; escalates to the browser when the result is

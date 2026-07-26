@@ -36,7 +36,7 @@ Local and remote WebSocket messages are text-only and capped at 4 MiB by default
 1. **Parseable output** — JSON envelope, not raw Markdown strings.
 2. **Honest failures** — typed `failure.code`; agents must not hallucinate page content.
 3. **Backend transparency** — success includes the winning extractor identifier (for example `node_readability_turndown`, `browser_playwright`, `pdf`, or `managed_<provider>`). This is not the request's abstract `backend_policy`.
-4. **Live extract** — every call fetches the page (no file cache in Core).
+4. **Live extract by default** — every call fetches the page unless `cache_ttl_s > 0` returns a prior signed envelope (`cached: true`). No built-in HTML/Markdown disk cache in Core.
 5. **Token economy (L1a)** — optional `max_tokens`, `fit_markdown`, `focus_query`, `content_selectors`. Defaults preserve L0 full-markdown behavior.
 6. **Probe (L1b)** — cheap HTTP diagnosis before transcode; routing hints, no workers.
 
@@ -374,7 +374,7 @@ Env `OCCAM_SITE_GENOME_FETCH=1` enables well-known fetch when param omitted (des
 
 Optional blocks: `genome`, `knowledgeSchema` (matched class fields), `pageClass`, `lessons` (when `include_lessons=true`), `genomeFetch` (when fetch attempted), `schemaVersionWarning`.
 
-**`signature` (SI-08 consumer loop):** classifies the winning recipe against the local signing key — `status` ∈ `verified` | `invalid` (tampered) | `unknown_key` (foreign author) | `unsigned` (no provenance block). A trust signal, not a resolve failure. `score`/`passesGate` echo the recipe's verify-gate claim and are only authoritative when `status = verified`. Playbooks written by `occam_playbook_save` are signed with this key; bundled seeds and site genomes are `unsigned`.
+**`signature` (SI-08 consumer loop):** classifies the winning recipe against the local signing key — `status` ∈ `verified` | `invalid` (tampered) | `wrong_key` | `key_mismatch` | `unknown_key` (foreign author) | `unsigned` (no provenance block). An **integrity signal vs your local key**, not author identity or a trusted registry. `score`/`passesGate` echo the recipe's verify-gate claim and are only authoritative when `status = verified`. Playbooks written by `occam_playbook_save` are signed with this key; bundled seeds and site genomes are `unsigned`.
 
 ### Failure response
 
@@ -422,6 +422,8 @@ Recipe D structured facts from playbook `knowledge_schema`. **Requires** resolva
   }
 }
 ```
+
+**`receipt` on this tool is extraction telemetry only** (`confidence`, `elapsedMs`) — unsigned, not Receipt v1, not accepted by `occam_verify`. For signed integrity on the same page, use `occam_transcode` or `occam_claim_check`.
 
 ### Failure codes
 
@@ -906,12 +908,12 @@ stale, staleChunks[] }` reports *which* specific chunks went stale (against `chu
 the receipt's block leaves) so a RAG store invalidates individual fragments, not whole documents. **prove** → `{ ok, keyId, root, leafIndex, leaf, proof[] }`. **citation** →
 `verdict` ∈ `citation_verified` / `citation_invalid` / `signature_invalid`. **history** → `{ ok,
 signatureValid, keyId, mode, history:{ entriesTotal, signedCount, headSeq, chainValid }, verdict }`
-with `verdict` ∈ `history_verified` / `history_invalid`. Failure codes
+with `verdict` ∈ `history_verified` / `history_chain_ok` / `history_invalid`. Failure codes
 `invalid_receipt`, `invalid_arguments`.
 
 **Time anchor (SI-15):** when the receipt carries a `timeAnchor` sidecar, `offline`/`live` add
 `timeAnchor: { present, valid, genTime?, tsa?, tsaSubject? }` — an independent verification of the
-RFC3161 token over the receipt signature. `valid:true` proves a TSA attested the signed receipt
+RFC3161 token over the receipt signature. `valid:true` means a TSA attested (per its own cert, chain-trust out of scope) that the signed receipt
 existed **no later than** `genTime`. Produced by `occam_transcode` when `OCCAM_TIME_ANCHOR=1` +
 `OCCAM_TSA_URL` are set (opt-in; fail-open). TSA chain-trust is out of scope for v1 — `tsaSubject` is
 reported for the consumer to judge. Receipts are emitted by `occam_transcode` (`receipt.signed`
@@ -963,11 +965,12 @@ receipt?, proven?, timestamp }`. `found`/`retrieved` are identical retrieval-rel
 (`found:false` / empty `matches` is an honest "does not appear to address this"
 — a match must cover ≥ ~40% of the claim's content terms). **`found`/`retrieved` are retrieval only** — they
 do **not** mean the page semantically supports the claim. `verdict` is always `not_evaluated` on this tool
-(use `occam_attest` for fail-closed `status`). **Provable absence:** on `found:false`,
-`proven:true` means the signed receipt attests a **complete** leaf set (`receipt.leafSetComplete` —
-the extract wasn't truncated), so matching text provably does **not** appear in the extracted content —
-not a silent miss. `proven:false` when completeness is unknown (truncated/empty extract). The tool proves
-**which** block is lexically relevant (verifiable via `occam_verify citation` from the returned text +
+(use `occam_attest` for fail-closed `status`). **Retrieval-complete negative (legacy `proven`):** on `found:false`,
+`proven:true` means the signed receipt reports a **complete** leaf set (`receipt.leafSetComplete` —
+the extract was not token-truncated), so no extracted block matched the claim under the BM25 floor —
+**not** semantic proof the page omits the claim (paraphrase, images, unextracted regions still possible).
+`proven:false` when completeness is unknown (truncated/empty extract). The tool returns **which**
+block is lexically relevant and a Merkle **membership** proof (verifiable via `occam_verify citation` from the returned text +
 proof, no re-fetch); **stance** (support vs refute) is the caller's judgment — or `occam_attest` —
 never inferred from BM25. On extraction failure: the typed `{ failure:{ code, message } }` (+ signed
 negative receipt on provable unavailability).
@@ -1037,8 +1040,14 @@ rowCount, manifestRoot, keyId, alg, sig }` carries one detached signature over t
 per-row leaves. Verifiable per-row (`occam_verify`) and per-set: recompute each `rowLeaf`
 (`url\nfinalUrl\nok\ncontentHash\nblockMerkleRoot\nfailureCode`, SHA-256), rebuild the ordered root, and
 check `manifest.sig` — any add/drop/edit/reorder breaks it (row order is significant). Failed URLs are
-honest rows (`ok:false` + signed negative receipt). `sig`/`keyId` omitted under `OCCAM_RECEIPTS=off`.
-Invalid `urls` JSON or > 20 URLs → typed `{ ok:false, failure:{ code, message } }`.
+honest rows (`ok:false` + signed negative receipt). **Top-level `ok` means the signed export completed.
+It does not imply every URL was extracted successfully; inspect `status`, counts, and `rows[].ok`
+before using rows as content.** Additive summary fields on success: `status` ∈ `complete` \| `partial` \|
+`no_content`, `successCount`, `failureCount` with invariant `successCount + failureCount == manifest.rowCount`
+(`complete` = all rows ok; `partial` = mix; `no_content` = all rows failed — rows still present, provenance
+still valid).
+`sig`/`keyId` omitted under `OCCAM_RECEIPTS=off`. Invalid `urls` JSON or > 20 URLs → typed
+`{ ok:false, failure:{ code, message } }`.
 
 ---
 

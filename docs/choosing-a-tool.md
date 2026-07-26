@@ -8,6 +8,7 @@
 
 | I want to… | Call | Notes |
 |------------|------|-------|
+| **Connect Occam to my AI** | `occam connect` (CLI) | Detect hosts; auto-connect live-validated ones — [MCP hosts](mcp-hosts.md) |
 | **Read one page as Markdown** | `occam_transcode` | Only `url` is required; add `focus_query` + `fit_markdown` to save tokens |
 | **Check if a URL is worth fetching** | `occam_probe` | Cheap; returns extractability score and recommended backend |
 | **Research several pages** | `occam_digest` | Up to 8 URLs; use `focus_query` for synthesis |
@@ -16,14 +17,14 @@
 | **Get structured fields (price, author, …)** | `occam_playbook_resolve` → `occam_extract_knowledge` | Needs a playbook with `knowledge_schema` |
 | **Use a site's tuned extract recipe** | `occam_playbook_resolve` → `occam_transcode` | `playbook_policy=auto` (default) |
 | **Fix a hard site (draft a playbook)** | `occam_transcode` fails → `occam_playbook_heal` → edit JSON → `occam_playbook_lint` → `occam_playbook_save` | Local only |
-| **Prove a page backs one sentence** | `occam_claim_check` | Returns citation proof; you judge support vs refute |
-| **Check all citations before publishing** | `occam_attest` | Batch of `{claim, sourceUrl}` rows |
-| **Verify a signed extraction** | `occam_verify` | Offline signature check; optional live drift |
-| **Build an auditable URL set for RAG** | `occam_dataset_export` | 1–20 URLs, manifest signature |
-| **Watch a page for changes** | `occam_watch` | Opt-in: `OCCAM_WATCH_MCP=1` |
-| **Detect cloaking / personalization** | `occam_crosscheck` | Opt-in: `OCCAM_CONSENSUS_MCP=1` |
-| **See which hosts are dead ends** | `occam_failure_atlas` | Opt-in: `OCCAM_ATLAS_MCP=1` |
-| **Queue many URLs asynchronously** | `occam_batch_submit` → status → results | Opt-in: `OCCAM_BATCH_MCP=1` |
+| **Look up evidence blocks for one sentence** | `occam_claim_check` | Evidence/support lookup + Merkle membership; you judge support vs refute — does **not** prove the claim |
+| **Heuristic citation-support assessment** | `occam_attest` | Status classifier over retrieved blocks — **not** cryptographic attestation |
+| **Verify a signed extraction** | `occam_verify` | Integrity check against a key; optional live drift |
+| **Build an auditable URL set for RAG** | `occam_dataset_export` | 1–20 URLs, manifest signature (integrity, not factual correctness) |
+| **Watch a page for changes** | `occam_watch` | EXPERIMENTAL — `OCCAM_WATCH_MCP=1` |
+| **Compare multi-source / multi-vantage agreement** | `occam_crosscheck` | EXPERIMENTAL — `OCCAM_CONSENSUS_MCP=1`; agreement ≠ correctness (not “consensus proof”) |
+| **Session failure telemetry** | `occam_failure_atlas` | EXPERIMENTAL — `OCCAM_ATLAS_MCP=1` |
+| **Queue many URLs asynchronously** | `occam_batch_submit` → status → results | EXPERIMENTAL — `OCCAM_BATCH_MCP=1` |
 
 ---
 
@@ -118,8 +119,8 @@ If you drive occam from a small local model — or any agent that drifts into pl
 
 | `OCCAM_PROFILE` | Exposes | Hides (unless `full`) |
 |-----------------|---------|------------------------|
-| `reader` | `occam_client_capabilities`, `occam_transcode`, `occam_probe`, `occam_map`, `occam_digest`, `occam_extract_knowledge`, `occam_search` | playbook authoring, verify/attest/dataset |
-| `researcher` (recommended for coding agents) | reader + `occam_claim_check`, `occam_verify` | heal/save/resolve/lint/attest/dataset |
+| `reader` | `occam_client_capabilities`, `occam_transcode`, `occam_probe`, `occam_map`, `occam_digest`, `occam_extract_knowledge`, `occam_search`, `occam_verify` | playbook authoring, attest/dataset |
+| `researcher` (recommended for coding agents) | reader + `occam_claim_check` | heal/save/resolve/lint/attest/dataset |
 | `auditor` | researcher + `occam_attest`, `occam_dataset_export`, `occam_playbook_lint` | heal/save/resolve |
 | `full` (default) | all fifteen | — |
 

@@ -279,7 +279,7 @@ See [Receipts](receipts.md).
 ## 12. `occam_claim_check`
 
 Check whether a page contains evidence for one claim; returns Merkle citation proof.
-`found`/`retrieved` mean retrieval relevance only; `verdict` is `not_evaluated` (use `occam_attest` for support/refute).
+`found`/`retrieved` mean retrieval relevance only; `verdict` is `not_evaluated` (use `occam_attest` for support/refute). Legacy `proven:true` (only when `found:false`) means retrieval-complete negative over an untruncated leaf set — not proof the page omits the claim.
 
 ### Parameters
 
@@ -295,7 +295,7 @@ Check whether a page contains evidence for one claim; returns Merkle citation pr
 
 ## 13. `occam_attest`
 
-Batch-attest claims against cited pages (retrieval → semantic `status` → Merkle existence proof).
+Heuristic citation assessment for claims against cited pages (retrieval → semantic `status` → Merkle membership proof) — **not** cryptographic attestation.
 Gate on `status`; `grounded` is true only when `status=supported`. See [occam_attest](tools/occam_attest.md).
 
 ### Parameters
@@ -394,4 +394,4 @@ Alias: `http-then-browser`
 
 - [Choosing a tool](choosing-a-tool.md)
 - [Failure codes](failure-codes.md)
-- [MCP_API_SPEC.md](../MCP_API_SPEC.md) — full JSON contract
+- [MCP API](reference/mcp-api.md) — normative contract overview (full file on GitHub)

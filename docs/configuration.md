@@ -227,7 +227,7 @@ After configure, `occam_transcode` / `occam_digest` that **omit** `max_tokens` /
 
 ---
 
-## Remote MCP (TLS + JWT)
+## Remote MCP (TLS + JWT) {#remote-mcp-tls-jwt}
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
@@ -286,7 +286,7 @@ WebSocket handshake's `Authorization: Bearer` header. URI query tokens are rejec
 
 ```json
 "env": {
-  "OCCAM_HOME": "C:\\path\\to\\FFOccamMCP",
+  "OCCAM_HOME": "C:\\path\\to\\ff-occam",
   "OCCAM_BANNER": "0"
 }
 ```

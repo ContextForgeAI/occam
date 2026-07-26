@@ -1,71 +1,75 @@
 # occam_verify
 
-Verify or cite an extraction receipt **without trusting FF-Occam**. Five modes: offline signature
-check, live drift re-check, building a block citation proof, verifying such a proof, and verifying
-a watch history chain.
+Verify Receipt v1 integrity **against a public key you supply** — offline signature check, live drift
+re-check, Merkle citation proofs, and watch history chain verification.
+
+**`verified` means bytes + key**, not truth, origin identity, or that the page said what was extracted.
 
 ## When to use
 
-- `offline` (default) — check a receipt's signature; pass `markdown` to also check `contentHash`.
-- `live` — re-fetch the page and report how much drifted, and which of your RAG chunks went stale.
-- `prove` — emit a compact proof that one block was in the page (needs a `json_blocks` receipt).
-- `citation` — verify someone else's block + proof against the signed root — no page needed.
-- `history` — verify a signed [`occam_watch`](occam_watch.md) change chain.
+- `offline` (default) — check envelope signature; pass `markdown` to also check `contentHash`.
+- `live` — re-fetch and report hash drift (context-light; session/playbook not replayed).
+- `prove` — emit a compact Merkle proof for one block (needs `json_blocks` receipt).
+- `citation` — verify block + proof against signed root — no page needed; membership only.
+- `history` — verify watch change chain (`history_verified` vs `history_chain_ok`).
 
 ## Parameters
 
 | Parameter | Type | Default | Required | Description |
 |---|---|---|---|---|
-| `receipt` | string | — | **yes** | A transcode response's `receipt` object (`{signed, blockLeaves, timeAnchor}`) or a bare signed envelope. In `history` mode: the watch `history` array or `{history:[…]}` |
+| `receipt` | string | — | **yes** | Transcode `receipt` object, bare signed envelope, or watch `history` array |
 | `mode` | string | `offline` | no | `offline` \| `live` \| `prove` \| `citation` \| `history` |
-| `markdown` | string? | null | no | Extracted markdown to check against `contentHash` (offline) |
-| `public_key` | string? | null | no | PEM public key to verify against; omit for this host's local key |
-| `block_index` | int? | null | prove | Index of the block to build a citation proof for |
-| `block_text` | string? | null | citation | The block's text |
-| `block_selector` | string? | null | citation | The block's `source_selector` |
-| `proof` | string? | null | citation | The proof JSON (array of `{hash, siblingIsRight}`) from a `prove` call |
-| `chunks` | string? | null | live | JSON array of chunk leaf-hashes your RAG store holds for this URL; the response reports which of **these** went stale. Omit to check the receipt's own block leaves |
+| `markdown` | string? | null | no | Markdown to check against `contentHash` (offline) |
+| `public_key` | string? | null | no | PEM public key. **Defaults to this host's local key** — supply producer PEM for third-party checks |
+| `block_index` | int? | null | prove | Block index for citation proof |
+| `block_text` | string? | null | citation | Block text |
+| `block_selector` | string? | null | citation | Block `source_selector` |
+| `proof` | string? | null | citation | Proof JSON from `prove` |
+| `chunks` | string? | null | live | JSON array of chunk leaf-hashes for staleness report |
 
 ## Returns
 
-Verify envelope (`offline` / `live` / `citation` / `history`):
+Verify envelope:
 
 - `ok: true`, `signatureValid`, `contentHashMatch?`, `keyId`, `mode`
-- `verdict` — e.g. `verified`, `drifted`, `refetch_failed`, `signature_invalid`,
-  `citation_verified` / `citation_invalid`, `history_verified` / `history_invalid`
-- `live?` (live mode) — `{refetched, contentHashMatch?, blockRootMatch?, blocksTotal?,
-  blocksStillPresent?, drift?, chunkStaleness?}`; `chunkStaleness` is
-  `{total, present, stale, staleChunks[]}`
-- `history?` (history mode) — `{entriesTotal, signedCount, headSeq, chainValid}`
-- `timeAnchor?` — `{present, valid, genTime?, tsa?, tsaSubject?}` when the receipt carried an
-  independent RFC3161 timestamp
+- `verdict` — e.g. `verified`, `wrong_key`, `signature_invalid`, `drifted`, `refetch_failed`,
+  `citation_verified` / `citation_invalid`, `history_verified` / `history_chain_ok` /
+  `history_wrong_key` / `history_invalid`
+- `live?`, `history?` — mode-specific detail
+- `timeAnchor?` — reported on MCP; **does not gate** MCP `verified` (CLI gates on anchor validity)
 
-`prove` mode returns `{ok, keyId, root, leafIndex, leaf, proof[]}` — hand `leaf`-owner the block
-text + `proof` and they verify with `citation` mode.
+`prove` mode returns `{ok, keyId, root, leafIndex, leaf, proof[]}`.
 
-Failure envelope: `ok: false`, `failureCode`, `message`.
+## MCP vs CLI
+
+| | MCP | CLI `OccamMcp.Core verify` |
+|---|-----|---------------------------|
+| `public_key` / `--pubkey` | Optional (local default) | **Mandatory** |
+| `manifest` mode | **Not available** | `--mode manifest` for dataset exports |
+| `live`, `prove` | Yes | No |
+
+Extract-knowledge telemetry objects are **not** valid input.
 
 ## Failure codes
 
-`invalid_receipt` (not valid receipt JSON, unsupported version, or `blockLeaves` don't reconstruct
-the signed root), `invalid_arguments` (missing mode-specific inputs).
+`invalid_receipt`, `invalid_arguments`. See [failure codes](../failure-codes.md).
 
 ## Example
 
-Offline check of a transcode receipt:
-
 ```json
-{ "receipt": "{\"signed\":{…},\"blockLeaves\":[…]}", "markdown": "# nginx documentation\n…" }
+{
+  "receipt": "{\"signed\":{…},\"blockLeaves\":[…]}",
+  "markdown": "# nginx documentation\n…",
+  "public_key": "-----BEGIN PUBLIC KEY-----\n…"
+}
 ```
 
-Trimmed response:
-
 ```json
-{ "ok": true, "signatureValid": true, "contentHashMatch": true, "keyId": "k1:…", "mode": "offline", "verdict": "verified" }
+{ "ok": true, "signatureValid": true, "contentHashMatch": true, "verdict": "verified", "keyId": "k1:…" }
 ```
 
 ## Related
 
-- [Receipts](../receipts.md) and the normative [receipt verification spec](../receipt_verification.md)
-- [occam_transcode](occam_transcode.md) — where receipts come from (`json_blocks` for block proofs)
-- [occam_claim_check](occam_claim_check.md) / [occam_attest](occam_attest.md) — emit citation proofs this tool verifies
+- [Receipts](../receipts.md) · [Receipt verification spec](../receipt_verification.md)
+- [Guide: verify a source](../guides/verify-sources.md)
+- [occam_transcode](occam_transcode.md) — Receipt v1 source

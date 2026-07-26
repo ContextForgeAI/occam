@@ -8,7 +8,7 @@ true/false` plus a block-level diff when it changed. State is kept server-side, 
 
 ## When to use
 
-- Recurring "did this page change since I last looked?" checks, with a signed change history.
+- Recurring "did this page change since I last looked?" checks, with an optional signed change history when receipts are enabled (`history_verified` requires every entry signed).
 - The stateless equivalent (you keep the state) is `occam_transcode` with `if_none_match` +
   `diff_against` — see [occam_transcode](occam_transcode.md).
 
