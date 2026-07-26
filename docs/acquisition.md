@@ -6,6 +6,8 @@ How Occam obtains a page. This documents the **locked** acquisition contract (EF
 
 ## The ladder (`http_then_browser`)
 
+<div class="oc-diagram" role="region" aria-label="Acquisition ladder diagram (scroll horizontally on narrow screens)" markdown="1">
+
 ```text
 HTTP extract
    │
@@ -21,6 +23,8 @@ HTTP extract
                       ├─ managed success may surface
                       └─ managed failure NEVER becomes the user-facing result
 ```
+
+</div>
 
 ## Locked truths
 

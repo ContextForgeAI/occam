@@ -1,112 +1,113 @@
-# Occam documentation
+<div class="oc-hero" markdown="1">
 
-**Occam** is a locally run host that helps AI agents acquire usable web content, shape it for context windows, fail honestly when content is unknown, and optionally attach integrity artifacts verifiable against a key.
+<p class="oc-wordmark">Local host · MCP</p>
 
-**Version:** 1.0.0-rc.2 · **License:** AGPL-3.0-or-later  
-**Docs site:** [https://contextforgeai.github.io/occam/](https://contextforgeai.github.io/occam/)  
-**LLM map:** [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt) · [Ask AI](ask-ai.md)
+</div>
 
-Core MCP tools are registry-defined; runtime `tools/list` varies by **profile** and **opt-in** flags — do not treat a fixed “15” as a health check by itself.
+# Occam
 
-## Start here
+<div class="oc-hero oc-hero--rest" markdown="1">
 
-| You want… | Go to |
-|-----------|-------|
-| First success in minutes | [Quick Start](quick-start.md) |
-| Product explanation | [What is Occam?](what-is-occam.md) |
-| Architecture overview | [How Occam works](how-occam-works.md) |
-| Install / operators | [Install](install.md) · [Operators](operators.md) |
-| Connect AI hosts | [Connect](connect/index.md) · [Supported hosts](mcp-hosts.md) |
-| Task → tool | [Choosing a tool](choosing-a-tool.md) |
-| Trust questions | [Trust & Safety](trust-and-safety.md) |
-| Deep understanding | [Handbook](handbook/index.md) |
-| Ask an assistant | [Ask AI](ask-ai.md) |
+<p class="oc-hero-lead">
+A locally run host that helps AI agents acquire usable web content, shape it for context windows, fail honestly when content is unknown, and optionally attach integrity artifacts verifiable against a key.
+</p>
 
-## What do you want to do?
+<p class="oc-hero-actions">
+<a class="oc-btn oc-btn--primary" href="quick-start/">Get started</a>
+<a class="oc-btn oc-btn--secondary" href="handbook/">Read the handbook</a>
+</p>
 
-| Task | Guide |
-|------|-------|
-| Read a web page | [Read a page](guides/read-a-page.md) → `occam_transcode` |
-| Research several sources | [Research](guides/research-multiple.md) → `occam_digest` |
-| Find pages / search | [Search & discover](guides/search-and-discover.md) |
-| Login walls | [Sessions](sessions.md) · [Sessions guide](guides/sessions.md) |
-| Verify integrity artifacts | [Verify](guides/verify-sources.md) → receipts + `occam_verify` |
-| Evidence for a claim | [Claims](guides/claims.md) → `occam_claim_check` / `occam_attest` |
-| Structured fields | [Structured extraction](guides/structured-extraction.md) |
-| Site recipes | [Playbooks](playbooks.md) |
-| Experimental tools | [Experimental](experimental.md) |
-| Connect Occam to my AI | [Connect](connect/index.md) |
+<div class="oc-proof" markdown="0">
+<span class="oc-prompt">$</span> occam connect<br>
+<br>
+Detects supported AI / MCP hosts and configures live-validated ones.<br>
+Statuses: <span class="oc-ok">Ready</span> · Almost ready · Action required · Not ready
+</div>
 
-## Capabilities (by system, not a flat CAP list)
+</div>
 
-| System | Pages |
-|--------|-------|
-| Acquisition & networking | [Acquisition](acquisition.md) · [Networking](networking.md) · [Sessions](sessions.md) |
-| Materialization | [Materialization](materialization.md) |
-| Trust & verification | [Trust & Safety](trust-and-safety.md) · [Receipts](receipts.md) |
-| Playbooks & datasets | [Playbooks](playbooks.md) · [Datasets](datasets.md) |
-| Experimental | [Experimental](experimental.md) |
-| Operators | [Operators](operators.md) · [Connect](connect/index.md) |
+<nav class="oc-path" aria-label="Occam request path">
+  <span class="oc-path__step">URL</span>
+  <span class="oc-path__sep" aria-hidden="true">→</span>
+  <span class="oc-path__step"><span class="oc-system-label">Acquire</span></span>
+  <span class="oc-path__sep" aria-hidden="true">→</span>
+  <span class="oc-path__step"><span class="oc-system-label">Shape</span></span>
+  <span class="oc-path__sep" aria-hidden="true">→</span>
+  <span class="oc-path__step">usable context</span>
+  <span class="oc-path__branch">
+    <span class="oc-path__sep" aria-hidden="true">↳</span>
+    <span class="oc-path__step oc-path__step--gate"><span class="oc-system-label">Unknown</span> <code>ok:false</code></span>
+    <span class="oc-path__sep" aria-hidden="true">·</span>
+    <span class="oc-path__step"><span class="oc-system-label">Check</span> vs key</span>
+  </span>
+</nav>
 
-## Source-of-truth order
+<div class="oc-pillars" markdown="1">
 
-| Priority | Source | Use it for |
-|---|---|---|
-| 1 | Runtime `tools/list` | Tool availability and input JSON Schema |
-| 2 | [MCP API contract](reference/mcp-api.md) | Response shapes and cross-tool semantics |
-| 3 | [Per-tool pages](tools/index.md) | Usage, examples, failure handling |
-| 4 | Guides / examples / handbook | Learning and workflows |
+<div class="oc-pillar" markdown="1">
+<div class="oc-pillar-label">Acquire</div>
+<p>HTTP → browser → optional managed acquisition — a gated ladder. Live extract by default.</p>
+</div>
 
-If two pages disagree, prefer the higher-priority source and report drift.
+<div class="oc-pillar" markdown="1">
+<div class="oc-pillar-label">Shape</div>
+<p>Token-bounded, focused Markdown and structured fields sized for agent context windows.</p>
+</div>
 
-## Documentation map
+<div class="oc-pillar" markdown="1">
+<div class="oc-pillar-label">Check</div>
+<p>Honest <code>ok:false</code> when content is unknown, plus optional integrity artifacts vs a key.</p>
+</div>
 
-| Page | Purpose |
-|------|---------|
-| [Quick Start](quick-start.md) | First success |
-| [What is Occam?](what-is-occam.md) | Product mental model |
-| [How Occam works](how-occam-works.md) | User-level architecture |
-| [Getting started](getting-started.md) | First web read + operator CLI |
-| [Install](install.md) | Canonical install reference |
-| [Operators](operators.md) | CLI, doctor, connect, packaging |
-| [MCP hosts](mcp-hosts.md) | Connect tiers and safety |
-| [Connect](connect/index.md) | Automatic / `--only` / manual |
-| [Choosing a tool](choosing-a-tool.md) | Task router |
-| [Guides](guides/read-a-page.md) | Task-oriented how-tos |
-| [Examples](examples/index.md) | Copy/paste workflows |
-| [Recipes](recipes.md) | Additional multi-tool flows |
-| [Concepts](concepts.md) | Backends, playbooks, sessions, receipts |
-| [Acquisition](acquisition.md) | Gated HTTP→browser ladder |
-| [Materialization](materialization.md) | Token budgets and structured output |
-| [Networking](networking.md) | Proxies and SSRF scope |
-| [Sessions](sessions.md) | Authenticated access tiers |
-| [Experimental](experimental.md) | Watch / crosscheck / batch / atlas |
-| [Trust & Safety](trust-and-safety.md) | Honesty, local-first, install safety |
-| [Receipts](receipts.md) | Human receipt guide |
-| [Receipt verification](receipt_verification.md) | Normative receipt format |
-| [Playbooks](playbooks.md) | Site recipes and signature v1/v2 |
-| [Datasets](datasets.md) | Auditable multi-URL export |
-| [Handbook](handbook/index.md) | Deep technical textbook |
-| [Per-tool index](tools/index.md) | One page per tool |
-| [Tools reference](tools-reference.md) | Compact reference |
-| [Configuration](configuration.md) | Environment variables |
-| [Transports](transports.md) | stdio, WebSocket, batch HTTP |
-| [Failure codes](failure-codes.md) | Typed failures |
-| [Troubleshooting](troubleshooting.md) | Symptom → fix |
-| [FAQ](faq.md) | Short answers |
-| [Ask AI](ask-ai.md) | LLM / assistant entry |
-| [Quality baseline](quality-baseline.md) | Public quality claims |
-| [Roadmap](roadmap.md) | Shipped / not shipped |
-| [Semantic contract](architecture/semantic-contract.md) | Developer invariants |
+</div>
 
-## LLM reading order
+<p class="oc-meta-line"><strong>Version:</strong> 1.0.0-rc.2 · <strong>License:</strong> AGPL-3.0-or-later · <a href="https://contextforgeai.github.io/occam/">Docs site</a> · <a href="https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt"><code>llms.txt</code></a> · <a href="ask-ai/">Ask AI</a></p>
 
-1. [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt) once  
-2. [Choosing a tool](choosing-a-tool.md)  
-3. One page under [tools/](tools/index.md)  
-4. [Failure codes](failure-codes.md) only after `ok: false`  
-5. [Handbook](handbook/index.md) for deep comprehension  
-6. [MCP API](reference/mcp-api.md) for contract-level detail  
+<p class="oc-meta-line">Core MCP tools are registry-defined; runtime <code>tools/list</code> varies by <strong>profile</strong> and <strong>opt-in</strong> flags — do not treat a fixed “15” as a health check by itself.</p>
+
+## Start with a task
+
+<div class="oc-task-list" markdown="1">
+
+[**Read one page**](guides/read-a-page.md) — `occam_transcode` · [Quick Start](quick-start.md)
+
+[**Research several sources**](guides/research-multiple.md) — `occam_digest`
+
+[**Search & discover**](guides/search-and-discover.md) — probe / map / search
+
+[**Login / session walls**](guides/sessions.md) — [Sessions](sessions.md)
+
+[**Extract structured fields**](guides/structured-extraction.md) — playbooks · [Playbooks](playbooks.md)
+
+[**Verify an artifact**](guides/verify-sources.md) — receipts · `occam_verify`
+
+[**Understand Occam deeply**](handbook/index.md) — [What is Occam?](what-is-occam.md) · [How Occam works](how-occam-works.md)
+
+</div>
+
+More task → tool routes: [Choosing a tool](choosing-a-tool.md) · [Examples](examples/index.md) · [Recipes](recipes.md) · [Claims](guides/claims.md)
+
+## Explore the system
+
+<div class="oc-explore" markdown="1">
+
+**Acquisition** — [Acquisition](acquisition.md) · [Networking](networking.md) · [Sessions](sessions.md)
+
+**Materialization** — [Materialization](materialization.md) · [Concepts](concepts.md)
+
+**Discovery** — [Search & discover](guides/search-and-discover.md) · [Choosing a tool](choosing-a-tool.md)
+
+**Playbooks** — [Playbooks](playbooks.md) · [Datasets](datasets.md)
+
+**Trust** — [Trust & Safety](trust-and-safety.md) · [Receipts](receipts.md) · [Receipt verification](receipt_verification.md)
+
+**Operations** — [Install](install.md) · [Getting started](getting-started.md) · [Operators](operators.md) · [Connect](connect/index.md) · [MCP hosts](mcp-hosts.md)
+
+</div>
+
+## Deeper routes
+
+[Tool index](tools/index.md) · [Tools reference](tools-reference.md) · [Configuration](configuration.md) · [Transports](transports.md) · [Failure codes](failure-codes.md) · [MCP API](reference/mcp-api.md) · [Handbook](handbook/index.md) · [Experimental](experimental.md) · [Operators](operators.md) · [Troubleshooting](troubleshooting.md) · [FAQ](faq.md) · [Full documentation map](documentation-map.md)
 
 ## Packages
 
@@ -116,6 +117,8 @@ This RC ships via **GitHub Release** archives — **npm is not a GA 1.0 channel.
 - [`@ff-occam/agent-sdk`](https://github.com/ContextForgeAI/occam/tree/main/packages/occam-agent-sdk) — TypeScript workflows  
 - [`@ff-occam/skill`](https://github.com/ContextForgeAI/occam/tree/main/packages/occam-skill) — portable agent skill  
 
-## Review artifacts (repo only)
+## All top-level pages
 
-Maintainer usability tests — not in site navigation: [friend-test.md](friend-test.md)
+Compact index (gate + scanning). Narrative map: [Documentation map](documentation-map.md).
+
+[acquisition](acquisition.md) · [ask-ai](ask-ai.md) · [choosing-a-tool](choosing-a-tool.md) · [concepts](concepts.md) · [configuration](configuration.md) · [datasets](datasets.md) · [documentation-map](documentation-map.md) · [experimental](experimental.md) · [failure-codes](failure-codes.md) · [faq](faq.md) · [friend-test](friend-test.md) · [getting-started](getting-started.md) · [how-occam-works](how-occam-works.md) · [install](install.md) · [materialization](materialization.md) · [mcp-hosts](mcp-hosts.md) · [networking](networking.md) · [operators](operators.md) · [playbooks](playbooks.md) · [quality-baseline](quality-baseline.md) · [quick-start](quick-start.md) · [receipt_verification](receipt_verification.md) · [receipts](receipts.md) · [recipes](recipes.md) · [roadmap](roadmap.md) · [sessions](sessions.md) · [tools-reference](tools-reference.md) · [transports](transports.md) · [troubleshooting](troubleshooting.md) · [trust-and-safety](trust-and-safety.md) · [what-is-occam](what-is-occam.md)
