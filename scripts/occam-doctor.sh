@@ -118,14 +118,16 @@ if [[ -f "$SSRF_SELFTEST" ]]; then
 fi
 
 if [[ -d "$ROOT/workers/browser-extract" ]]; then
+  # Single source path — quiet vs verbose only changes output, not probe count.
+  CHROMIUM_LAUNCH_PROBE="$ROOT/workers/browser-extract/lib/ensure-chromium-usable.mjs"
   doctor_echo "browser runtime check (launch probe) ..."
   if [[ "$QUIET" -eq 1 ]]; then
-    (cd "$ROOT/workers/browser-extract" && node lib/ensure-chromium-usable.mjs >/dev/null 2>&1) || {
+    if ! (cd "$ROOT/workers/browser-extract" && node "$CHROMIUM_LAUNCH_PROBE" >/dev/null 2>&1); then
       echo "error: browser runtime unavailable" >&2
-      (cd "$ROOT/workers/browser-extract" && node lib/ensure-chromium-usable.mjs) || exit 1
-    }
+      (cd "$ROOT/workers/browser-extract" && node "$CHROMIUM_LAUNCH_PROBE") || exit 1
+    fi
   else
-    (cd "$ROOT/workers/browser-extract" && node lib/ensure-chromium-usable.mjs) || {
+    (cd "$ROOT/workers/browser-extract" && node "$CHROMIUM_LAUNCH_PROBE") || {
       echo "error: browser runtime unavailable" >&2
       exit 1
     }

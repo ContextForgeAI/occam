@@ -48,10 +48,12 @@ irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-o
 4. Runs **doctor** (`--skip-build`) — npm workers + Playwright (quiet by default)  
 5. Verifies the Occam host (`verify-install` + smoke) — expect **15** `occam_*` tools  
 6. Writes operator defaults to `~/.occam/onboard.json` (no second `OCCAM_HOME` prompt)  
-7. Runs **`occam connect`** — detects AI/MCP hosts; one host auto-connects; multiple hosts confirm first (or `OCCAM_CONNECT_ALL=1` for automation)  
-8. Reports **Ready** only after host verification — or **Installed** / **Almost ready** / **Action required** as appropriate  
+7. Installs a user-scoped **`occam`** launcher (`~/.local/bin`; Windows: `occam.cmd` + `occam.ps1`) and prepends that directory to the **User** PATH (and the current shell PATH) so `occam` resolves immediately after install  
+8. Runs **`occam connect`** — detects AI/MCP hosts; one host auto-connects; multiple hosts confirm first (or `OCCAM_CONNECT_ALL=1` for automation)  
+9. Reports **Ready** only after host verification — or **Installed** / **Almost ready** / **Action required** as appropriate  
 
-Default output is quiet (~15–25 lines). Internals: `OCCAM_VERBOSE=1`.
+Default output is quiet (~15–25 lines). Internals: `OCCAM_VERBOSE=1`.  
+After install, `occam connect` / `occam doctor` resolve without a manual PATH export.
 
 **What install mutates:** install tree under `OCCAM_HOME`, `~/.occam/onboard.json`, signing key on first host start (`~/.occam/keys/`), host MCP configs (+ backups), Playwright cache. Removing the install directory alone does **not** remove all `~/.occam/` state or host configs.
 
@@ -77,15 +79,13 @@ Interactive setup menu (Enter = Auto): set `OCCAM_SETUP=ask`.
 ## Verify
 
 ```bash
-export OCCAM_HOME="${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}"
-export PATH="$OCCAM_HOME/scripts:$PATH"
+# After one-line install, `occam` is already on PATH via ~/.local/bin.
 occam smoke
-# or: node "$OCCAM_HOME/scripts/hermes-smoke.mjs"
+# or: node "${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}/scripts/hermes-smoke.mjs"
 ```
 
 ```powershell
-$env:OCCAM_HOME = if ($env:OCCAM_INSTALL_DIR) { $env:OCCAM_INSTALL_DIR } else { Join-Path $env:USERPROFILE ".local\share\ff-occam" }
-$env:PATH = "$env:OCCAM_HOME\scripts;$env:PATH"
+# After one-line install, `occam` is already on PATH via %USERPROFILE%\.local\bin.
 occam smoke
 ```
 

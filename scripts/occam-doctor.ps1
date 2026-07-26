@@ -126,13 +126,15 @@ if (Test-Path $ssrfSelftest) {
 
 if (Test-Path $browserWorker) {
     # Launch is the source of truth: it also installs a missing bundled runtime and retries once.
+    # Single path string — quiet vs verbose only changes output, not probe count.
+    $chromiumLaunchProbe = Join-Path $browserWorker "lib\ensure-chromium-usable.mjs"
     Write-Doctor "browser runtime check (launch probe) ..."
     Push-Location $browserWorker
     try {
         if ($Quiet) {
-            & node (Join-Path $browserWorker "lib\ensure-chromium-usable.mjs") 2>&1 | Out-Null
+            & node $chromiumLaunchProbe 2>&1 | Out-Null
         } else {
-            & node (Join-Path $browserWorker "lib\ensure-chromium-usable.mjs")
+            & node $chromiumLaunchProbe
         }
         if ($LASTEXITCODE -ne 0) {
             Write-Error "browser runtime unavailable"

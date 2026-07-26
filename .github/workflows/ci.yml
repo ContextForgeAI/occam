@@ -148,6 +148,9 @@ jobs:
       - name: Validate install UX (quiet default / Ready semantics)
         run: node scripts/lib/operator/install-ux.selftest.mjs
 
+      - name: Validate user CLI launcher / PATH helpers
+        run: node scripts/lib/operator/install-user-cli.selftest.mjs
+
       - name: Validate Playwright runtime recovery
         run: node workers/browser-extract/lib/ensure-chromium-usable.selftest.mjs
 
