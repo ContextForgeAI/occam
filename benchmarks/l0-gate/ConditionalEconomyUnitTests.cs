@@ -55,6 +55,16 @@ internal static class ConditionalEconomyUnitTests
             playbookId: "python-docs",
             playbookVersion: "2");
         assert("mat key: playbook identity changes key", playbookChanged != k1);
+
+        var fragA = MaterializationKey.Compute(
+            "https://example.com/guide#installation",
+            "http",
+            new OccamTranscodeOptions { PlaybookPolicy = "off" });
+        var fragB = MaterializationKey.Compute(
+            "https://example.com/guide#uninstall",
+            "http",
+            new OccamTranscodeOptions { PlaybookPolicy = "off" });
+        assert("mat key: URL fragment changes key", fragA != fragB);
     }
 
     private static void RunUnchangedEnvelope(Action<string, bool> assert)
