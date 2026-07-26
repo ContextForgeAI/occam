@@ -35,7 +35,8 @@ public sealed record OccamPlaybookResolveSuccessResponse(
     OccamPlaybookSignatureInfo? Signature,
     string Timestamp);
 
-// SI-08 consumer loop: trust signal for the resolved recipe. status ∈ unsigned|verified|invalid|unknown_key.
+// SI-08 consumer loop: signature status for the resolved recipe. score/passesGate are unsigned v1 claims.
+// status ∈ unsigned|verified|invalid|wrong_key|key_mismatch.
 public sealed record OccamPlaybookSignatureInfo(
     bool Present,
     string Status,

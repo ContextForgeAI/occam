@@ -66,8 +66,8 @@ public static class ReceiptUnitTests
         // --- wrong key ---
         var otherPub = ReceiptSigner.CreateEphemeral().ExportPublicKeyPem();
         var wrongKey = ReceiptVerifier.VerifyOffline(signed, otherPub, markdown);
-        assert("receipt wrong key -> signature_invalid",
-            wrongKey.Verdict == ReceiptVerification.SignatureInvalid);
+        assert("receipt wrong key -> wrong_key",
+            wrongKey.Verdict == ReceiptVerification.WrongKey);
 
         // --- canonical golden (freezes the signable byte form) ---
         var golden = new ReceiptEnvelope(
@@ -159,8 +159,8 @@ public static class ReceiptUnitTests
             verifyTool.Verify(envJson, markdown + "X", pub, "offline").Sync().Contains("\"verdict\":\"content_mismatch\"", StringComparison.Ordinal));
         assert("occam_verify rejects junk receipt",
             verifyTool.Verify("{not a receipt}", null, pub, "offline").Sync().Contains("\"failureCode\":\"invalid_receipt\"", StringComparison.Ordinal));
-        assert("occam_verify wrong key -> signature_invalid",
-            verifyTool.Verify(envJson, markdown, otherPub, "offline").Sync().Contains("\"verdict\":\"signature_invalid\"", StringComparison.Ordinal));
+        assert("occam_verify wrong key -> wrong_key",
+            verifyTool.Verify(envJson, markdown, otherPub, "offline").Sync().Contains("\"verdict\":\"wrong_key\"", StringComparison.Ordinal));
 
         // --- Phase 4: negative receipts (SI-03) signed only for provable unavailability ---
         var negCaptcha = OccamTranscodeResponseBuilder.BuildNegativeReceipt(
@@ -240,9 +240,13 @@ public static class ReceiptUnitTests
                 is { Status: "invalid" });
         var otherSigner = ReceiptSigner.CreateEphemeral();
         var foreignPb = PlaybookSignature.BuildSignedJson(pbJson, 70, true, 0.1, otherSigner);
-        assert("inspect unknown_key for foreign author",
+        assert("inspect wrong_key for foreign author after crypto attempt",
             PlaybookSignature.Inspect(foreignPb, signer.KeyId, pub)
-                is { Present: true, Status: "unknown_key" } fk && fk.KeyId == otherSigner.KeyId);
+                is { Present: true, Status: "wrong_key" } fk && fk.KeyId == otherSigner.KeyId);
+        var mismatchedKeyIdPb = signedPb.Replace(signer.KeyId, otherSigner.KeyId, StringComparison.Ordinal);
+        assert("inspect keyId tamper verifies first then reports key_mismatch",
+            PlaybookSignature.Inspect(mismatchedKeyIdPb, signer.KeyId, pub)
+                is { Present: true, Status: "key_mismatch" });
 
         // --- SI-05: signed watch-history chain ---
         var h0 = WatchHistoryChain.Append([], WatchHistoryEntry.EventFirstSeen, "sha256:aa", null, null, "2026-07-03T00:00:00Z", signer);
@@ -263,15 +267,26 @@ public static class ReceiptUnitTests
         // Unsigned chain (OCCAM_RECEIPTS=off): no signatures but the hash chain still links.
         var u0 = WatchHistoryChain.Append([], WatchHistoryEntry.EventFirstSeen, "sha256:aa", null, null, "t0", null);
         var u1 = WatchHistoryChain.Append([u0], WatchHistoryEntry.EventChanged, "sha256:bb", null, 3, "t1", null);
-        assert("unsigned history chains + verifies", u0.Sig is null && WatchHistoryChain.Verify([u0, u1], pub));
+        var unsignedInspection = WatchHistoryChain.Inspect([u0, u1], pub);
+        assert("unsigned history chain has integrity but is not verified",
+            u0.Sig is null
+            && unsignedInspection is { ChainIntegrity: true, SignatureStatus: "unsigned" }
+            && !WatchHistoryChain.Verify([u0, u1], pub));
         assert("unsigned history broken link fails", !WatchHistoryChain.Verify([u0, u1 with { PrevEntryHash = "sha256:00" }], pub));
 
         // occam_verify history mode (SI-05 consumer): verify the chain through the tool.
         var chainJson = JsonSerializer.Serialize(chain, OccamWatchJsonContext.Default.WatchHistoryEntryArray);
         assert("occam_verify history -> history_verified",
             verifyTool.Verify(chainJson, mode: "history").Sync().Contains("\"verdict\":\"history_verified\"", StringComparison.Ordinal));
-        assert("occam_verify history wrong key -> history_invalid",
-            verifyTool.Verify(chainJson, public_key: otherPub, mode: "history").Sync().Contains("\"verdict\":\"history_invalid\"", StringComparison.Ordinal));
+        assert("occam_verify history wrong key -> history_wrong_key",
+            verifyTool.Verify(chainJson, public_key: otherPub, mode: "history").Sync().Contains("\"verdict\":\"history_wrong_key\"", StringComparison.Ordinal));
+        var unsignedChainJson = JsonSerializer.Serialize(new[] { u0, u1 }, OccamWatchJsonContext.Default.WatchHistoryEntryArray);
+        var unsignedHistoryOut = verifyTool.Verify(unsignedChainJson, mode: "history").Sync();
+        assert("occam_verify unsigned history reports chain integrity without verification",
+            unsignedHistoryOut.Contains("\"verdict\":\"history_chain_ok\"", StringComparison.Ordinal)
+            && unsignedHistoryOut.Contains("\"chainIntegrity\":true", StringComparison.Ordinal)
+            && unsignedHistoryOut.Contains("\"signatureStatus\":\"unsigned\"", StringComparison.Ordinal)
+            && unsignedHistoryOut.Contains("\"signatureValid\":false", StringComparison.Ordinal));
         var wrappedJson = "{\"history\":" + chainJson + "}";
         assert("occam_verify history accepts {history:[...]} wrapper",
             verifyTool.Verify(wrappedJson, mode: "history").Sync().Contains("\"verdict\":\"history_verified\"", StringComparison.Ordinal));

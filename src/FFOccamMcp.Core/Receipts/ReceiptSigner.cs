@@ -67,6 +67,14 @@ public sealed class ReceiptSigner
     public string ExportPublicKeyPem() =>
         PemEncoding.WriteString("PUBLIC KEY", _key.ExportSubjectPublicKeyInfo());
 
+    /// <summary>Compute the Receipt v1 key id for a supplied SPKI public key.</summary>
+    public static string ComputeKeyId(string publicKeyPem)
+    {
+        using var key = ECDsa.Create();
+        key.ImportFromPem(publicKeyPem);
+        return ComputeKeyId(key);
+    }
+
     /// <summary>Detached base64url signature over arbitrary bytes (SI-08 playbook signing).</summary>
     public string SignDetached(ReadOnlySpan<byte> data) =>
         Base64Url.Encode(_key.SignData(data, HashAlgorithmName.SHA256));

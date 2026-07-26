@@ -9,16 +9,16 @@ namespace OccamMcp.Core.Playbooks;
 
 /// <summary>
 /// SI-08 (local foundation): sign a playbook at save time so a recipe is self-authenticating — it
-/// carries the author's key id, a signature, and the verify-gate proof (score/passesGate). The
+/// carries a claimed key id, a signature, and unsigned verify-gate metadata (score/passesGate). The
 /// signature covers a canonical hash of the playbook with its own <c>provenance</c> block excluded,
 /// so re-signing / re-verifying is stable. This is the building block a future signed registry
 /// (SI-08 distribution) and reputation counter build on; no hosting is required to sign locally.
 /// </summary>
 /// <summary>
 /// Result of <see cref="PlaybookSignature.Inspect"/>. <c>Status</c> ∈ { <c>unsigned</c>, <c>verified</c>,
-/// <c>invalid</c>, <c>unknown_key</c> }. Not a resolve failure — a trust signal a consumer weighs before
-/// applying the recipe. <c>Score</c>/<c>PassesGate</c> echo the recipe's own verify-gate claim (only
-/// trustworthy when <c>Status == verified</c>).
+/// <c>invalid</c>, <c>wrong_key</c>, <c>key_mismatch</c> }. Not a resolve failure — a trust signal a
+/// consumer weighs before applying the recipe. <c>Score</c>/<c>PassesGate</c> only echo unsigned v1
+/// provenance claims; the signature does not protect them.
 /// </summary>
 public sealed record PlaybookSignatureStatus(bool Present, string Status, string? KeyId, int? Score, bool? PassesGate);
 
@@ -89,10 +89,8 @@ public static class PlaybookSignature
 
     /// <summary>
     /// Resolve-side inspection (SI-08 consumer loop): classify a resolved playbook's provenance
-    /// against the local key WITHOUT trusting the recipe's own claim. Distinguishes tampering
-    /// (<c>invalid</c> — signed by our key but hash/sig no longer check out) from a foreign author
-    /// (<c>unknown_key</c> — a real signature we cannot verify with the only key we hold). Never
-    /// throws; a malformed recipe reads as <c>unsigned</c>.
+    /// against the local key WITHOUT trusting the recipe's claimed key id. Cryptographic verification
+    /// is attempted before classification. Never throws; a malformed recipe reads as <c>unsigned</c>.
     /// </summary>
     public static PlaybookSignatureStatus Inspect(string playbookJson, string localKeyId, string localPublicKeyPem)
     {
@@ -123,15 +121,12 @@ public static class PlaybookSignature
                 }
             }
 
-            // A recipe signed by a key we do not hold cannot be verified locally — report the claim,
-            // do not pretend it verified. Only a claim to OUR key is checkable, so mismatch there is tamper.
-            if (!string.Equals(claimedKeyId, localKeyId, StringComparison.Ordinal))
-            {
-                return new PlaybookSignatureStatus(true, "unknown_key", claimedKeyId, score, passesGate);
-            }
-
             var valid = Verify(playbookJson, localPublicKeyPem);
-            return new PlaybookSignatureStatus(true, valid ? "verified" : "invalid", claimedKeyId, score, passesGate);
+            var keyMatches = string.Equals(claimedKeyId, localKeyId, StringComparison.Ordinal);
+            var status = valid
+                ? keyMatches ? "verified" : "key_mismatch"
+                : keyMatches ? "invalid" : "wrong_key";
+            return new PlaybookSignatureStatus(true, status, claimedKeyId, score, passesGate);
         }
         catch (JsonException)
         {

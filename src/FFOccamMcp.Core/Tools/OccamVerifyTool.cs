@@ -14,7 +14,7 @@ namespace OccamMcp.Core.Tools;
 /// <item><c>live</c>: re-fetch finalUrl; whole-content drift + SI-02 granular "N/M blocks still present".</item>
 /// <item><c>prove</c> (SI-02b): emit a compact citation package for one block (leaf + Merkle path).</item>
 /// <item><c>citation</c> (SI-02b): verify someone else's block + proof against the signed root — no page needed.</item>
-/// <item><c>history</c> (SI-05): verify a signed watch-history chain — links + per-entry signatures.</item>
+/// <item><c>history</c> (SI-05): inspect chain-link integrity separately from per-entry signatures.</item>
 /// </list>
 /// Key trust (who owns k1:…) is out of scope for v1 (that is the registry, SI-08); pass the expected
 /// <c>public_key</c> or omit for this host's local key.
@@ -89,21 +89,35 @@ public sealed class OccamVerifyTool(TranscodePipeline pipeline, ReceiptSigner lo
             return Fail("invalid_arguments", "history mode needs a JSON array of entries, or an object with a `history` array.");
         }
 
-        var chainValid = WatchHistoryChain.Verify(entries, publicKeyPem);
-        var signedCount = entries.Count(e => e.Sig is not null);
+        var inspection = WatchHistoryChain.Inspect(entries, publicKeyPem);
         var headSeq = entries.Length == 0 ? -1 : entries[^1].Seq;
         var keyId = entries.FirstOrDefault(e => e.Sig is not null)?.KeyId ?? string.Empty;
+        var signaturesVerified = inspection.SignatureStatus == WatchHistoryVerification.Verified;
+        var verdict = !inspection.ChainIntegrity
+            ? "history_invalid"
+            : inspection.SignatureStatus switch
+            {
+                WatchHistoryVerification.Verified => "history_verified",
+                WatchHistoryVerification.WrongKey => "history_wrong_key",
+                WatchHistoryVerification.Unsigned => "history_chain_ok",
+                _ => "history_invalid",
+            };
 
         return JsonSerializer.Serialize(
             new OccamVerifySuccessResponse(
                 Ok: true,
-                SignatureValid: chainValid,
+                SignatureValid: signaturesVerified,
                 ContentHashMatch: null,
                 KeyId: keyId,
                 Mode: "history",
                 Live: null,
-                Verdict: chainValid ? "history_verified" : "history_invalid",
-                History: new OccamVerifyHistoryInfo(entries.Length, signedCount, headSeq, chainValid)),
+                Verdict: verdict,
+                History: new OccamVerifyHistoryInfo(
+                    entries.Length,
+                    inspection.SignedCount,
+                    headSeq,
+                    inspection.ChainIntegrity,
+                    inspection.SignatureStatus)),
             OccamVerifyJsonContext.Default.OccamVerifySuccessResponse);
     }
 

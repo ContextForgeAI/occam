@@ -1,6 +1,7 @@
 using System.Text.Json;
 using OccamMcp.Core.Cli;
 using OccamMcp.Core.Receipts;
+using OccamMcp.Core.Watch;
 
 namespace OccamMcp.L0Gate;
 
@@ -48,7 +49,23 @@ public static class CliVerbsUnitTests
 
             // Wrong key → not verified (exit 1).
             var (wrongExit, wrongOut) = Capture(["verify", "--receipt", receiptPath, "--pubkey", wrongPubPath]);
-            assert("cli verify wrong key exits 1", wrongExit == 1 && wrongOut.Contains("signature_invalid"));
+            assert("cli verify wrong key exits 1", wrongExit == 1 && wrongOut.Contains("wrong_key"));
+
+            // Unsigned history can have intact links, but is not a cryptographic verification success.
+            var u0 = WatchHistoryChain.Append([], WatchHistoryEntry.EventFirstSeen, "sha256:aa", null, null, "t0", null);
+            var u1 = WatchHistoryChain.Append([u0], WatchHistoryEntry.EventChanged, "sha256:bb", null, 3, "t1", null);
+            var historyPath = Path.Combine(dir, "history.json");
+            File.WriteAllText(
+                historyPath,
+                JsonSerializer.Serialize(new[] { u0, u1 }, OccamWatchJsonContext.Default.WatchHistoryEntryArray));
+            var (historyExit, historyOut) = Capture(
+                ["verify", "--mode", "history", "--input", historyPath, "--pubkey", pubPath]);
+            assert(
+                "cli verify unsigned history exits 1 with chain-only verdict",
+                historyExit == 1
+                && historyOut.Contains("\"verdict\":\"history_chain_ok\"", StringComparison.Ordinal)
+                && historyOut.Contains("\"chainIntegrity\":true", StringComparison.Ordinal)
+                && historyOut.Contains("\"signatureStatus\":\"unsigned\"", StringComparison.Ordinal));
 
             // Tampered markdown → content hash mismatch (exit 1).
             var badMdPath = Path.Combine(dir, "bad.md");

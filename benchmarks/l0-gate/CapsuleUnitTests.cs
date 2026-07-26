@@ -57,10 +57,10 @@ public static class CapsuleUnitTests
             verifyTool.Verify(tampered, null, pub, "offline").Sync()
                 .Contains("\"verdict\":\"content_mismatch\"", StringComparison.Ordinal));
 
-        // --- wrong key -> signature_invalid ---
-        assert("capsule wrong key -> signature_invalid",
+        // --- wrong key -> wrong_key ---
+        assert("capsule wrong key -> wrong_key",
             verifyTool.Verify(capsule, null, otherPub, "offline").Sync()
-                .Contains("\"verdict\":\"signature_invalid\"", StringComparison.Ordinal));
+                .Contains("\"verdict\":\"wrong_key\"", StringComparison.Ordinal));
 
         // --- malformed capsule -> rejected (never throws) ---
         assert("malformed capsule -> invalid_receipt",
