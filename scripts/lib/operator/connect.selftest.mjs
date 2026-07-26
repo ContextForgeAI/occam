@@ -110,6 +110,17 @@ function testVerificationReady() {
   });
   assert.equal(configOnly.ready, false);
 
+  const cursorConfigured = evaluateReadyState({
+    occamLevel: VERIFICATION_LEVELS.TOOLS_LIST_OK,
+    hostLevel: VERIFICATION_LEVELS.CONFIG_VALID,
+    maxHostLevel: VERIFICATION_LEVELS.CONFIG_VALID,
+    requiresRestart: false,
+    configured: true,
+  });
+  assert.equal(cursorConfigured.status, "Configured");
+  assert.equal(cursorConfigured.ready, false);
+  assert.equal(cursorConfigured.requiresRestart, false);
+
   const hostBlocked = evaluateReadyState({
     occamLevel: VERIFICATION_LEVELS.TOOLS_LIST_OK,
     hostLevel: VERIFICATION_LEVELS.CONFIG_VALID,

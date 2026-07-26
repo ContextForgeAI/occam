@@ -175,7 +175,7 @@ export function assertQuietTranscript(text) {
 
 /**
  * Public Ready / install outcome labels (user-facing).
- * @typedef {"INSTALLED"|"CONNECTED"|"READY"|"ACTION_REQUIRED"|"ALMOST_READY"|"FAILED"} InstallReadyState
+ * @typedef {"INSTALLED"|"CONNECTED"|"READY"|"ACTION_REQUIRED"|"ALMOST_READY"|"CONFIGURED"|"FAILED"} InstallReadyState
  *
  * @param {{
  *   installOk: boolean,
@@ -244,6 +244,17 @@ export function resolveInstallOutcome(input) {
       ready: false,
       headline: "Action required.",
       detail: report.message || "Configuration is valid but the host needs a trust or permission step.",
+    };
+  }
+
+  if (report.status === "Configured" || /^Configured$/i.test(report.status || "")) {
+    return {
+      state: /** @type {InstallReadyState} */ ("CONFIGURED"),
+      ready: false,
+      headline: "Configured.",
+      detail:
+        report.message ||
+        "Host registration is correct. Reload or open the app to use Occam; no further connect run is required.",
     };
   }
 

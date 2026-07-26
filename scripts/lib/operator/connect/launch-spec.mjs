@@ -6,7 +6,7 @@
  * Core does not name products here.
  */
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { join, normalize } from "node:path";
 import { platform } from "node:os";
 import { OCCAM_MANAGED_ENV_KEY, OCCAM_MANAGED_MARKER } from "./kinds.mjs";
 
@@ -14,7 +14,10 @@ import { OCCAM_MANAGED_ENV_KEY, OCCAM_MANAGED_MARKER } from "./kinds.mjs";
  * @param {string} occamHome
  */
 export function normalizeOccamHome(occamHome) {
-  return String(occamHome || "").trim().replace(/[\\/]+$/, "");
+  const trimmed = String(occamHome || "").trim().replace(/[\\/]+$/, "");
+  if (!trimmed) return "";
+  // Collapse mixed separators so registrations compare equal across hosts/writes.
+  return normalize(trimmed).replace(/[\\/]+$/, "");
 }
 
 /**

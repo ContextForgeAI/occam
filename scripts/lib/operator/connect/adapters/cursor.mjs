@@ -5,7 +5,8 @@
  * - User: ~/.cursor/mcp.json → mcpServers
  * - Workspace: <repo>/.cursor/mcp.json (may use ${workspaceFolder})
  * - Desktop auto-connect writes **user** config with absolute stable launcher paths
- * - Host discovery requires Cursor reload → requiresRestart; max Level = CONFIG_VALID
+ * - CLI cannot observe Cursor's in-session MCP load (max Level = CONFIG_VALID)
+ * - requiresRestart only with evidence: config mutated during this connect run
  */
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -104,7 +105,7 @@ export function createCursorAdapter(ctx) {
           serverName,
           connectionMethod: "CONFIG_FILE",
           canAutoConfigure: false,
-          requiresRestart: true,
+          requiresRestart: false,
           action: "refuse",
           skipReason: loaded.error || "malformed Cursor mcp.json",
           configPath,
@@ -124,13 +125,17 @@ export function createCursorAdapter(ctx) {
         action = managed || opts.force ? "update" : "skip-unmanaged";
       }
 
+      const wouldMutate = action === "add" || action === "update";
       return {
         adapterId: CURSOR_ADAPTER_ID,
         serverName,
         connectionMethod: "CONFIG_FILE",
         canAutoConfigure: true,
-        requiresRestart: true,
-        sessionHint: "Reload MCP servers in Cursor (or restart Cursor) to activate Occam",
+        // Evidence-based: restart only if this plan would rewrite config.
+        requiresRestart: wouldMutate,
+        sessionHint: wouldMutate
+          ? "Reload MCP servers in Cursor (or restart Cursor) to activate Occam"
+          : "Occam is configured for Cursor; reload MCP only if tools are missing in an already-open session",
         verificationLevel: VERIFICATION_LEVELS.CONFIG_VALID,
         desired,
         current: current.entry,
@@ -163,7 +168,8 @@ export function createCursorAdapter(ctx) {
           ok: true,
           applied: false,
           action: "noop",
-          requiresRestart: true,
+          requiresRestart: false,
+          configured: true,
           sessionHint: plan.sessionHint,
           plan,
         };
@@ -187,7 +193,9 @@ export function createCursorAdapter(ctx) {
       }
       return {
         ...result,
-        requiresRestart: true,
+        // Evidence: we changed Cursor config during this invocation.
+        requiresRestart: result.applied === true,
+        configured: true,
         sessionHint: plan.sessionHint,
       };
     },
@@ -225,19 +233,24 @@ export function createCursorAdapter(ctx) {
       if (!inspected.registered) {
         return {
           ok: false,
+          configured: false,
           level: VERIFICATION_LEVELS.INSTALLED,
-          message: "ff-occam missing from Cursor user mcp.json",
+          message: `${serverName} missing from Cursor user mcp.json`,
         };
       }
       const matches = mcpEntriesEqual(inspected.entry, plan.desired);
-      // Config valid, but Cursor must reload before tools appear in-session.
+      // Do NOT set requiresRestart here — Cursor runtime load is not observable
+      // from the CLI. Restart evidence comes only from apply() when config mutated.
       return {
         ok: matches,
+        configured: matches,
         level: matches ? VERIFICATION_LEVELS.CONFIG_VALID : VERIFICATION_LEVELS.INSTALLED,
-        requiresRestart: true,
-        sessionHint: "Reload MCP servers in Cursor (or restart Cursor) to activate Occam",
+        requiresRestart: false,
+        sessionHint: matches
+          ? "Occam is configured for Cursor; reload MCP in an open session if tools are missing"
+          : undefined,
         message: matches
-          ? "Cursor mcp.json has Occam registration (reload required)"
+          ? "Cursor mcp.json has Occam registration"
           : "Cursor mcp.json entry does not match stable launcher",
       };
     },

@@ -50,6 +50,10 @@ export function levelLabel(level) {
  * Honest Ready gate: connected + verified at least through Occam tools/list,
  * and host discovery when the adapter claims it can reach Level 5.
  *
+ * Adapters that cannot observe host runtime (maxHostLevel < HOST_DISCOVERS)
+ * may reach "Configured" when registration matches — never perpetual
+ * "restart required" without evidence, and never fake Ready.
+ *
  * @param {{
  *   occamLevel: VerificationLevel,
  *   hostLevel: VerificationLevel,
@@ -65,11 +69,10 @@ export function evaluateReadyState(state) {
   const occamOk = state.occamLevel >= VERIFICATION_LEVELS.TOOLS_LIST_OK;
   const configured =
     state.configured === true || state.hostLevel >= VERIFICATION_LEVELS.CONFIG_VALID;
-  const hostTarget = Math.min(state.maxHostLevel, VERIFICATION_LEVELS.HOST_DISCOVERS);
-  const hostOk =
-    hostTarget < VERIFICATION_LEVELS.HOST_DISCOVERS
-      ? state.hostLevel >= VERIFICATION_LEVELS.CONFIG_VALID
-      : state.hostLevel >= VERIFICATION_LEVELS.HOST_DISCOVERS;
+  const canDiscoverHost = state.maxHostLevel >= VERIFICATION_LEVELS.HOST_DISCOVERS;
+  const hostDiscovered =
+    canDiscoverHost && state.hostLevel >= VERIFICATION_LEVELS.HOST_DISCOVERS;
+  const configValid = state.hostLevel >= VERIFICATION_LEVELS.CONFIG_VALID;
 
   if (
     occamOk &&
@@ -91,7 +94,8 @@ export function evaluateReadyState(state) {
     };
   }
 
-  if (occamOk && hostOk && !state.requiresRestart) {
+  // Ready only when the adapter can and did confirm host discovery.
+  if (occamOk && hostDiscovered && !state.requiresRestart) {
     return {
       configured: true,
       requiresUserAction: false,
@@ -104,7 +108,8 @@ export function evaluateReadyState(state) {
     };
   }
 
-  if (occamOk && hostOk && state.requiresRestart) {
+  // Restart/reload only with caller evidence (e.g. config mutated this run).
+  if (occamOk && configValid && state.requiresRestart) {
     return {
       configured: true,
       requiresUserAction: false,
@@ -115,6 +120,22 @@ export function evaluateReadyState(state) {
       occamLevel: state.occamLevel,
       hostLevel: state.hostLevel,
       requiresRestart: true,
+    };
+  }
+
+  // Config correct; CLI cannot prove the running host session loaded it.
+  if (occamOk && configValid && !canDiscoverHost && !state.requiresRestart) {
+    return {
+      configured: true,
+      requiresUserAction: false,
+      hostBlocked: false,
+      ready: false,
+      status: "Configured",
+      message:
+        "Registration is correct; open or reload the host to use Occam (runtime not verifiable from the CLI)",
+      occamLevel: state.occamLevel,
+      hostLevel: state.hostLevel,
+      requiresRestart: false,
     };
   }
 
@@ -144,12 +165,45 @@ export function evaluateReadyState(state) {
 }
 
 /**
+ * @param {object} c
+ */
+function connectionNeedsRestart(c) {
+  return (
+    c.readyState?.requiresRestart === true ||
+    /restart required/i.test(c.readyState?.status || "")
+  );
+}
+
+/**
+ * @param {object} c
+ */
+function connectionNeedsAction(c) {
+  return (
+    c.readyState?.requiresUserAction === true && c.readyState?.hostBlocked === true
+  );
+}
+
+/**
+ * @param {object} c
+ */
+function connectionConfiguredOnly(c) {
+  return (
+    c.readyState?.ready !== true &&
+    !connectionNeedsRestart(c) &&
+    !connectionNeedsAction(c) &&
+    (c.readyState?.status === "Configured" ||
+      (c.hostVerify?.ok === true && c.readyState?.configured === true))
+  );
+}
+
+/**
  * Top-level Ready requires every targeted connection to be ready.
  * One host verify failure after apply → Partial (never global Ready).
  * If peers are Ready and remaining hosts need only restart or user action,
  * surface Almost ready / Action required rather than Partial.
+ * Config-only hosts (no runtime verify) aggregate as Configured — not a restart loop.
  *
- * @param {Array<{ name?: string, readyState?: { ready?: boolean, status?: string, requiresRestart?: boolean, requiresUserAction?: boolean, hostBlocked?: boolean }, hostVerify?: { ok?: boolean } }>} connections
+ * @param {Array<{ name?: string, readyState?: { ready?: boolean, status?: string, requiresRestart?: boolean, requiresUserAction?: boolean, hostBlocked?: boolean, configured?: boolean }, hostVerify?: { ok?: boolean } }>} connections
  */
 export function aggregateConnectionReady(connections) {
   if (!connections.length) {
@@ -165,27 +219,21 @@ export function aggregateConnectionReady(connections) {
   }
 
   const actionPending = connections.filter(
-    (c) =>
-      c.readyState?.ready !== true &&
-      c.readyState?.requiresUserAction === true &&
-      c.readyState?.hostBlocked === true,
+    (c) => c.readyState?.ready !== true && connectionNeedsAction(c),
   );
   const restartPending = connections.filter(
-    (c) =>
-      c.readyState?.ready !== true &&
-      (c.readyState?.requiresRestart === true ||
-        /restart required/i.test(c.readyState?.status || "")),
+    (c) => c.readyState?.ready !== true && connectionNeedsRestart(c),
   );
+  const configuredPending = connections.filter((c) => connectionConfiguredOnly(c));
+
   const onlyRecoverableBlockers = connections.every((c) => {
     if (c.readyState?.ready === true) return true;
-    const restart =
-      c.readyState?.requiresRestart === true ||
-      /restart required/i.test(c.readyState?.status || "");
-    const actionRequired =
-      c.readyState?.requiresUserAction === true &&
-      c.readyState?.hostBlocked === true;
+    if (connectionConfiguredOnly(c)) return true;
+    const restart = connectionNeedsRestart(c);
+    const actionRequired = connectionNeedsAction(c);
     return (restart && c.hostVerify?.ok === true) || actionRequired;
   });
+
   if (onlyRecoverableBlockers && actionPending.length > 0) {
     const actions = actionPending.map((c) => c.name).filter(Boolean);
     const restarts = restartPending.map((c) => c.name).filter(Boolean);
@@ -206,6 +254,22 @@ export function aggregateConnectionReady(connections) {
       message: needing.length
         ? `Restart ${needing.join(", ")} once to activate Occam`
         : "Restart required host(s) to activate Occam",
+    };
+  }
+  if (
+    onlyRecoverableBlockers &&
+    configuredPending.length > 0 &&
+    configuredPending.length +
+      connections.filter((c) => c.readyState?.ready === true).length ===
+      connections.length
+  ) {
+    const names = configuredPending.map((c) => c.name).filter(Boolean);
+    return {
+      ready: false,
+      status: "Configured",
+      message: names.length
+        ? `Occam is configured for ${names.join(", ")}`
+        : "Occam is configured for the selected app(s)",
     };
   }
 

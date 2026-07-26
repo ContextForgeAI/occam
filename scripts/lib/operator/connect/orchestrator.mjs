@@ -334,8 +334,10 @@ export async function runConnect(opts) {
           hostVerify.level
         ),
         maxHostLevel: adapter.maxVerificationLevel,
-        requiresRestart: hostVerify.requiresRestart === true,
-        configured: hostVerify.configured === true,
+        // Restart only with evidence: this apply mutated config, or verify proved it.
+        requiresRestart:
+          applied.requiresRestart === true || hostVerify.requiresRestart === true,
+        configured: hostVerify.configured === true || hostVerify.ok === true,
         requiresUserAction: hostVerify.requiresUserAction === true,
         hostBlocked: hostVerify.hostBlocked === true,
         actionMessage: hostVerify.message,
@@ -348,8 +350,11 @@ export async function runConnect(opts) {
         phase: "verify-done",
         name: adapter.name,
         ok: hostVerify.ok === true && readyState.ready !== false,
+        configured:
+          readyState.status === "Configured" ||
+          (hostVerify.configured === true && readyState.requiresRestart !== true),
         restart:
-          hostVerify.requiresRestart === true ||
+          readyState.requiresRestart === true ||
           /restart required/i.test(readyState.status || ""),
         action:
           hostVerify.requiresUserAction === true && hostVerify.hostBlocked === true,
@@ -362,8 +367,9 @@ export async function runConnect(opts) {
         // Preserve valid registrations blocked by restart or host action.
         // Only broken registrations roll back.
         verifyOk: hostVerify.ok === true,
-        configured: hostVerify.configured === true,
-        requiresRestart: hostVerify.requiresRestart === true,
+        configured: hostVerify.configured === true || hostVerify.ok === true,
+        requiresRestart:
+          applied.requiresRestart === true || hostVerify.requiresRestart === true,
         requiresUserAction: hostVerify.requiresUserAction === true,
         hostBlocked: hostVerify.hostBlocked === true,
       });

@@ -281,7 +281,8 @@ export function createConfigFileAdapter(profile, ctx) {
           ok: true,
           applied: false,
           action: "noop",
-          requiresRestart,
+          requiresRestart: false,
+          configured: true,
           sessionHint,
           plan,
         };
@@ -315,7 +316,8 @@ export function createConfigFileAdapter(profile, ctx) {
       }
       return {
         ...result,
-        requiresRestart,
+        requiresRestart: result.applied === true && requiresRestart,
+        configured: true,
         sessionHint,
       };
     },
@@ -385,10 +387,11 @@ export function createConfigFileAdapter(profile, ctx) {
         ok: matches,
         configured: matches,
         level: matches ? VERIFICATION_LEVELS.CONFIG_VALID : VERIFICATION_LEVELS.INSTALLED,
-        requiresRestart,
-        sessionHint,
+        // Restart evidence belongs on apply() when config was mutated — not on every verify.
+        requiresRestart: false,
+        sessionHint: matches ? sessionHint : undefined,
         message: matches
-          ? `${profile.name} has Occam registration (reload/restart may be required)`
+          ? `${profile.name} has Occam registration`
           : `${profile.name} entry does not match stable launcher`,
       };
     },
