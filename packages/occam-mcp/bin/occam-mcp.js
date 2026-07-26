@@ -20,7 +20,7 @@
 import { spawn } from "node:child_process";
 import { discoverRepoRoot, findInstallRoots } from "../lib/discover-repo.mjs";
 import { resolveHostBinary } from "../lib/resolve-host-binary.mjs";
-import { formatInstallBlockerMessage } from "../../../scripts/lib/host-install-gate.mjs";
+import { formatInstallBlockerMessage } from "../lib/host-install-gate.mjs";
 import {
   existsSync,
   mkdirSync,

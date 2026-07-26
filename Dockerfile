@@ -71,9 +71,10 @@ RUN groupadd -r occam && useradd -r -g occam -d /app occam && \
     chown -R occam:occam /app /ms-playwright
 USER occam
 
-# Health check
+# Health check — must use a non-blocking CLI verb. Unknown args (e.g. --version)
+# fall through to stdio MCP and hang with open stdin (EF-051).
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD /app/occam --version || exit 1
+    CMD /app/occam version-surface || exit 1
 
 # Default: stdio MCP server
 ENTRYPOINT ["/app/occam"]

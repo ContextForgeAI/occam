@@ -112,6 +112,10 @@ function stageReleaseTree(version, rid, publishedBinary, stageExeName) {
     "sync-occam-skill-package.mjs",
     "occam-refresh-host.mjs",
     "occam-session.mjs",
+    // Advertised by `occam contract` (CLI_SUBCOMMANDS) — must ship in Level B (EF-035).
+    "check-public-mcp-contract.mjs",
+    // Advertised when connect platform is present (`occam connect`); skipped if absent.
+    "occam-connect.mjs",
     "hermes-smoke.mjs",
     "occam-wrapper.sh",
     "build-release.sh",
