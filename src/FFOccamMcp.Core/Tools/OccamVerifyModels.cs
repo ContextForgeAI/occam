@@ -31,12 +31,13 @@ public sealed record OccamVerifyTimeAnchorInfo(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? TsaSubject);
 
-/// <summary>SI-05 history-mode summary: how much of the signed change-chain checked out.</summary>
+/// <summary>SI-05 history-mode summary: link integrity and signature verification are independent.</summary>
 public sealed record OccamVerifyHistoryInfo(
     int EntriesTotal,
     int SignedCount,
     int HeadSeq,
-    bool ChainValid);
+    bool ChainIntegrity,
+    string SignatureStatus);
 
 /// <summary>Flexible history input: a bare entries array or an object <c>{ history: [...] }</c> (the watch response).</summary>
 public sealed record OccamVerifyHistoryInput(WatchHistoryEntry[]? History);

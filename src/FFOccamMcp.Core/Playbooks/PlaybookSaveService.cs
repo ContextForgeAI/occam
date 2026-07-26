@@ -80,9 +80,8 @@ public sealed class PlaybookSaveService(
             lessonAppended = true;
         }
 
-        // SI-08 (local foundation): sign the saved playbook so it is self-authenticating — it
-        // carries the author's keyId, a signature, and the verify-gate proof. Self-verifiable now;
-        // the basis for a future signed registry + reputation (distribution deferred until nodes exist).
+        // SI-08 (local foundation): sign the saved playbook body. The v1 provenance keyId and
+        // verify-gate score/passesGate are unsigned claims, not cryptographic proof.
         var signedJson = PlaybookSignature.BuildSignedJson(
             jsonToWrite,
             verifyMetrics?.Score,

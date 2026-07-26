@@ -282,7 +282,8 @@ public static class OccamCliVerbs
         var verified = offline.SignatureValid
             && offline.ContentHashMatch != false
             && anchorValid != false;
-        var verdict = !offline.SignatureValid ? "signature_invalid"
+        var verdict = offline.Verdict == ReceiptVerification.WrongKey ? ReceiptVerification.WrongKey
+            : !offline.SignatureValid ? "signature_invalid"
             : offline.ContentHashMatch == false ? "content_hash_mismatch"
             : anchorValid == false ? "time_anchor_invalid"
             : "verified";
@@ -331,7 +332,9 @@ public static class OccamCliVerbs
         var leaf = Convert.ToHexString(MerkleTree.LeafHash(blockText, flags.GetValueOrDefault("block-selector"))).ToLowerInvariant();
         var membershipOk = MerkleTree.VerifyProof(leaf, proof, envelope.BlockMerkleRoot);
         var verified = offline.SignatureValid && membershipOk;
-        var verdict = !offline.SignatureValid ? "signature_invalid" : membershipOk ? "citation_verified" : "citation_invalid";
+        var verdict = offline.Verdict == ReceiptVerification.WrongKey ? ReceiptVerification.WrongKey
+            : !offline.SignatureValid ? "signature_invalid"
+            : membershipOk ? "citation_verified" : "citation_invalid";
 
         return Emit(new CliVerifyResult(verified, "citation", verdict, offline.SignatureValid, KeyId: envelope.KeyId), verified ? 0 : 1);
     }
@@ -400,12 +403,30 @@ public static class OccamCliVerbs
             return Emit(new CliVerifyResult(false, "history", "invalid_input", Message: "needs a JSON array of entries or {history:[...]}"), 1);
         }
 
-        var ok = WatchHistoryChain.Verify(entries, publicKeyPem);
+        var inspection = WatchHistoryChain.Inspect(entries, publicKeyPem);
+        var verified = inspection is
+            { ChainIntegrity: true, SignatureStatus: WatchHistoryVerification.Verified };
         var keyId = entries.FirstOrDefault(e => e.Sig is not null)?.KeyId;
+        var verdict = !inspection.ChainIntegrity
+            ? "history_invalid"
+            : inspection.SignatureStatus switch
+            {
+                WatchHistoryVerification.Verified => "history_verified",
+                WatchHistoryVerification.WrongKey => "history_wrong_key",
+                WatchHistoryVerification.Unsigned => "history_chain_ok",
+                _ => "history_invalid",
+            };
         return Emit(
-            new CliVerifyResult(ok, "history", ok ? "history_verified" : "history_invalid", KeyId: keyId,
-                Message: $"{entries.Length} entries"),
-            ok ? 0 : 1);
+            new CliVerifyResult(
+                verified,
+                "history",
+                verdict,
+                SignatureValid: inspection.SignatureStatus == WatchHistoryVerification.Verified,
+                KeyId: keyId,
+                Message: $"{entries.Length} entries",
+                ChainIntegrity: inspection.ChainIntegrity,
+                SignatureStatus: inspection.SignatureStatus),
+            verified ? 0 : 1);
     }
 
     /// <summary>Accept a full receipt object ({signed, blockLeaves, timeAnchor}) or a bare envelope.</summary>
@@ -564,7 +585,9 @@ public sealed record CliVerifyResult(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? KeyId = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] bool? TimeAnchorValid = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? TimeAnchorGenTime = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Message = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Message = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] bool? ChainIntegrity = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? SignatureStatus = null);
 
 /// <summary>Marker for <c>occam install-browser</c>. <c>ok</c> mirrors the exit code (0 = browser ready);
 /// <c>status</c> is one of installed | already_present | worker_missing | failed.</summary>

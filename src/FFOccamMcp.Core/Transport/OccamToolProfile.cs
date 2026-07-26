@@ -23,12 +23,12 @@ public static class OccamToolProfile
         "occam_map",
         "occam_search",
         "occam_extract_knowledge",
+        "occam_verify",
     ];
 
     private static readonly string[] ResearcherExtra =
     [
         "occam_claim_check",
-        "occam_verify",
     ];
 
     private static readonly string[] AuditorExtra =

@@ -10,6 +10,7 @@ public sealed record ReceiptVerification(
 {
     public const string Verified = "verified";
     public const string SignatureInvalid = "signature_invalid";
+    public const string WrongKey = "wrong_key";
     public const string ContentMismatch = "content_mismatch";
     public const string InvalidReceipt = "invalid_receipt";
 }
@@ -47,6 +48,11 @@ public static class ReceiptVerifier
         bool signatureValid;
         try
         {
+            if (!string.Equals(receipt.KeyId, ReceiptSigner.ComputeKeyId(publicKeyPem), StringComparison.Ordinal))
+            {
+                return new ReceiptVerification(false, null, ReceiptVerification.WrongKey);
+            }
+
             using var key = ECDsa.Create();
             key.ImportFromPem(publicKeyPem);
             var bytes = ReceiptCanonicalizer.CanonicalBytes(receipt);

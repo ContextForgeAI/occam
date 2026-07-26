@@ -518,7 +518,7 @@ internal static class WorkflowFrozenUnitTests
                 .Contains("\"verdict\":\"content_mismatch\"", StringComparison.Ordinal));
         assert("I.verify: wrong key fails",
             verifyTool.Verify(capsule, null, wrongPub, "offline").Sync()
-                .Contains("\"verdict\":\"signature_invalid\"", StringComparison.Ordinal));
+                .Contains("\"verdict\":\"wrong_key\"", StringComparison.Ordinal));
         assert("I.verify: prove mode works from capsule",
             verifyTool.Verify(capsule, mode: "prove", block_index: 0).Sync()
                 .Contains($"\"leaf\":\"{leaves[0]}\"", StringComparison.Ordinal));
@@ -721,7 +721,7 @@ internal static class WorkflowSecurityUnitTests
         var verify = new OccamVerifyTool(null!, signer);
         assert("sec.I: wrong key rejected",
             verify.Verify(capsule, null, other, "offline").Sync()
-                .Contains("\"verdict\":\"signature_invalid\"", StringComparison.Ordinal));
+                .Contains("\"verdict\":\"wrong_key\"", StringComparison.Ordinal));
         var evil = CapsuleCodec.Encode(CapsuleCodec.FromReceipt(signed, md + "EVIL", null));
         assert("sec.I: tampered capsule rejected",
             verify.Verify(evil, null, pub, "offline").Sync()

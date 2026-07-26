@@ -80,6 +80,14 @@ public static class WatchHistoryCanonicalizer
 /// caps entries), so verification checks consecutive links rather than assuming entry 0 is genesis —
 /// the genesis-null rule is enforced only when the first retained entry is <c>seq 0</c>.
 /// </summary>
+public sealed record WatchHistoryVerification(bool ChainIntegrity, string SignatureStatus, int SignedCount)
+{
+    public const string Unsigned = "unsigned";
+    public const string Verified = "verified";
+    public const string Invalid = "invalid";
+    public const string WrongKey = "wrong_key";
+}
+
 public static class WatchHistoryChain
 {
     /// <summary>SHA-256 (sha256:hex) over the fully-signed canonical entry — the link the next entry points at.</summary>
@@ -124,13 +132,20 @@ public static class WatchHistoryChain
     }
 
     /// <summary>
-    /// Verify a (possibly windowed) chain: consecutive seq, each link matches the prior entry's hash,
-    /// genesis (seq 0) has a null prevEntryHash, and every signed entry's signature checks out against
-    /// <paramref name="publicKeyPem"/>. Unsigned entries (receipts off) skip the signature check but
-    /// still must chain. Empty chain is trivially valid.
+    /// Verify a (possibly windowed) chain. Returns true only when chain links are intact and every
+    /// entry is signed by <paramref name="publicKeyPem"/>. Use <see cref="Inspect"/> to distinguish
+    /// link integrity from signature status.
     /// </summary>
-    public static bool Verify(IReadOnlyList<WatchHistoryEntry> entries, string publicKeyPem)
+    public static bool Verify(IReadOnlyList<WatchHistoryEntry> entries, string publicKeyPem) =>
+        Inspect(entries, publicKeyPem) is { ChainIntegrity: true, SignatureStatus: WatchHistoryVerification.Verified };
+
+    /// <summary>
+    /// Inspect chain-link integrity separately from cryptographic signature status. A wholly or
+    /// partially unsigned chain may have intact links, but is never signature-verified.
+    /// </summary>
+    public static WatchHistoryVerification Inspect(IReadOnlyList<WatchHistoryEntry> entries, string publicKeyPem)
     {
+        var signedCount = entries.Count(e => e.Sig is not null);
         for (var i = 0; i < entries.Count; i++)
         {
             var e = entries[i];
@@ -139,7 +154,7 @@ public static class WatchHistoryChain
             {
                 if (e.Seq == 0 && e.PrevEntryHash is not null)
                 {
-                    return false; // genesis must not point at anything
+                    return new WatchHistoryVerification(false, WatchHistoryVerification.Invalid, signedCount);
                 }
             }
             else
@@ -148,17 +163,50 @@ public static class WatchHistoryChain
                 if (e.Seq != prior.Seq + 1
                     || !string.Equals(e.PrevEntryHash, EntryHash(prior), StringComparison.Ordinal))
                 {
-                    return false;
+                    return new WatchHistoryVerification(false, WatchHistoryVerification.Invalid, signedCount);
                 }
-            }
-
-            if (e.Sig is not null
-                && !ReceiptVerifier.VerifyDetached(WatchHistoryCanonicalizer.CanonicalBytes(e, includeSig: false), e.Sig, publicKeyPem))
-            {
-                return false;
             }
         }
 
-        return true;
+        if (signedCount == 0)
+        {
+            return new WatchHistoryVerification(true, WatchHistoryVerification.Unsigned, 0);
+        }
+
+        string suppliedKeyId;
+        try
+        {
+            suppliedKeyId = ReceiptSigner.ComputeKeyId(publicKeyPem);
+        }
+        catch (Exception ex) when (ex is ArgumentException or CryptographicException)
+        {
+            return new WatchHistoryVerification(true, WatchHistoryVerification.Invalid, signedCount);
+        }
+
+        foreach (var e in entries)
+        {
+            if (e.Sig is null)
+            {
+                continue;
+            }
+
+            if (!string.Equals(e.KeyId, suppliedKeyId, StringComparison.Ordinal))
+            {
+                return new WatchHistoryVerification(true, WatchHistoryVerification.WrongKey, signedCount);
+            }
+
+            if (!ReceiptVerifier.VerifyDetached(
+                    WatchHistoryCanonicalizer.CanonicalBytes(e, includeSig: false),
+                    e.Sig,
+                    publicKeyPem))
+            {
+                return new WatchHistoryVerification(true, WatchHistoryVerification.Invalid, signedCount);
+            }
+        }
+
+        var signatureStatus = signedCount == entries.Count
+            ? WatchHistoryVerification.Verified
+            : WatchHistoryVerification.Unsigned;
+        return new WatchHistoryVerification(true, signatureStatus, signedCount);
     }
 }
