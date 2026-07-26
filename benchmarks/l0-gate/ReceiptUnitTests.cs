@@ -216,37 +216,74 @@ public static class ReceiptUnitTests
             verifyTool.Verify(bareEnvJson, mode: "citation", block_text: "WRONG", block_selector: "#a", proof: proofJson).Sync()
                 .Contains("\"verdict\":\"citation_invalid\"", StringComparison.Ordinal));
 
-        // --- SI-08: signed playbooks (local foundation for the registry) ---
+        // --- SI-08 / OD-4: signed playbooks (default scheme is v2; v1 kept for compat) ---
         const string pbJson = "{\"schema_version\":\"1.0\",\"id\":\"a.com\",\"routing\":{\"preferred_backend\":\"http\"},\"extract\":{\"contentSelectors\":[\"article\"]}}";
+        var otherSigner = ReceiptSigner.CreateEphemeral();
+
+        // Default save path now emits v2.
         var signedPb = PlaybookSignature.BuildSignedJson(pbJson, 85, true, 0.05, signer);
-        assert("signed playbook verifies", PlaybookSignature.Verify(signedPb, pub));
-        assert("signed playbook carries keyId + signature",
-            signedPb.Contains(signer.KeyId, StringComparison.Ordinal) && signedPb.Contains("\"signature\"", StringComparison.Ordinal));
+        assert("v2 signed playbook verifies", PlaybookSignature.Verify(signedPb, pub));
+        assert("v2 signed playbook carries sigScheme + keyId + signature",
+            signedPb.Contains("\"sigScheme\": \"playbook-sig-v2\"", StringComparison.Ordinal)
+            && signedPb.Contains(signer.KeyId, StringComparison.Ordinal)
+            && signedPb.Contains("\"signature\"", StringComparison.Ordinal));
         assert("content hash ignores provenance block",
             PlaybookSignature.ContentHash(pbJson) == PlaybookSignature.ContentHash(signedPb));
-        assert("tampered playbook body fails verify",
+        assert("v2 tampered playbook body fails verify",
             !PlaybookSignature.Verify(signedPb.Replace("article", "TAMPERED", StringComparison.Ordinal), pub));
-        assert("signed playbook wrong key fails", !PlaybookSignature.Verify(signedPb, otherPub));
+        assert("v2 signed playbook wrong key fails", !PlaybookSignature.Verify(signedPb, otherPub));
 
-        // --- SI-08 consumer loop: resolve-side Inspect classifies trust vs the local key ---
+        // T2 + inspect: verified + reports version 2 + carries signed gate snapshot.
         var inspectVerified = PlaybookSignature.Inspect(signedPb, signer.KeyId, pub);
-        assert("inspect verified for our signed recipe",
-            inspectVerified is { Present: true, Status: "verified", Score: 85, PassesGate: true }
+        assert("v2 inspect verified reports sigVersion=2",
+            inspectVerified is { Present: true, Status: "verified", Score: 85, PassesGate: true, SigVersion: 2 }
             && inspectVerified.KeyId == signer.KeyId);
         assert("inspect unsigned for bare recipe",
-            PlaybookSignature.Inspect(pbJson, signer.KeyId, pub) is { Present: false, Status: "unsigned" });
-        assert("inspect invalid for tampered body",
+            PlaybookSignature.Inspect(pbJson, signer.KeyId, pub) is { Present: false, Status: "unsigned", SigVersion: null });
+
+        // T3/T4/T5: mutating any SIGNED provenance field on a v2 artifact -> invalid (never softened).
+        assert("v2 verify.score mutation -> invalid",
+            PlaybookSignature.Inspect(signedPb.Replace("\"score\": 85", "\"score\": 99", StringComparison.Ordinal), signer.KeyId, pub)
+                is { Status: "invalid", SigVersion: 2 });
+        assert("v2 signedAt mutation -> invalid",
+            PlaybookSignature.Inspect(MutateSignedAt(signedPb), signer.KeyId, pub) is { Status: "invalid", SigVersion: 2 });
+        assert("v2 keyId mutation -> not verified (signed field)",
+            PlaybookSignature.Inspect(signedPb.Replace(signer.KeyId, otherSigner.KeyId, StringComparison.Ordinal), signer.KeyId, pub)
+                is { Status: not "verified" and not "key_mismatch", SigVersion: 2 });
+
+        // T6: body tamper -> invalid.
+        assert("v2 inspect invalid for tampered body",
             PlaybookSignature.Inspect(signedPb.Replace("article", "TAMPERED", StringComparison.Ordinal), signer.KeyId, pub)
-                is { Status: "invalid" });
-        var otherSigner = ReceiptSigner.CreateEphemeral();
+                is { Status: "invalid", SigVersion: 2 });
+
+        // T7: foreign author (valid under its own key, not ours) -> wrong_key.
         var foreignPb = PlaybookSignature.BuildSignedJson(pbJson, 70, true, 0.1, otherSigner);
-        assert("inspect wrong_key for foreign author after crypto attempt",
+        assert("v2 inspect wrong_key for foreign author after crypto attempt",
             PlaybookSignature.Inspect(foreignPb, signer.KeyId, pub)
-                is { Present: true, Status: "wrong_key" } fk && fk.KeyId == otherSigner.KeyId);
-        var mismatchedKeyIdPb = signedPb.Replace(signer.KeyId, otherSigner.KeyId, StringComparison.Ordinal);
-        assert("inspect keyId tamper verifies first then reports key_mismatch",
-            PlaybookSignature.Inspect(mismatchedKeyIdPb, signer.KeyId, pub)
-                is { Present: true, Status: "key_mismatch" });
+                is { Present: true, Status: "wrong_key", SigVersion: 2 } fk && fk.KeyId == otherSigner.KeyId);
+
+        // T8: malformed base64 signature -> invalid (same key claimed).
+        assert("v2 malformed signature -> invalid",
+            PlaybookSignature.Inspect(signedPb.Replace("\"signature\": \"", "\"signature\": \"!!!not-b64!!!", StringComparison.Ordinal), signer.KeyId, pub)
+                is { Status: "invalid" });
+
+        // T9: unknown/future scheme -> unsupported_version (no soft-verify).
+        assert("unknown sigScheme -> unsupported_version",
+            PlaybookSignature.Inspect(signedPb.Replace("playbook-sig-v2", "playbook-sig-v3", StringComparison.Ordinal), signer.KeyId, pub)
+                is { Present: true, Status: "unsupported_version", SigVersion: null });
+
+        // T1/T10: v1 artifact still verifies under v1 rules and inspects as version 1.
+        var signedV1 = PlaybookSignature.BuildSignedJson(pbJson, 60, false, 0.2, signer, PlaybookSignature.SchemeV1);
+        assert("v1 artifact still verifies (back-compat)", PlaybookSignature.Verify(signedV1, pub));
+        assert("v1 artifact inspect reports sigVersion=1",
+            PlaybookSignature.Inspect(signedV1, signer.KeyId, pub) is { Present: true, Status: "verified", SigVersion: 1 });
+        // v1 leaves gate fields UNSIGNED: mutating score does not break the v1 signature.
+        assert("v1 score mutation still verifies (unsigned in v1)",
+            PlaybookSignature.Verify(signedV1.Replace("\"score\": 60", "\"score\": 100", StringComparison.Ordinal), pub));
+        // But mutating the v1 keyId string flips authorship -> wrong_key (claimed != local, sig over hash still valid under our key).
+        assert("v1 keyId tamper -> key_mismatch (v1 keyId unsigned)",
+            PlaybookSignature.Inspect(signedV1.Replace(signer.KeyId, otherSigner.KeyId, StringComparison.Ordinal), signer.KeyId, pub)
+                is { Present: true, Status: "key_mismatch", SigVersion: 1 });
 
         // --- SI-05: signed watch-history chain ---
         var h0 = WatchHistoryChain.Append([], WatchHistoryEntry.EventFirstSeen, "sha256:aa", null, null, "2026-07-03T00:00:00Z", signer);
@@ -368,5 +405,49 @@ public static class ReceiptUnitTests
             !ContentHashToken.Matches(etagMd, ContentHashToken.BareHex(etagMd + " changed")));
 
         Console.WriteLine("L_RECEIPT_OK");
+    }
+
+    // Flip the v2 provenance.signedAt to a different (still well-formed) instant without touching any
+    // other bytes, so the mutation lands on a signed field and must break v2 verification.
+    private static string MutateSignedAt(string signedJson)
+    {
+        using var doc = JsonDocument.Parse(signedJson);
+        var buffer = new System.Buffers.ArrayBufferWriter<byte>(signedJson.Length + 16);
+        using (var w = new Utf8JsonWriter(buffer))
+        {
+            w.WriteStartObject();
+            foreach (var prop in doc.RootElement.EnumerateObject())
+            {
+                if (prop.Name != "provenance")
+                {
+                    prop.WriteTo(w);
+                    continue;
+                }
+
+                w.WritePropertyName("provenance");
+                w.WriteStartObject();
+                foreach (var pp in prop.Value.EnumerateObject())
+                {
+                    if (pp.Name == "signedAt")
+                    {
+                        var original = pp.Value.GetString() ?? "2026-01-01T00:00:00Z";
+                        var mutated = original.StartsWith("2026", StringComparison.Ordinal)
+                            ? "2019" + original[4..]
+                            : "2019-01-01T00:00:00Z";
+                        w.WriteString("signedAt", mutated);
+                    }
+                    else
+                    {
+                        pp.WriteTo(w);
+                    }
+                }
+
+                w.WriteEndObject();
+            }
+
+            w.WriteEndObject();
+        }
+
+        return Encoding.UTF8.GetString(buffer.WrittenSpan);
     }
 }
