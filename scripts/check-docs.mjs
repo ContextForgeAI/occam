@@ -1,8 +1,18 @@
 #!/usr/bin/env node
-
+/**
+ * Public documentation lint: links, anchors, tool registry, discoverability, honesty.
+ *
+ * Run: node scripts/check-docs.mjs
+ * Sub-checks (also runnable standalone):
+ *   node scripts/check-docs-discoverability.mjs
+ *   node scripts/check-docs-honesty.mjs
+ *   node scripts/check-docs-brand.mjs
+ */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, extname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { checkDiscoverability } from "./check-docs-discoverability.mjs";
+import { checkHonesty } from "./check-docs-honesty.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const docsRoot = join(repoRoot, "docs");
@@ -64,7 +74,13 @@ function anchorsFor(file) {
   for (const line of linesOutsideFences(readFileSync(file, "utf8"))) {
     const heading = line.match(/^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$/);
     if (!heading) continue;
-    const base = githubSlug(heading[1]);
+    let title = heading[1].trim();
+    const attrId = title.match(/\s*\{#([A-Za-z0-9_.-]+)\}\s*$/);
+    if (attrId) {
+      anchors.add(attrId[1].toLocaleLowerCase("en"));
+      title = title.slice(0, attrId.index).trim();
+    }
+    const base = githubSlug(title);
     const count = counts.get(base) ?? 0;
     anchors.add(count === 0 ? base : `${base}-${count}`);
     counts.set(base, count + 1);
@@ -176,15 +192,18 @@ if (!existsSync(llmsPath)) {
 } else {
   const lines = readFileSync(llmsPath, "utf8").split(/\r?\n/);
   const nonEmpty = lines.filter((line) => line.trim().length > 0);
-  if (nonEmpty[0] !== "# FF-Occam MCP") fail(llmsPath, "first non-empty line must be '# FF-Occam MCP'");
+  if (nonEmpty[0] !== "# Occam") fail(llmsPath, "first non-empty line must be '# Occam'");
   if (!nonEmpty[1]?.startsWith("> ")) fail(llmsPath, "H1 must be followed by a blockquote summary");
   const llmsText = lines.join("\n");
   for (const required of [
     "docs/index.md",
+    "docs/quick-start.md",
     "docs/choosing-a-tool.md",
     "docs/tools/index.md",
     "docs/failure-codes.md",
     "docs/configuration.md",
+    "docs/trust-and-safety.md",
+    "docs/mcp-hosts.md",
     "MCP_API_SPEC.md",
   ]) {
     if (!llmsText.includes(`(${required})`)) fail(llmsPath, `missing required route: ${required}`);
@@ -204,8 +223,20 @@ if (!indexText.includes("(tools/index.md)")) fail(indexPath, "missing route to t
 
 const readmePath = join(repoRoot, "README.md");
 const readme = readFileSync(readmePath, "utf8");
-for (const required of ["docs/index.md", "llms.txt", "AGENTS.md"]) {
-  if (!readme.includes(`(${required})`)) fail(readmePath, `missing entry-point link: ${required}`);
+for (const required of ["docs/index.md", "docs/quick-start.md", "llms.txt", "AGENTS.md", "INSTALL.md"]) {
+  if (!readme.includes(`(${required})`) && !readme.includes(`](${required})`)) {
+    // README uses both (path) and bare links; accept either markdown link form.
+  }
+  if (!readme.includes(required)) fail(readmePath, `missing entry-point reference: ${required}`);
+}
+
+// Install docs should describe connect, not only "print snippet" as the primary wire path.
+const installText = readFileSync(join(repoRoot, "INSTALL.md"), "utf8");
+if (!installText.includes("occam connect")) {
+  fail(join(repoRoot, "INSTALL.md"), "canonical install must document occam connect");
+}
+if (/Prints an MCP connection snippet/i.test(installText) && !installText.includes("fallback")) {
+  fail(join(repoRoot, "INSTALL.md"), "install narrative still treats snippet printing as the primary wire path");
 }
 
 const registryPath = join(
@@ -275,6 +306,13 @@ for (const file of activeTextFiles.filter((path) => extname(path) !== ".md" && e
   }
 }
 
+const { errors: discErrors, warnings: discWarnings } = checkDiscoverability(repoRoot);
+for (const warning of discWarnings) console.warn(`  warn: ${warning}`);
+errors.push(...discErrors);
+
+const honestyErrors = checkHonesty(repoRoot);
+errors.push(...honestyErrors);
+
 if (errors.length > 0) {
   console.error(`docs-check: FAILED (${errors.length} issue${errors.length === 1 ? "" : "s"})`);
   for (const error of errors) console.error(`  - ${error}`);
@@ -283,5 +321,5 @@ if (errors.length > 0) {
 
 console.log(
   `docs-check: OK — ${linkDocuments.length} documents, ${linksChecked} local links, ` +
-    `${anchorsChecked} anchors, ${coreTools.length} core tools`,
+    `${anchorsChecked} anchors, ${coreTools.length} core tools, discoverability + honesty gates`,
 );
