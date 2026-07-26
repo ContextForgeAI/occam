@@ -9,6 +9,39 @@ import { tryDismissConsent } from "./consent.mjs";
 const RECYCLE_AFTER_RUNS = 10;
 const RECYCLE_MEMORY_THRESHOLD_BYTES = 400 * 1024 * 1024; // 400 MB
 
+/**
+ * Clear cookies + origin storage on a warm BrowserContext between anonymous extracts.
+ * Warm Chromium reuse may continue after this; do not treat as a hard isolation boundary.
+ * @param {import("playwright").BrowserContext} context
+ */
+export async function clearAnonymousContextState(context) {
+  if (!context) {
+    return;
+  }
+
+  // setStorageState({cookies:[],origins:[]}) clears cookies, localStorage, and IndexedDB for all origins.
+  if (typeof context.setStorageState === "function") {
+    try {
+      await context.setStorageState({ cookies: [], origins: [] });
+      return;
+    } catch {
+      // fall through to clearCookies
+    }
+  }
+
+  try {
+    await context.clearCookies();
+  } catch {
+    // best effort
+  }
+
+  try {
+    await context.clearPermissions();
+  } catch {
+    // best effort
+  }
+}
+
 /** Persistent Playwright browser — amortizes chromium.launch() across requests. */
 export class BrowserPool {
   /** @type {import("./browser-session.mjs").ReturnType<createBrowserSession> extends Promise<infer T> ? T : never} | null */
@@ -162,8 +195,13 @@ export class BrowserPool {
   async #doExtractOnce(url, session, options = {}) {
     const browserPlan = readBrowserPlanFile(options.browserPlanFile ?? null);
     const extractVariant = parseExtractVariant(options.extractVariant);
+    const isAnonymous = !options.storageStateFile && !options.headersFile;
 
     try {
+      if (isAnonymous) {
+        await clearAnonymousContextState(session.context);
+      }
+
       const result = await renderAndExtract(session.context, url, {
         consentAggressive: options.consentAggressive === true,
         extractVariant,
@@ -201,6 +239,11 @@ export class BrowserPool {
     } catch (error) {
       await this.recycle();
       throw error;
+    } finally {
+      // Drop prior anonymous extract state even when the warm context is kept.
+      if (isAnonymous && this.#session?.context) {
+        await clearAnonymousContextState(this.#session.context);
+      }
     }
   }
 

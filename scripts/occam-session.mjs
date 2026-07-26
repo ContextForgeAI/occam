@@ -29,7 +29,8 @@ Commands:
            [--user-agent <ua>]  Optional User-Agent header
            [--label <text>]     _occam.label metadata
            [--force]            Overwrite existing profile
-           [--no-keep-import]   Do not copy source into _imports/
+           [--keep-import]      Retain a copy of the source under _imports/ (off by default)
+           [--no-keep-import]   Explicit no-op alias (default already discards raw copy)
 
   export-state --url <url>      Headed Playwright — log in, press Enter, save storageState
            [--id <profile-id>]  Profile + states file name (default: hostname)
@@ -120,7 +121,7 @@ function cmdImport(args) {
   const root = resolveSessionsRoot();
   ensureSessionsLayout(root);
 
-  const keepImport = args["keep-import"] !== false && args["no-keep-import"] !== true;
+  const keepImport = args["keep-import"] === true;
   if (keepImport) {
     const dest = templateImportsPath(root, sourcePath);
     mkdirSync(resolve(dest, ".."), { recursive: true });

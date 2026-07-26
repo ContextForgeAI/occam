@@ -333,9 +333,10 @@ internal static class L0InfraUnitTests
                     == OccamMcp.Core.Transport.OccamMcpServerRegistration.OccamToolNames.Length);
 
             var reader = OccamMcp.Core.Transport.OccamToolProfile.GetExposedToolNames("reader");
-            assert("reader has 7 tools", reader.Length == 7);
+            assert("reader has 8 tools", reader.Length == 8);
             assert("reader exposes client_capabilities", System.Array.IndexOf(reader, "occam_client_capabilities") >= 0);
             assert("reader exposes transcode", System.Array.IndexOf(reader, "occam_transcode") >= 0);
+            assert("reader exposes verify", System.Array.IndexOf(reader, "occam_verify") >= 0);
             assert("reader hides heal", System.Array.IndexOf(reader, "occam_playbook_heal") < 0);
             assert("reader hides save", System.Array.IndexOf(reader, "occam_playbook_save") < 0);
 
@@ -909,6 +910,25 @@ internal static class L0InfraUnitTests
 
             var skipUnhealthy = new[] { false, true };
             assert("browser pool skip unhealthy", manager.PickNextSlotIndexForTests(skipUnhealthy) == 1);
+
+            // EF-041: InstallShared must be idempotent — second install must not StopAll the first pool.
+            BrowserPoolManager.ResetSharedForTests();
+            var sharedSettings = new BrowserPoolSettings
+            {
+                PoolSize = 1,
+                BasePort = 39_301,
+                IdleTtlMs = 0,
+                MaxParallel = 1,
+            };
+            var firstShared = new BrowserPoolManager(sharedSettings, NullOccamTelemetrySink.Instance, NullBrowserDaemonClient.Instance);
+            var installed = BrowserPoolManager.InstallShared(firstShared);
+            assert("InstallShared returns first manager", ReferenceEquals(installed, firstShared));
+            var stopCountBefore = firstShared.StopAllCountForTests;
+            var secondShared = new BrowserPoolManager(sharedSettings, NullOccamTelemetrySink.Instance, NullBrowserDaemonClient.Instance);
+            var again = BrowserPoolManager.InstallShared(secondShared);
+            assert("InstallShared idempotent keeps first", ReferenceEquals(again, firstShared));
+            assert("InstallShared peek shared is first", ReferenceEquals(BrowserPoolManager.PeekSharedForTests(), firstShared));
+            assert("InstallShared does not StopAll", firstShared.StopAllCountForTests == stopCountBefore);
 
             if (paths.IsConfigured)
             {
@@ -3518,8 +3538,13 @@ internal static class L0InfraUnitTests
         // option (max_tokens) yields a distinct key.
         var baseOptions = new OccamTranscodeOptions { PlaybookPolicy = "off" };
         var keyA = TranscodeCacheKey.Compute("https://Example.com/Docs", "http_then_browser", baseOptions);
+        var keyHost = TranscodeCacheKey.Compute("https://example.com/Docs", "http_then_browser", baseOptions);
+        assert("transcode cache key normalizes host casing", keyA == keyHost);
         var keyB = TranscodeCacheKey.Compute("https://example.com/Docs#frag", "http_then_browser", baseOptions);
-        assert("transcode cache key normalizes host+fragment", keyA == keyB);
+        assert("transcode cache key fragment differs", keyA != keyB);
+        var keyFragA = TranscodeCacheKey.Compute("https://example.com/guide#installation", "http", baseOptions);
+        var keyFragB = TranscodeCacheKey.Compute("https://example.com/guide#uninstall", "http", baseOptions);
+        assert("transcode cache key distinct fragments differ", keyFragA != keyFragB);
         var keyTokens = TranscodeCacheKey.Compute(
             "https://example.com/Docs",
             "http_then_browser",

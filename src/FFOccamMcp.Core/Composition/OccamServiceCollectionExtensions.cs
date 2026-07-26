@@ -41,8 +41,8 @@ public static class OccamServiceCollectionExtensions
             var telemetry = sp.GetRequiredService<IOccamTelemetrySink>();
             var browserDaemonClient = sp.GetRequiredService<IBrowserDaemonClient>();
             var manager = new BrowserPoolManager(BrowserPoolSettings.ReadFromEnvironment(), telemetry, browserDaemonClient);
-            BrowserPoolManager.InstallShared(manager);
-            return manager;
+            // Idempotent: second WS/Remote DI rebuild must not StopAll the live process-wide pool.
+            return BrowserPoolManager.InstallShared(manager);
         });
         // SSRF guard (OutboundHttpGuard.ConnectAsync) on the clients that fetch user-influenced URLs
         // directly in-process (probe, genome) — resolves + rejects private IPs (v4/v6) and pins the
