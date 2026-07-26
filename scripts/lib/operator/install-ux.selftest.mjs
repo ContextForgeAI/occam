@@ -314,6 +314,10 @@ function testNoPhantomHermesInManualDefault() {
   assert.match(sh, /Running self-check/);
   assert.match(ps1, /occam-connect\.mjs/);
   assert.match(sh, /occam-connect\.mjs/);
+  // Reinstall must prepare/stop install-scoped hosts before replacing the tree.
+  assert.match(ps1, /Replace-OccamInstallTree|Invoke-PrepareInstallReplace/);
+  assert.match(sh, /prepare_install_replace|replace_install_tree/);
+  assert.doesNotMatch(ps1, /if \(Test-Path \$InstallDir\) \{ Remove-Item -Recurse -Force \$InstallDir \}/);
 }
 
 async function main() {
