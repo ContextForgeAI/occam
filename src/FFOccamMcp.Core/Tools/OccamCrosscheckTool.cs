@@ -8,9 +8,11 @@ namespace OccamMcp.Core.Tools;
 
 /// <summary>
 /// SI-14 (local foundation) — cross-check a URL across several vantage points and report whether the
-/// witnesses agree. Divergence proves cloaking / personalization / geo-variance / access-walling.
-/// Opt-in (host sets <c>OCCAM_CONSENSUS_MCP=1</c>): it runs 2+ full extracts per call, so it is not
-/// always-on. Each vantage carries a signed receipt, so the verdict is independently re-derivable.
+/// witnesses agree (multi-source comparison / source agreement — NOT a consensus proof). Divergence
+/// signals possible cloaking / personalization / geo-variance / access-walling; agreement is not proof
+/// of correctness. Opt-in (host sets <c>OCCAM_CONSENSUS_MCP=1</c>): it runs 2+ full extracts per call,
+/// so it is not always-on. Each vantage carries a signed extraction receipt (the individual reads are
+/// re-derivable); the agreement verdict itself is computed, not signed.
 /// </summary>
 [McpServerToolType]
 public sealed class OccamCrosscheckTool(IConsensusService consensusService)
