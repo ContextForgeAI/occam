@@ -347,6 +347,7 @@ export async function runConnectOnboarding(opts) {
   emit("Connecting Occam...");
 
   const connectMode = resolveConnectMode(env);
+  let verifyBannerShown = false;
   const connectReport = await runConnect({
     occamHome,
     connectMode: opts.forceConnect
@@ -357,21 +358,28 @@ export async function runConnectOnboarding(opts) {
     skipOccamVerify: opts.skipOccamVerify === true,
     onProgress: (ev) => {
       if (!ev || verbose) return;
-      if (ev.phase === "configure-start") emit(progressLine(`Configuring ${ev.name}…`));
+      if (ev.phase === "configure-start") {
+        emit(progressLine(`Checking ${ev.name} configuration…`));
+      }
       if (ev.phase === "configure-done") {
         if (ev.ok === false) emit(`✗ ${ev.name} — ${ev.message || "failed"}`);
         else if (ev.already) emit(okLine(`${ev.name} — already connected`));
         else emit(okLine(`${ev.name} configured`));
       }
       if (ev.phase === "verify-start") {
-        if (ev.name === "Occam") {
+        // Occam self-check runs before host configure; keep "Verifying..." for host checks.
+        if (ev.name === "Occam") return;
+        if (!verifyBannerShown) {
           emit("");
           emit("Verifying...");
-        } else emit(progressLine(`Checking ${ev.name}…`));
+          verifyBannerShown = true;
+        }
+        emit(progressLine(`Checking ${ev.name}…`));
       }
       if (ev.phase === "verify-done" && ev.name !== "Occam") {
         if (ev.restart) emit(`↻ ${ev.name} — restart required`);
         else if (ev.action) emit(`! ${ev.name} — ${ev.message || "needs your action"}`);
+        else if (ev.configured) emit(okLine(`${ev.name} — configured`));
         else if (ev.ok) emit(okLine(`${ev.name} verified`));
         else emit(`! ${ev.name} — ${ev.message || "needs attention"}`);
       }

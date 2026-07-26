@@ -157,6 +157,15 @@ jobs:
       - name: Validate install-tree replace / lock helpers
         run: node scripts/lib/prepare-install-replace.selftest.mjs
 
+      - name: Validate Occam process stop helpers
+        run: node scripts/lib/stop-occam-processes.selftest.mjs
+
+      - name: Validate PowerShell pipe bootstrap (irm | iex) semantics
+        run: node scripts/lib/bootstrap-ps1-pipe.selftest.mjs
+
+      - name: Validate Cursor configured / no restart-loop state
+        run: node scripts/lib/operator/cursor-state.selftest.mjs
+
       - name: Validate Playwright runtime recovery
         run: node workers/browser-extract/lib/ensure-chromium-usable.selftest.mjs
 

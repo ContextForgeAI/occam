@@ -318,6 +318,13 @@ function testNoPhantomHermesInManualDefault() {
   assert.match(ps1, /Replace-OccamInstallTree|Invoke-PrepareInstallReplace/);
   assert.match(sh, /prepare_install_replace|replace_install_tree/);
   assert.doesNotMatch(ps1, /if \(Test-Path \$InstallDir\) \{ Remove-Item -Recurse -Force \$InstallDir \}/);
+  // irm|iex: $PSScriptRoot is empty — must not Join-Path it unconditionally.
+  assert.match(ps1, /IsNullOrWhiteSpace\(\$PSScriptRoot\)/);
+  assert.match(ps1, /Assert-SafeInstallPath/);
+  // irm|iex under PS 5.1: no raw UTF-8 glyphs in bootstrap (codepoints only).
+  assert.doesNotMatch(ps1, /[✓✗•…]/);
+  assert.match(ps1, /\[char\]0x2713/);
+  assert.match(ps1, /\$script:OccamOk/);
 }
 
 async function main() {

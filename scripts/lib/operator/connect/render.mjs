@@ -39,6 +39,12 @@ function classifyConnection(c) {
     (c.apply?.ok === true && c.apply?.applied === false && c.apply?.action !== "skip-unmanaged");
   const applyFail = c.apply && c.apply.ok === false && c.apply.action !== "skip-unmanaged";
   const ready = c.readyState?.ready === true;
+  const configuredOnly =
+    !ready &&
+    !restart &&
+    !actionRequired &&
+    (c.readyState?.status === "Configured" ||
+      (c.hostVerify?.ok === true && c.readyState?.configured === true));
 
   if (applyFail) {
     return {
@@ -65,14 +71,14 @@ function classifyConnection(c) {
     return {
       group: "restart",
       line: `↻ ${c.name}`,
-      next: `Restart ${c.name}`,
+      next: `Restart or reload ${c.name} to activate Occam`,
     };
   }
-  if (ready || (c.hostVerify?.ok && !restart && !actionRequired)) {
+  if (ready) {
     return { group: "ready", line: `✓ ${c.name}`, next: null };
   }
-  if (already) {
-    return { group: "ready", line: `✓ ${c.name}`, next: null };
+  if (configuredOnly || already) {
+    return { group: "configured", line: `✓ ${c.name}`, next: null };
   }
   return {
     group: "action",
@@ -112,6 +118,8 @@ export function renderHumanConnectSummary(report, opts = {}) {
   /** @type {string[]} */
   const ready = [];
   /** @type {string[]} */
+  const configured = [];
+  /** @type {string[]} */
   const restart = [];
   /** @type {string[]} */
   const action = [];
@@ -121,6 +129,7 @@ export function renderHumanConnectSummary(report, opts = {}) {
   for (const c of connections) {
     const row = classifyConnection(c);
     if (row.group === "ready") ready.push(row.line);
+    else if (row.group === "configured") configured.push(row.line);
     else if (row.group === "restart") restart.push(row.line);
     else action.push(row.line);
     if (row.next) nextSteps.push(row.next);
@@ -129,6 +138,11 @@ export function renderHumanConnectSummary(report, opts = {}) {
   if (ready.length) {
     lines.push("Connected and ready:");
     for (const l of ready) lines.push(l);
+    lines.push("");
+  }
+  if (configured.length) {
+    lines.push("Configured:");
+    for (const l of configured) lines.push(l);
     lines.push("");
   }
   if (restart.length) {
@@ -142,6 +156,23 @@ export function renderHumanConnectSummary(report, opts = {}) {
     lines.push("");
   }
 
+  if (configured.length && !restart.length && !action.length) {
+    const names = connections
+      .filter((c) => classifyConnection(c).group === "configured")
+      .map((c) => c.name)
+      .filter(Boolean);
+    if (names.length === 1) {
+      lines.push(`Occam is configured for ${names[0]}.`);
+    } else if (names.length > 1) {
+      lines.push(`Occam is configured for ${names.join(", ")}.`);
+    }
+    lines.push(
+      "If the app is already open, reload its MCP servers or start a new session to use Occam.",
+    );
+    lines.push("No further `occam connect` run is required.");
+    lines.push("");
+  }
+
   if (nextSteps.length) {
     lines.push("Next steps:");
     let i = 1;
@@ -149,7 +180,8 @@ export function renderHumanConnectSummary(report, opts = {}) {
       lines.push(`${i}. ${step}.`);
       i += 1;
     }
-    if (action.length || restart.length) {
+    // Only ask to re-run connect when user action can change an observable verify result.
+    if (action.length) {
       lines.push(`${i}. Run \`occam connect\` again to verify everything.`);
     }
     lines.push("");
@@ -165,11 +197,12 @@ export function renderHumanConnectSummary(report, opts = {}) {
     lines.push(
       `${readyCount} app${readyCount === 1 ? "" : "s"} ready now; ${attention} need${attention === 1 ? "s" : ""} attention.`,
     );
-  } else if (readyCount && !attention) {
+  } else if (readyCount && !attention && !configured.length) {
     lines.push("All selected apps are ready.");
   }
   lines.push("");
   if (status === "Ready") lines.push("Ready.");
+  else if (status === "Configured") lines.push("Configured.");
   else if (status === "Almost ready") lines.push("Almost ready.");
   else lines.push("Action required.");
 

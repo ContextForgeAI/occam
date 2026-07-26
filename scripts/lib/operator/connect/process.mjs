@@ -121,7 +121,10 @@ export function envEqual(a = {}, b = {}) {
   if (ak.length !== bk.length) return false;
   for (let i = 0; i < ak.length; i++) {
     if (ak[i] !== bk[i]) return false;
-    if (String(a[ak[i]]) !== String(b[bk[i]])) return false;
+    // Path-like env (OCCAM_HOME, cwd twins) may mix \ and / across writes.
+    if (normalizePathish(String(a[ak[i]])) !== normalizePathish(String(b[bk[i]]))) {
+      return false;
+    }
   }
   return true;
 }

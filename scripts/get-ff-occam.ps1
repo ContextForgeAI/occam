@@ -17,6 +17,16 @@
 #>
 $ErrorActionPreference = "Stop"
 
+# User-facing glyphs via codepoints only. Windows PowerShell 5.1 `irm | iex` often
+# mis-decodes UTF-8 script bodies when the HTTP response omits charset=utf-8
+# (literal U+2713 becomes mojibake "â" / U+2026 becomes "â¦"). Node later prints
+# UTF-8 correctly — do not put raw multi-byte UTF-8 in Write-Host string literals.
+$script:OccamOk = [string][char]0x2713       # check mark
+$script:OccamFail = [string][char]0x2717     # ballot X
+$script:OccamEllipsis = [string][char]0x2026 # horizontal ellipsis
+$script:OccamBullet = [string][char]0x2022   # bullet
+$script:OccamEmDash = [string][char]0x2014   # em dash
+
 $Version = if ($env:OCCAM_VERSION) { $env:OCCAM_VERSION } else { "1.0.0-rc.2" }
 $Rid = if ($env:OCCAM_RID) { $env:OCCAM_RID } else { "win-x64" }
 $InstallDir = if ($env:OCCAM_INSTALL_DIR) { $env:OCCAM_INSTALL_DIR } else {
@@ -51,7 +61,7 @@ function Assert-UrlScheme([string]$Url) {
   if ($Url -match '^https://') { return }
   if ($Url -match '^http://') {
     if ($AllowHttp -eq "1") {
-      Write-Warning "OCCAM_RELEASE_ALLOW_HTTP=1 — HTTP release URL"
+      Write-Warning ("OCCAM_RELEASE_ALLOW_HTTP=1 " + $script:OccamEmDash + " HTTP release URL")
       return
     }
     throw "release URL must be HTTPS, or set OCCAM_RELEASE_ALLOW_HTTP=1"
@@ -104,8 +114,8 @@ function Resolve-SetupMode {
 
   Write-Host ""
   Write-Host "  First-run setup"
-  Write-Host "  [1] Auto   — detect and connect supported AI apps"
-  Write-Host "  [2] Manual — choose which AI app to connect"
+  Write-Host ("  [1] Auto   " + $script:OccamEmDash + " detect and connect supported AI apps")
+  Write-Host ("  [2] Manual " + $script:OccamEmDash + " choose which AI app to connect")
   Write-Host ""
   $choice = Read-Host "  Setup [1]"
   if ([string]::IsNullOrWhiteSpace($choice)) { $choice = "1" }
@@ -124,7 +134,7 @@ function Download-File([string]$Url, [string]$Dest) {
     Invoke-WebRequest -Uri $Url -OutFile $Dest -UseBasicParsing
   } catch {
     Write-Error @"
-download failed — is the release tarball published?
+download failed $($script:OccamEmDash) is the release tarball published?
   url: $Url
   maintainer: tag v$Version and ensure GitHub Release assets exist
   see: INSTALL.md
@@ -150,7 +160,7 @@ function Install-OccamUserCommand([string]$OccamHome) {
       Invoke-WebRequest -Uri $helperUrl -OutFile $helperTmp -UseBasicParsing
       $helper = $helperTmp
     } catch {
-      Write-Host "✗ Could not install the occam command (download failed)." -ForegroundColor Red
+      Write-Host ($script:OccamFail + " Could not install the occam command (download failed).") -ForegroundColor Red
       Write-Host "Re-run with `$env:OCCAM_VERBOSE=1 for details." -ForegroundColor Yellow
       throw
     }
@@ -165,7 +175,7 @@ function Install-OccamUserCommand([string]$OccamHome) {
     }
     $jsonOut = & node @cliArgs *>&1 | ForEach-Object { "$_" }
     if ($LASTEXITCODE -ne 0) {
-      Write-Host "✗ Could not install the occam command." -ForegroundColor Red
+      Write-Host ($script:OccamFail + " Could not install the occam command.") -ForegroundColor Red
       Write-Host "Re-run with `$env:OCCAM_VERBOSE=1 for details." -ForegroundColor Yellow
       if ($jsonOut) { $jsonOut | Select-Object -Last 30 | ForEach-Object { Write-Host $_ } }
       exit $LASTEXITCODE
@@ -219,7 +229,7 @@ function Install-OccamUserCommand([string]$OccamHome) {
   }
   $cmd = Get-Command occam -ErrorAction SilentlyContinue
   if (-not $cmd) {
-    Write-Host "✗ occam command is not available on PATH after install." -ForegroundColor Red
+    Write-Host ($script:OccamFail + " occam command is not available on PATH after install.") -ForegroundColor Red
     Write-Host "Open a new PowerShell, or run: `$env:PATH = '$binDir;' + `$env:PATH" -ForegroundColor Yellow
     exit 1
   }
@@ -236,7 +246,7 @@ function Invoke-LegacyInstallStep {
   if ($VerboseInstall) {
     & $Action
     if ($LASTEXITCODE -ne 0) {
-      Write-Host "✗ $Label failed" -ForegroundColor Red
+      Write-Host ($script:OccamFail + " $Label failed") -ForegroundColor Red
       Write-Host "Re-run with `$env:OCCAM_VERBOSE=1 for details." -ForegroundColor Yellow
       exit $LASTEXITCODE
     }
@@ -254,7 +264,7 @@ function Invoke-LegacyInstallStep {
   $code = $LASTEXITCODE
   if ($null -eq $code) { $code = 0 }
   if ($code -ne 0) {
-    Write-Host "✗ $Label failed" -ForegroundColor Red
+    Write-Host ($script:OccamFail + " $Label failed") -ForegroundColor Red
     Write-Host "Re-run with `$env:OCCAM_VERBOSE=1 for full diagnostics." -ForegroundColor Yellow
     if ($output) {
       Write-Host ""
@@ -264,18 +274,43 @@ function Invoke-LegacyInstallStep {
   }
 }
 
+# Fail-closed: never pass "" / null / drive-root into destructive filesystem cmdlets.
+function Assert-SafeInstallPath([string]$Path, [string]$Label) {
+  if ([string]::IsNullOrWhiteSpace($Path)) {
+    throw "$Label path is empty (internal installer error)"
+  }
+  $full = [System.IO.Path]::GetFullPath($Path)
+  $root = [System.IO.Path]::GetPathRoot($full)
+  if ([string]::IsNullOrWhiteSpace($root)) {
+    throw "$Label path is invalid: $Path"
+  }
+  $normFull = $full.TrimEnd('\', '/')
+  $normRoot = $root.TrimEnd('\', '/')
+  if ($normFull -eq $normRoot) {
+    throw ($Label + " path resolves to a drive root " + $script:OccamEmDash + " refusing: $Path")
+  }
+}
+
 # Stop install-scoped Occam hosts before replacing the tree. Never deletes.
+# Under `irm | iex`, $PSScriptRoot / $PSCommandPath are empty — never Join-Path them.
 function Invoke-PrepareInstallReplace([string]$Dir) {
+  Assert-SafeInstallPath $Dir "install"
   if (-not (Test-Path -LiteralPath $Dir)) { return $true }
 
   $helper = $null
   $helperTmp = $null
-  $candidates = @(
-    (Join-Path $PSScriptRoot "lib\prepare-install-replace.mjs"),
-    (Join-Path $Dir "scripts\lib\prepare-install-replace.mjs")
-  )
+  # Prefer helpers already on disk (install tree, or file-mode bootstrap beside scripts/lib).
+  # Do NOT Join-Path $PSScriptRoot when empty — that throws under irm|iex (Path="").
+  $candidates = New-Object System.Collections.Generic.List[string]
+  if (-not [string]::IsNullOrWhiteSpace($PSScriptRoot)) {
+    $candidates.Add((Join-Path $PSScriptRoot "lib\prepare-install-replace.mjs"))
+  }
+  $candidates.Add((Join-Path $Dir "scripts\lib\prepare-install-replace.mjs"))
   foreach ($c in $candidates) {
-    if (Test-Path -LiteralPath $c) { $helper = $c; break }
+    if (-not [string]::IsNullOrWhiteSpace($c) -and (Test-Path -LiteralPath $c)) {
+      $helper = $c
+      break
+    }
   }
   if (-not $helper) {
     $base = if ($env:OCCAM_OVERLAY_BASE_URL) {
@@ -296,7 +331,7 @@ function Invoke-PrepareInstallReplace([string]$Dir) {
 Occam is currently in use.
 
 Close or restart these AI apps before updating:
-• Any app that has Occam connected (Cursor, Claude Desktop, …)
+$($script:OccamBullet) Any app that has Occam connected (Cursor, Claude Desktop, $($script:OccamEllipsis))
 
 Then run the installer again.
 
@@ -329,7 +364,7 @@ No files were changed.
 Occam is currently in use.
 
 Close or restart these AI apps before updating:
-• Any app that has Occam connected (Cursor, Claude Desktop, …)
+$($script:OccamBullet) Any app that has Occam connected (Cursor, Claude Desktop, $($script:OccamEllipsis))
 
 Then run the installer again.
 
@@ -341,6 +376,8 @@ No files were changed.
 }
 
 function Replace-OccamInstallTree([string]$TargetDir, [string]$StagedDir) {
+  Assert-SafeInstallPath $TargetDir "install"
+  Assert-SafeInstallPath $StagedDir "staging"
   $backup = $null
   $attempts = 3
   for ($i = 1; $i -le $attempts; $i++) {
@@ -351,6 +388,7 @@ function Replace-OccamInstallTree([string]$TargetDir, [string]$StagedDir) {
     }
 
     $backup = "$TargetDir.pre-replace-$([guid]::NewGuid().ToString('N').Substring(0,8))"
+    Assert-SafeInstallPath $backup "backup"
     try {
       Move-Item -LiteralPath $TargetDir -Destination $backup -Force -ErrorAction Stop
       break
@@ -362,9 +400,9 @@ Occam is currently in use.
 
 The existing install could not be moved aside (file lock).
 Close or restart these AI apps before updating:
-• Cursor
-• Claude Desktop
-• Any other app with Occam connected
+$($script:OccamBullet) Cursor
+$($script:OccamBullet) Claude Desktop
+$($script:OccamBullet) Any other app with Occam connected
 
 Then run the installer again.
 
@@ -383,6 +421,8 @@ No files were changed.
     }
   } catch {
     if ($backup -and (Test-Path -LiteralPath $backup)) {
+      Assert-SafeInstallPath $TargetDir "install"
+      Assert-SafeInstallPath $backup "backup"
       Remove-Item -Recurse -Force $TargetDir -ErrorAction SilentlyContinue
       Move-Item -LiteralPath $backup -Destination $TargetDir -Force -ErrorAction SilentlyContinue
     }
@@ -392,6 +432,7 @@ No files were changed.
   }
 
   if ($backup) {
+    Assert-SafeInstallPath $backup "backup"
     Remove-Item -Recurse -Force $backup -ErrorAction SilentlyContinue
   }
 }
@@ -472,20 +513,20 @@ if (Test-Path $postUx) {
   Write-Host "Occam $Version"
   Write-Host ""
   Write-Host "Installing Occam"
-  Write-Host "✓ Download verified"
+  Write-Host ($script:OccamOk + " Download verified")
   $env:OCCAM_INSTALL_QUIET = if ($VerboseInstall) { "0" } else { "1" }
   $env:OCCAM_BANNER = "0"
   $env:WT_OCCAM_BANNER = "0"
 
-  Write-Host "  Installing runtime…"
+  Write-Host ("  Installing runtime" + $script:OccamEllipsis)
   $doctorPs1 = Join-Path $InstallDir "scripts\occam-doctor.ps1"
   Invoke-LegacyInstallStep -Label "Runtime setup (doctor)" -Action {
     & $doctorPs1 -SkipBuild
   }
-  Write-Host "✓ Runtime installed"
-  Write-Host "✓ Browser ready"
+  Write-Host ($script:OccamOk + " Runtime installed")
+  Write-Host ($script:OccamOk + " Browser ready")
 
-  Write-Host "  Running self-check…"
+  Write-Host ("  Running self-check" + $script:OccamEllipsis)
   $verifyJs = Join-Path $InstallDir "scripts\lib\verify-install.mjs"
   Invoke-LegacyInstallStep -Label "Host verify" -Action {
     & node $verifyJs --skip-build --version $Version
@@ -495,7 +536,7 @@ if (Test-Path $postUx) {
   Invoke-LegacyInstallStep -Label "Self-check" -Action {
     & node $smokeJs
   }
-  Write-Host "✓ Self-check passed"
+  Write-Host ($script:OccamOk + " Self-check passed")
 
   # Overlay brings current connect CLI + onboarding from public main.
   Install-OccamUserCommand $InstallDir
