@@ -22,7 +22,7 @@ namespace OccamMcp.Core.Tools;
 [McpServerToolType]
 public sealed class OccamVerifyTool(TranscodePipeline pipeline, ReceiptSigner localSigner)
 {
-    [McpServerTool(Name = "occam_verify"), Description("Verify or cite an extraction receipt without trusting FF-Occam. Modes: offline = check the signature (+ contentHash if you pass the markdown); live = re-fetch and report how much drifted and which of your RAG chunks went stale; prove = emit a compact proof that one block was in the page; citation = verify such a block+proof against the signed root without the page; history = verify a signed occam_watch change-chain.")]
+    [McpServerTool(Name = "occam_verify"), Description("Verify or cite an extraction receipt without trusting Occam. Modes: offline = check the signature (+ contentHash if you pass the markdown); live = re-fetch and report how much drifted and which of your RAG chunks went stale; prove = emit a compact proof that one block was in the page; citation = verify such a block+proof against the signed root without the page; history = verify a signed occam_watch change-chain.")]
     public async Task<string> Verify(
         [Description("The receipt JSON: a transcode response's `receipt` object ({signed, blockLeaves}) or a bare signed envelope; OR a proof-carrying `occam://capsule/…` capsule (an agent-to-agent bundle that also carries its own markdown, verified offline with no re-fetch). In history mode, the watch `history` array or `{history:[...]}`.")] string receipt,
         [Description("Optional extracted markdown to check against contentHash (offline).")] string? markdown = null,

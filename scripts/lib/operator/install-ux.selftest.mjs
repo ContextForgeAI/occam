@@ -181,7 +181,7 @@ function testRevisionLabel() {
 function testHeader() {
   assert.equal(renderProductHeader("1.0.0-rc.2"), "Occam 1.0.0-rc.2");
   assert.equal(renderProductHeader(""), "Occam");
-  assert.doesNotMatch(renderProductHeader("1.0.0-rc.2"), /Level B|FF-Occam MCP/);
+  assert.doesNotMatch(renderProductHeader("1.0.0-rc.2"), /Level B|FF-Occam|F F ─|·  M C P/);
 }
 
 function testInstallBrandArt() {
@@ -195,17 +195,19 @@ function testInstallBrandArt() {
   assert.match(ansi, /\u001b\[38;5;45m/);
   assert.match(ansi, /Occam 1\.0\.0-rc\.2/);
   assert.match(ansi, /One URL → honest Markdown/);
-  assert.doesNotMatch(ansi, /FF-Occam MCP|Level B|14 occam_\*/);
+  assert.doesNotMatch(ansi, /FF-Occam|FF Occam|F F ─|·  M C P|Level B|14 occam_\*/);
 
   const plain = renderProductBanner(false, { version: "1.0.0-rc.2", verbose: false });
   assert.doesNotMatch(plain, /\u001b/);
   assert.match(plain, /Occam 1\.0\.0-rc\.2/);
   assert.match(plain, /One URL → honest Markdown/);
+  assert.doesNotMatch(plain, /FF-Occam|F F ─|·  M C P/);
 
   const verbosePlain = renderProductBanner(false, { version: "1.0.0-rc.2", verbose: true });
   assert.doesNotMatch(verbosePlain, /\u001b/);
   assert.match(verbosePlain, /ARCHITECTURE/);
   assert.match(verbosePlain, /Occam 1\.0\.0-rc\.2/);
+  assert.doesNotMatch(verbosePlain, /FF-Occam|F F ─|·  M C P/);
 }
 
 async function testOccamHomePassThrough() {

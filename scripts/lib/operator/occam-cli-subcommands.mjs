@@ -128,7 +128,7 @@ export function findSubcommand(name) {
 
 /** @returns {string} */
 export function formatSubcommandUsage() {
-  const lines = ["occam — unified FF-Occam operator CLI", "", "Usage:", "  occam                  Open control menu (TTY)", "  occam <command> [args]", ""];
+  const lines = ["occam — unified Occam operator CLI", "", "Usage:", "  occam                  Open control menu (TTY)", "  occam <command> [args]", ""];
   lines.push("Commands:");
   for (const row of CLI_SUBCOMMANDS) {
     const alias = row.aliases?.length ? ` (${row.aliases.join(", ")})` : "";

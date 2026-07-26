@@ -224,7 +224,7 @@ public sealed class OccamMcpCli
     public static void WriteUsage(TextWriter writer)
     {
         writer.WriteLine(
-            $"FF-Occam MCP host — {OccamToolProfile.GetExposedToolNames().Length} occam_* tools (profile {OccamToolProfile.Resolve()}), stdio default.");
+            $"Occam host — {OccamToolProfile.GetExposedToolNames().Length} occam_* tools (profile {OccamToolProfile.Resolve()}), stdio default.");
         writer.WriteLine();
         writer.WriteLine("Usage:");
         writer.WriteLine("  OccamMcp.Core                    MCP over stdio (default)");

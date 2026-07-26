@@ -56,7 +56,7 @@ export async function showStatus(occamHome, opts = {}) {
 
   return {
     ok: true,
-    message: `FF-Occam ${installed} at ${occamHome}`,
+    message: `Occam ${installed} at ${occamHome}`,
     data: {
       occamHome,
       version: installed,

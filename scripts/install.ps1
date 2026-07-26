@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  FF-Occam MCP installer — production-oriented (pinned ref, verify, no silent git failures)
+  Occam installer — production-oriented (pinned ref, verify, no silent git failures)
 
 .DESCRIPTION
   Level A: clone the repo, then run with -Ref pinned to a release tag (requires .NET SDK).
@@ -85,7 +85,7 @@ if ($FromUrl) {
     }
 
     Write-Host ""
-    Write-Host "=== FF-Occam install complete (Level B) ===" -ForegroundColor Green
+    Write-Host "=== Occam install complete (Level B) ===" -ForegroundColor Green
     Write-Host "OCCAM_HOME=$InstallDir"
     Write-Host "version=$version"
     Write-Host ""
@@ -213,7 +213,7 @@ finally {
 }
 
 Write-Host ""
-Write-Host "=== FF-Occam install complete (Level A) ===" -ForegroundColor Green
+Write-Host "=== Occam install complete (Level A) ===" -ForegroundColor Green
 Write-Host "OCCAM_HOME=$InstallDir"
 Write-Host "ref=$Ref commit=$commit"
 Write-Host ""

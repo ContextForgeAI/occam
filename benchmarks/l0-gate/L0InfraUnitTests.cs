@@ -163,7 +163,11 @@ internal static class L0InfraUnitTests
 #endif
         var occamHeader = OccamLogger.FormatHeader();
         assert("occam header glyph", occamHeader.Contains('⌥', StringComparison.Ordinal));
-        assert("occam header brand", occamHeader.Contains("F F", StringComparison.Ordinal));
+        assert(
+            "occam header brand",
+            occamHeader.Contains(OccamStderrAnsiSink.ProductWordmarkPlain, StringComparison.Ordinal)
+            && !occamHeader.Contains("F F", StringComparison.Ordinal)
+            && !occamHeader.Contains("M C P", StringComparison.Ordinal));
         assert("occam header white ansi", occamHeader.Contains("\u001b[38;5;255m", StringComparison.Ordinal));
         assert("occam header width", OccamLogger.VisibleLength(occamHeader) <= OccamLogger.MaxWidth);
 
@@ -197,6 +201,26 @@ internal static class L0InfraUnitTests
 #endif
 
         var bannerText = string.Join('\n', OccamLogger.BuildStartupBanner(paths));
+        var titleLinePlain = Regex.Replace(
+            OccamLogger.FormatTitleLine("9.9.9"),
+            @"\u001b\[[0-9;]*m",
+            string.Empty);
+        assert(
+            "occam wordmark is OCCAM identity",
+            titleLinePlain.Contains(OccamStderrAnsiSink.ProductWordmarkPlain, StringComparison.Ordinal));
+        assert(
+            "occam wordmark has no FF brand",
+            !titleLinePlain.Contains("F F", StringComparison.Ordinal)
+            && !titleLinePlain.Contains("FF-", StringComparison.Ordinal)
+            && !titleLinePlain.Contains("FF Occam", StringComparison.Ordinal));
+        assert(
+            "occam wordmark has no MCP logo suffix",
+            !titleLinePlain.Contains("M C P", StringComparison.Ordinal)
+            && !titleLinePlain.Contains("· MCP", StringComparison.Ordinal)
+            && !titleLinePlain.Contains("MCP", StringComparison.Ordinal));
+        assert(
+            "occam wordmark version is dynamic",
+            titleLinePlain.Contains("v9.9.9", StringComparison.Ordinal));
         assert(
             "occam banner live extract label",
             bannerText.Contains("Live only", StringComparison.OrdinalIgnoreCase));

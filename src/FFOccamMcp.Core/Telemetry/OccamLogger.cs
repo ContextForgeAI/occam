@@ -4,7 +4,7 @@ using OccamMcp.Core.Workers;
 namespace OccamMcp.Core.Telemetry;
 
 /// <summary>
-/// FF-Occam terminal presentation layer — stderr only (MCP stdio safe).
+/// Occam terminal presentation layer — stderr only (MCP stdio safe).
 /// Banner: default on (disable <c>OCCAM_BANNER=0</c> or legacy <c>WT_OCCAM_BANNER=0</c>).
 /// Transcode profiler: <c>OCCAM_LOG=1</c> or legacy <c>WT_OCCAM_LOG=1</c>.
 /// Max visible width: <see cref="OccamStderrAnsiSink.MaxWidth"/> (52).
@@ -21,7 +21,7 @@ public static class OccamLogger
 
     public static bool IsEnabled => ResolveLogEnabled();
 
-    /// <summary>One-time FF-Occam signature banner on stderr at process start.</summary>
+    /// <summary>One-time Occam signature banner on stderr at process start.</summary>
     public static void TryWriteStartupBanner(WorkerPaths? paths = null)
     {
         if (!ResolveBannerEnabled())
