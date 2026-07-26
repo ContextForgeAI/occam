@@ -108,7 +108,12 @@ public sealed record OccamKnowledgeFactInfo(string Name, string Value, string Se
 
 public sealed record OccamExtractKnowledgeMetaInfo(string KoId);
 
-/// <summary>AF-3: receipt for knowledge extract.</summary>
+/// <summary>
+/// AF-3: extraction telemetry for a knowledge extract (confidence + elapsed). NOT an Occam Receipt v1:
+/// it is unsigned, carries no contentHash/Merkle root, and is NOT accepted by <c>occam_verify</c>. The
+/// wire field is named <c>receipt</c> for backward compatibility; treat it as extraction telemetry
+/// (OD-5). See docs-audit/HONESTY-SCHEMA-MAP.md.
+/// </summary>
 public sealed record OccamExtractKnowledgeReceiptInfo(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     double Confidence = 0.0,
