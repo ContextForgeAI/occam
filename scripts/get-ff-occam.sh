@@ -225,6 +225,38 @@ install_release() {
   trap - EXIT
 }
 
+# Run a legacy-tarball child: quiet = capture I/O (old packs ignore --quiet flags).
+# Checks still execute; diagnostics surface only on failure or OCCAM_VERBOSE=1.
+run_legacy_step() {
+  local label="$1"
+  shift
+  if [[ "$VERBOSE" -eq 1 ]]; then
+    "$@"
+    local code=$?
+    if [[ "$code" -ne 0 ]]; then
+      echo "✗ ${label} failed" >&2
+      echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
+      exit "$code"
+    fi
+    return 0
+  fi
+
+  local out code
+  set +e
+  out="$("$@" 2>&1)"
+  code=$?
+  set -e
+  if [[ "$code" -ne 0 ]]; then
+    echo "✗ ${label} failed" >&2
+    echo "Re-run with OCCAM_VERBOSE=1 for full diagnostics." >&2
+    if [[ -n "$out" ]]; then
+      echo "" >&2
+      printf '%s\n' "$out" | tail -n 40 >&2
+    fi
+    exit "$code"
+  fi
+}
+
 run_post_install() {
   export OCCAM_HOME="$INSTALL_DIR"
   cd "$INSTALL_DIR"
@@ -242,7 +274,7 @@ run_post_install() {
     return
   fi
 
-  # Legacy tarball fallback
+  # Legacy release tarball (no post-install-ux.mjs): quiet by capturing child I/O.
   echo ""
   echo "Occam $VERSION"
   echo ""
@@ -252,15 +284,14 @@ run_post_install() {
   if [[ "$VERBOSE" -eq 1 ]]; then
     export OCCAM_INSTALL_QUIET=0
   fi
-  bash "$INSTALL_DIR/scripts/occam-doctor.sh" --skip-build --quiet
+  export OCCAM_BANNER=0
+  export WT_OCCAM_BANNER=0
+
+  run_legacy_step "Runtime setup (doctor)" bash "$INSTALL_DIR/scripts/occam-doctor.sh" --skip-build
   echo "✓ Runtime installed"
   echo "✓ Browser ready"
-  local vargs=(--skip-build --version "$VERSION")
-  if [[ "$VERBOSE" -eq 0 ]]; then vargs+=(--quiet); fi
-  node "$INSTALL_DIR/scripts/lib/verify-install.mjs" "${vargs[@]}"
-  local sargs=()
-  if [[ "$VERBOSE" -eq 0 ]]; then sargs+=(--quiet); fi
-  node "$INSTALL_DIR/scripts/hermes-smoke.mjs" "${sargs[@]}"
+  run_legacy_step "Host verify" node "$INSTALL_DIR/scripts/lib/verify-install.mjs" --skip-build --version "$VERSION"
+  run_legacy_step "Self-check" node "$INSTALL_DIR/scripts/hermes-smoke.mjs"
   echo "✓ Self-check passed"
   echo ""
   echo "Occam is installed."

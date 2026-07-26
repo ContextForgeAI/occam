@@ -1,10 +1,15 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to **FFOccamMCP** (L0 core) are documented here.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1` was the first release candidate after L0 closed; `1.0.0-rc.2` is the current RC.
 
 ## [Unreleased]
+
+### Fixed
+
+- **Windows/Linux one-liner quiet install vs older release tarballs** — public bootstrap no longer relies on artifact-side `-Quiet`/`--quiet` flags (pre-`6ea0480` packs ignore them and flood doctor/SSRF/PDF/smoke JSON). Legacy fallback now captures child I/O (PowerShell `*>&1`) so default `irm | iex` stays product-facing while checks still run. Verbose: `OCCAM_VERBOSE=1`.
+
 
 ### Changed
 

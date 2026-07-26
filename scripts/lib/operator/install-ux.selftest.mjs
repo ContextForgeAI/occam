@@ -300,6 +300,12 @@ function testNoPhantomHermesInManualDefault() {
   assert.doesNotMatch(sh, /Level B bootstrap/);
   assert.match(ps1, /post-install-ux\.mjs/);
   assert.match(sh, /post-install-ux\.mjs/);
+  // Legacy tarball path must capture child I/O — old packs ignore -Quiet/--quiet.
+  assert.match(ps1, /Invoke-LegacyInstallStep/);
+  assert.match(sh, /run_legacy_step/);
+  // PowerShell doctor uses Write-Host — must capture Information stream (*>&1), not only 2>&1.
+  assert.match(ps1, /\*>&1/);
+  assert.match(sh, /2>&1/);
 }
 
 async function main() {
