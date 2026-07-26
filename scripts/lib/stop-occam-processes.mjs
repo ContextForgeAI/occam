@@ -42,16 +42,26 @@ export function publishExePath(root) {
 }
 
 /**
+ * Host binary at the install / OCCAM_HOME root (release tarball layout).
  * @param {string} root
+ */
+export function installHostExePath(root) {
+  const abs = path.resolve(root);
+  for (const base of HOST_BASE_NAMES) {
+    const candidate = path.join(abs, withExe(base));
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return path.join(abs, withExe(HOST_BASE_NAMES[0]));
+}
+
+/**
+ * @param {string} filePath
  * @returns {boolean}
  */
-export function isPublishExeLocked(root) {
-  const exe = publishExePath(root);
-  if (!fs.existsSync(exe)) {
-    return false;
-  }
+export function isFileLocked(filePath) {
+  if (!fs.existsSync(filePath)) return false;
   try {
-    const fd = fs.openSync(exe, "r+");
+    const fd = fs.openSync(filePath, "r+");
     fs.closeSync(fd);
     return false;
   } catch (err) {
@@ -61,7 +71,23 @@ export function isPublishExeLocked(root) {
 }
 
 /**
- * @typedef {{ pid: number, name: string, commandLine: string }} OccamProcess
+ * @param {string} root
+ * @returns {boolean}
+ */
+export function isPublishExeLocked(root) {
+  return isFileLocked(publishExePath(root));
+}
+
+/**
+ * @param {string} root install tree
+ * @returns {boolean}
+ */
+export function isInstallHostLocked(root) {
+  return isFileLocked(installHostExePath(root));
+}
+
+/**
+ * @typedef {{ pid: number, name: string, commandLine: string, executablePath?: string }} OccamProcess
  */
 
 /**
@@ -71,23 +97,32 @@ export function isPublishExeLocked(root) {
  */
 export function listOccamHostProcesses(root, opts = {}) {
   const includeDotnet = opts.includeDotnet === true;
-  const normalizedRoot = path.resolve(root).replace(/\\/g, "\\\\");
+  const rootResolved = path.resolve(root);
+  const rootForPs = rootResolved.replace(/'/g, "''");
 
   if (process.platform === "win32") {
-    const hostNameClause = HOST_BASE_NAMES.map(
-      (base) => `$_.Name -eq '${withExe(base).replace(/'/g, "''")}'`,
-    ).join(" -or ");
-    const hostCmdClause = HOST_BASE_NAMES.map(
-      (base) => `($_.CommandLine -match '${base.replace(/\./g, "\\.")}')`,
-    ).join(" -or ");
-    const dotnetClause = includeDotnet ? ` -or (${hostCmdClause})` : "";
+    // Path-scoped: never kill Occam hosts belonging to a different OCCAM_HOME.
     const ps = `
-$root = '${normalizedRoot.replace(/'/g, "''")}'
-Get-CimInstance Win32_Process | Where-Object {
-  (${hostNameClause}) -or
-  ($_.CommandLine -and $_.CommandLine -match 'launch-mcp-host\\.mjs' -and $_.CommandLine -match [regex]::Escape($root))${dotnetClause}
-} | ForEach-Object {
-  [PSCustomObject]@{ pid = $_.ProcessId; name = $_.Name; commandLine = $_.CommandLine }
+$ErrorActionPreference = 'SilentlyContinue'
+$root = [System.IO.Path]::GetFullPath('${rootForPs}')
+function Under-Root([string]$p) {
+  if (-not $p) { return $false }
+  try {
+    $full = [System.IO.Path]::GetFullPath($p)
+    return $full.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)
+  } catch { return $false }
+}
+Get-CimInstance Win32_Process | ForEach-Object {
+  $path = $_.ExecutablePath
+  $cmd = $_.CommandLine
+  $under = (Under-Root $path) -or ($cmd -and $cmd.IndexOf($root, [System.StringComparison]::OrdinalIgnoreCase) -ge 0)
+  if (-not $under) { return }
+  $isHost = ($_.Name -eq 'OccamMcp.Core.exe') -or ($_.Name -eq 'FFOccamMcp.Core.exe')
+  $isLauncher = $cmd -and ($cmd -match 'launch-mcp-host\\.mjs')
+  $isDotnet = ${includeDotnet ? "$true" : "$false"} -and $cmd -and ($cmd -match 'FFOccamMcp\\.Core\\.csproj|OccamMcp\\.Core')
+  if ($isHost -or $isLauncher -or $isDotnet) {
+    [PSCustomObject]@{ pid = $_.ProcessId; name = $_.Name; commandLine = $cmd; executablePath = $path }
+  }
 } | ConvertTo-Json -Compress
 `.trim();
     try {
@@ -107,6 +142,7 @@ Get-CimInstance Win32_Process | Where-Object {
           pid: Number(r.pid),
           name: String(r.name ?? ""),
           commandLine: String(r.commandLine ?? ""),
+          executablePath: String(r.executablePath ?? ""),
         }));
     } catch {
       return [];
@@ -132,8 +168,7 @@ Get-CimInstance Win32_Process | Where-Object {
       if (!trimmed || !new RegExp(grep).test(trimmed)) {
         continue;
       }
-      const mentionsHost = HOST_BASE_NAMES.some((base) => trimmed.includes(base));
-      if (!trimmed.includes(rootNorm) && !mentionsHost) {
+      if (!trimmed.includes(rootNorm)) {
         continue;
       }
       const match = trimmed.match(/^(\d+)\s+(\S+)\s+(.*)$/);
@@ -145,7 +180,7 @@ Get-CimInstance Win32_Process | Where-Object {
         continue;
       }
       seen.add(pid);
-      found.push({ pid, name: match[2], commandLine: match[3] });
+      found.push({ pid, name: match[2], commandLine: match[3], executablePath: "" });
     }
     return found;
   } catch {
@@ -249,7 +284,120 @@ export function stopOccamHostProcesses(root, opts = {}) {
     sleepMs(Math.min(graceMs, 1000));
   }
 
-  return { stopped, stillLocked: isPublishExeLocked(root) };
+  return { stopped, stillLocked: isPublishExeLocked(root) || isInstallHostLocked(root) };
+}
+
+/**
+ * Guess which AI apps may be holding the install host (human UX only).
+ * @param {OccamProcess[]} procs
+ * @returns {string[]}
+ */
+export function inferHoldingApps(procs) {
+  /** @type {Set<string>} */
+  const apps = new Set();
+  for (const p of procs) {
+    const blob = `${p.commandLine || ""}\n${p.executablePath || ""}`.toLowerCase();
+    if (blob.includes("cursor")) apps.add("Cursor");
+    if (blob.includes("claude")) apps.add("Claude Desktop / Claude Code");
+    if (blob.includes("codex")) apps.add("Codex CLI");
+    if (blob.includes("hermes")) apps.add("Hermes Agent");
+    if (blob.includes("openclaw")) apps.add("OpenClaw");
+    if (blob.includes("gemini")) apps.add("Gemini CLI");
+  }
+  return [...apps];
+}
+
+/**
+ * Human-facing message when the install tree cannot be replaced safely.
+ * @param {{ apps?: string[] }} [opts]
+ */
+export function renderInstallInUseMessage(opts = {}) {
+  const apps = opts.apps?.length ? opts.apps : [];
+  const lines = [
+    "Occam is currently in use.",
+    "",
+    "Close or restart these AI apps before updating:",
+  ];
+  if (apps.length) {
+    for (const a of apps) lines.push(`• ${a}`);
+  } else {
+    lines.push("• Any app that has Occam connected (Cursor, Claude Desktop, …)");
+  }
+  lines.push("");
+  lines.push("Then run the installer again.");
+  lines.push("");
+  lines.push("No files were changed.");
+  return lines.join("\n");
+}
+
+/**
+ * Stop install-scoped Occam hosts and report whether the tree is free to replace.
+ * Does not delete the install directory.
+ *
+ * @param {string} installDir
+ * @param {{ dryRun?: boolean, force?: boolean, retries?: number, retryMs?: number }} [opts]
+ */
+export function prepareInstallTreeReplace(installDir, opts = {}) {
+  const abs = path.resolve(installDir);
+  if (!fs.existsSync(abs)) {
+    return {
+      ok: true,
+      stopped: /** @type {OccamProcess[]} */ ([]),
+      locked: false,
+      apps: /** @type {string[]} */ ([]),
+      message: "",
+    };
+  }
+
+  const retries = opts.retries ?? 3;
+  const retryMs = opts.retryMs ?? 800;
+  /** @type {OccamProcess[]} */
+  let stoppedAll = [];
+
+  for (let i = 0; i < retries; i++) {
+    const before = listOccamHostProcesses(abs);
+    if (opts.dryRun === true) {
+      const locked = isInstallHostLocked(abs) || before.length > 0;
+      return {
+        ok: !locked,
+        stopped: before,
+        locked,
+        apps: inferHoldingApps(before),
+        message: locked ? renderInstallInUseMessage({ apps: inferHoldingApps(before) }) : "",
+        dryRun: true,
+      };
+    }
+
+    if (before.length) {
+      const { stopped } = stopOccamHostProcesses(abs, {
+        force: opts.force !== false,
+        graceMs: Math.min(retryMs, 1500),
+        includeDotnet: false,
+      });
+      stoppedAll = [...stoppedAll, ...stopped];
+    }
+
+    if (!isInstallHostLocked(abs) && listOccamHostProcesses(abs).length === 0) {
+      return {
+        ok: true,
+        stopped: stoppedAll,
+        locked: false,
+        apps: inferHoldingApps(stoppedAll),
+        message: "",
+      };
+    }
+    sleepMs(retryMs);
+  }
+
+  const remaining = listOccamHostProcesses(abs);
+  const apps = inferHoldingApps(remaining.length ? remaining : stoppedAll);
+  return {
+    ok: false,
+    stopped: stoppedAll,
+    locked: true,
+    apps,
+    message: renderInstallInUseMessage({ apps }),
+  };
 }
 
 function main() {

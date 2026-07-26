@@ -264,6 +264,138 @@ function Invoke-LegacyInstallStep {
   }
 }
 
+# Stop install-scoped Occam hosts before replacing the tree. Never deletes.
+function Invoke-PrepareInstallReplace([string]$Dir) {
+  if (-not (Test-Path -LiteralPath $Dir)) { return $true }
+
+  $helper = $null
+  $helperTmp = $null
+  $candidates = @(
+    (Join-Path $PSScriptRoot "lib\prepare-install-replace.mjs"),
+    (Join-Path $Dir "scripts\lib\prepare-install-replace.mjs")
+  )
+  foreach ($c in $candidates) {
+    if (Test-Path -LiteralPath $c) { $helper = $c; break }
+  }
+  if (-not $helper) {
+    $base = if ($env:OCCAM_OVERLAY_BASE_URL) {
+      $env:OCCAM_OVERLAY_BASE_URL.TrimEnd("/").TrimEnd("\")
+    } else {
+      "https://raw.githubusercontent.com/ContextForgeAI/occam/main"
+    }
+    $helperDir = Join-Path ([System.IO.Path]::GetTempPath()) ("occam-prepare-" + [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Path $helperDir -Force | Out-Null
+    $helperTmp = $helperDir
+    try {
+      Invoke-WebRequest -Uri ($base + "/scripts/lib/prepare-install-replace.mjs") -OutFile (Join-Path $helperDir "prepare-install-replace.mjs") -UseBasicParsing
+      Invoke-WebRequest -Uri ($base + "/scripts/lib/stop-occam-processes.mjs") -OutFile (Join-Path $helperDir "stop-occam-processes.mjs") -UseBasicParsing
+      Invoke-WebRequest -Uri ($base + "/scripts/lib/resolve-rid.mjs") -OutFile (Join-Path $helperDir "resolve-rid.mjs") -UseBasicParsing
+      $helper = Join-Path $helperDir "prepare-install-replace.mjs"
+    } catch {
+      Write-Host @"
+Occam is currently in use.
+
+Close or restart these AI apps before updating:
+• Any app that has Occam connected (Cursor, Claude Desktop, …)
+
+Then run the installer again.
+
+No files were changed.
+"@
+      if ($helperTmp) { Remove-Item -Recurse -Force $helperTmp -ErrorAction SilentlyContinue }
+      exit 2
+    }
+  }
+
+  $prevEap = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    $jsonOut = & node $helper --dir $Dir --json *>&1 | ForEach-Object { "$_" }
+    $code = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $prevEap
+    if ($helperTmp) { Remove-Item -Recurse -Force $helperTmp -ErrorAction SilentlyContinue }
+  }
+
+  if ($code -eq 0) { return $true }
+
+  $msg = $null
+  try {
+    $parsed = ($jsonOut | Out-String) | ConvertFrom-Json
+    $msg = [string]$parsed.message
+  } catch {}
+  if (-not $msg) {
+    $msg = @"
+Occam is currently in use.
+
+Close or restart these AI apps before updating:
+• Any app that has Occam connected (Cursor, Claude Desktop, …)
+
+Then run the installer again.
+
+No files were changed.
+"@
+  }
+  Write-Host $msg
+  exit 2
+}
+
+function Replace-OccamInstallTree([string]$TargetDir, [string]$StagedDir) {
+  $backup = $null
+  $attempts = 3
+  for ($i = 1; $i -le $attempts; $i++) {
+    Invoke-PrepareInstallReplace $TargetDir | Out-Null
+
+    if (-not (Test-Path -LiteralPath $TargetDir)) {
+      break
+    }
+
+    $backup = "$TargetDir.pre-replace-$([guid]::NewGuid().ToString('N').Substring(0,8))"
+    try {
+      Move-Item -LiteralPath $TargetDir -Destination $backup -Force -ErrorAction Stop
+      break
+    } catch {
+      $backup = $null
+      if ($i -eq $attempts) {
+        Write-Host @"
+Occam is currently in use.
+
+The existing install could not be moved aside (file lock).
+Close or restart these AI apps before updating:
+• Cursor
+• Claude Desktop
+• Any other app with Occam connected
+
+Then run the installer again.
+
+No files were changed.
+"@
+        exit 2
+      }
+      Start-Sleep -Milliseconds 700
+    }
+  }
+
+  try {
+    New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
+    Get-ChildItem -LiteralPath $StagedDir | ForEach-Object {
+      Move-Item -LiteralPath $_.FullName -Destination $TargetDir -Force -ErrorAction Stop
+    }
+  } catch {
+    if ($backup -and (Test-Path -LiteralPath $backup)) {
+      Remove-Item -Recurse -Force $TargetDir -ErrorAction SilentlyContinue
+      Move-Item -LiteralPath $backup -Destination $TargetDir -Force -ErrorAction SilentlyContinue
+    }
+    Write-Host "Install failed while replacing files." -ForegroundColor Red
+    Write-Host "The previous Occam install was restored when possible." -ForegroundColor Yellow
+    throw
+  }
+
+  if ($backup) {
+    Remove-Item -Recurse -Force $backup -ErrorAction SilentlyContinue
+  }
+}
+
 Resolve-SetupMode
 Test-NodeVersion
 
@@ -303,23 +435,19 @@ try {
 
   $parent = Split-Path -Parent $InstallDir
   if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
-  if (Test-Path $InstallDir) { Remove-Item -Recurse -Force $InstallDir }
-  New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
 
   $extractTmp = Join-Path $tmp "extract"
   New-Item -ItemType Directory -Path $extractTmp -Force | Out-Null
   tar.exe -xzf $tarballPath -C $extractTmp
   $inner = Get-ChildItem $extractTmp | Select-Object -First 1
   if ($null -eq $inner) { throw "empty tarball" }
+  $staged = $extractTmp
   if ($inner.PSIsContainer -and (@(Get-ChildItem $extractTmp).Count -eq 1)) {
-    Get-ChildItem $inner.FullName | ForEach-Object {
-      Move-Item -LiteralPath $_.FullName -Destination $InstallDir -Force
-    }
-  } else {
-    Get-ChildItem $extractTmp | ForEach-Object {
-      Move-Item -LiteralPath $_.FullName -Destination $InstallDir -Force
-    }
+    $staged = $inner.FullName
   }
+
+  # Download/stage first → stop install-scoped hosts → swap. Never delete before stage is ready.
+  Replace-OccamInstallTree -TargetDir $InstallDir -StagedDir $staged
   if ($VerboseInstall) { Write-Host "extracted: $InstallDir" }
 } finally {
   Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue

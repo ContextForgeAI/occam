@@ -105,6 +105,95 @@ need_cmd() {
   fi
 }
 
+# Stop install-scoped Occam hosts. Does not delete the install tree.
+prepare_install_replace() {
+  local dir="$1"
+  [[ -e "$dir" ]] || return 0
+
+  local helper=""
+  local helper_tmp=""
+  if [[ -n "$ROOT_DIR" && -f "$ROOT_DIR/scripts/lib/prepare-install-replace.mjs" ]]; then
+    helper="$ROOT_DIR/scripts/lib/prepare-install-replace.mjs"
+  elif [[ -f "$dir/scripts/lib/prepare-install-replace.mjs" ]]; then
+    helper="$dir/scripts/lib/prepare-install-replace.mjs"
+  else
+    local base="${OCCAM_OVERLAY_BASE_URL:-https://raw.githubusercontent.com/ContextForgeAI/occam/main}"
+    base="${base%/}"
+    helper_tmp="$(mktemp -d "${TMPDIR:-/tmp}/occam-prepare.XXXXXX")"
+    if ! curl -fsSL "$base/scripts/lib/prepare-install-replace.mjs" -o "$helper_tmp/prepare-install-replace.mjs" \
+      || ! curl -fsSL "$base/scripts/lib/stop-occam-processes.mjs" -o "$helper_tmp/stop-occam-processes.mjs" \
+      || ! curl -fsSL "$base/scripts/lib/resolve-rid.mjs" -o "$helper_tmp/resolve-rid.mjs"; then
+      rm -rf "$helper_tmp"
+      cat >&2 <<'EOF'
+Occam is currently in use.
+
+Close or restart these AI apps before updating:
+• Any app that has Occam connected (Cursor, Claude Desktop, …)
+
+Then run the installer again.
+
+No files were changed.
+EOF
+      exit 2
+    fi
+    helper="$helper_tmp/prepare-install-replace.mjs"
+  fi
+
+  set +e
+  local json
+  json="$(node "$helper" --dir "$dir" --json 2>&1)"
+  local code=$?
+  set -e
+  if [[ -n "$helper_tmp" ]]; then rm -rf "$helper_tmp"; fi
+  if [[ "$code" -eq 0 ]]; then
+    return 0
+  fi
+  node -e "try{const j=JSON.parse(process.argv[1]); if(j.message) console.error(j.message)}catch(e){process.exit(1)}" "$json" 2>/dev/null || cat >&2 <<'EOF'
+Occam is currently in use.
+
+Close or restart these AI apps before updating:
+• Any app that has Occam connected (Cursor, Claude Desktop, …)
+
+Then run the installer again.
+
+No files were changed.
+EOF
+  exit 2
+}
+
+replace_install_tree() {
+  local target="$1"
+  local staged="$2"
+  local backup=""
+  if [[ -e "$target" ]]; then
+    backup="${target}.pre-replace-$$"
+    if ! mv "$target" "$backup"; then
+      cat >&2 <<'EOF'
+Occam is currently in use.
+
+The existing install could not be moved aside (file lock).
+Close AI apps using Occam, then run the installer again.
+
+No files were changed.
+EOF
+      exit 2
+    fi
+  fi
+  mkdir -p "$target"
+  if ! mv "$staged"/* "$target"/; then
+    if [[ -n "$backup" && -e "$backup" ]]; then
+      rm -rf "$target"
+      mv "$backup" "$target" || true
+    fi
+    echo "Install failed while replacing files." >&2
+    echo "The previous Occam install was restored when possible." >&2
+    exit 1
+  fi
+  if [[ -n "$backup" ]]; then
+    rm -rf "$backup" || true
+  fi
+}
+
 ensure_node_on_path() {
   if command -v node >/dev/null 2>&1; then
     return 0
@@ -214,11 +303,19 @@ install_release() {
   local parent
   parent="$(dirname "$INSTALL_DIR")"
   mkdir -p "$parent"
-  if [[ -e "$INSTALL_DIR" ]]; then
-    rm -rf "$INSTALL_DIR"
+
+  local extract_tmp="$tmp/extract"
+  mkdir -p "$extract_tmp"
+  tar -xzf "$tarball_path" -C "$extract_tmp"
+  # Prefer single top-level directory contents as the staged tree.
+  local staged="$extract_tmp"
+  local entries=("$extract_tmp"/*)
+  if [[ ${#entries[@]} -eq 1 && -d "${entries[0]}" ]]; then
+    staged="${entries[0]}"
   fi
-  mkdir -p "$INSTALL_DIR"
-  tar -xzf "$tarball_path" -C "$INSTALL_DIR" --strip-components=1
+
+  prepare_install_replace "$INSTALL_DIR"
+  replace_install_tree "$INSTALL_DIR" "$staged"
   v_echo "extracted: $INSTALL_DIR"
 
   rm -rf "$tmp"
