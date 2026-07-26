@@ -40,7 +40,7 @@ export {
 } from "./paths.mjs";
 export { createConfigFileAdapter } from "./config-file-adapter.mjs";
 export { runConnect } from "./orchestrator.mjs";
-export { renderConnectTranscript } from "./render.mjs";
+export { renderConnectTranscript, renderHumanConnectSummary } from "./render.mjs";
 export {
   createHostAdapters,
   listHostAdapters,

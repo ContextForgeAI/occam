@@ -357,20 +357,31 @@ run_post_install() {
   export OCCAM_BANNER=0
   export WT_OCCAM_BANNER=0
 
+  echo "  Installing runtime…"
   run_legacy_step "Runtime setup (doctor)" bash "$INSTALL_DIR/scripts/occam-doctor.sh" --skip-build
   echo "✓ Runtime installed"
   echo "✓ Browser ready"
+  echo "  Running self-check…"
   run_legacy_step "Host verify" node "$INSTALL_DIR/scripts/lib/verify-install.mjs" --skip-build --version "$VERSION"
   run_legacy_step "Self-check" node "$INSTALL_DIR/scripts/hermes-smoke.mjs"
   echo "✓ Self-check passed"
 
   install_occam_user_command "$INSTALL_DIR"
 
-  echo ""
-  echo "Occam is installed."
-  echo ""
-  echo "Connect an AI app later with:"
-  echo "  occam connect"
+  local connect_js="$INSTALL_DIR/scripts/occam-connect.mjs"
+  if [[ -f "$connect_js" ]]; then
+    local carg=()
+    if [[ "$VERBOSE" -eq 1 ]]; then
+      carg+=(--verbose)
+    fi
+    node "$connect_js" "${carg[@]}"
+  else
+    echo ""
+    echo "Occam is installed."
+    echo ""
+    echo "Connect an AI app later with:"
+    echo "  occam connect"
+  fi
 }
 
 main() {

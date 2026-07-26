@@ -151,6 +151,9 @@ jobs:
       - name: Validate user CLI launcher / PATH helpers
         run: node scripts/lib/operator/install-user-cli.selftest.mjs
 
+      - name: Validate first-run connect onboarding UX
+        run: node scripts/lib/operator/connect-onboarding.selftest.mjs
+
       - name: Validate Playwright runtime recovery
         run: node workers/browser-extract/lib/ensure-chromium-usable.selftest.mjs
 

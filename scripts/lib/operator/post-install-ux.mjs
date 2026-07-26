@@ -21,6 +21,7 @@ import {
   isInstallQuiet,
   isInstallVerbose,
   okLine,
+  progressLine,
   renderInstallingHeader,
   renderProductHeader,
   shouldUseInstallColor,
@@ -173,6 +174,7 @@ async function main() {
   }
 
   // Stage: Install runtime (doctor = npm workers + browser + selftests)
+  emit(progressLine("Installing runtime…"));
   const doctorStatus = runDoctor(occamHome, quiet, process.env);
   if (doctorStatus !== 0) {
     console.error("Install failed during runtime setup (doctor). Re-run with --verbose for details.");
@@ -182,6 +184,7 @@ async function main() {
   emit(okLine("Browser ready"));
 
   // Stage: Verify
+  emit(progressLine("Running self-check…"));
   const verifyJs = join(occamHome, "scripts", "lib", "verify-install.mjs");
   const verifyArgs = ["--skip-build"];
   if (quiet) verifyArgs.push("--quiet");
@@ -236,16 +239,21 @@ async function main() {
     // Any real TTY gets multi-host safety prompts; single-host auto still connects without asking.
     interactive,
     forceConnect: false,
+    source: "install",
+    emit,
   });
 
   if (connectResult.connectReport) {
     writeConnectLast(connectResult.connectReport);
   }
 
-  console.log(connectResult.transcript);
+  // Discovery/plan/consent already emitted via `emit`; print the final human summary.
+  if (connectResult.transcript) {
+    console.log(connectResult.transcript);
+  }
   if (verbose && connectResult.connectReport) {
     console.log("");
-    console.log(renderConnectTranscript(connectResult.connectReport));
+    console.log(renderConnectTranscript(connectResult.connectReport, { verbose: true }));
   }
 
   if (quiet) {
