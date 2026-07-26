@@ -1,7 +1,7 @@
 /** Operator-facing onboard copy (English — shipped operator UX). */
 
 export const ONBOARD_WELCOME = {
-  title: "FF-Occam — First-run setup",
+  title: "Occam — First-run setup",
   subtitle: "Optional · skippable · core MCP tools unchanged",
   bullets: [
     "Writes ~/.occam/onboard.json and prints a paste-ready MCP snippet for your primary host.",
@@ -17,7 +17,7 @@ export const STEP_COPY = {
   occamHome: {
     title: "Install root",
     description:
-      "Absolute path to your FF-Occam install (repo clone or Level B tarball).\n" +
+      "Absolute path to your Occam install (repo clone or release tarball).\n" +
       "Doctor, workers, and MCP host resolve paths from OCCAM_HOME.",
     choices: undefined,
   },

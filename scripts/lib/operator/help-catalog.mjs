@@ -68,7 +68,7 @@ export function buildHelpViewModel(opts = {}) {
   return {
     schema_version: HELP_SCHEMA_VERSION,
     generator: readOccamVersion(),
-    title: "FF-Occam CLI",
+    title: "Occam CLI",
     tiers: ["operator", "ci", "maintainer"],
     commands,
     nextSteps: OPERATOR_NEXT_STEPS,

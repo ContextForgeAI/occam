@@ -7,7 +7,7 @@ import { horizontalRule, sectionBox } from "./tty-layout.mjs";
 export function renderControlHeader(occamHome, version) {
   return [
     "",
-    sectionBox("FF-Occam Control", [
+    sectionBox("Occam Control", [
       `Version: ${version}`,
       `OCCAM_HOME: ${occamHome}`,
       "Type a menu key and press Enter.",

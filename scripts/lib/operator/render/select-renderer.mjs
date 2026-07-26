@@ -21,7 +21,7 @@ export function selectRenderer(format) {
 /** @param {ReturnType<import("../onboard-flow.mjs").buildOnboardResult>} result */
 function renderOnboardPlain(result, mcpConfig) {
   const lines = [
-    "FF-Occam onboard complete",
+    "Occam onboard complete",
     `profile: ${result.profile}`,
     `host: ${result.hostTarget}`,
     `config: ${result.configPath}`,

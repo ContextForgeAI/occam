@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# FF-Occam MCP installer — production-oriented (pinned ref, verify, no silent git failures)
+# Occam installer — production-oriented (pinned ref, verify, no silent git failures)
 #
 # Level A (clone + doctor + SDK):
 #   git clone "$OCCAM_REPO_URL" /opt/ff-occam && cd /opt/ff-occam
@@ -106,7 +106,7 @@ if [[ -n "$RELEASE_URL" ]]; then
   fi
 
   echo ""
-  echo "=== FF-Occam install complete (Level B) ==="
+  echo "=== Occam install complete (Level B) ==="
   echo "OCCAM_HOME=$INSTALL_DIR"
   echo "version=$VERSION"
   echo ""
@@ -190,7 +190,7 @@ if [[ "$SKIP_VERIFY" -eq 0 ]]; then
 fi
 
 echo ""
-echo "=== FF-Occam install complete (Level A) ==="
+echo "=== Occam install complete (Level A) ==="
 echo "OCCAM_HOME=$INSTALL_DIR"
 echo "ref=$REF commit=$COMMIT"
 echo ""

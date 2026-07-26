@@ -86,10 +86,16 @@ public sealed partial class OccamStderrAnsiSink : IOccamLogSink
         yield return FitVisible($"{SpaceGray}  {model.ListeningHint}{Reset}", MaxWidth);
     }
 
+    /// <summary>
+    /// Canonical public terminal wordmark (plain, no ANSI). Spaced OCCAM identity —
+    /// no FF prefix, no MCP suffix in the logo. Version is rendered separately.
+    /// </summary>
+    public const string ProductWordmarkPlain = "⌥  ─ O C C A M";
+
     internal string FormatTitleLine(string? version = null)
     {
         version ??= ResolveProductVersion();
-        var brand = $"{PureWhite} ⌥  F F ─ O C C A M  ·  M C P{Reset}";
+        var brand = $"{PureWhite} {ProductWordmarkPlain}{Reset}";
         var ver = $"{SpaceGray}v{version}{Reset}";
         var brandVisible = VisibleLength(brand);
         var verVisible = VisibleLength(ver);
