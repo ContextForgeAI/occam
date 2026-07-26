@@ -8,6 +8,7 @@
 export const FORBIDDEN_DEFAULT_OUTPUT = Object.freeze([
   "Level B bootstrap",
   "FF-Occam MCP doctor",
+  "FF-Occam MCP doctor (L0 skeleton)",
   "host_target: hermes",
   "commit=unknown",
   "MCP host ready",
@@ -20,6 +21,8 @@ export const FORBIDDEN_DEFAULT_OUTPUT = Object.freeze([
   "playwright cache:",
   "Canonical launcher:",
   "Avoid on git clone:",
+  "doctor: OK",
+  "verify-install: commit=",
 ]);
 
 export const DOCS_URL = "https://contextforgeai.github.io/occam/";

@@ -133,6 +133,45 @@ download failed — is the release tarball published?
   }
 }
 
+# Run a legacy-tarball child step. Pre-quiet release packs ignore -Quiet/--quiet
+# flags (PowerShell also silently drops unknown -Quiet), so default mode MUST
+# capture stdout/stderr. Checks still run; diagnostics show only on failure or verbose.
+function Invoke-LegacyInstallStep {
+  param(
+    [Parameter(Mandatory = $true)][string]$Label,
+    [Parameter(Mandatory = $true)][scriptblock]$Action
+  )
+  if ($VerboseInstall) {
+    & $Action
+    if ($LASTEXITCODE -ne 0) {
+      Write-Host "✗ $Label failed" -ForegroundColor Red
+      Write-Host "Re-run with `$env:OCCAM_VERBOSE=1 for details." -ForegroundColor Yellow
+      exit $LASTEXITCODE
+    }
+    return
+  }
+
+  $prevEap = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    # *>&1 is required: doctor uses Write-Host (Information stream), which 2>&1 does not capture.
+    $output = & $Action *>&1 | ForEach-Object { "$_" }
+  } finally {
+    $ErrorActionPreference = $prevEap
+  }
+  $code = $LASTEXITCODE
+  if ($null -eq $code) { $code = 0 }
+  if ($code -ne 0) {
+    Write-Host "✗ $Label failed" -ForegroundColor Red
+    Write-Host "Re-run with `$env:OCCAM_VERBOSE=1 for full diagnostics." -ForegroundColor Yellow
+    if ($output) {
+      Write-Host ""
+      $output | Select-Object -Last 40 | ForEach-Object { Write-Host $_ }
+    }
+    exit $code
+  }
+}
+
 Resolve-SetupMode
 Test-NodeVersion
 
@@ -206,25 +245,33 @@ if (Test-Path $postUx) {
   & node @postArgs
   if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 } else {
-  # Legacy tarball fallback — still quiet when possible.
+  # Legacy release tarball (no post-install-ux.mjs): quiet by capturing child I/O.
+  # Published v1.0.0-rc.2 packs predate quiet doctor/verify/smoke flags.
   Write-Host ""
   Write-Host "Occam $Version"
   Write-Host ""
   Write-Host "Installing Occam"
   Write-Host "✓ Download verified"
   $env:OCCAM_INSTALL_QUIET = if ($VerboseInstall) { "0" } else { "1" }
-  & (Join-Path $InstallDir "scripts\occam-doctor.ps1") -SkipBuild -Quiet:(-not $VerboseInstall)
-  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  $env:OCCAM_BANNER = "0"
+  $env:WT_OCCAM_BANNER = "0"
+
+  $doctorPs1 = Join-Path $InstallDir "scripts\occam-doctor.ps1"
+  Invoke-LegacyInstallStep -Label "Runtime setup (doctor)" -Action {
+    & $doctorPs1 -SkipBuild
+  }
   Write-Host "✓ Runtime installed"
   Write-Host "✓ Browser ready"
-  $verifyArgs = @((Join-Path $InstallDir "scripts\lib\verify-install.mjs"), "--skip-build", "--version", $Version)
-  if (-not $VerboseInstall) { $verifyArgs += "--quiet" }
-  & node @verifyArgs
-  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-  $smokeArgs = @((Join-Path $InstallDir "scripts\hermes-smoke.mjs"))
-  if (-not $VerboseInstall) { $smokeArgs += "--quiet" }
-  & node @smokeArgs
-  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+  $verifyJs = Join-Path $InstallDir "scripts\lib\verify-install.mjs"
+  Invoke-LegacyInstallStep -Label "Host verify" -Action {
+    & node $verifyJs --skip-build --version $Version
+  }
+
+  $smokeJs = Join-Path $InstallDir "scripts\hermes-smoke.mjs"
+  Invoke-LegacyInstallStep -Label "Self-check" -Action {
+    & node $smokeJs
+  }
   Write-Host "✓ Self-check passed"
   Write-Host ""
   Write-Host "Occam is installed."
