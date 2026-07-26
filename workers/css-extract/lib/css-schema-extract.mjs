@@ -1,5 +1,14 @@
 import { JSDOM, VirtualConsole } from "jsdom";
 
+/** Thrown when a schema field uses attr=nuxt — page JS must never execute in Node (EF-013). */
+export class NuxtAttrDisabledError extends Error {
+  constructor() {
+    super("nuxt_attr_disabled");
+    this.name = "NuxtAttrDisabledError";
+    this.code = "nuxt_attr_disabled";
+  }
+}
+
 /**
  * Flat field extract + optional row mode (shared with css-extract worker).
  * @param {string} html
@@ -84,7 +93,8 @@ function extractRows(doc, html, finalUrl, baseSelector, fields) {
 function extractField(doc, html, finalUrl, spec) {
   const attr = spec.attr ?? "text";
   if (attr === "nuxt") {
-    return applyDivide(readNuxtPath(html, String(spec.selector ?? "")), spec.divide);
+    // EF-013: never eval page-controlled __NUXT__ in Node. Typed failure for callers.
+    throw new NuxtAttrDisabledError();
   }
   if (attr === "regex") {
     return applyDivide(readHtmlRegex(html, finalUrl, String(spec.selector ?? "")), spec.divide);
@@ -126,40 +136,6 @@ function readHtmlRegex(html, pageUrl, patternTemplate) {
   const pattern = patternTemplate.replaceAll("{id}", id);
   const match = html.match(new RegExp(pattern, "s"));
   return match?.[1]?.trim() ?? null;
-}
-
-function readNuxtPath(html, path) {
-  const match = html.match(/window\.__NUXT__\s*=\s*(.+?)<\/script>/s);
-  if (!match) {
-    return null;
-  }
-
-  let nuxt;
-  try {
-    nuxt = (0, eval)(match[1]);
-  } catch {
-    return null;
-  }
-
-  const parts = path.split(".");
-  let current = nuxt;
-  for (const part of parts) {
-    if (current == null) {
-      return null;
-    }
-
-    current = /^\d+$/.test(part) ? current[Number(part)] : current[part];
-  }
-
-  if (current == null) {
-    return null;
-  }
-
-  if (typeof current === "object") {
-    return JSON.stringify(current);
-  }
-
-  return String(current).trim();
 }
 
 /**

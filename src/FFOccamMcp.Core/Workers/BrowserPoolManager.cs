@@ -42,10 +42,20 @@ public sealed class BrowserPoolManager : IBrowserPoolManager
 
     public static BrowserPoolManager Shared => _shared ??= new BrowserPoolManager();
 
-    internal static void InstallShared(BrowserPoolManager manager)
+    /// <summary>
+    /// Install the process-wide shared pool once. Subsequent calls are idempotent:
+    /// they return the already-installed manager and do <strong>not</strong> call <see cref="StopAll"/>.
+    /// </summary>
+    internal static BrowserPoolManager InstallShared(BrowserPoolManager manager)
     {
-        _shared?.StopAll();
+        ArgumentNullException.ThrowIfNull(manager);
+        if (_shared is not null)
+        {
+            return _shared;
+        }
+
         _shared = manager;
+        return _shared;
     }
 
     public int PoolSize => _settings.PoolSize;
@@ -159,6 +169,9 @@ public sealed class BrowserPoolManager : IBrowserPoolManager
 
     public void StopAll()
     {
+#if OCCAM_GATE
+        Interlocked.Increment(ref _stopAllCountForTests);
+#endif
         lock (_gate)
         {
             foreach (var slot in _slots)
@@ -180,6 +193,12 @@ public sealed class BrowserPoolManager : IBrowserPoolManager
     }
 
 #if OCCAM_GATE
+    private int _stopAllCountForTests;
+
+    internal int StopAllCountForTests => Volatile.Read(ref _stopAllCountForTests);
+
+    internal static BrowserPoolManager? PeekSharedForTests() => _shared;
+
     internal static void ResetSharedForTests()
     {
         _shared?.StopAll();
