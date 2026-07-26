@@ -1,18 +1,16 @@
 # @ff-occam/mcp
 
-**FF-Occam MCP** — Native AOT .NET 10 host that turns a URL into clean, token-budgeted Markdown **locally**, with typed failures and optional signed receipts.
+**Occam MCP** — local .NET host that turns a URL into token-budgeted Markdown with typed failures and optional integrity receipts (integrity relative to a key — not truth/origin proof).
 
-> **Not the RC install path.** For `1.0.0-rc.2` use root [INSTALL.md](../../INSTALL.md):
-> - Linux/macOS: `curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash`
-> - Windows: `irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex`
->
-> `@ff-occam/mcp` / `npx` apply only after a future npm publication or a private registry build.
+> **Package status:** npm is **NOT a GA 1.0 install channel** (OD-3). `@ff-occam/mcp` is **not** part of the supported `1.0.0-rc.2` install path.  
+> Use GitHub Release archives + bootstrap scripts — see root `INSTALL.md` / `docs/install.md`.  
+> Registry / `npx` commands below are for future/experimental use only after an end-to-end npm contract passes. Core MCP tool count is registry-defined and varies by profile/opt-in — do not treat a fixed “14/15” as a health check.
 
-- **Local & private** — the URL and its content never leave the machine.
-- **Honest failures** — a typed `failure.code` on `ok:false`; the tool never hallucinates page content from memory.
-- **Verifiable** — every extraction can emit a signed receipt (`contentHash` + block Merkle root); verify offline with the bundled CLI.
+- **Local-first** — default extraction runs on your machine.
+- **Honest failures** — typed `failure.code` on `ok:false`; never invent page content from memory.
+- **Optional receipts** — signed envelopes for offline integrity checks against a key you supply.
 
-## Quick Start (post-RC / private registry only)
+## Quick Start
 
 ```bash
 # Stdio mode (for Cursor, Claude, any MCP client)

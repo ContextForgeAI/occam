@@ -1,6 +1,6 @@
 # Tools — which tool for which job
 
-FF-Occam exposes **15 tools by default**; **6 more are opt-in** via host environment flags.
+Occam exposes **15 tools by default**; **6 more are opt-in** via host environment flags.
 All tools return a **JSON string** (camelCase). The trust rule everywhere: **`ok: false` means the
 page content is unknown** — never substitute model memory.
 
@@ -24,7 +24,7 @@ intent, outputs, and recovery behavior.
 | Validate a recipe without fetching | [`occam_playbook_lint`](occam_playbook_lint.md) | Static, deterministic |
 | Save a recipe (with live verify) | [`occam_playbook_save`](occam_playbook_save.md) | Default dry-runs a transcode first |
 | Verify a signed receipt / cite a block | [`occam_verify`](occam_verify.md) | offline / live / prove / citation / history modes |
-| Check whether a page backs a claim | [`occam_claim_check`](occam_claim_check.md) | Returns provable source blocks or `found:false` |
+| Check whether a page backs a claim | [`occam_claim_check`](occam_claim_check.md) | Returns retrieved blocks + Merkle membership proofs; `found:false` is retrieval-only |
 | Audit a report's citations in bulk | [`occam_attest`](occam_attest.md) | 1–50 `{claim, sourceUrl}` rows |
 | Build a signed, auditable URL corpus | [`occam_dataset_export`](occam_dataset_export.md) | Per-row receipts + one manifest signature |
 
@@ -35,7 +35,7 @@ Set the flag in the host environment **before** starting the MCP server, then re
 | Tool | Enable with | Purpose |
 |---|---|---|
 | [`occam_batch_submit` / `occam_batch_status` / `occam_batch_results`](occam_batch.md) | `OCCAM_BATCH_MCP=1` | Fire-and-forget async transcode of a URL list |
-| [`occam_watch`](occam_watch.md) | `OCCAM_WATCH_MCP=1` | Stateful page-change detection with signed history |
+| [`occam_watch`](occam_watch.md) | `OCCAM_WATCH_MCP=1` | Stateful page-change detection; history entries signed when receipts enabled |
 | [`occam_crosscheck`](occam_crosscheck.md) | `OCCAM_CONSENSUS_MCP=1` | Compare vantage points; detect cloaking/personalization |
 | [`occam_failure_atlas`](occam_failure_atlas.md) | `OCCAM_ATLAS_MCP=1` | Per-host failure map of the current run; skip walled hosts |
 

@@ -40,7 +40,7 @@ Activate this skill when the user or task involves:
 
 1. **MCP host installed** — Hermes/prod without .NET 10: `get-ff-occam.sh` tarball; dev with SDK: `occam doctor`. Never edit csproj to net8.0; never run in-repo `occam-mcp.js` on a git clone.
 2. **MCP wired** — stdio server with **`OCCAM_HOME`** set (non-empty `env`). Hermes: `scripts/occam-wrapper.sh` + reload MCP.
-3. **Smoke check** — `occam smoke`, `tools/list`, or `node scripts/hermes-smoke.mjs` → **14** `occam_*` tools, exit 0.
+3. **Smoke check** — `occam smoke`, `tools/list`, or `node scripts/hermes-smoke.mjs` → registry core `occam_*` tools present (count varies by `OCCAM_PROFILE` + opt-in env); exit 0. Do not hard-require a fixed “14/15”.
 4. **Call discipline** — use your harness MCP tool interface (`CallMcpTool`, native tool calling, Hermes MCP bridge, etc.). Tool names are always `occam_<verb>`.
 
 If MCP is unavailable, stop and tell the user to follow [references/install.md](references/install.md). Do not guess page content.
@@ -53,7 +53,7 @@ If MCP is unavailable, stop and tell the user to follow [references/install.md](
 |--------|---------|--------------|
 | `ok: true` | Live extract succeeded | Use `markdown` / structured fields; cite `url.final` |
 | `ok: false` | Content **unknown** | Read `failure.code`; follow [references/failure-codes.md](references/failure-codes.md) |
-| `receipt.signed` | Locally signed extraction | Optional offline check via `occam_verify` |
+| `receipt.signed` | Integrity of extract bytes **relative to a local key** — not truth, origin, or trusted time | Optional offline check via `occam_verify` |
 
 Never invent markdown for a failed URL. Never bypass `captcha_or_challenge` or `requires_login` without a configured `session_profile`.
 
@@ -71,9 +71,9 @@ Never invent markdown for a failed URL. Never bypass `captcha_or_challenge` or `
 | Structured fields | `occam_playbook_resolve` → `occam_extract_knowledge` | Schema required in playbook |
 | Site-tuned extract | `occam_playbook_resolve` → `occam_transcode` | `playbook_policy=auto` (default) |
 | Fix hard site | heal → lint → save | Local playbooks only |
-| Cite one sentence | `occam_claim_check` | Proves block in source, not truth |
-| Batch citations | `occam_attest` | Report-level `status` counts (gate on `supported`) |
-| Offline receipt check | `occam_verify` | No re-fetch required in offline mode |
+| Cite one sentence | `occam_claim_check` | Retrieves cited blocks + membership proof; legacy `proven` ≠ page truth |
+| Batch citations | `occam_attest` | Heuristic citation assessment (`status`); **not** cryptographic attestation |
+| Offline receipt check | `occam_verify` | Integrity vs key; no re-fetch required in offline mode |
 | Auditable URL set | `occam_dataset_export` | 1–20 URLs + manifest signature |
 
 Full decision guide: [references/tool-picker.md](references/tool-picker.md). Copy-paste flows: [references/recipes.md](references/recipes.md).

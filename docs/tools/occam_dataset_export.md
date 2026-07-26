@@ -1,14 +1,16 @@
 # occam_dataset_export
 
 Build a signed, auditable dataset from a set of URLs (1–20): each row is transcoded with its own
-signed receipt, and one manifest signature covers the Merkle root of all rows — so the set is
-tamper-evident and verifiable per-row and per-set.
+Receipt v1 (when receipts enabled), and one manifest signature covers the ordered row Merkle root.
+
+Proves **integrity of the export artifact** under your local key — not factual correctness of row
+content. See [Datasets](../datasets.md).
 
 ## When to use
 
 - Handing off an auditable corpus for RAG, evaluation, or provenance.
-- Each row verifies via [`occam_verify`](occam_verify.md); the set verifies by reconstructing the
-  manifest root from the rows plus checking one signature.
+- Each row verifies via [`occam_verify`](occam_verify.md); the manifest verifies on the **CLI only**
+  (`verify --mode manifest`). MCP has no manifest mode.
 - Just want async bulk transcodes without provenance → the opt-in
   [`occam_batch_*`](occam_batch.md) tools.
 

@@ -14,7 +14,7 @@ site's playbook `knowledge_schema`.
 | Parameter | Type | Default | Required | Description |
 |---|---|---|---|---|
 | `url` | string | — | **yes** | HTTP or HTTPS URL (same URL you'd pass to resolve) |
-| `backend_policy` | string | `http_then_browser` | no | `http`, `browser`, or `http_then_browser`; the playbook's routing can steer the effective backend |
+| `backend_policy` | string | `http_then_browser` | no | `http`, `browser`, or `http_then_browser` |
 | `session_profile` | string? | null | no | Headers profile id |
 
 ## Returns
@@ -22,22 +22,19 @@ site's playbook `knowledge_schema`.
 Success envelope:
 
 - `ok: true`, `url`, `playbookId`, `pageClass`
-- `facts[]` — `{name, value, selector}` — each fact carries the CSS selector it came from
-- `meta.koId`, `latencyMs`, `backend?`, `confidence`
-- `receipt` — `{confidence, elapsedMs}`. **Note:** this is telemetry only — unlike
-  `occam_transcode`, this receipt is *not* a signed envelope and cannot be fed to
-  [`occam_verify`](occam_verify.md).
+- `facts[]` — `{name, value, selector}` — typed fields as extracted; **unsigned**, as-is from DOM
+- `meta.koId`, `latencyMs`, `backend?`, `confidence` — heuristic confidence, not a correctness guarantee
+- `receipt` — **extraction telemetry only** (`confidence`, `elapsedMs`). **Not Receipt v1.** No
+  `contentHash`, no signature, **not accepted by [`occam_verify`](occam_verify.md)**.
 
 Failure envelope: `ok: false`, `url`, `failureCode`, `message`, `playbookId?`, `pageClass?`,
-`partialFacts[]?` (fields that did extract before the failure), `agentHints?`, `latencyMs`.
+`partialFacts[]?`, `agentHints?`, `latencyMs`.
 
 ## Failure codes
 
-`invalid_arguments`, `workers_unavailable`, `playbook_not_found`, `knowledge_schema_missing`
-(playbook exists but has no schema block), `page_class_unmatched` (URL matched no page class and no
-default schema exists), `knowledge_schema_empty`, plus the transcode fetch taxonomy (`timeout`,
-`http_*`, `captcha_or_challenge`, …). All of the schema-related codes mean: fall back to
-`occam_transcode` for prose. See [failure codes](../failure-codes.md).
+`invalid_arguments`, `workers_unavailable`, `playbook_not_found`, `knowledge_schema_missing`,
+`page_class_unmatched`, `knowledge_schema_empty`, plus transcode fetch taxonomy. See
+[failure codes](../failure-codes.md).
 
 ## Example
 
@@ -52,22 +49,20 @@ Trimmed response:
 ```json
 {
   "ok": true,
-  "url": "https://shop.example/product/123",
   "playbookId": "shop.example",
   "pageClass": "product",
   "facts": [
-    { "name": "title", "value": "Widget Pro", "selector": "h1.product-title" },
-    { "name": "price", "value": "49.99", "selector": ".price-current" }
+    { "name": "title", "value": "Widget Pro", "selector": "h1.product-title" }
   ],
-  "meta": { "koId": "ko_…" },
-  "latencyMs": 850,
   "confidence": 0.9,
   "receipt": { "confidence": 0.9, "elapsedMs": 850 }
 }
 ```
 
+The `receipt` field is telemetry — do not feed it to `occam_verify`.
+
 ## Related
 
-- [occam_playbook_resolve](occam_playbook_resolve.md) — check the schema exists first
-- [occam_transcode](occam_transcode.md) — prose fallback
-- [Failure codes](../failure-codes.md)
+- [occam_playbook_resolve](occam_playbook_resolve.md)
+- [occam_transcode](occam_transcode.md) — prose + Receipt v1
+- [Receipts](../receipts.md) — Receipt v1 vs telemetry

@@ -1,19 +1,17 @@
 # occam_claim_check
 
-Does **this** page contain lexically relevant blocks for a claim? Extracts the page and returns the
-top BM25-ranked source block(s), each with a Merkle citation proof and a signed receipt — or an
-honest `found:false`.
+**Evidence / support lookup** over extracted page content: retrieve blocks that clear a lexical BM25
+floor for a claim string, attach Merkle membership proofs, and return a signed Receipt v1 for the
+extract — or an honest `found:false`.
 
-**`found` is retrieval only** — not semantic support. The tool proves **which** block is relevant
-enough to retrieve. **You** (or [`occam_attest`](occam_attest.md)) judge support vs refute — BM25 will
-not guess stance.
+**Not a fact check.** `verdict` is always `not_evaluated`. The tool does not classify support vs
+refute. Merkle proofs prove **block membership** in the signed extract, not that the claim is true.
 
 ## When to use
 
 - Grounding a single assertion against one source URL before citing it.
-- Auditing many claims across many sources at once → [`occam_attest`](occam_attest.md).
-- A third party can re-verify each returned proof with [`occam_verify`](occam_verify.md)
-  `mode=citation` — no page refetch needed.
+- Auditing many claims with stance heuristics → [`occam_attest`](occam_attest.md) (unsigned aggregate).
+- Third-party re-check of each returned proof → [`occam_verify`](occam_verify.md) `mode=citation`.
 
 ## Parameters
 
@@ -29,21 +27,21 @@ not guess stance.
 
 Success envelope:
 
-- `ok: true`, `url`, `claim`, `found` — `false` means the page has no sufficiently matching block
-  (that is a result, not an error)
-- `blockMerkleRoot?`, `keyId?` — the signed root the proofs anchor to
-- `matches[]` — each relevant block with its text, score, leaf and Merkle proof (verify via
-  `occam_verify` citation mode)
-- `receipt?` — the signed extraction receipt for the page
+- `ok: true`, `url`, `claim`, `found` — retrieval result, not stance
+- `verdict` — always `not_evaluated` (use [`occam_attest`](occam_attest.md) for `status`)
+- `proven` — **legacy field:** when `found:false`, `true` means **retrieval-complete negative**
+  (untruncated leaf set, no BM25 hit). **Not** semantic proof the page omits the claim. `null` when
+  `found:true`.
+- `blockMerkleRoot?`, `keyId?` — the signed root proofs anchor to
+- `matches[]` — retrieved blocks with text, score, leaf, Merkle proof
+- `receipt?` — signed Receipt v1 for the page extract (verifiable)
 - `timestamp`
 
-Failure envelope: `ok: false`, `url`, `claim`, `failure: {code, message}`, `receipt?`, `timestamp`.
-`ok:false` = the page could not be read at all (content unknown) — distinct from `found:false`.
+Failure envelope: `ok: false` — page could not be read (content unknown). Distinct from `found:false`.
 
 ## Failure codes
 
-`invalid_arguments`, plus the transcode fetch taxonomy (`timeout`, `http_*`, `thin_extract`,
-`captcha_or_challenge`, `requires_login`, …). See [failure codes](../failure-codes.md).
+`invalid_arguments`, plus the transcode fetch taxonomy. See [failure codes](../failure-codes.md).
 
 ## Example
 
@@ -62,15 +60,16 @@ Trimmed response:
 {
   "ok": true,
   "found": true,
+  "verdict": "not_evaluated",
   "blockMerkleRoot": "…",
   "keyId": "k1:…",
-  "matches": [ { "text": "…weight parameter…round-robin…", "score": 0.71, "leaf": "…", "proof": [ { "hash": "…", "siblingIsRight": true } ] } ],
-  "receipt": { "v": 1, "kind": "extraction", "sig": "…" }
+  "matches": [ { "text": "…weight parameter…round-robin…", "score": 0.71, "leaf": "…", "proof": [ … ] } ],
+  "receipt": { "signed": { "contentHash": "sha256:…", "sig": "…" } }
 }
 ```
 
 ## Related
 
-- [occam_attest](occam_attest.md) — the batch form
-- [occam_verify](occam_verify.md) — third-party verification of the proof
-- [Receipts](../receipts.md)
+- [occam_attest](occam_attest.md) — heuristic citation assessment (batch)
+- [occam_verify](occam_verify.md) — verify membership proofs
+- [Guide: claims](../guides/claims.md) · [Receipts](../receipts.md)

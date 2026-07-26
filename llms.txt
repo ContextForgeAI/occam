@@ -1,47 +1,142 @@
-# FF-Occam MCP
+# Occam
 
-> Local Model Context Protocol server that turns live public URLs into clean, token-budgeted Markdown with typed failures and optional signed receipts. Core MCP tools are always available; batch, watch, cross-check, and failure-atlas tools are opt-in.
+> Local MCP server: live URL → token-budgeted Markdown with typed failures. **ok:false = content unknown** — never substitute model memory. Receipts prove **integrity relative to a key**, not truth, origin, identity, or trusted time. **npm is not GA**; **Cosign is not enforced** on install; crosscheck is **not consensus proof**. Runtime `tools/list` is authoritative (profile + opt-in gates vary exposure).
 
-Use this file as the compact map for an LLM using FF-Occam MCP. Do not load every linked page at once. Start with the task router, then open only the selected tool page and any failure or configuration page needed for the current call.
+Use this file as the **agent documentation map**. Do not load every linked page at once. Follow the routing steps below, then open only what the current task needs.
+
+## Agent routing (read in order)
+
+1. **Session budget (once):** `occam_client_capabilities` with your context window — sizes later reads when you omit `max_tokens`.
+2. **Pick a task:** [Choosing a tool](docs/choosing-a-tool.md) — goal → tool decision table.
+3. **One tool page:** [Per-tool index](docs/tools/index.md) — parameters and failure handling for the selected tool only.
+4. **After `ok: false` only:** [Failure codes](docs/failure-codes.md).
+5. **Setup / env only when needed:** [Configuration](docs/configuration.md).
+6. **Contract depth:** [MCP API contract](MCP_API_SPEC.md) — response semantics, not a tutorial.
+7. **Deep limits:** [Handbook honesty contract](docs/handbook/02-honesty-contract.md) or [Trust limits](#trust-limits-do-not-overclaim) below.
 
 Non-negotiable rules:
 
-- Runtime `tools/list` is authoritative for available tools and input schemas.
-- Use parameter names exactly as returned by the server; Occam tool parameters are snake_case.
-- `ok: false` means the page content is unknown. Read `failure.code`; never substitute model memory.
-- `thin_extract` means bad extraction (chrome/shell), not a short quality page (`quality.verdict=short_quality` is success).
-- Prefer one `occam_digest` over N× `occam_transcode` when you already have several URLs.
-- Do not call playbook-authoring tools unless the user is explicitly repairing an extraction recipe.
-- The default page reader is **`occam_transcode`** (do not invent an `occam_read` tool name).
-- The public repository is https://github.com/ContextForgeAI/occam ; the product and MCP server are **FF-Occam MCP** / Occam.
+- Runtime `tools/list` wins for tool availability and input JSON Schema (snake_case params).
+- Default page reader: **`occam_transcode`** (only `url` required). No `occam_read` tool.
+- Prefer one **`occam_digest`** over N× `occam_transcode` for several URLs.
+- `thin_extract` = bad extraction (chrome/shell). `quality.verdict=short_quality` with `ok:true` is success — do not heal or escalate for length alone.
+- Playbook heal/save/resolve only when the user is explicitly authoring a site recipe.
+- Public name: **Occam** / **Occam MCP**. Repo: https://github.com/ContextForgeAI/occam
 
-## Start
+## Start (human + agent entry)
 
-- [Documentation hub](docs/index.md): Audience-based routes for operators, people using the tools, LLM agents, SDK users, and contributors.
-- [Choose a tool](docs/choosing-a-tool.md): Goal-to-tool decision table and role-scoped tool sets.
-- [Per-tool index](docs/tools/index.md): Open one focused page for the tool selected by the router.
-- [Recipes](docs/recipes.md): Minimal multi-tool workflows with exact call order.
+- [Documentation hub](docs/index.md): Four audience routes and capability systems map.
+- [Quick Start](docs/quick-start.md): Install → connect → first read.
+- [Choosing a tool](docs/choosing-a-tool.md): Task router (start here for tool choice).
+- [Per-tool index](docs/tools/index.md): One focused page per tool.
+- [Examples](docs/examples/index.md) · [Recipes](docs/recipes.md): Copy/paste workflows.
+
+## Capability families — PUBLIC_CORE
+
+Discoverable without env gates. Slugs are stable handbook identifiers.
+
+| Slug | What it is | Start here |
+|------|------------|------------|
+| `acquisition-routing` | Gated `http_then_browser` ladder; 404/410 and public-ref short-circuits | [Acquisition](docs/acquisition.md) |
+| `http-acquisition` | Primary cheap HTTP extract path | [Acquisition](docs/acquisition.md) · [`occam_transcode`](docs/tools/occam_transcode.md) |
+| `browser-acquisition` | Playwright escalation for SPA / thin HTTP | [Acquisition](docs/acquisition.md) |
+| `token-budget` | Ambient + explicit token sizing (K2 contract) | [Materialization](docs/materialization.md) · [`occam_client_capabilities`](docs/tools/occam_client_capabilities.md) |
+| `focus-selection` | `focus_query`, `fit_markdown`, URL fragment intent | [Materialization](docs/materialization.md) |
+| `quality-failure-semantics` | **ok:false = unknown**; thin ≠ short quality | [Honest failures](docs/trust/honest-failures.md) · [Failure codes](docs/failure-codes.md) |
+| `probe-diagnostics` | Pre-fetch extractability signal | [`occam_probe`](docs/tools/occam_probe.md) |
+| `site-mapping` | Discover links (sitemap / crawl) | [`occam_map`](docs/tools/occam_map.md) |
+| `digest-synthesis` | Multi-URL synthesis under one budget | [`occam_digest`](docs/tools/occam_digest.md) |
+| `runtime-transports` | stdio default; WS/remote/batch are operator modes | [Transports](docs/transports.md) |
+| `mcp-exposure` | Registry, profiles, server instructions — not a fixed tool count | [Handbook ch.18](docs/handbook/18-exposure.md) · [Tools index](docs/tools/index.md) |
+| `client-context` | Session-start budget handshake | [`occam_client_capabilities`](docs/tools/occam_client_capabilities.md) |
+| `install-onboarding` | Tarball bootstrap + doctor + connect | [INSTALL.md](INSTALL.md) · [Quick Start](docs/quick-start.md) |
+
+## Capability families — PUBLIC_ADVANCED
+
+Shipped and reachable; may need operator setup or extra params. Linked from task guides — not buried.
+
+| Slug | What it is | Start here |
+|------|------------|------------|
+| `network-safety` | SSRF/private-URL blocks (path-scoped, not universal) | [Networking](docs/networking.md) |
+| `session-fetch` | Login walls via `session_profile` (per-tool matrix) | [Sessions](docs/sessions.md) · [Sessions guide](docs/guides/sessions.md) |
+| `access-consent` | Silent browser mutations (consent dismiss, etc.) — limits, not a brand | [Handbook ch.20](docs/handbook/20-automatic-behaviors.md) |
+| `structured-materialization` | Opt-in `json_blocks` / tables / feeds / chunks | [Materialization](docs/materialization.md) |
+| `differential-materialization` | `if_none_match`, `diff_against` | [Materialization](docs/materialization.md) |
+| `web-search` | Provider-backed search — **fails closed** without `OCCAM_SEARCH_PROVIDER` | [`occam_search`](docs/tools/occam_search.md) |
+| `schema-knowledge-extraction` | Recipe D typed fields (playbook schema required) | [`occam_extract_knowledge`](docs/tools/occam_extract_knowledge.md) |
+| `playbook-resolution` | Tier resolve + soft auto overlay | [`occam_playbook_resolve`](docs/tools/occam_playbook_resolve.md) |
+| `playbook-authoring` | Save signs (always); not self-authenticating marketplace trust | [`occam_playbook_save`](docs/tools/occam_playbook_save.md) |
+| `playbook-healing` | Skeleton evidence for repair (host drafts) | [`occam_playbook_heal`](docs/tools/occam_playbook_heal.md) |
+| `playbook-validation` | Lint is advisory; Core sanitizer is dead | [`occam_playbook_lint`](docs/tools/occam_playbook_lint.md) |
+| `receipts` | Receipt v1 local self-signed integrity | [Receipts](docs/receipts.md) |
+| `verification` | `occam_verify` + CLI asymmetry | [`occam_verify`](docs/tools/occam_verify.md) · [Handbook ch.15](docs/handbook/15-verifying.md) |
+| `claims-attestation` | BM25 retrieval + heuristic attest — **not** crypto attestation | [Claims guide](docs/guides/claims.md) · [`occam_claim_check`](docs/tools/occam_claim_check.md) |
+| `dataset-provenance` | Auditor export; manifest verify is CLI-only | [`occam_dataset_export`](docs/tools/occam_dataset_export.md) |
+
+## Experimental (opt-in — not default promises)
+
+Enable deliberately. Each names its env gate in the same breath as the tool.
+
+| Surface | Env gate | Doc |
+|---------|----------|-----|
+| Batch jobs | `OCCAM_BATCH_MCP=1` | [`occam_batch`](docs/tools/occam_batch.md) · [Experimental](docs/experimental.md) |
+| Change monitoring | `OCCAM_WATCH_MCP=1` | [`occam_watch`](docs/tools/occam_watch.md) · [Experimental](docs/experimental.md) |
+| Multi-source comparison | `OCCAM_CONSENSUS_MCP=1` | [`occam_crosscheck`](docs/tools/occam_crosscheck.md) · [Experimental](docs/experimental.md) |
+| Failure atlas | `OCCAM_ATLAS_MCP=1` | [`occam_failure_atlas`](docs/tools/occam_failure_atlas.md) · [Experimental](docs/experimental.md) |
+| Managed acquisition | Operator provider config | [Experimental](docs/experimental.md) · [Acquisition](docs/acquisition.md) |
+| Response cache | `cache_ttl_s > 0` on transcode | [Materialization](docs/materialization.md) |
+
+**Forbidden readings:** crosscheck agreement is **not** consensus proof; watch `history_verified` needs every entry signed; batch has no Receipt v1 on the job envelope.
+
+## Operator surface (humans installing / wiring)
+
+Not agent task guides — first-class product system.
+
+- [Operators](docs/operators.md): Install channels, CLI wrapper, connect flow, runtime modes.
+- [INSTALL.md](INSTALL.md): Canonical bootstrap (tarball + SHA-256; **npm not GA**; **Cosign not enforced**).
+- [Connect](docs/connect/index.md) · [MCP hosts](docs/mcp-hosts.md): Host tiers and config safety (rollback limits apply).
+- [Getting started](docs/getting-started.md): First read + operator CLI pointers.
+- [Troubleshooting](docs/troubleshooting.md): Symptom → fix.
+- [Handbook — standing up an install](docs/handbook/03-standing-up-an-install.md): Testable install + honesty checks.
+
+## Handbook (deep comprehension)
+
+Separate route from task guides — mechanisms, mental models, limits.
+
+- [Handbook index](docs/handbook/index.md): Reading orders (agent / operator / auditor).
+- [Ch.2 Honesty contract](docs/handbook/02-honesty-contract.md): **ok:false**, receipt boundaries, name corrections.
+- [Ch.5 Acquisition ladder](docs/handbook/05-acquisition-ladder.md): EF-056 locked behavior.
+- [Ch.7 Token contract](docs/handbook/07-materialization-token-contract.md): Budget semantics.
+- [Ch.15 Verifying](docs/handbook/15-verifying.md): MCP vs CLI verify asymmetry.
+- [Ch.17 Opt-in surfaces](docs/handbook/17-opt-in-surfaces.md): Watch/batch/crosscheck/atlas gates.
+- [Ch.18 Exposure](docs/handbook/18-exposure.md): Profiles, 51 entrypoints vs 15 default tools.
+- [Ch.20 Automatic behaviors](docs/handbook/20-automatic-behaviors.md): Silent routing, signing, cache, connect, browser mutations.
+- [Ch.21 State and footprint](docs/handbook/21-state-and-footprint.md): `~/.occam/` keys, sessions, watch/batch, cache, host configs.
+
+## Trust limits (do not overclaim)
+
+- **ok:false** → page content is **unknown**. Read `failure.code`; never guess from model memory.
+- **Receipt / signature** → integrity vs a **key you obtain out of band** — not truth, origin authenticity, identity, fetch occurrence, or trusted timestamp.
+- **claim_check** → retrieval + citation membership; `proven` on `found:false` is retrieval-complete negative, **not** semantic absence or factual proof.
+- **attest** → heuristic citation assessment; **not** cryptographic attestation.
+- **crosscheck** → multi-source comparison / source agreement; **not** consensus proof; verdict is unsigned.
+- **extract_knowledge `Receipt` field** → extraction telemetry only; **not** Receipt v1; not accepted by `occam_verify`.
+- **Playbook signatures** → integrity vs local key; v1 gate fields unsigned; v2 signs gate snapshot (still heuristic, not quality proof).
+- **npm** → not a GA 1.0 install channel. **Cosign `.bundle`** → release metadata; installers do not enforce it.
+- **Do not document as features:** `canonical-knowledge-ir` (dead codecs); consensus/crosscheck as trust proof.
 
 ## Contract and reference
 
-- [MCP API contract](MCP_API_SPEC.md): Normative response shapes, cross-tool semantics, limits, and transport contract.
-- [Compact tools reference](docs/tools-reference.md): All core and opt-in tools in one page.
-- [Failure codes](docs/failure-codes.md): Typed failure meaning and retry/stop actions.
+- [MCP API contract](MCP_API_SPEC.md): Normative response shapes and cross-tool semantics.
+- [Compact tools reference](docs/tools-reference.md): All core and opt-in tools.
+- [Failure codes](docs/failure-codes.md): Typed failures and actions.
 - [Configuration](docs/configuration.md): Environment variables and defaults.
-- [Transports](docs/transports.md): stdio, local WebSocket, authenticated remote WSS, and batch HTTP.
-- [Receipt verification](docs/receipt_verification.md): Normative byte-level signature format.
+- [Transports](docs/transports.md): stdio, WebSocket, remote WSS, batch HTTP.
+- [Receipt byte spec](docs/receipt_verification.md): Normative signature format.
 
-## Installation and operation
+## Optional context
 
-- [INSTALL.md](INSTALL.md): **Canonical install** — Linux/macOS `curl …/get-ff-occam.sh | bash`; Windows `irm …/get-ff-occam.ps1 | iex`. Read before any automated install.
-- [Getting started](docs/getting-started.md): Human-oriented MCP wiring, operator CLI, and first tool call.
-- [MCP hosts](docs/mcp-hosts.md): Which AI tools `occam connect` registers automatically, which need an explicit flag, and the config-safety rules.
-- [Troubleshooting](docs/troubleshooting.md): Symptom-to-fix runbook.
-
-## Optional
-
-- [Concepts](docs/concepts.md): Trust model, backends, playbooks, sessions, and receipts.
-- [Receipts guide](docs/receipts.md): How people and agents consume and verify receipts.
-- [FAQ](docs/faq.md): Short operational answers.
-- [Roadmap](docs/roadmap.md): Shipped surface, release state, and explicitly unshipped items.
-- [Contributor instructions](AGENTS.md): Read only when modifying this repository, not when merely using the MCP tools.
+- [What is Occam?](docs/what-is-occam.md) · [How Occam works](docs/how-occam-works.md) · [Concepts](docs/concepts.md)
+- [Trust & Safety](docs/trust-and-safety.md) · [FAQ](docs/faq.md)
+- [Ask AI](docs/ask-ai.md): Selective doc loading for assistants.
+- [Contributor instructions](AGENTS.md): Repository engineering only — not required to use Occam MCP.

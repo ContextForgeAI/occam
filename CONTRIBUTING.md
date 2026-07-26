@@ -1,6 +1,6 @@
-# Contributing to FF-Occam MCP
+# Contributing to Occam
 
-Welcome! FF-Occam is a local-first MCP server that compiles web pages into LLM-ready Markdown. We value clear code, honest failures, and good documentation.
+Welcome! Occam is a local-first MCP server that compiles web pages into LLM-ready Markdown. We value clear code, honest failures, and good documentation.
 
 ---
 
@@ -158,4 +158,4 @@ When changing code, update the doc matrix:
 
 ## License
 
-FF-Occam MCP is licensed under [AGPL-3.0](LICENSE). By contributing, you agree to license your contributions under the same license.
+Occam is licensed under [AGPL-3.0](LICENSE). By contributing, you agree to license your contributions under the same license.

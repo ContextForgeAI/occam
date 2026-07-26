@@ -1,0 +1,231 @@
+site_name: Occam
+site_description: Local host that helps AI agents acquire usable web content, shape it for context windows, fail honestly, and optionally attach integrity artifacts.
+site_url: https://contextforgeai.github.io/occam/
+site_author: ContextForgeAI
+copyright: Occam — AGPL-3.0-or-later
+
+repo_url: https://github.com/ContextForgeAI/occam
+repo_name: ContextForgeAI/occam
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: System theme
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue grey
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue grey
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.action.edit
+    - content.tabs.link
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+  font:
+    text: Source Sans 3
+    code: Source Code Pro
+
+plugins:
+  - search:
+      lang: en
+
+hooks:
+  - docs/hooks.py
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ContextForgeAI/occam
+  generator: false
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+exclude_docs: |
+  requirements.txt
+  hooks.py
+  stylesheets/**
+  rc2/**
+  maintenance/**
+  development/**
+  friend-test.md
+
+validation:
+  omitted_files: info
+  absolute_links: ignore
+  unrecognized_links: ignore
+  anchors: warn
+
+nav:
+  - Home: index.md
+  - Quick Start: quick-start.md
+  - Getting Started:
+      - What is Occam?: what-is-occam.md
+      - Install: install.md
+      - Connect your AI: connect/index.md
+      - Your first web read: getting-started.md
+      - How Occam works: how-occam-works.md
+      - What happened after install?: connect/after-install.md
+  - Guides:
+      - Task router: choosing-a-tool.md
+      - Read a page: guides/read-a-page.md
+      - Research several sources: guides/research-multiple.md
+      - Search and discover: guides/search-and-discover.md
+      - Structured extraction: guides/structured-extraction.md
+      - Verify a source: guides/verify-sources.md
+      - Check a claim: guides/claims.md
+      - Sessions / login walls: guides/sessions.md
+  - Examples:
+      - Overview: examples/index.md
+      - Read one page: examples/read-one-page.md
+      - Difficult JS page: examples/difficult-js-page.md
+      - Research several URLs: examples/research-several.md
+      - Search then research: examples/search-then-research.md
+      - Discover then research: examples/discover-then-research.md
+      - Verify a receipt: examples/verify-receipt.md
+      - Check a claim: examples/check-a-claim.md
+      - Structured extraction: examples/structured-extraction.md
+      - Session profile: examples/session-profile.md
+      - Proxy use: examples/proxy-use.md
+      - Signed dataset export: examples/dataset-export.md
+      - "EXPERIMENTAL: watch": examples/watch-experimental.md
+      - "EXPERIMENTAL: crosscheck": examples/crosscheck-experimental.md
+      - More recipes: recipes.md
+  - Connect:
+      - Supported hosts: mcp-hosts.md
+      - Automatic connection: connect/automatic.md
+      - Explicit --only hosts: connect/explicit-only.md
+      - Manual / generic MCP: connect/manual.md
+      - Connection troubleshooting: connect/troubleshooting.md
+  - Trust & Safety:
+      - Overview: trust-and-safety.md
+      - Local-first model: trust/local-first.md
+      - Honest failures: trust/honest-failures.md
+      - Receipts: receipts.md
+      - Receipt verification: receipt_verification.md
+      - Playbooks: playbooks.md
+      - Datasets: datasets.md
+      - Installation safety: trust/installation-safety.md
+      - Security policy: trust/security-policy.md
+  - Capabilities:
+      - Acquisition: acquisition.md
+      - Materialization: materialization.md
+      - Networking / proxies: networking.md
+      - Sessions: sessions.md
+      - Experimental: experimental.md
+      - Operators: operators.md
+  - Reference:
+      - Concepts: concepts.md
+      - Tool index: tools/index.md
+      - occam_client_capabilities: tools/occam_client_capabilities.md
+      - occam_transcode: tools/occam_transcode.md
+      - occam_probe: tools/occam_probe.md
+      - occam_digest: tools/occam_digest.md
+      - occam_playbook_resolve: tools/occam_playbook_resolve.md
+      - occam_map: tools/occam_map.md
+      - occam_playbook_heal: tools/occam_playbook_heal.md
+      - occam_playbook_save: tools/occam_playbook_save.md
+      - occam_extract_knowledge: tools/occam_extract_knowledge.md
+      - occam_search: tools/occam_search.md
+      - occam_verify: tools/occam_verify.md
+      - occam_claim_check: tools/occam_claim_check.md
+      - occam_attest: tools/occam_attest.md
+      - occam_playbook_lint: tools/occam_playbook_lint.md
+      - occam_dataset_export: tools/occam_dataset_export.md
+      - "Opt-in: batch": tools/occam_batch.md
+      - "Opt-in: watch": tools/occam_watch.md
+      - "Opt-in: crosscheck": tools/occam_crosscheck.md
+      - "Opt-in: failure atlas": tools/occam_failure_atlas.md
+      - Tool reference: tools-reference.md
+      - Failure codes: failure-codes.md
+      - Configuration: configuration.md
+      - Transports: transports.md
+      - MCP API: reference/mcp-api.md
+      - FAQ: faq.md
+      - Troubleshooting: troubleshooting.md
+  - Handbook:
+      - Overview: handbook/index.md
+      - 01 What Occam is: handbook/01-what-occam-is.md
+      - 02 Honesty contract: handbook/02-honesty-contract.md
+      - 03 Standing up an install: handbook/03-standing-up-an-install.md
+      - 04 Request path: handbook/04-request-path.md
+      - 05 Acquisition ladder: handbook/05-acquisition-ladder.md
+      - 06 When acquisition is hard: handbook/06-when-acquisition-is-hard.md
+      - 07 Materialization: handbook/07-materialization-token-contract.md
+      - 08 Structured output: handbook/08-structured-differential-output.md
+      - 09 Discovery: handbook/09-discovery-before-acquisition.md
+      - 10 Digest: handbook/10-many-sources-digest.md
+      - 11 Playbook resolution: handbook/11-playbooks-resolution.md
+      - 12 Authoring playbooks: handbook/12-authoring-playbook.md
+      - 13 Typed extraction: handbook/13-typed-field-extraction.md
+      - 14 What a receipt proves: handbook/14-what-a-receipt-proves.md
+      - 15 Verifying: handbook/15-verifying.md
+      - 16 Evidence for claims: handbook/16-evidence-for-claims.md
+      - 17 Opt-in surfaces: handbook/17-opt-in-surfaces.md
+      - 18 Exposure: handbook/18-exposure.md
+      - 19 Operating an install: handbook/19-operating-an-install.md
+      - 20 Automatic behaviors: handbook/20-automatic-behaviors.md
+      - 21 State and footprint: handbook/21-state-and-footprint.md
+      - 22 Configuration: handbook/22-configuration.md
+      - 23 Security posture: handbook/23-security-posture.md
+      - 24 Composing tools: handbook/24-composing-tools.md
+      - 25 Diagnosing bad results: handbook/25-diagnosing-bad-results.md
+      - 26 Architecture internals: handbook/26-architecture-internals.md
+      - 27 Checking this book: handbook/27-checking-this-book.md
+      - Status labels: handbook/appendix-status-labels.md
+  - Operators: operators.md
+  - Developers:
+      - Contributing: developers/contributing.md
+      - Semantic contract: architecture/semantic-contract.md
+      - Quality baseline: quality-baseline.md
+      - Roadmap: roadmap.md
+      - Vision: developers/vision.md
+  - Ask AI: ask-ai.md

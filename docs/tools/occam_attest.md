@@ -1,23 +1,27 @@
 # occam_attest
 
-Before shipping a report, check its citations with a **fail-closed trust model**.
-Given a JSON array of `{claim, sourceUrl}` rows, Occam runs three independent
-layers per claim:
+**Heuristic citation assessment** for a batch of `{claim, sourceUrl}` rows — **not** cryptographic
+attestation, not proof of truth, and not vendor/root identity certification.
 
-1. **Retrieval** — BM25 / claim-check surfaces the best candidate blocks (scores only).
-2. **Semantic support** — a local classifier returns `status`
+Per claim, Occam:
+
+1. **Retrieves** candidate blocks (BM25 / claim-check path).
+2. **Classifies stance** with a narrow regex/rule entailment engine → `status`
    (`supported` | `contradicted` | `related` | `unsupported` | `unknown`).
-3. **Merkle proof** — when a block is attached, `leaf` + `proof` prove only that
-   the block existed in the signed extract — **never** that the claim is true.
+3. **Attaches Merkle proof** for the top retrieved block when present — proof = **block membership**
+   in the signed extract only.
 
-**Gate on `status`.** `grounded` is a compat alias: `true` only when
-`status=supported`. Lexical / BM25 hits alone never set `grounded=true`.
+**Gate on `status`.** `grounded` is a compat alias: `true` only when `status=supported`. BM25 score
+alone never sets `grounded=true`.
+
+The **aggregate response** (`supported`, `contradicted`, counts, partition totals) is **unsigned**
+plain JSON. Individual nested `receipt` / `proof` fields remain separately verifiable.
 
 ## When to use
 
-- Final honesty gate for a research report: refuse to ship claims the source
-  does not semantically support.
-- One claim, one page (retrieval only) → [`occam_claim_check`](occam_claim_check.md).
+- Batch honesty gate before shipping a research report: refuse rows with `status` other than
+  `supported` when you require explicit support.
+- Single-claim retrieval without stance → [`occam_claim_check`](occam_claim_check.md).
 
 ## Parameters
 
@@ -32,28 +36,19 @@ layers per claim:
 Success envelope:
 
 - `ok: true`, `claimsTotal`, `timestamp`
-- Named status counts (canonical): `supported`, `contradicted`, `related`,
-  `unsupported`, `unknown`
-- Compat: `grounded` (= `supported`); `unsupportedTotal` (= sum of all
-  non-supported statuses; `grounded + unsupportedTotal == claimsTotal`)
+- Status counts: `supported`, `contradicted`, `related`, `unsupported`, `unknown`
+- Compat: `grounded` (= supported count); `unsupportedTotal`
 - `perClaim[]` — `{claim, sourceUrl, status, grounded, blockIndex?, text?, score?,
   leaf?, proof?, blockMerkleRoot?, receipt?, reason?}`
-  - `status` is the semantic verdict (fail-closed)
-  - `grounded` ≡ `status == "supported"`
-  - citation fields prove **block existence** via [`occam_verify`](occam_verify.md)
-    `mode=citation`; they do **not** mean the claim is true
-  - `reason` explains non-supported / unknown rows (`no_matching_block`,
-    `no_semantic_support`, `related_not_supported`, `contradicted_by_source`,
-    `insufficient_confidence`, or an extraction failure code)
+  - `status` — heuristic classifier verdict (fail-closed)
+  - `grounded` ≡ `status == "supported"` — not proof of truth
+  - `proof` / `receipt` — verify via [`occam_verify`](occam_verify.md); membership only
 
-Failure envelope: `ok: false`, `failure: {code, message}`, `timestamp` — only for
-bad input; per-page fetch failures surface as `status=unknown` rows with a `reason`.
+Failure envelope: `ok: false` for bad input only; per-page fetch failures → `status=unknown` rows.
 
 ## Failure codes
 
 `invalid_arguments` (empty/malformed `claims`, more than 50 rows, bad `backend_policy`).
-Per-row fetch problems appear in `perClaim[].reason` with `status=unknown`, not as a
-call failure.
 
 ## Example
 
@@ -72,14 +67,10 @@ Trimmed response:
   "ok": true,
   "claimsTotal": 2,
   "supported": 1,
-  "contradicted": 0,
-  "related": 0,
   "unsupported": 1,
-  "unknown": 0,
   "grounded": 1,
-  "unsupportedTotal": 1,
   "perClaim": [
-    { "claim": "nginx supports weighted round-robin", "status": "supported", "grounded": true, "score": 0.7, "leaf": "…", "proof": [ … ], "blockMerkleRoot": "…" },
+    { "claim": "nginx supports weighted round-robin", "status": "supported", "grounded": true, "leaf": "…", "proof": [ … ] },
     { "claim": "nginx was written in Rust", "status": "unsupported", "grounded": false, "reason": "no_matching_block" }
   ]
 }
@@ -87,6 +78,6 @@ Trimmed response:
 
 ## Related
 
-- [occam_claim_check](occam_claim_check.md) — single-claim retrieval (not stance)
-- [occam_verify](occam_verify.md) — verify existence proofs
-- [occam_dataset_export](occam_dataset_export.md) — signed corpora for the sources themselves
+- [occam_claim_check](occam_claim_check.md) — retrieval-only evidence lookup
+- [occam_verify](occam_verify.md) — verify nested proofs
+- [Guide: claims](../guides/claims.md)

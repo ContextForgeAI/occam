@@ -77,7 +77,7 @@ size exceeds the configured limit. stdio is unaffected.
 
 Requires a valid TLS certificate file and HTTPS identity metadata. Prefer the password environment
 variable over `--tls-password`, which may be visible in a process listing. See
-[Configuration — Remote MCP](configuration.md#remote-mcp-tls--jwt).
+[Configuration — Remote MCP](configuration.md#remote-mcp-tls-jwt).
 
 ---
 

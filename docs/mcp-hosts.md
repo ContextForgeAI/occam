@@ -6,14 +6,14 @@ is only auto-configured when we have run the whole cycle — detect, write,
 reload, and confirm the host reports Occam back.
 
 ```bash
-occam connect            # detect and connect validated hosts
-occam connect --only zed # configure one host explicitly
+occam connect            # detect and connect live-validated hosts
+occam connect --only zed # configure one config-validated host explicitly
 ```
 
 Everything below reflects what has been tested, not what is theoretically
 possible.
 
-## Connected automatically
+## Live validated (automatic)
 
 These hosts are configured by `occam connect` with no flags.
 
@@ -32,7 +32,7 @@ its servers, so `occam connect` reports what the host itself says. For
 configuration-file hosts, Occam can only confirm the file it wrote — the host
 loads it on the next start.
 
-## Configured when you ask
+## Config validated (explicit `--only`)
 
 | Host | Config file | Root key |
 |------|------------|----------|
@@ -51,7 +51,7 @@ recorded yet. Until one has, they are not written automatically:
 occam connect --only vscode
 ```
 
-## Manual setup
+## Assisted (manual paste)
 
 **Goose** stores extensions in YAML, and **Junie** has no configuration path we
 can write safely. `occam connect` detects both, then prints the launch command
@@ -102,5 +102,5 @@ and the host needs one action from you.
 
 Adapters are host profiles over a shared engine — a JSON config-file host needs
 a path, a root key and, when the entry shape differs, a small codec. See
-[AGENTS.md](../AGENTS.md) for repository conventions and `scripts/lib/operator/connect/`
+[AGENTS.md](https://github.com/ContextForgeAI/occam/blob/main/AGENTS.md) for repository conventions and `scripts/lib/operator/connect/`
 for the existing profiles.

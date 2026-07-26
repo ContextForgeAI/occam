@@ -5,7 +5,7 @@ RC.2 working diaries and PR-by-PR reports are **not** part of the public
 documentation set.
 
 **Status:** accepted for the `1.0.0-rc.2` line. Where this page and the code
-disagree, the code wins. Normative API shapes remain in [MCP_API_SPEC.md](../../MCP_API_SPEC.md).
+disagree, the code wins. Normative API shapes remain in [MCP_API_SPEC.md](https://github.com/ContextForgeAI/occam/blob/main/MCP_API_SPEC.md).
 
 ---
 
@@ -74,7 +74,7 @@ when it fits.
 - **RC.2 regression harness:** `benchmarks/rc2-regression/` — characterization freezes
   historical surfaces; `--regression` / `--pr-*` assert current production behavior.
 - Fixtures under those trees are synthetic or frozen captures. See
-  [FIXTURE_SOURCES.md](../maintenance/FIXTURE_SOURCES.md).
+  [FIXTURE_SOURCES.md](https://github.com/ContextForgeAI/occam/blob/main/docs/maintenance/FIXTURE_SOURCES.md).
 
 ### Known current limitations
 
