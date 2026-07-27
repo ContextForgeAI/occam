@@ -18,6 +18,7 @@ import {
 } from "./lib/operator/connect/index.mjs";
 import { runConnectOnboarding, allowConnectAll } from "./lib/operator/connect-onboarding.mjs";
 import { isInstallVerbose } from "./lib/operator/install-ux.mjs";
+import { canPromptInteractively } from "./lib/operator/tty.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const defaultHome = process.env.OCCAM_HOME?.trim() || join(scriptDir, "..");
@@ -107,7 +108,7 @@ function writeConnectLast(report) {
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const verbose = opts.verbose || isInstallVerbose(process.env, process.argv);
-  const interactive = process.stdin.isTTY === true && process.stdout.isTTY === true;
+  const interactive = canPromptInteractively();
 
   // JSON / explicit --only / detect-only-with-json: keep raw engine path.
   if (opts.format === "json") {

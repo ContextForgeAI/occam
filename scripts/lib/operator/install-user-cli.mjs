@@ -12,7 +12,15 @@
  * for the shell wrapper to prepend (Node cannot mutate the parent PowerShell process).
  */
 import { spawnSync } from "node:child_process";
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir, homedir, platform } from "node:os";
 import { dirname, join, resolve, win32 as pathWin32, posix as pathPosix } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -463,7 +471,8 @@ async function main() {
     baseUrl: args.baseUrl || undefined,
   });
   if (args.json) {
-    console.log(JSON.stringify(result, null, 2));
+    // Compact JSON on stdout only — shell wrappers capture argv/stdout as machine payload.
+    console.log(JSON.stringify(result));
   } else {
     console.log(`occam-user-cli: ok home=${result.occamHome}`);
     console.log(`occam-user-cli: bin=${result.binDir}`);
@@ -475,11 +484,23 @@ async function main() {
   }
 }
 
-const isDirect =
-  process.argv[1] &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+function isExecutedAsCli() {
+  // Temp downloads (get-ff-occam.sh mktemp) and macOS /tmp → /private/tmp must still run.
+  // Plain resolve() equality is NOT enough — realpath both sides.
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    try {
+      return resolve(entry) === resolve(fileURLToPath(import.meta.url));
+    } catch {
+      return false;
+    }
+  }
+}
 
-if (isDirect) {
+if (isExecutedAsCli()) {
   main().catch((err) => {
     console.error(err instanceof Error ? err.message : String(err));
     process.exit(1);

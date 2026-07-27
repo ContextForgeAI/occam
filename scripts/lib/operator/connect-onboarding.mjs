@@ -29,6 +29,7 @@ import {
   progressLine,
   DOCS_URL,
 } from "./install-ux.mjs";
+import { canPromptInteractively, openControllingTty } from "./tty.mjs";
 
 /**
  * Explicit automation opt-in to mutate every detected Tier-A host without a prompt.
@@ -148,11 +149,17 @@ async function ask(prompt, opts) {
     }
     return opts.askQuestion(prompt);
   }
-  const rl = createInterface({ input, output });
+  // curl|bash: stdin is the script pipe — prefer the controlling terminal.
+  const tty = input.isTTY ? null : openControllingTty();
+  const rl = createInterface({
+    input: tty?.input || input,
+    output: tty?.output || output,
+  });
   try {
     return await rl.question(prompt);
   } finally {
     rl.close();
+    tty?.close();
   }
 }
 
@@ -178,7 +185,11 @@ async function ask(prompt, opts) {
 export async function runConnectOnboarding(opts) {
   const occamHome = opts.occamHome;
   const setupMode = opts.setupMode === "manual" ? "manual" : "auto";
-  const interactive = opts.interactive === true;
+  // Prefer explicit flag; otherwise detect stdio TTY or controlling /dev/tty (curl|bash).
+  const interactive =
+    opts.interactive === true ||
+    (opts.interactive !== false &&
+      (typeof opts.askQuestion === "function" || canPromptInteractively()));
   const verbose = opts.verbose === true;
   const env = opts.env ?? process.env;
   const connectAll = opts.connectAll === true || allowConnectAll(env);

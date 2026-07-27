@@ -78,9 +78,14 @@ resolve_setup_mode() {
   esac
 
   if [[ ! -t 0 ]] || [[ ! -t 1 ]]; then
-    SETUP_MODE=auto
-    v_echo "setup: auto (ask ignored: non-interactive)"
-    return
+    # curl|bash: stdin is the script pipe. Prefer controlling tty when present.
+    if [[ -r /dev/tty && -w /dev/tty ]]; then
+      :
+    else
+      SETUP_MODE=auto
+      v_echo "setup: auto (ask ignored: non-interactive)"
+      return
+    fi
   fi
 
   echo ""
@@ -89,7 +94,11 @@ resolve_setup_mode() {
   echo "  [2] Manual — choose which AI app to connect"
   echo ""
   printf "  Setup [1]: "
-  read -r choice
+  if [[ -t 0 ]]; then
+    read -r choice
+  else
+    read -r choice < /dev/tty
+  fi
   choice="${choice:-1}"
   case "$choice" in
     2|manual|Manual|MANUAL) SETUP_MODE=manual ;;
@@ -373,12 +382,14 @@ install_occam_user_command() {
     helper="$helper_tmp"
   fi
 
-  local json
+  local json=""
+  local errf
+  errf="$(mktemp "${TMPDIR:-/tmp}/occam-user-cli-err.XXXXXX")"
   set +e
   if [[ -n "${OCCAM_OVERLAY_BASE_URL:-}" ]]; then
-    json="$(node "$helper" --home "$home" --base-url "${OCCAM_OVERLAY_BASE_URL%/}" --json 2>&1)"
+    json="$(node "$helper" --home "$home" --base-url "${OCCAM_OVERLAY_BASE_URL%/}" --json 2>"$errf")"
   else
-    json="$(node "$helper" --home "$home" --json 2>&1)"
+    json="$(node "$helper" --home "$home" --json 2>"$errf")"
   fi
   local code=$?
   set -e
@@ -386,17 +397,32 @@ install_occam_user_command() {
   if [[ "$code" -ne 0 ]]; then
     echo "✗ Could not install the occam command." >&2
     echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
+    if [[ -s "$errf" ]]; then tail -n 30 "$errf" >&2; fi
     printf '%s\n' "$json" | tail -n 30 >&2
+    rm -f "$errf"
     exit "$code"
   fi
+  rm -f "$errf"
   if [[ "$VERBOSE" -eq 1 ]]; then
     printf '%s\n' "$json"
   fi
 
-  local bin_dir
-  bin_dir="$(node -e "const j=JSON.parse(process.argv[1]); process.stdout.write(j.pathForCurrentProcess||j.binDir||'')" "$json")"
+  local bin_dir=""
+  if [[ -n "$json" ]]; then
+    bin_dir="$(node -e "
+const raw = process.argv[1] || '';
+if (!raw.trim()) process.exit(2);
+let j;
+try { j = JSON.parse(raw); } catch { process.exit(2); }
+process.stdout.write(String(j.pathForCurrentProcess || j.binDir || ''));
+" "$json" 2>/dev/null)" || bin_dir=""
+  fi
   if [[ -z "$bin_dir" ]]; then
     bin_dir="$HOME/.local/bin"
+    if [[ -z "$json" ]]; then
+      echo "warning: occam launcher helper returned no JSON; using $bin_dir" >&2
+      echo "Re-run with OCCAM_VERBOSE=1 if PATH looks wrong." >&2
+    fi
   fi
   case ":$PATH:" in
     *":$bin_dir:"*)

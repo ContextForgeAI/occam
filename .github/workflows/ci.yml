@@ -163,6 +163,12 @@ jobs:
       - name: Validate PowerShell pipe bootstrap (irm | iex) semantics
         run: node scripts/lib/bootstrap-ps1-pipe.selftest.mjs
 
+      - name: Validate shell bootstrap JSON capture / temp-helper CLI
+        run: node scripts/lib/bootstrap-sh-json.selftest.mjs
+
+      - name: Validate controlling-TTY helpers
+        run: node scripts/lib/operator/tty.selftest.mjs
+
       - name: Validate Cursor configured / no restart-loop state
         run: node scripts/lib/operator/cursor-state.selftest.mjs
 
