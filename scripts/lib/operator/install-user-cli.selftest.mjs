@@ -3,7 +3,7 @@
  * Selftest for install-user-cli PATH/launcher helpers (no real User PATH writes).
  */
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -88,6 +88,10 @@ function testWriteLauncherIsolated() {
 function testNeedsOverlay() {
   const root = mkdtempSync(join(tmpdir(), "occam-ov-"));
   try {
+    assert.equal(needsOperatorOverlay(root), true);
+    // Partial overlay: connect present but tty.mjs missing → still needs overlay.
+    mkdirSync(join(root, "scripts", "lib", "operator"), { recursive: true });
+    writeFileSync(join(root, "scripts", "occam-connect.mjs"), "// stub\n", "utf8");
     assert.equal(needsOperatorOverlay(root), true);
   } finally {
     rmSync(root, { recursive: true, force: true });

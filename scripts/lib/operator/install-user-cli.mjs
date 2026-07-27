@@ -56,6 +56,7 @@ export const OPERATOR_OVERLAY_FILES = Object.freeze([
   "scripts/lib/operator/occam-command-registry.mjs",
   "scripts/lib/operator/install-user-cli.mjs",
   "scripts/lib/operator/install-user-cli-temp-manifest.mjs",
+  "scripts/lib/operator/tty.mjs",
   "scripts/lib/operator/control-actions.mjs",
   "scripts/lib/operator/control-loop.mjs",
   "scripts/lib/operator/connect/index.mjs",
@@ -105,9 +106,18 @@ export function resolveUserBinDir(home = homedir()) {
 /**
  * @param {string} occamHome
  */
-export function needsOperatorOverlay(occamHome) {
-  const connect = join(occamHome, "scripts", "occam-connect.mjs");
-  return !existsSync(connect);
+/**
+ * True when the install tree is missing any operator-overlay file.
+ * Covers partial overlays that wrote connect without tty.mjs / chat helpers.
+ * @param {string} occamHome
+ * @param {{ files?: string[] }} [opts]
+ */
+export function needsOperatorOverlay(occamHome, opts = {}) {
+  const files = opts.files ?? OPERATOR_OVERLAY_FILES;
+  for (const rel of files) {
+    if (!existsSync(join(occamHome, ...rel.split("/")))) return true;
+  }
+  return false;
 }
 
 /**
@@ -445,7 +455,9 @@ export async function installUserCli(opts) {
   /** @type {string[]} */
   const actions = [];
   let overlayWritten = [];
-  if (opts.overlay !== false && needsOperatorOverlay(occamHome)) {
+  // Explicit --base-url (installer overlay) always refreshes; otherwise fill any gaps.
+  const forceOverlay = Boolean(opts.baseUrl && String(opts.baseUrl).trim());
+  if (opts.overlay !== false && (forceOverlay || needsOperatorOverlay(occamHome))) {
     const r = await applyOperatorOverlay(baseUrl, occamHome);
     overlayWritten = r.written;
     actions.push(`overlay:${overlayWritten.length}`);

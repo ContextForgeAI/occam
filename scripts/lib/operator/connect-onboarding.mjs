@@ -29,6 +29,7 @@ import {
   progressLine,
   DOCS_URL,
 } from "./install-ux.mjs";
+import { canPromptInteractively, askControllingTty, isControllingTtyError } from "./tty.mjs";
 
 /**
  * Explicit automation opt-in to mutate every detected Tier-A host without a prompt.
@@ -112,18 +113,35 @@ function skippedResult(opts) {
       connections: [],
     },
   });
-  const headline = source === "install" ? "Occam is installed." : "Cancelled.";
-  const lines = [
-    opts.cancelled && source !== "install" ? "Cancelled." : source === "install" ? "Occam is installed." : detail.split("\n")[0],
-    "",
-    ...(opts.cancelled && source !== "install"
-      ? ["No AI app configurations were changed."]
-      : detail.split("\n").filter((l, i) => !(i === 0 && l === "Cancelled."))),
-    "",
-    "Documentation:",
-    DOCS_URL,
-  ];
-  // De-dupe empty noise
+  const headline = opts.cancelled
+    ? "Cancelled."
+    : source === "install"
+      ? "Occam is installed."
+      : detail.split("\n")[0] || "No AI app configurations were changed.";
+
+  /** @type {string[]} */
+  const lines = [];
+  if (opts.cancelled) {
+    lines.push("Cancelled.");
+    lines.push("");
+    lines.push("No AI app configurations were changed.");
+    if (source === "install") {
+      lines.push("");
+      lines.push("When you're ready:");
+      lines.push("  occam connect");
+    }
+  } else if (source === "install") {
+    lines.push("Occam is installed.");
+    lines.push("");
+    lines.push(...detail.split("\n"));
+  } else {
+    // Print detail once — do not echo the first line twice.
+    lines.push(...detail.split("\n"));
+  }
+  lines.push("");
+  lines.push("Documentation:");
+  lines.push(DOCS_URL);
+
   const cleaned = lines.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
   return {
     connectReport: null,
@@ -148,11 +166,29 @@ async function ask(prompt, opts) {
     }
     return opts.askQuestion(prompt);
   }
+  // curl|bash: stdin is the script pipe — read the controlling terminal synchronously.
+  if (!input.isTTY) {
+    try {
+      return askControllingTty(prompt);
+    } catch (err) {
+      if (isControllingTtyError(err)) {
+        throw Object.assign(new Error("Interactive terminal unavailable. No AI app configurations were changed."), {
+          code: "ERR_TTY_UNAVAILABLE",
+          cause: err,
+        });
+      }
+      throw err;
+    }
+  }
   const rl = createInterface({ input, output });
   try {
     return await rl.question(prompt);
   } finally {
-    rl.close();
+    try {
+      rl.close();
+    } catch {
+      /* ignore */
+    }
   }
 }
 
@@ -178,7 +214,11 @@ async function ask(prompt, opts) {
 export async function runConnectOnboarding(opts) {
   const occamHome = opts.occamHome;
   const setupMode = opts.setupMode === "manual" ? "manual" : "auto";
-  const interactive = opts.interactive === true;
+  // Explicit boolean wins; otherwise stdio TTY or controlling /dev/tty (curl|bash).
+  const interactive =
+    typeof opts.interactive === "boolean"
+      ? opts.interactive
+      : typeof opts.askQuestion === "function" || canPromptInteractively({ env: opts.env ?? process.env });
   const verbose = opts.verbose === true;
   const env = opts.env ?? process.env;
   const connectAll = opts.connectAll === true || allowConnectAll(env);

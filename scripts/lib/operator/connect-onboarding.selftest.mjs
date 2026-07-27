@@ -208,6 +208,8 @@ async function testNonInteractiveMultiNoSilentAll() {
     assert.equal(result.mutated, false);
     assert.equal(result.skipped, true);
     assert.match(result.transcript, /OCCAM_CONNECT_ALL=1/);
+    const multi = result.transcript.match(/Multiple AI apps detected\./g) || [];
+    assert.equal(multi.length, 1, `expected one multi-host line, got:\n${result.transcript}`);
   } finally {
     rmSync(home, { recursive: true, force: true });
   }
