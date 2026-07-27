@@ -361,16 +361,27 @@ install_occam_user_command() {
   local helper="$home/scripts/lib/operator/install-user-cli.mjs"
   local helper_tmp=""
   if [[ ! -f "$helper" ]]; then
-    helper_tmp="$(mktemp "${TMPDIR:-/tmp}/occam-install-user-cli.XXXXXX.mjs")"
+    # Stage full ESM closure (relative imports) — not a single flat temp file.
+    # Manifest: scripts/lib/operator/install-user-cli-temp-manifest.mjs
+    helper_tmp="$(mktemp -d "${TMPDIR:-/tmp}/occam-install-user-cli.XXXXXX")"
     local base="${OCCAM_OVERLAY_BASE_URL:-https://raw.githubusercontent.com/ContextForgeAI/occam/main}"
     base="${base%/}"
-    if ! curl -fsSL "$base/scripts/lib/operator/install-user-cli.mjs" -o "$helper_tmp"; then
+    mkdir -p "$helper_tmp/scripts/lib/operator"
+    if ! curl -fsSL "$base/scripts/lib/operator/install-user-cli.mjs" -o "$helper_tmp/scripts/lib/operator/install-user-cli.mjs" \
+      || ! curl -fsSL "$base/scripts/lib/resolve-node-runtime.mjs" -o "$helper_tmp/scripts/lib/resolve-node-runtime.mjs"; then
       echo "✗ Could not install the occam command (download failed)." >&2
       echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
-      rm -f "$helper_tmp"
+      rm -rf "$helper_tmp"
       exit 1
     fi
-    helper="$helper_tmp"
+    if [[ ! -f "$helper_tmp/scripts/lib/operator/install-user-cli.mjs" \
+      || ! -f "$helper_tmp/scripts/lib/resolve-node-runtime.mjs" ]]; then
+      echo "✗ Could not install the occam command (incomplete helper staging)." >&2
+      echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
+      rm -rf "$helper_tmp"
+      exit 1
+    fi
+    helper="$helper_tmp/scripts/lib/operator/install-user-cli.mjs"
   fi
 
   local json
@@ -382,7 +393,7 @@ install_occam_user_command() {
   fi
   local code=$?
   set -e
-  if [[ -n "$helper_tmp" ]]; then rm -f "$helper_tmp"; fi
+  if [[ -n "$helper_tmp" ]]; then rm -rf "$helper_tmp"; fi
   if [[ "$code" -ne 0 ]]; then
     echo "✗ Could not install the occam command." >&2
     echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
@@ -467,11 +478,12 @@ run_post_install() {
 
   local connect_js="$INSTALL_DIR/scripts/occam-connect.mjs"
   if [[ -f "$connect_js" ]]; then
-    local carg=()
+    # Avoid "${arr[@]}" with empty array under `set -u` (macOS bash 3.2 / bash 5).
     if [[ "$VERBOSE" -eq 1 ]]; then
-      carg+=(--verbose)
+      node "$connect_js" --verbose
+    else
+      node "$connect_js"
     fi
-    node "$connect_js" "${carg[@]}"
   else
     echo ""
     echo "Occam is installed."

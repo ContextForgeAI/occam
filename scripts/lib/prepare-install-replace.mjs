@@ -7,8 +7,9 @@
  * Exit 0 when the tree is free to replace; exit 2 when still in use (human message on stderr).
  * Does not delete the install directory.
  */
+import { realpathSync } from "node:fs";
 import { resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { prepareInstallTreeReplace } from "./stop-occam-processes.mjs";
 
 function parseArgs(argv) {
@@ -43,6 +44,15 @@ function main() {
   process.exit(result.ok ? 0 : 2);
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+function isDirectCliInvocation(argv1 = process.argv[1], metaUrl = import.meta.url) {
+  if (!argv1) return false;
+  try {
+    return realpathSync(argv1) === realpathSync(fileURLToPath(metaUrl));
+  } catch {
+    return resolve(argv1) === fileURLToPath(metaUrl);
+  }
+}
+
+if (isDirectCliInvocation()) {
   main();
 }
