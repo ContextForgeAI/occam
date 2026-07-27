@@ -28,6 +28,7 @@ import {
   shouldUseInstallColor,
 } from "./install-ux.mjs";
 import { renderConnectTranscript } from "./connect/render.mjs";
+import { canPromptInteractively } from "./tty.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const defaultHome = process.env.OCCAM_HOME?.trim() || join(scriptDir, "..", "..", "..");
@@ -156,7 +157,7 @@ async function main() {
   const occamHome = process.env.OCCAM_HOME?.trim() || defaultHome;
   const quiet = isInstallQuiet(process.env, process.argv);
   const verbose = isInstallVerbose(process.env, process.argv);
-  const interactive = process.stdin.isTTY === true && process.stdout.isTTY === true;
+  const interactive = canPromptInteractively();
 
   const outLines = [];
   const emit = (line = "") => {

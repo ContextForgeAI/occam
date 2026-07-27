@@ -154,6 +154,9 @@ jobs:
       - name: Validate first-run connect onboarding UX
         run: node scripts/lib/operator/connect-onboarding.selftest.mjs
 
+      - name: Validate controlling-TTY / curl pipe interactivity
+        run: node scripts/lib/operator/tty.selftest.mjs
+
       - name: Validate install-tree replace / lock helpers
         run: node scripts/lib/prepare-install-replace.selftest.mjs
 
