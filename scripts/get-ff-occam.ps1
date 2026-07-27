@@ -150,18 +150,24 @@ function Install-OccamUserCommand([string]$OccamHome) {
   $helper = Join-Path $OccamHome "scripts\lib\operator\install-user-cli.mjs"
   $helperTmp = $null
   if (-not (Test-Path $helper)) {
-    $helperTmp = Join-Path ([System.IO.Path]::GetTempPath()) ("occam-install-user-cli-" + [guid]::NewGuid().ToString("N") + ".mjs")
-    $helperUrl = if ($env:OCCAM_OVERLAY_BASE_URL) {
-      ($env:OCCAM_OVERLAY_BASE_URL.TrimEnd("/") + "/scripts/lib/operator/install-user-cli.mjs")
+    $helperTmp = Join-Path ([System.IO.Path]::GetTempPath()) ("occam-install-user-cli-" + [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Path $helperTmp -Force | Out-Null
+    $base = if ($env:OCCAM_OVERLAY_BASE_URL) {
+      $env:OCCAM_OVERLAY_BASE_URL.TrimEnd("/").TrimEnd("\")
     } else {
-      "https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/lib/operator/install-user-cli.mjs"
+      "https://raw.githubusercontent.com/ContextForgeAI/occam/main"
     }
     try {
-      Invoke-WebRequest -Uri $helperUrl -OutFile $helperTmp -UseBasicParsing
-      $helper = $helperTmp
+      # install-user-cli imports install-ux — download the closed helper set.
+      Invoke-WebRequest -Uri ($base + "/scripts/lib/operator/install-user-cli.mjs") -OutFile (Join-Path $helperTmp "install-user-cli.mjs") -UseBasicParsing
+      Invoke-WebRequest -Uri ($base + "/scripts/lib/operator/install-ux.mjs") -OutFile (Join-Path $helperTmp "install-ux.mjs") -UseBasicParsing
+      $helper = Join-Path $helperTmp "install-user-cli.mjs"
     } catch {
-      Write-Host ($script:OccamFail + " Could not install the occam command (download failed).") -ForegroundColor Red
-      Write-Host "Re-run with `$env:OCCAM_VERBOSE=1 for details." -ForegroundColor Yellow
+      Write-Host "Occam installation could not be completed."
+      Write-Host "A required installer component is missing."
+      Write-Host ""
+      Write-Host "Run again or use --verbose for details."
+      if ($helperTmp) { Remove-Item -Recurse -Force $helperTmp -ErrorAction SilentlyContinue }
       throw
     }
   }
@@ -175,9 +181,19 @@ function Install-OccamUserCommand([string]$OccamHome) {
     }
     $jsonOut = & node @cliArgs *>&1 | ForEach-Object { "$_" }
     if ($LASTEXITCODE -ne 0) {
-      Write-Host ($script:OccamFail + " Could not install the occam command.") -ForegroundColor Red
-      Write-Host "Re-run with `$env:OCCAM_VERBOSE=1 for details." -ForegroundColor Yellow
-      if ($jsonOut) { $jsonOut | Select-Object -Last 30 | ForEach-Object { Write-Host $_ } }
+      $errText = ($jsonOut | Out-String)
+      if ($errText -match "Occam installation could not be completed") {
+        Write-Host $errText.TrimEnd()
+      } else {
+        Write-Host "Occam installation could not be completed."
+        Write-Host "A required installer component is missing."
+        Write-Host ""
+        Write-Host "Run again or use --verbose for details."
+        if ($VerboseInstall -and $errText) {
+          Write-Host ""
+          Write-Host ($errText.TrimEnd())
+        }
+      }
       exit $LASTEXITCODE
     }
     if ($VerboseInstall -and $jsonOut) {
@@ -185,7 +201,7 @@ function Install-OccamUserCommand([string]$OccamHome) {
     }
   } finally {
     $ErrorActionPreference = $prevEap
-    if ($helperTmp) { Remove-Item -Force $helperTmp -ErrorAction SilentlyContinue }
+    if ($helperTmp) { Remove-Item -Recurse -Force $helperTmp -ErrorAction SilentlyContinue }
   }
 
   $binDir = $null

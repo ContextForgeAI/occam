@@ -17,7 +17,7 @@ import {
   resolveConnectMode,
 } from "./lib/operator/connect/index.mjs";
 import { runConnectOnboarding, allowConnectAll } from "./lib/operator/connect-onboarding.mjs";
-import { isInstallVerbose } from "./lib/operator/install-ux.mjs";
+import { isInstallVerbose, formatInstallerComponentError } from "./lib/operator/install-ux.mjs";
 import { canPromptInteractively } from "./lib/operator/tty.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -179,6 +179,10 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err instanceof Error ? err.message : String(err));
+  console.error(
+    formatInstallerComponentError(err, {
+      verbose: isInstallVerbose(process.env, process.argv),
+    }),
+  );
   process.exit(1);
 });

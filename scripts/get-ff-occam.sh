@@ -370,16 +370,20 @@ install_occam_user_command() {
   local helper="$home/scripts/lib/operator/install-user-cli.mjs"
   local helper_tmp=""
   if [[ ! -f "$helper" ]]; then
-    helper_tmp="$(mktemp "${TMPDIR:-/tmp}/occam-install-user-cli.XXXXXX.mjs")"
+    helper_tmp="$(mktemp -d "${TMPDIR:-/tmp}/occam-install-user-cli.XXXXXX")"
     local base="${OCCAM_OVERLAY_BASE_URL:-https://raw.githubusercontent.com/ContextForgeAI/occam/main}"
     base="${base%/}"
-    if ! curl -fsSL "$base/scripts/lib/operator/install-user-cli.mjs" -o "$helper_tmp"; then
-      echo "✗ Could not install the occam command (download failed)." >&2
-      echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
-      rm -f "$helper_tmp"
+    # install-user-cli imports install-ux — download the closed helper set.
+    if ! curl -fsSL "$base/scripts/lib/operator/install-user-cli.mjs" -o "$helper_tmp/install-user-cli.mjs" \
+      || ! curl -fsSL "$base/scripts/lib/operator/install-ux.mjs" -o "$helper_tmp/install-ux.mjs"; then
+      echo "Occam installation could not be completed." >&2
+      echo "A required installer component is missing." >&2
+      echo "" >&2
+      echo "Run again or use --verbose for details." >&2
+      rm -rf "$helper_tmp"
       exit 1
     fi
-    helper="$helper_tmp"
+    helper="$helper_tmp/install-user-cli.mjs"
   fi
 
   local json=""
@@ -393,12 +397,20 @@ install_occam_user_command() {
   fi
   local code=$?
   set -e
-  if [[ -n "$helper_tmp" ]]; then rm -f "$helper_tmp"; fi
+  if [[ -n "$helper_tmp" ]]; then rm -rf "$helper_tmp"; fi
   if [[ "$code" -ne 0 ]]; then
-    echo "✗ Could not install the occam command." >&2
-    echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
-    if [[ -s "$errf" ]]; then tail -n 30 "$errf" >&2; fi
-    printf '%s\n' "$json" | tail -n 30 >&2
+    if [[ -s "$errf" ]] && grep -q "Occam installation could not be completed" "$errf" 2>/dev/null; then
+      cat "$errf" >&2
+    else
+      echo "Occam installation could not be completed." >&2
+      echo "A required installer component is missing." >&2
+      echo "" >&2
+      echo "Run again or use --verbose for details." >&2
+      if [[ "$VERBOSE" -eq 1 && -s "$errf" ]]; then
+        echo "" >&2
+        tail -n 30 "$errf" >&2
+      fi
+    fi
     rm -f "$errf"
     exit "$code"
   fi

@@ -18,6 +18,7 @@ import { writeOnboardConfig } from "./onboard-config.mjs";
 import { runInstallConnectFlow } from "./install-connect-flow.mjs";
 import {
   assertQuietTranscript,
+  formatInstallerComponentError,
   isInstallQuiet,
   isInstallVerbose,
   okLine,
@@ -271,6 +272,10 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err instanceof Error ? err.message : String(err));
+  console.error(
+    formatInstallerComponentError(err, {
+      verbose: isInstallVerbose(process.env, process.argv),
+    }),
+  );
   process.exit(1);
 });

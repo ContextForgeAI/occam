@@ -14,20 +14,36 @@
 import { spawnSync } from "node:child_process";
 import {
   chmodSync,
+  copyFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   realpathSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir, homedir, platform } from "node:os";
-import { dirname, join, resolve, win32 as pathWin32, posix as pathPosix } from "node:path";
-import { fileURLToPath } from "node:url";
+import { dirname, join, resolve, relative, sep, win32 as pathWin32, posix as pathPosix } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { formatInstallerComponentError, isInstallVerbose } from "./install-ux.mjs";
 
-const here = dirname(fileURLToPath(import.meta.url));
+/**
+ * Entrypoints whose local import closure must be present after overlay.
+ * Shared by shell + PowerShell via this module (single overlay contract).
+ */
+export const OPERATOR_OVERLAY_ENTRYPOINTS = Object.freeze([
+  "scripts/occam-connect.mjs",
+  "scripts/lib/operator/connect-onboarding.mjs",
+  "scripts/lib/operator/post-install-ux.mjs",
+  "scripts/occam.mjs",
+]);
 
-/** Relative paths fetched from public main when the tarball lacks connect. */
+/**
+ * Relative paths fetched from public main when the release tarball lacks a
+ * complete current onboarding/connect runtime (rc.2 + review overlay case).
+ * Must cover the full local dependency closure of OPERATOR_OVERLAY_ENTRYPOINTS.
+ */
 export const OPERATOR_OVERLAY_FILES = Object.freeze([
   "scripts/occam.mjs",
   "scripts/occam.ps1",
@@ -37,13 +53,22 @@ export const OPERATOR_OVERLAY_FILES = Object.freeze([
   "scripts/lib/operator/install-connect-flow.mjs",
   "scripts/lib/operator/install-ux.mjs",
   "scripts/lib/operator/post-install-ux.mjs",
+  "scripts/lib/operator/tty.mjs",
   "scripts/lib/operator/onboard-flow.mjs",
   "scripts/lib/operator/onboard-config.mjs",
+  "scripts/lib/operator/onboard-copy.mjs",
+  "scripts/lib/operator/onboard-schema.mjs",
+  "scripts/lib/operator/onboard-steps.mjs",
+  "scripts/lib/operator/mcp-snippet.mjs",
+  "scripts/lib/operator/update-check.mjs",
   "scripts/lib/operator/occam-cli-subcommands.mjs",
   "scripts/lib/operator/occam-cli-dispatch.mjs",
   "scripts/lib/operator/occam-command-registry.mjs",
   "scripts/lib/operator/control-actions.mjs",
   "scripts/lib/operator/control-loop.mjs",
+  "scripts/lib/operator/render/tty-layout.mjs",
+  "scripts/lib/operator/render/control-tty-renderer.mjs",
+  "scripts/lib/operator/render/onboard-tty-renderer.mjs",
   "scripts/lib/operator/connect/index.mjs",
   "scripts/lib/operator/connect/kinds.mjs",
   "scripts/lib/operator/connect/launch-spec.mjs",
@@ -85,11 +110,90 @@ export function resolveUserBinDir(home = homedir()) {
 }
 
 /**
+ * True when any required overlay file is missing (not only occam-connect).
+ * Covers partial overlays that wrote connect-onboarding without tty.mjs.
+ * @param {string} occamHome
+ * @param {{ files?: string[] }} [opts]
+ */
+export function needsOperatorOverlay(occamHome, opts = {}) {
+  const files = opts.files ?? OPERATOR_OVERLAY_FILES;
+  for (const rel of files) {
+    if (!existsSync(join(occamHome, ...rel.split("/")))) return true;
+  }
+  return false;
+}
+
+/**
+ * Walk relative `./` imports under `scripts/` starting from entrypoints.
+ * @param {string} rootDir repo or install tree root
+ * @param {string[]} [entrypoints]
+ * @returns {string[]} posix-relative paths
+ */
+export function collectLocalImportClosure(rootDir, entrypoints = [...OPERATOR_OVERLAY_ENTRYPOINTS]) {
+  /** @param {string} fromFile @param {string} spec */
+  function resolveImport(fromFile, spec) {
+    const base = resolve(dirname(join(rootDir, fromFile)), spec);
+    const candidates = [base, `${base}.mjs`, `${base}.js`, join(base, "index.mjs")];
+    for (const c of candidates) {
+      if (existsSync(c)) return relative(rootDir, c).split(sep).join("/");
+    }
+    return relative(rootDir, base).split(sep).join("/");
+  }
+
+  const seen = new Set();
+  const queue = [...entrypoints];
+  while (queue.length) {
+    const rel = queue.shift();
+    if (!rel || seen.has(rel)) continue;
+    seen.add(rel);
+    const abs = join(rootDir, rel);
+    if (!existsSync(abs)) continue;
+    const text = readFileSync(abs, "utf8");
+    const re = /(?:from|import)\s*(?:\(\s*)?['"](\.[^'"]+)['"]/g;
+    let m;
+    while ((m = re.exec(text))) {
+      const dep = resolveImport(rel, m[1]);
+      if (!dep.startsWith("scripts/")) continue;
+      if (!seen.has(dep)) queue.push(dep);
+    }
+  }
+  return [...seen].sort();
+}
+
+/**
+ * @param {string} occamHome
+ * @param {{ files?: string[] }} [opts]
+ */
+export function assertOperatorOverlayFilesPresent(occamHome, opts = {}) {
+  const files = opts.files ?? OPERATOR_OVERLAY_FILES;
+  /** @type {string[]} */
+  const missing = [];
+  for (const rel of files) {
+    if (!existsSync(join(occamHome, ...rel.split("/")))) missing.push(rel);
+  }
+  if (missing.length) {
+    const err = new Error(`required overlay file missing: ${missing.join(", ")}`);
+    err.code = "ERR_OVERLAY_INCOMPLETE";
+    throw err;
+  }
+}
+
+/**
+ * Dynamically import library modules from an install tree (no CLI main side effects).
  * @param {string} occamHome
  */
-export function needsOperatorOverlay(occamHome) {
-  const connect = join(occamHome, "scripts", "occam-connect.mjs");
-  return !existsSync(connect);
+export async function assertOperatorOverlayImports(occamHome) {
+  assertOperatorOverlayFilesPresent(occamHome);
+  const libs = [
+    "scripts/lib/operator/tty.mjs",
+    "scripts/lib/operator/connect-onboarding.mjs",
+    "scripts/lib/operator/install-connect-flow.mjs",
+    "scripts/lib/operator/onboard-flow.mjs",
+  ];
+  for (const rel of libs) {
+    const href = pathToFileURL(join(occamHome, ...rel.split("/"))).href;
+    await import(href);
+  }
 }
 
 /**
@@ -352,22 +456,43 @@ export async function applyOperatorOverlay(baseUrl, occamHome, opts = {}) {
       return readFileSync(join(localRoot, ...String(relOrUrl).split("/")), "utf8");
     });
 
-  const written = [];
-  for (const rel of files) {
-    const text = await fetchText(isHttp ? `${root}/${rel}` : rel);
-    const dest = join(occamHome, ...rel.split("/"));
-    mkdirSync(dirname(dest), { recursive: true });
-    writeFileSync(dest, text, "utf8");
-    if (rel.endsWith("/occam") || rel === "scripts/occam") {
-      try {
-        chmodSync(dest, 0o755);
-      } catch {
-        /* ignore */
+  // Stage entirely before mutating the install tree (no partial overlay on fetch failure).
+  const stage = mkdtempSync(join(tmpdir(), "occam-overlay-"));
+  try {
+    /** @type {string[]} */
+    const written = [];
+    for (const rel of files) {
+      const text = await fetchText(isHttp ? `${root}/${rel}` : rel);
+      const dest = join(stage, ...rel.split("/"));
+      mkdirSync(dirname(dest), { recursive: true });
+      writeFileSync(dest, text, "utf8");
+      written.push(rel);
+    }
+    for (const rel of files) {
+      if (!existsSync(join(stage, ...rel.split("/")))) {
+        const err = new Error(`overlay incomplete: missing ${rel}`);
+        err.code = "ERR_OVERLAY_INCOMPLETE";
+        throw err;
       }
     }
-    written.push(rel);
+    for (const rel of files) {
+      const src = join(stage, ...rel.split("/"));
+      const dest = join(occamHome, ...rel.split("/"));
+      mkdirSync(dirname(dest), { recursive: true });
+      copyFileSync(src, dest);
+      if (rel.endsWith("/occam") || rel === "scripts/occam") {
+        try {
+          chmodSync(dest, 0o755);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    assertOperatorOverlayFilesPresent(occamHome, { files });
+    return { written };
+  } finally {
+    rmSync(stage, { recursive: true, force: true });
   }
-  return { written };
 }
 
 /**
@@ -398,6 +523,7 @@ export async function installUserCli(opts) {
     const r = await applyOperatorOverlay(baseUrl, occamHome);
     overlayWritten = r.written;
     actions.push(`overlay:${overlayWritten.length}`);
+    await assertOperatorOverlayImports(occamHome);
   }
 
   let launcherPath = "";
@@ -502,7 +628,7 @@ function isExecutedAsCli() {
 
 if (isExecutedAsCli()) {
   main().catch((err) => {
-    console.error(err instanceof Error ? err.message : String(err));
+    console.error(formatInstallerComponentError(err, { verbose: isInstallVerbose() }));
     process.exit(1);
   });
 }

@@ -40,6 +40,32 @@ export function isInstallVerbose(env = process.env, argv = process.argv) {
 }
 
 /**
+ * User-facing installer error (default UX hides raw ERR_MODULE_NOT_FOUND).
+ * @param {unknown} err
+ * @param {{ verbose?: boolean }} [opts]
+ */
+export function formatInstallerComponentError(err, opts = {}) {
+  const verbose = opts.verbose === true;
+  const msg = err instanceof Error ? err.message : String(err);
+  const code = err && typeof err === "object" && "code" in err ? String(err.code) : "";
+  const missing =
+    code === "ERR_MODULE_NOT_FOUND" ||
+    code === "ERR_OVERLAY_INCOMPLETE" ||
+    /Cannot find module/i.test(msg) ||
+    /required overlay file missing/i.test(msg) ||
+    /overlay incomplete/i.test(msg);
+  if (!missing) return msg;
+  if (verbose) {
+    return `Occam installation could not be completed.\nA required installer component is missing.\n\n${msg}`;
+  }
+  return (
+    "Occam installation could not be completed.\n" +
+    "A required installer component is missing.\n\n" +
+    "Run again or use --verbose for details."
+  );
+}
+
+/**
  * Quiet is the default for install orchestration unless verbose/debug is set.
  * OCCAM_INSTALL_QUIET=0 forces verbose-style child output.
  * @param {NodeJS.ProcessEnv} [env]

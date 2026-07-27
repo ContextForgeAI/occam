@@ -28,6 +28,7 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, "..", "..");
 const helperSrc = join(here, "operator", "install-user-cli.mjs");
+const installUxSrc = join(here, "operator", "install-ux.mjs");
 
 function runHelper(scriptPath, home) {
   return spawnSync(
@@ -73,6 +74,10 @@ function testGetFfOccamShHasGuard() {
     sh,
     /bin_dir="\$\(node -e "const j=JSON\.parse\(process\.argv\[1\]\); process\.stdout\.write/,
   );
+  // Temp helper download must include install-ux (import closure of install-user-cli).
+  assert.match(sh, /install-ux\.mjs/);
+  const ps1 = readFileSync(join(repoRoot, "scripts", "get-ff-occam.ps1"), "utf8");
+  assert.match(ps1, /install-ux\.mjs/);
 }
 
 /** Prefer real Git Bash over Windows System32 bash.exe (WSL launcher stub). */
@@ -260,6 +265,7 @@ function main() {
   try {
     const copied = join(root, "install-user-cli.mjs");
     copyFileSync(helperSrc, copied);
+    copyFileSync(installUxSrc, join(root, "install-ux.mjs"));
     assertJsonStdout(runHelper(copied, home), "direct copy");
 
     const linked = join(root, "linked-install-user-cli.mjs");

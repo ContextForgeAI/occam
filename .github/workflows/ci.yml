@@ -151,6 +151,9 @@ jobs:
       - name: Validate user CLI launcher / PATH helpers
         run: node scripts/lib/operator/install-user-cli.selftest.mjs
 
+      - name: Validate operator overlay dependency closure
+        run: node scripts/lib/operator/overlay-closure.selftest.mjs
+
       - name: Validate first-run connect onboarding UX
         run: node scripts/lib/operator/connect-onboarding.selftest.mjs
 
