@@ -36,6 +36,7 @@ export const OPERATOR_OVERLAY_FILES = Object.freeze([
   "scripts/lib/experimental/local-chat/ollama-endpoint.mjs",
   "scripts/lib/experimental/local-chat/live-friend-test.mjs",
   "scripts/lib/experimental/local-chat/package-friend-candidate.mjs",
+  "scripts/lib/resolve-node-runtime.mjs",
   "scripts/lib/operator/connect-onboarding.mjs",
   "scripts/lib/operator/install-connect-flow.mjs",
   "scripts/lib/operator/install-ux.mjs",

@@ -51,6 +51,7 @@ export const FRIEND_CHAT_FILES = Object.freeze([
   "scripts/lib/operator/occam-cli-dispatch.mjs",
   "scripts/lib/operator/occam-command-registry.mjs",
   "scripts/lib/operator/install-user-cli.mjs",
+  "scripts/lib/resolve-node-runtime.mjs",
 ]);
 
 /**
