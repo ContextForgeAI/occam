@@ -1,6 +1,6 @@
 namespace OccamMcp.Core.Workers;
 
-/// <summary>Resolves node executable — system PATH, OCCAM_NODE_BIN, or OCCAM_HOME/bin/node.</summary>
+/// <summary>Resolves node executable — OCCAM_NODE_BIN, OCCAM_HOME/bin/node, common install paths, or PATH.</summary>
 public static class NodeRuntime
 {
     public static string ResolveExecutable()
@@ -25,6 +25,38 @@ public static class NodeRuntime
             }
         }
 
+        // GUI MCP hosts often inherit PATH=/usr/bin:/bin (no Homebrew). Prefer well-known
+        // absolute locations before falling back to a bare "node" PATH lookup.
+        foreach (var candidate in WellKnownNodePaths())
+        {
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
         return "node";
+    }
+
+    private static IEnumerable<string> WellKnownNodePaths()
+    {
+        if (OperatingSystem.IsMacOS())
+        {
+            yield return "/opt/homebrew/bin/node";
+            yield return "/usr/local/bin/node";
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            yield return "/usr/bin/node";
+            yield return "/usr/local/bin/node";
+        }
+        else if (OperatingSystem.IsWindows())
+        {
+            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            if (!string.IsNullOrWhiteSpace(programFiles))
+            {
+                yield return Path.Combine(programFiles, "nodejs", "node.exe");
+            }
+        }
     }
 }

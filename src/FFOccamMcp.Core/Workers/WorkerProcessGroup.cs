@@ -35,7 +35,19 @@ public static class WorkerProcessGroup
     {
         EnsureShutdownHook();
         ApplyUtf8StreamEncoding(psi);
-        var process = Process.Start(psi);
+        Process? process;
+        try
+        {
+            // Missing FileName (e.g. bare "node" when GUI MCP hosts strip PATH) throws
+            // instead of returning null — catch so callers can map spawn_failed → workers_unavailable
+            // instead of leaking an opaque MCP "An error occurred invoking …" ToolCallError.
+            process = Process.Start(psi);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+
         if (process is not null)
         {
             Attach(process);

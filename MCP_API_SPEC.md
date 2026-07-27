@@ -1058,7 +1058,7 @@ still valid).
 | `OCCAM_HOME` | Repository root |
 | `OCCAM_HTTP_EXTRACT_SCRIPT` | HTTP worker override |
 | `OCCAM_BROWSER_EXTRACT_SCRIPT` | Browser worker override |
-| `OCCAM_NODE_BIN` | Explicit `node` path |
+| `OCCAM_NODE_BIN` | Explicit `node` path (launcher stamps `process.execPath` when unset) |
 | `OCCAM_BROWSER_PROFILE` | Browser mode preset (`shared`/`isolated` aliases) |
 | `OCCAM_BROWSER_DAEMON` | `0` disables browser daemon |
 | `OCCAM_BROWSER_POOL_SIZE` | Shared daemon slot count (1–8) |

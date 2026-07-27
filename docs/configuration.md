@@ -20,7 +20,7 @@ Only variables found in `src/FFOccamMcp.Core/` are listed. CLI flags override en
 |----------|---------|---------|
 | `OCCAM_HTTP_EXTRACT_SCRIPT` | auto | Override HTTP worker entry (pair with browser override) |
 | `OCCAM_BROWSER_EXTRACT_SCRIPT` | auto | Override browser worker entry |
-| `OCCAM_NODE_BIN` | `PATH` / `{OCCAM_HOME}/bin/node` | Node executable |
+| `OCCAM_NODE_BIN` | launcher stamps `process.execPath`; else `{OCCAM_HOME}/bin/node` / well-known paths / `PATH` | Absolute Node used to spawn all workers. Set explicitly if the MCP host strips PATH (GUI apps often do). `scripts/launch-mcp-host.mjs` stamps this automatically from the Node that started the launcher. |
 | `OCCAM_DOM_SKELETON_SCRIPT` | auto | Override DOM skeleton script for heal |
 | `OCCAM_FORCE_DOTNET_RUN` | off | Launcher uses `dotnet run` instead of AOT binary |
 
