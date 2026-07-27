@@ -1,12 +1,54 @@
 /**
- * Model selection UX for experimental local chat.
+ * Model selection UX + live compatibility policy for experimental local chat.
+ *
+ * `capabilities.includes("tools")` is necessary but not sufficient for
+ * friend-grade reliability. Tiers below are based on live Mac evidence with
+ * slim Ollama tool schemas (2026-07-27).
  */
 import { pickDefaultToolModel } from "./ollama-api.mjs";
+
+/** @typedef {'supported'|'degraded'|'unknown'} ChatModelTier */
+
+/**
+ * Known live tiers. Prefer supported models for auto-select.
+ * Degraded models may still be chosen explicitly, with a warning.
+ */
+export const CHAT_MODEL_COMPAT = Object.freeze({
+  "qwen2.5:7b": "supported",
+  "qwen2.5": "supported",
+  "llama3.1:8b": "supported",
+  "llama3.1": "supported",
+  "llama3.2:3b": "degraded",
+  "llama3.2": "degraded",
+});
+
+/**
+ * @param {string} name
+ * @returns {ChatModelTier}
+ */
+export function chatModelTier(name) {
+  const n = String(name || "").trim().toLowerCase();
+  if (!n) return "unknown";
+  if (CHAT_MODEL_COMPAT[n]) return CHAT_MODEL_COMPAT[n];
+  for (const [key, tier] of Object.entries(CHAT_MODEL_COMPAT)) {
+    if (n === key || n.startsWith(`${key}:`) || n.startsWith(`${key}-`)) return /** @type {ChatModelTier} */ (tier);
+  }
+  return "unknown";
+}
+
+/**
+ * @param {ChatModelTier} tier
+ */
+export function formatTierLabel(tier) {
+  if (tier === "supported") return "supported";
+  if (tier === "degraded") return "degraded — may leak tool JSON / over-call tools";
+  return "unverified";
+}
 
 /**
  * @param {import('./ollama-api.mjs').OllamaModelInfo[]} models
  * @param {{ modelFlag?: string|null, stdin?: NodeJS.ReadableStream|null, stdout?: NodeJS.WritableStream|null, interactive?: boolean }} [opts]
- * @returns {Promise<{ ok: true, model: string, auto: boolean } | { ok: false, code: string, message: string, installed?: object[] }>}
+ * @returns {Promise<{ ok: true, model: string, auto: boolean, tier: ChatModelTier, warning?: string } | { ok: false, code: string, message: string, installed?: object[] }>}
  */
 export async function selectToolModel(models, opts = {}) {
   const toolModels = models.filter((m) => m.tools);
@@ -19,7 +61,7 @@ export async function selectToolModel(models, opts = {}) {
         ok: false,
         code: "model_not_found",
         message: `Model not installed: ${flag}`,
-        installed: models.map((m) => ({ name: m.name, tools: m.tools })),
+        installed: models.map((m) => ({ name: m.name, tools: m.tools, tier: chatModelTier(m.name) })),
       };
     }
     if (!exact.tools) {
@@ -27,10 +69,17 @@ export async function selectToolModel(models, opts = {}) {
         ok: false,
         code: "model_no_tools",
         message: `Model ${flag} does not report tool support.`,
-        installed: models.map((m) => ({ name: m.name, tools: m.tools })),
+        installed: models.map((m) => ({ name: m.name, tools: m.tools, tier: chatModelTier(m.name) })),
       };
     }
-    return { ok: true, model: exact.name, auto: false };
+    const tier = chatModelTier(exact.name);
+    /** @type {{ ok: true, model: string, auto: boolean, tier: ChatModelTier, warning?: string }} */
+    const out = { ok: true, model: exact.name, auto: false, tier };
+    if (tier === "degraded") {
+      out.warning =
+        `${exact.name} is tool-capable but degraded for Occam chat (may emit tool JSON as text or call tools unnecessarily). Prefer qwen2.5:7b when installed.`;
+    }
+    return out;
   }
 
   if (toolModels.length === 0) {
@@ -41,12 +90,19 @@ export async function selectToolModel(models, opts = {}) {
         "Ollama is running, but none of the installed models report tool support.\n\n" +
         formatNoToolsList(models) +
         "\n\nOccam web access requires a tool-capable model.",
-      installed: models.map((m) => ({ name: m.name, tools: m.tools })),
+      installed: models.map((m) => ({ name: m.name, tools: m.tools, tier: chatModelTier(m.name) })),
     };
   }
 
   if (toolModels.length === 1) {
-    return { ok: true, model: toolModels[0].name, auto: true };
+    const only = toolModels[0];
+    const tier = chatModelTier(only.name);
+    /** @type {{ ok: true, model: string, auto: boolean, tier: ChatModelTier, warning?: string }} */
+    const out = { ok: true, model: only.name, auto: true, tier };
+    if (tier === "degraded") {
+      out.warning = `${only.name} is the only tool-capable model, but it is degraded for Occam chat.`;
+    }
+    return out;
   }
 
   const interactive = opts.interactive !== false && Boolean(opts.stdin && opts.stdout);
@@ -57,30 +113,43 @@ export async function selectToolModel(models, opts = {}) {
   );
 
   if (!interactive) {
-    return { ok: true, model: toolModels[defaultIndex].name, auto: true };
+    const model = toolModels[defaultIndex].name;
+    const tier = chatModelTier(model);
+    return { ok: true, model, auto: true, tier };
   }
 
   const out = opts.stdout;
   out.write("\nTool-capable Ollama models:\n\n");
   toolModels.forEach((m, i) => {
-    out.write(`${i + 1}. ${m.name}\n`);
+    const tier = chatModelTier(m.name);
+    const mark = i === defaultIndex ? " (default)" : "";
+    const note = tier === "supported" ? "" : tier === "degraded" ? "  [degraded]" : "  [unverified]";
+    out.write(`${i + 1}. ${m.name}${mark}${note}\n`);
   });
   out.write(`\nChoose model [${defaultIndex + 1}]: `);
 
   const answer = await readLine(opts.stdin);
   const trimmed = answer.trim();
-  if (!trimmed) {
-    return { ok: true, model: toolModels[defaultIndex].name, auto: false };
+  let chosen = toolModels[defaultIndex];
+  if (trimmed) {
+    const asNum = Number.parseInt(trimmed, 10);
+    if (Number.isFinite(asNum) && asNum >= 1 && asNum <= toolModels.length) {
+      chosen = toolModels[asNum - 1];
+    } else {
+      const byName = toolModels.find((m) => m.name === trimmed || m.name.startsWith(trimmed));
+      if (byName) chosen = byName;
+      else out.write(`Unrecognized choice; using ${toolModels[defaultIndex].name}\n`);
+    }
   }
-  const asNum = Number.parseInt(trimmed, 10);
-  if (Number.isFinite(asNum) && asNum >= 1 && asNum <= toolModels.length) {
-    return { ok: true, model: toolModels[asNum - 1].name, auto: false };
-  }
-  const byName = toolModels.find((m) => m.name === trimmed || m.name.startsWith(trimmed));
-  if (byName) return { ok: true, model: byName.name, auto: false };
 
-  out.write(`Unrecognized choice; using ${toolModels[defaultIndex].name}\n`);
-  return { ok: true, model: toolModels[defaultIndex].name, auto: false };
+  const tier = chatModelTier(chosen.name);
+  /** @type {{ ok: true, model: string, auto: boolean, tier: ChatModelTier, warning?: string }} */
+  const result = { ok: true, model: chosen.name, auto: false, tier };
+  if (tier === "degraded") {
+    result.warning =
+      `${chosen.name} is degraded for Occam chat (may leak tool JSON / over-call). Prefer qwen2.5:7b when installed.`;
+  }
+  return result;
 }
 
 /**
@@ -88,7 +157,11 @@ export async function selectToolModel(models, opts = {}) {
  */
 export function formatNoToolsList(models) {
   if (!models.length) return "Installed models:\n  (none)";
-  const lines = models.map((m) => `  ${m.name} — ${m.tools ? "tools" : "no tools"}`);
+  const lines = models.map((m) => {
+    if (!m.tools) return `  ${m.name} — no tools`;
+    const tier = chatModelTier(m.name);
+    return `  ${m.name} — tools (${formatTierLabel(tier)})`;
+  });
   return `Installed models:\n${lines.join("\n")}`;
 }
 

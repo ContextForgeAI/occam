@@ -148,13 +148,16 @@ export async function listModelsWithCapabilities(baseUrl) {
 }
 
 /**
- * Deterministic pick among tool-capable models: prefer common friend models, then lexical.
+ * Deterministic pick among tool-capable models.
+ * Prefer live-proven friend models (qwen2.5 → llama3.1); avoid degraded llama3.2
+ * as default when a better option exists. Lexical fallback last.
  * @param {OllamaModelInfo[]} models
  */
 export function pickDefaultToolModel(models) {
   const toolModels = models.filter((m) => m.tools);
   if (toolModels.length === 0) return null;
-  const preferred = ["qwen2.5:7b", "llama3.1:8b", "llama3.2:3b", "qwen2.5", "llama3.1", "llama3.2"];
+  // Supported-first preference (live Mac evidence). llama3.2 is intentionally last.
+  const preferred = ["qwen2.5:7b", "qwen2.5", "llama3.1:8b", "llama3.1", "llama3.2:3b", "llama3.2"];
   for (const pref of preferred) {
     const hit = toolModels.find(
       (m) => m.name === pref || m.name.startsWith(`${pref}:`) || m.name.startsWith(`${pref}-`),
