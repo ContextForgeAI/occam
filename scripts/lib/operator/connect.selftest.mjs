@@ -80,7 +80,8 @@ function testLaunchSpec() {
   assert.equal(wrapped.env[OCCAM_MANAGED_ENV_KEY], OCCAM_MANAGED_MARKER);
 
   const withCwd = stdioFromSpec(spec, { includeCwd: true });
-  assert.equal(withCwd.command, "node");
+  assert.equal(withCwd.command, process.execPath);
+  assert.equal("OCCAM_NODE_BIN" in withCwd.env, false);
   assert.ok(withCwd.args[0].includes("launch-mcp-host.mjs"));
   assert.equal(normalizePathish(withCwd.cwd), normalizePathish(repoRoot));
 }

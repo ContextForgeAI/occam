@@ -125,7 +125,7 @@ export function buildMcpSnippet(params) {
   const launcher = launcherPath(home);
   /** @type {{ command: string, args: string[], env: Record<string, string>, cwd?: string }} */
   const server = {
-    command: "node",
+    command: process.execPath,
     args: [],
     env: { ...env },
   };
