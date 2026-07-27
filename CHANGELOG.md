@@ -24,6 +24,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Added
 
+- **Experimental `occam chat` (friend Ollama path)** — local-only bridge: detect Ollama at
+  `http://127.0.0.1:11434`, pick a tool-capable model, expose a minimal Occam tool surface
+  (`transcode` / `probe` / `digest`; `search` only if configured) via internal MCP stdio.
+  Marked experimental (not a stable 1.0 API). Friend overlay packager:
+  `scripts/lib/experimental/local-chat/package-friend-candidate.mjs`. Does **not** use Ollama
+  Web Search, account, or cloud APIs.
+
 - **`occam connect` — detect AI tools and register Occam with the safe ones** — one command finds
   installed MCP hosts and model runtimes, registers Occam through each host's own CLI or
   configuration file, verifies the result, and reports per host what is still needed (restart,

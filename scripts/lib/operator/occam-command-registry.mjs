@@ -123,6 +123,15 @@ export const COMMAND_REGISTRY = [
     cliAlias: "smoke",
   },
   {
+    id: "occam-chat",
+    summary: "Experimental local chat — Ollama /api/chat + Occam MCP tools (not stable 1.0)",
+    usage: "occam chat [--model NAME] [--verbose] [--once PROMPT]",
+    tier: "operator",
+    path: "scripts/occam-chat.mjs",
+    relatedEnv: ["OCCAM_HOME", "OLLAMA_HOST", "OCCAM_SEARCH_PROVIDER"],
+    cliAlias: "chat",
+  },
+  {
     id: "occam-playbook-publish",
     summary: "PB4c maintainer publish CLI — signed manifest (not an MCP tool)",
     usage: "./scripts/occam-playbook-publish.sh",

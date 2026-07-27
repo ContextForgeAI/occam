@@ -115,6 +115,14 @@ export const CLI_SUBCOMMANDS = [
     registryId: "check-public-mcp-contract",
     passthrough: true,
   },
+  {
+    name: "chat",
+    summary: "Experimental local chat — Ollama + Occam web tools",
+    delegate: "node",
+    script: "occam-chat.mjs",
+    registryId: "occam-chat",
+    passthrough: true,
+  },
 ];
 
 /** @param {string} name */
