@@ -51,10 +51,17 @@ export function formatInstallerComponentError(err, opts = {}) {
   const missing =
     code === "ERR_MODULE_NOT_FOUND" ||
     code === "ERR_OVERLAY_INCOMPLETE" ||
+    code === "ERR_TTY_UNAVAILABLE" ||
     /Cannot find module/i.test(msg) ||
     /required overlay file missing/i.test(msg) ||
-    /overlay incomplete/i.test(msg);
+    /overlay incomplete/i.test(msg) ||
+    /Interactive terminal unavailable/i.test(msg);
   if (!missing) return msg;
+  if (code === "ERR_TTY_UNAVAILABLE" || /Interactive terminal unavailable/i.test(msg)) {
+    return verbose
+      ? `Interactive terminal unavailable. No AI app configurations were changed.\n\n${msg}`
+      : "Interactive terminal unavailable. No AI app configurations were changed.";
+  }
   if (verbose) {
     return `Occam installation could not be completed.\nA required installer component is missing.\n\n${msg}`;
   }
@@ -128,7 +135,8 @@ export function progressLine(message) {
 }
 
 /**
- * Read-only discovery block — registration targets only by default.
+ * Read-only discovery block — registration targets only for the connect count.
+ * Model runtimes (Tier D) are listed separately and never counted as apps.
  * @param {{
  *   candidates: Array<{ name: string }>,
  *   runtimes?: Array<{ name: string }>,
@@ -150,11 +158,11 @@ export function renderDiscoverySection(opts) {
         : `Occam can connect to ${opts.candidates.length} apps.`,
     );
   }
-  if (opts.verbose && opts.runtimes?.length) {
+  if (opts.runtimes?.length) {
     lines.push("");
-    lines.push("Related tools (not MCP registration targets):");
+    lines.push("Detected runtimes:");
     for (const r of opts.runtimes) {
-      lines.push(`  · ${r.name}`);
+      lines.push(`· ${r.name}`);
     }
   }
   return lines.join("\n");

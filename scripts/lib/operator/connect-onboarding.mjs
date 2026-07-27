@@ -29,7 +29,7 @@ import {
   progressLine,
   DOCS_URL,
 } from "./install-ux.mjs";
-import { canPromptInteractively, openControllingTty } from "./tty.mjs";
+import { canPromptInteractively, openControllingTty, isControllingTtyError } from "./tty.mjs";
 
 /**
  * Explicit automation opt-in to mutate every detected Tier-A host without a prompt.
@@ -150,15 +150,33 @@ async function ask(prompt, opts) {
     return opts.askQuestion(prompt);
   }
   // curl|bash: stdin is the script pipe — prefer the controlling terminal.
+  // Each prompt opens a fresh tty pair and closes it before the next prompt.
   const tty = input.isTTY ? null : openControllingTty();
+  if (!input.isTTY && !tty) {
+    throw Object.assign(new Error("Interactive terminal unavailable. No AI app configurations were changed."), {
+      code: "ERR_TTY_UNAVAILABLE",
+    });
+  }
   const rl = createInterface({
     input: tty?.input || input,
     output: tty?.output || output,
   });
   try {
     return await rl.question(prompt);
+  } catch (err) {
+    if (isControllingTtyError(err)) {
+      throw Object.assign(
+        new Error("Interactive terminal unavailable. No AI app configurations were changed."),
+        { code: "ERR_TTY_UNAVAILABLE", cause: err },
+      );
+    }
+    throw err;
   } finally {
-    rl.close();
+    try {
+      rl.close();
+    } catch {
+      /* ignore */
+    }
     tty?.close();
   }
 }

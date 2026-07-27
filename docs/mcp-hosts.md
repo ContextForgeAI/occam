@@ -60,10 +60,11 @@ Junie through its MCP settings.
 
 ## Model runtimes are not MCP hosts
 
-Ollama, llama.cpp, LM Studio and MLX are reported when found so you know Occam
-saw them, but they serve models — they do not consume MCP tools, so they never
-receive a registration. An install that finds only a runtime is still a
-successful install.
+Ollama (including the macOS `/Applications/Ollama.app` bundle), llama.cpp, LM
+Studio and MLX are reported when found so you know Occam saw them, but they
+serve models — they do not consume MCP tools, so they never receive a
+registration and never appear in the “Occam can connect to N apps” count. An
+install that finds only a runtime is still a successful install.
 
 ## What connect will not do to your config
 

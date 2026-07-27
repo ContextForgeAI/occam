@@ -1,8 +1,12 @@
 /**
  * Controlling-terminal helpers for pipe-to-shell installers (`curl | bash`).
  * Under that contract process.stdin is the script pipe — not the user's keyboard.
+ *
+ * Contract: open `/dev/tty` with **separate** read and write file descriptors.
+ * Never share one fd across ReadStream + WriteStream (Node emits EBADF on
+ * destroy/close when both ends tear down the same descriptor).
  */
-import { createReadStream, createWriteStream, openSync, closeSync, existsSync } from "node:fs";
+import { createReadStream, createWriteStream, existsSync } from "node:fs";
 
 /**
  * @returns {boolean}
@@ -11,8 +15,10 @@ export function canOpenControllingTty() {
   if (process.platform === "win32") return false;
   if (!existsSync("/dev/tty")) return false;
   try {
-    const fd = openSync("/dev/tty", "r+");
-    closeSync(fd);
+    // Probe with a short-lived pair — same ownership rules as prompts.
+    const pair = openTerminalIo("/dev/tty");
+    if (!pair) return false;
+    pair.close();
     return true;
   } catch {
     return false;
@@ -41,38 +47,73 @@ export function canPromptInteractively(opts = {}) {
 }
 
 /**
- * Open /dev/tty for readline prompts. Caller must close() when done with the pair
- * if they want to release the fd early; streams autoClose by default.
+ * Open independent read/write streams for a terminal-like path.
+ * Each stream owns its own fd (`autoClose: true` default). `close()` is
+ * idempotent and must not double-close a shared descriptor.
+ *
+ * @param {string} path e.g. `/dev/tty` or a test fixture path
+ * @param {{ writeFlags?: string }} [opts]
  * @returns {{ input: import('node:fs').ReadStream, output: import('node:fs').WriteStream, close: () => void } | null}
  */
-export function openControllingTty() {
-  if (process.platform === "win32") return null;
+export function openTerminalIo(path, opts = {}) {
+  if (!path) return null;
   try {
-    const fd = openSync("/dev/tty", "r+");
-    const input = createReadStream("", { fd, autoClose: false });
-    const output = createWriteStream("", { fd, autoClose: false });
+    // Two opens → two fds. Sharing one r+ fd between ReadStream and WriteStream
+    // caused live macOS Node 25: EBADF on WriteStream close after rl.close().
+    const input = createReadStream(path);
+    const output = createWriteStream(path, {
+      // `/dev/tty` is a char device — default 'w' is correct.
+      // Regular files in tests must not truncate before the reader consumes input.
+      flags: opts.writeFlags ?? (path === "/dev/tty" ? "w" : "a"),
+    });
     let closed = false;
+
+    /** @param {NodeJS.ErrnoException} err */
+    const onTeardownError = (err) => {
+      // Only ignore teardown races after close() began. Unexpected live errors
+      // stay audible (uncaught) so we do not hide real I/O failures.
+      if (!closed) return;
+      if (err && (err.code === "EBADF" || err.code === "ERR_STREAM_DESTROYED")) return;
+    };
+    input.on("error", onTeardownError);
+    output.on("error", onTeardownError);
+
     const close = () => {
       if (closed) return;
       closed = true;
-      try {
-        input.destroy();
-      } catch {
-        /* ignore */
-      }
-      try {
-        output.destroy();
-      } catch {
-        /* ignore */
-      }
-      try {
-        closeSync(fd);
-      } catch {
-        /* ignore */
-      }
+      if (!input.destroyed) input.destroy();
+      if (!output.destroyed) output.destroy();
     };
     return { input, output, close };
   } catch {
     return null;
   }
+}
+
+/**
+ * Open `/dev/tty` for readline prompts. Caller must close() when the prompt ends.
+ * Sequential prompts each open a fresh pair — never reuse a closed pair.
+ * @returns {{ input: import('node:fs').ReadStream, output: import('node:fs').WriteStream, close: () => void } | null}
+ */
+export function openControllingTty() {
+  if (process.platform === "win32") return null;
+  if (!existsSync("/dev/tty")) return null;
+  return openTerminalIo("/dev/tty");
+}
+
+/**
+ * True when an error is a controlling-TTY open/IO failure (human boundary).
+ * @param {unknown} err
+ */
+export function isControllingTtyError(err) {
+  const msg = err instanceof Error ? err.message : String(err);
+  const code = err && typeof err === "object" && "code" in err ? String(err.code) : "";
+  return (
+    code === "EBADF" ||
+    code === "EIO" ||
+    code === "ENXIO" ||
+    code === "ENOENT" ||
+    /bad file descriptor/i.test(msg) ||
+    /\/dev\/tty/i.test(msg)
+  );
 }

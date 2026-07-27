@@ -172,6 +172,9 @@ jobs:
       - name: Validate controlling-TTY helpers
         run: node scripts/lib/operator/tty.selftest.mjs
 
+      - name: Validate model-runtime detectors (Ollama.app / Tier D)
+        run: node scripts/lib/operator/connect/runtimes.selftest.mjs
+
       - name: Validate Cursor configured / no restart-loop state
         run: node scripts/lib/operator/cursor-state.selftest.mjs
 
