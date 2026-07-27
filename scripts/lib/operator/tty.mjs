@@ -101,15 +101,16 @@ export function askControllingTty(prompt, opts = {}) {
  * Prefer askControllingTty() for live install prompts.
  *
  * @param {string} path e.g. `/dev/tty` or a test fixture path
- * @param {{ writeFlags?: string }} [opts]
+ * @param {{ writeFlags?: string, writePath?: string }} [opts]
  * @returns {{ input: import('node:fs').ReadStream, output: import('node:fs').WriteStream, close: () => void } | null}
  */
 export function openTerminalIo(path, opts = {}) {
   if (!path) return null;
   try {
+    const writePath = opts.writePath || path;
     const input = createReadStream(path);
-    const output = createWriteStream(path, {
-      flags: opts.writeFlags ?? (path === "/dev/tty" ? "w" : "a"),
+    const output = createWriteStream(writePath, {
+      flags: opts.writeFlags ?? (writePath === "/dev/tty" ? "w" : "a"),
     });
     let closed = false;
 
