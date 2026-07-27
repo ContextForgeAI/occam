@@ -1,4 +1,4 @@
-import { spawn, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { findSubcommand } from "./occam-cli-subcommands.mjs";
@@ -18,19 +18,6 @@ export function isLevelBInstall(occamHome) {
  */
 export function resolveScriptPath(occamHome, relativePath) {
   return join(occamHome, "scripts", relativePath);
-}
-
-/**
- * Sync wait helper (no busy 100% CPU): timed Atomics.wait slices until child exits.
- * @param {import('node:child_process').ChildProcess} child
- */
-function waitForChildExit(child) {
-  const park = new Int32Array(new SharedArrayBuffer(4));
-  while (child.exitCode === null && child.signalCode === null) {
-    Atomics.wait(park, 0, 0, 50);
-  }
-  if (child.signalCode) return 130;
-  return child.exitCode ?? 1;
 }
 
 /**
@@ -55,30 +42,8 @@ export function dispatchSubcommand(sub, occamHome, passthroughArgs = []) {
       args.push(...passthroughArgs);
     }
 
-    // Chat: spawn + forward signals so Ctrl+C reaches occam-chat (spawnSync does not).
-    if (sub.name === "chat") {
-      const child = spawn(process.execPath, args, {
-        cwd: occamHome,
-        env,
-        stdio: "inherit",
-      });
-      const forward = (sig) => {
-        try {
-          child.kill(sig);
-        } catch {
-          /* ignore */
-        }
-      };
-      process.on("SIGINT", forward);
-      process.on("SIGTERM", forward);
-      try {
-        return waitForChildExit(child);
-      } finally {
-        process.off("SIGINT", forward);
-        process.off("SIGTERM", forward);
-      }
-    }
-
+    // Chat is normally `exec`'d by the user launcher. If reached via
+    // `node occam.mjs chat`, spawnSync is fine for non-interactive --once/--help.
     const result = spawnSync(process.execPath, args, {
       cwd: occamHome,
       env,
