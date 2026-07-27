@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { findSubcommand } from "./occam-cli-subcommands.mjs";
@@ -21,6 +21,19 @@ export function resolveScriptPath(occamHome, relativePath) {
 }
 
 /**
+ * Sync wait helper (no busy 100% CPU): timed Atomics.wait slices until child exits.
+ * @param {import('node:child_process').ChildProcess} child
+ */
+function waitForChildExit(child) {
+  const park = new Int32Array(new SharedArrayBuffer(4));
+  while (child.exitCode === null && child.signalCode === null) {
+    Atomics.wait(park, 0, 0, 50);
+  }
+  if (child.signalCode) return 130;
+  return child.exitCode ?? 1;
+}
+
+/**
  * @param {import("./occam-cli-subcommands.mjs").CliSubcommand} sub
  * @param {string} occamHome
  * @param {string[]} passthroughArgs
@@ -40,6 +53,30 @@ export function dispatchSubcommand(sub, occamHome, passthroughArgs = []) {
       args.push(occamHome);
     } else if (sub.passthrough) {
       args.push(...passthroughArgs);
+    }
+
+    // Chat: spawn + forward signals so Ctrl+C reaches occam-chat (spawnSync does not).
+    if (sub.name === "chat") {
+      const child = spawn(process.execPath, args, {
+        cwd: occamHome,
+        env,
+        stdio: "inherit",
+      });
+      const forward = (sig) => {
+        try {
+          child.kill(sig);
+        } catch {
+          /* ignore */
+        }
+      };
+      process.on("SIGINT", forward);
+      process.on("SIGTERM", forward);
+      try {
+        return waitForChildExit(child);
+      } finally {
+        process.off("SIGINT", forward);
+        process.off("SIGTERM", forward);
+      }
     }
 
     const result = spawnSync(process.execPath, args, {
