@@ -1,10 +1,24 @@
 /**
  * Experimental local chat tool loop — Ollama /api/chat ↔ Occam MCP.
  * Ollama-specific response quirks stay behind normalizeAssistantMessage.
+ *
+ * Native documented Ollama `tool_calls` is the only execution path.
+ * Textual JSON tool envelopes are detected for recovery/nudge only —
+ * never executed as tools.
  */
 import { ollamaChat } from "./ollama-api.mjs";
 import { callOccamTool } from "./session.mjs";
-import { MAX_TOOL_ROUNDS, SYSTEM_PROMPT } from "./tool-surface.mjs";
+import {
+  MAX_TOOL_ROUNDS,
+  SYSTEM_PROMPT,
+  TEXTUAL_TOOL_NUDGE,
+  CORE_CHAT_TOOLS,
+  OPTIONAL_CHAT_TOOLS,
+  gateNativeToolCall,
+  userMessageJustifiesWebTools,
+} from "./tool-surface.mjs";
+
+const ALL_KNOWN_CHAT_TOOLS = new Set([...CORE_CHAT_TOOLS, ...OPTIONAL_CHAT_TOOLS]);
 
 /**
  * @param {unknown} message
@@ -43,6 +57,59 @@ export function normalizeAssistantMessage(message) {
   const out = { role: "assistant", content };
   if (toolCalls?.length) out.tool_calls = toolCalls;
   return out;
+}
+
+/**
+ * Detect textual tool-call envelopes in assistant content.
+ * Classification only — NEVER execute.
+ *
+ * Matches shapes like:
+ *   {"name":"occam_transcode","parameters":{"url":"…"}}
+ *   {"name": "occam_transcode", "arguments": {…}}
+ *
+ * @param {string} content
+ * @param {Iterable<string>} [allowedNames]
+ * @returns {{ detected: boolean, name: string|null, reason: string }}
+ */
+export function detectTextualToolEnvelope(content, allowedNames = ALL_KNOWN_CHAT_TOOLS) {
+  const allow = allowedNames instanceof Set ? allowedNames : new Set(allowedNames);
+  const text = typeof content === "string" ? content.trim() : "";
+  if (!text) return { detected: false, name: null, reason: "empty" };
+
+  // Whole-message empty JSON / noop
+  if (text === "{}" || text === "[]") {
+    return { detected: true, name: null, reason: "empty_json" };
+  }
+
+  // Find a JSON object that looks like a tool envelope (not executed).
+  const match = text.match(/\{[\s\S]*"name"\s*:\s*"([^"]+)"[\s\S]*\}/);
+  if (!match) return { detected: false, name: null, reason: "no_envelope" };
+
+  const name = match[1];
+  if (allow.has(name) || name.startsWith("occam_")) {
+    return { detected: true, name, reason: "textual_tool_envelope" };
+  }
+  // Unknown name inside JSON — still treat as leakage if it also has parameters/arguments
+  if (/"parameters"\s*:/.test(text) || /"arguments"\s*:/.test(text)) {
+    return { detected: true, name, reason: "textual_unknown_tool_envelope" };
+  }
+  return { detected: false, name: null, reason: "json_not_tool" };
+}
+
+/**
+ * Strip leaked tool JSON from user-visible text when we are not executing it.
+ * @param {string} content
+ */
+export function redactTextualToolLeakage(content) {
+  const text = typeof content === "string" ? content : "";
+  const leak = detectTextualToolEnvelope(text);
+  if (!leak.detected) return text;
+  // Remove JSON object blocks; keep any prose before them.
+  const cleaned = text
+    .replace(/\{[\s\S]*"name"\s*:\s*"[^"]+"[\s\S]*\}/g, "")
+    .replace(/^\s*\{\}\s*$/g, "")
+    .trim();
+  return cleaned;
 }
 
 /**
@@ -95,6 +162,21 @@ export async function runChatTurn(opts) {
   let rounds = 0;
   let finalContent = "";
   let roundCapHit = false;
+  let textualNudgeUsed = false;
+  let textualLeakBlocked = false;
+
+  const allowed = new Set(opts.session.toolNames || []);
+
+  /** Latest user text for tool gating (ignore nudges we inject). */
+  function latestUserText() {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (m?.role === "user" && typeof m.content === "string" && m.content !== TEXTUAL_TOOL_NUDGE) {
+        return m.content;
+      }
+    }
+    return "";
+  }
 
   while (rounds <= maxRounds) {
     const chatStarted = Date.now();
@@ -111,6 +193,27 @@ export async function runChatTurn(opts) {
     const hasTools = Array.isArray(assistant.tool_calls) && assistant.tool_calls.length > 0;
 
     if (!hasTools) {
+      const leak = detectTextualToolEnvelope(assistant.content, allowed);
+      if (leak.detected && !textualNudgeUsed) {
+        textualNudgeUsed = true;
+        messages.push({ role: "assistant", content: assistant.content || "" });
+        const nudge =
+          leak.reason === "empty_json" || !userMessageJustifiesWebTools(latestUserText())
+            ? "Reply in plain text only. Do not write JSON. Answer the user directly."
+            : TEXTUAL_TOOL_NUDGE;
+        messages.push({ role: "user", content: nudge });
+        continue;
+      }
+      if (leak.detected) {
+        textualLeakBlocked = true;
+        const redacted = redactTextualToolLeakage(assistant.content);
+        finalContent =
+          redacted ||
+          "This model wrote a tool call as plain text instead of using native Ollama tool calling. Try qwen2.5:7b, or rephrase the question.";
+        messages.push({ role: "assistant", content: finalContent });
+        break;
+      }
+
       finalContent = assistant.content || "";
       messages.push({ role: "assistant", content: finalContent });
       break;
@@ -142,6 +245,18 @@ export async function runChatTurn(opts) {
 
     for (const tc of assistant.tool_calls) {
       const name = tc.function.name;
+      const gate = gateNativeToolCall(latestUserText(), tc, allowed);
+      if (!gate.allow) {
+        messages.push({
+          role: "tool",
+          tool_name: name || "unknown",
+          content: JSON.stringify({
+            ok: false,
+            failure: { code: gate.code || "tool_refused", message: gate.message || "Tool refused" },
+          }),
+        });
+        continue;
+      }
       if (opts.onStatus) opts.onStatus(toolCallSummary(tc));
       const result = await callOccamTool(opts.session, name, tc.function.arguments);
       occamCalls.push({
@@ -171,6 +286,8 @@ export async function runChatTurn(opts) {
     totalLatencyMs: Date.now() - turnStarted,
     rounds,
     roundCapHit,
+    textualNudgeUsed,
+    textualLeakBlocked,
     rawBaseline: "unavailable",
   };
 
@@ -216,7 +333,7 @@ function sumNullable(values) {
 }
 
 /**
- * @param {import('./session.mjs').LocalChatSession[''] extends never ? never : object} metrics
+ * @param {object} metrics
  * @param {(s: string) => void} write
  */
 export function printVerboseMetrics(metrics, write = console.error) {

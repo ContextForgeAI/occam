@@ -27,6 +27,8 @@ import {
   normalizeAssistantMessage,
   truncateToolResult,
   runChatTurn,
+  detectTextualToolEnvelope,
+  redactTextualToolLeakage,
 } from "./chat-loop.mjs";
 import { callOccamTool, closeLocalChatSession } from "./session.mjs";
 import {
@@ -36,6 +38,8 @@ import {
 } from "./ollama-endpoint.mjs";
 import { parseChatArgs } from "../../../occam-chat.mjs";
 import { McpStdioClient } from "../../mcp-stdio-client.mjs";
+import { chatModelTier } from "./model-select.mjs";
+import { SYSTEM_PROMPT, CHAT_OLLAMA_TOOL_SPECS } from "./tool-surface.mjs";
 
 /** @type {Array<() => Promise<void>|void>} */
 const tests = [];
@@ -181,9 +185,17 @@ test("MCP tools/list filtering + search hidden when unavailable", () => {
   assert.ok(!withSearch.some((t) => t.name === "occam_map"));
 
   const ollamaTools = toOllamaTools(filtered);
+  assert.equal(ollamaTools.length, 3);
   assert.equal(ollamaTools[0].type, "function");
   assert.equal(ollamaTools[0].function.name, "occam_transcode");
-  assert.deepEqual(ollamaTools[0].function.parameters, { type: "object" });
+  assert.equal(ollamaTools[1].function.name, "occam_probe");
+  assert.equal(ollamaTools[2].function.name, "occam_digest");
+  // Slim chat schemas — never ship the full MCP inputSchema blob to Ollama.
+  assert.deepEqual(ollamaTools[0].function.parameters.required, ["url"]);
+  assert.ok(Object.keys(ollamaTools[0].function.parameters.properties).length <= 2);
+  assert.match(ollamaTools[0].function.description, /specific URL/i);
+  const rawSize = JSON.stringify(ollamaTools).length;
+  assert.ok(rawSize < 2500, `slim tools should stay compact, got ${rawSize}`);
 });
 
 test("parseChatArgs --model --verbose --once", () => {
@@ -219,6 +231,80 @@ test("normalizeAssistantMessage + malformed tool name/args", async () => {
   const badArgs = await callOccamTool(session, "occam_transcode", "not-json{");
   assert.equal(badArgs.ok, false);
   assert.match(badArgs.text, /invalid_arguments/);
+
+  const leak = detectTextualToolEnvelope(
+    'I\'ll use a tool.\n\n{"name":"occam_transcode","parameters":{"url":"https://nodejs.org/api/permissions.html"}}',
+  );
+  assert.equal(leak.detected, true);
+  assert.equal(leak.name, "occam_transcode");
+  assert.equal(detectTextualToolEnvelope("Hello!").detected, false);
+  assert.equal(detectTextualToolEnvelope("{}").detected, true);
+  const redacted = redactTextualToolLeakage(
+    'Intro\n{"name":"occam_transcode","parameters":{"url":"https://x"}}',
+  );
+  assert.match(redacted, /Intro/);
+  assert.doesNotMatch(redacted, /occam_transcode/);
+  assert.match(SYSTEM_PROMPT, /Most turns need no tools/i);
+  assert.ok(CHAT_OLLAMA_TOOL_SPECS.occam_transcode.parameters.required.includes("url"));
+  assert.equal(chatModelTier("qwen2.5:7b"), "supported");
+  assert.equal(chatModelTier("llama3.1:8b"), "supported");
+  assert.equal(chatModelTier("llama3.2:3b"), "degraded");
+});
+
+test("no-URL tool calls are gated (not executed via MCP)", async () => {
+  const prev = globalThis.fetch;
+  /** @type {string[]} */
+  const called = [];
+  let chatN = 0;
+  globalThis.fetch = async (url) => {
+    if (!String(url).endsWith("/api/chat")) throw new Error(`unexpected ${url}`);
+    chatN += 1;
+    if (chatN === 1) {
+      return new Response(
+        JSON.stringify({
+          message: {
+            role: "assistant",
+            content: "",
+            tool_calls: [
+              { function: { name: "occam_transcode", arguments: { url: "https://www.wolframalpha.com/x" } } },
+            ],
+          },
+        }),
+        { status: 200 },
+      );
+    }
+    return new Response(JSON.stringify({ message: { role: "assistant", content: "323" } }), {
+      status: 200,
+    });
+  };
+  const session = {
+    toolNames: ["occam_transcode", "occam_probe", "occam_digest"],
+    ollamaTools: toOllamaTools([
+      { name: "occam_transcode", description: "t", inputSchema: { type: "object" } },
+      { name: "occam_probe", description: "p", inputSchema: { type: "object" } },
+      { name: "occam_digest", description: "d", inputSchema: { type: "object" } },
+    ]),
+    client: {
+      request: async (_m, params) => {
+        called.push(params.name);
+        return { content: [{ type: "text", text: '{"ok":true}' }] };
+      },
+    },
+    closed: false,
+  };
+  try {
+    const turn = await runChatTurn({
+      baseUrl: "http://127.0.0.1:11434",
+      model: "llama3.1:8b",
+      messages: [{ role: "user", content: "What is 17 × 19?" }],
+      session,
+    });
+    assert.deepEqual(called, []);
+    assert.equal(turn.metrics.toolCalls, 0);
+    assert.equal(turn.finalContent.trim(), "323");
+  } finally {
+    globalThis.fetch = prev;
+  }
 });
 
 test("tool error returns controlled JSON", async () => {
@@ -373,6 +459,78 @@ test("direct URL tool call + no-web + multi-round + round cap", async () => {
     assert.equal(capTurn.metrics.roundCapHit, true);
     assert.ok(capTurn.metrics.toolCalls <= 2);
     assert.equal(MAX_TOOL_ROUNDS, 6);
+  } finally {
+    globalThis.fetch = prev;
+  }
+});
+
+test("plain assistant JSON tool envelope is never executed", async () => {
+  const prev = globalThis.fetch;
+  /** @type {string[]} */
+  const called = [];
+  let chatN = 0;
+  globalThis.fetch = async (url, init) => {
+    if (!String(url).endsWith("/api/chat")) throw new Error(`unexpected ${url}`);
+    chatN += 1;
+    const body = JSON.parse(String(init?.body || "{}"));
+    // First reply: textual tool JSON (the llama3.1 failure mode). Must NOT execute.
+    if (chatN === 1) {
+      return new Response(
+        JSON.stringify({
+          message: {
+            role: "assistant",
+            content:
+              'I will use a tool.\n{"name":"occam_transcode","parameters":{"url":"https://nodejs.org/api/permissions.html"}}',
+          },
+        }),
+        { status: 200 },
+      );
+    }
+    // After nudge: still textual → blocked path
+    if (body.messages.some((m) => m.role === "user" && /native tool-calling/i.test(m.content))) {
+      return new Response(
+        JSON.stringify({
+          message: {
+            role: "assistant",
+            content: '{"name":"occam_transcode","parameters":{"url":"https://example.com"}}',
+          },
+        }),
+        { status: 200 },
+      );
+    }
+    return new Response(JSON.stringify({ message: { role: "assistant", content: "should not hit" } }), {
+      status: 200,
+    });
+  };
+
+  const session = {
+    toolNames: ["occam_transcode", "occam_probe", "occam_digest"],
+    ollamaTools: toOllamaTools([
+      { name: "occam_transcode", description: "t", inputSchema: { type: "object" } },
+      { name: "occam_probe", description: "p", inputSchema: { type: "object" } },
+      { name: "occam_digest", description: "d", inputSchema: { type: "object" } },
+    ]),
+    client: {
+      request: async (_method, params) => {
+        called.push(params.name);
+        return { content: [{ type: "text", text: '{"ok":true}' }] };
+      },
+    },
+    closed: false,
+  };
+
+  try {
+    const turn = await runChatTurn({
+      baseUrl: "http://127.0.0.1:11434",
+      model: "llama3.1:8b",
+      messages: [{ role: "user", content: "Read https://nodejs.org/api/permissions.html" }],
+      session,
+    });
+    assert.deepEqual(called, [], "textual JSON must never invoke MCP tools");
+    assert.equal(turn.metrics.toolCalls, 0);
+    assert.equal(turn.metrics.textualNudgeUsed, true);
+    assert.equal(turn.metrics.textualLeakBlocked, true);
+    assert.doesNotMatch(turn.finalContent, /"name"\s*:\s*"occam_transcode"/);
   } finally {
     globalThis.fetch = prev;
   }

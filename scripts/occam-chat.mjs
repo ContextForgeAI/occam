@@ -179,6 +179,9 @@ async function main() {
     }
 
     writeErr(`✓ ${selection.model} supports tools`);
+    if (selection.warning) {
+      writeErr(`⚠ ${selection.warning}`);
+    }
 
     session = await startLocalChatSession(defaultHome);
     writeErr(`✓ Occam web tools ready`);
