@@ -493,11 +493,13 @@ run_post_install() {
 
   local connect_js="$INSTALL_DIR/scripts/occam-connect.mjs"
   if [[ -f "$connect_js" ]]; then
-    local carg=()
+    # Bash 3.2 + set -u: empty "${arr[@]}" is an unbound variable.
+    # Do not expand an empty optional-args array — call node with/without flags.
     if [[ "$VERBOSE" -eq 1 ]]; then
-      carg+=(--verbose)
+      node "$connect_js" --verbose
+    else
+      node "$connect_js"
     fi
-    node "$connect_js" "${carg[@]}"
   else
     echo ""
     echo "Occam is installed."
