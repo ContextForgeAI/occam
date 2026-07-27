@@ -57,6 +57,8 @@ function testLaunchers() {
   const sh = renderUnixLauncher("/opt/Occam Home/ff-occam", "/opt/homebrew/bin/node");
   assert.match(sh, /OCCAM_HOME='.*Occam Home.*ff-occam'/);
   assert.match(sh, /OCCAM_NODE_BIN='\/opt\/homebrew\/bin\/node'/);
+  assert.match(sh, /occam-chat\.mjs/);
+  assert.match(sh, /\[ "\$\{1:-\}" = "chat" \]/);
   assert.match(sh, /exec "\$OCCAM_NODE_BIN" "\$OCCAM_HOME\/scripts\/occam\.mjs"/);
   assert.equal(shellSingleQuote("a'b"), `'a'\\''b'`);
 }
