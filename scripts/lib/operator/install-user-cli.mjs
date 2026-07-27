@@ -12,7 +12,15 @@
  * for the shell wrapper to prepend (Node cannot mutate the parent PowerShell process).
  */
 import { spawnSync } from "node:child_process";
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir, homedir, platform } from "node:os";
 import { dirname, join, resolve, win32 as pathWin32, posix as pathPosix } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -46,6 +54,8 @@ export const OPERATOR_OVERLAY_FILES = Object.freeze([
   "scripts/lib/operator/occam-cli-subcommands.mjs",
   "scripts/lib/operator/occam-cli-dispatch.mjs",
   "scripts/lib/operator/occam-command-registry.mjs",
+  "scripts/lib/operator/install-user-cli.mjs",
+  "scripts/lib/operator/install-user-cli-temp-manifest.mjs",
   "scripts/lib/operator/control-actions.mjs",
   "scripts/lib/operator/control-loop.mjs",
   "scripts/lib/operator/connect/index.mjs",
@@ -524,11 +534,22 @@ async function main() {
   }
 }
 
-const isDirect =
-  process.argv[1] &&
-  resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+/**
+ * True when this file is the Node entrypoint. Uses realpath so macOS temp
+ * paths (/tmp → /private/tmp, /var → /private/var) still match import.meta.url.
+ * A plain path.resolve() compare silently no-ops the CLI after a successful
+ * temp-helper stage — the public Mac install regression after MODULE_NOT_FOUND.
+ */
+export function isDirectCliInvocation(argv1 = process.argv[1], metaUrl = import.meta.url) {
+  if (!argv1) return false;
+  try {
+    return realpathSync(argv1) === realpathSync(fileURLToPath(metaUrl));
+  } catch {
+    return resolve(argv1) === fileURLToPath(metaUrl);
+  }
+}
 
-if (isDirect) {
+if (isDirectCliInvocation()) {
   main().catch((err) => {
     console.error(err instanceof Error ? err.message : String(err));
     process.exit(1);

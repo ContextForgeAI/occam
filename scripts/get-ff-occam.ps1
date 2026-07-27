@@ -148,20 +148,30 @@ download failed $($script:OccamEmDash) is the release tarball published?
 # current-process PATH so PowerShell resolves this launcher first.
 function Install-OccamUserCommand([string]$OccamHome) {
   $helper = Join-Path $OccamHome "scripts\lib\operator\install-user-cli.mjs"
-  $helperTmp = $null
+  $helperTmpDir = $null
   if (-not (Test-Path $helper)) {
-    $helperTmp = Join-Path ([System.IO.Path]::GetTempPath()) ("occam-install-user-cli-" + [guid]::NewGuid().ToString("N") + ".mjs")
-    $helperUrl = if ($env:OCCAM_OVERLAY_BASE_URL) {
-      ($env:OCCAM_OVERLAY_BASE_URL.TrimEnd("/") + "/scripts/lib/operator/install-user-cli.mjs")
+    # Stage full ESM closure (relative imports) — not a single flat temp file.
+    # Manifest: scripts/lib/operator/install-user-cli-temp-manifest.mjs
+    $helperTmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("occam-install-user-cli-" + [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Path (Join-Path $helperTmpDir "scripts\lib\operator") -Force | Out-Null
+    $base = if ($env:OCCAM_OVERLAY_BASE_URL) {
+      $env:OCCAM_OVERLAY_BASE_URL.TrimEnd("/").TrimEnd("\")
     } else {
-      "https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/lib/operator/install-user-cli.mjs"
+      "https://raw.githubusercontent.com/ContextForgeAI/occam/main"
     }
     try {
-      Invoke-WebRequest -Uri $helperUrl -OutFile $helperTmp -UseBasicParsing
-      $helper = $helperTmp
+      Invoke-WebRequest -Uri ($base + "/scripts/lib/operator/install-user-cli.mjs") `
+        -OutFile (Join-Path $helperTmpDir "scripts\lib\operator\install-user-cli.mjs") -UseBasicParsing
+      Invoke-WebRequest -Uri ($base + "/scripts/lib/resolve-node-runtime.mjs") `
+        -OutFile (Join-Path $helperTmpDir "scripts\lib\resolve-node-runtime.mjs") -UseBasicParsing
+      $helper = Join-Path $helperTmpDir "scripts\lib\operator\install-user-cli.mjs"
+      if (-not (Test-Path $helper) -or -not (Test-Path (Join-Path $helperTmpDir "scripts\lib\resolve-node-runtime.mjs"))) {
+        throw "incomplete helper staging"
+      }
     } catch {
       Write-Host ($script:OccamFail + " Could not install the occam command (download failed).") -ForegroundColor Red
       Write-Host "Re-run with `$env:OCCAM_VERBOSE=1 for details." -ForegroundColor Yellow
+      if ($helperTmpDir) { Remove-Item -Recurse -Force $helperTmpDir -ErrorAction SilentlyContinue }
       throw
     }
   }
@@ -185,7 +195,7 @@ function Install-OccamUserCommand([string]$OccamHome) {
     }
   } finally {
     $ErrorActionPreference = $prevEap
-    if ($helperTmp) { Remove-Item -Force $helperTmp -ErrorAction SilentlyContinue }
+    if ($helperTmpDir) { Remove-Item -Recurse -Force $helperTmpDir -ErrorAction SilentlyContinue }
   }
 
   $binDir = $null
