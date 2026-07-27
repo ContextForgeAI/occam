@@ -16,6 +16,7 @@ import { fileURLToPath } from "node:url";
 import { runFlow } from "./onboard-flow.mjs";
 import { writeOnboardConfig } from "./onboard-config.mjs";
 import { runInstallConnectFlow } from "./install-connect-flow.mjs";
+import { writeInstallNodeBin } from "../resolve-node-runtime.mjs";
 import {
   assertQuietTranscript,
   isInstallQuiet,
@@ -128,6 +129,11 @@ function writeSilentOnboard(occamHome) {
     profile: "default",
   });
   writeOnboardConfig(result);
+  try {
+    writeInstallNodeBin(occamHome, process.execPath);
+  } catch {
+    // best-effort
+  }
   return result;
 }
 

@@ -11,6 +11,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { writeInstallNodeBin } from "./resolve-node-runtime.mjs";
 
 function fail(message) {
   console.error(`error: ${message}`);
@@ -179,6 +180,15 @@ async function main() {
 
   console.log(`release-install: extract -> ${installDir}`);
   extractTarball(tarballPath, installDir);
+
+  try {
+    writeInstallNodeBin(installDir, process.execPath);
+    console.log(`release-install: recorded Node runtime -> ${process.execPath}`);
+  } catch (err) {
+    console.error(
+      `release-install: warning: could not record Node path (${err instanceof Error ? err.message : err})`,
+    );
+  }
 
   const versionPath = path.join(installDir, "VERSION");
   if (fs.existsSync(versionPath)) {

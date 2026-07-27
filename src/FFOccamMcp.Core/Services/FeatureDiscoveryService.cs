@@ -95,7 +95,7 @@ public sealed class FeatureDiscoveryService(WorkerPaths workerPaths)
                 CreateNoWindow = true,
             };
 
-            using var process = Process.Start(psi);
+            using var process = WorkerProcessGroup.Start(psi);
             if (process is null)
             {
                 Console.Error.WriteLine("[occam.config] provision-gate probe failed to start — assuming auto-provision is on.");

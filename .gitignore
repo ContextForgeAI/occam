@@ -25,9 +25,8 @@ obj/
 *.userosscache
 *.sln.docstates
 
-# Published host binary accidentally dropped at repo root (build output, never tracked).
-/OccamMcp.Core.exe
-/OccamMcp.Core
+# Install-recorded Node absolute path (machine-local; never commit).
+/runtime/node-bin
 
 # npm package entry point — hand-written source, NOT .NET build output.
 # The blanket `bin/` rule above would otherwise drop the npx wrapper from git.

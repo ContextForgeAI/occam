@@ -21,6 +21,17 @@ export function normalizeOccamHome(occamHome) {
 }
 
 /**
+ * Absolute Node used to register Occam — GUI hosts often strip PATH, so bare
+ * `node` fails before launch-mcp-host can stamp OCCAM_NODE_BIN.
+ * @returns {string}
+ */
+export function resolveLaunchNodeCommand() {
+  const fromEnv = String(process.env.OCCAM_NODE_BIN || "").trim();
+  if (fromEnv && existsSync(fromEnv)) return fromEnv;
+  return process.execPath;
+}
+
+/**
  * @param {string} occamHome
  * @returns {{
  *   command: string,
@@ -52,9 +63,10 @@ export function buildStableLaunchSpec(occamHome) {
     WT_OCCAM_BANNER: "0",
     [OCCAM_MANAGED_ENV_KEY]: OCCAM_MANAGED_MARKER,
   };
+  // Do NOT put OCCAM_NODE_BIN in host mcp.json — launcher/wrapper/runtime/node-bin own that.
 
   return {
-    command: "node",
+    command: resolveLaunchNodeCommand(),
     args: [launcherPath],
     env,
     cwd: home,

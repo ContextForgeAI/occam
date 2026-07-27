@@ -8,7 +8,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Fixed
 
-- **GUI MCP hosts with stripped PATH** — Bionic / LM Studio / Cursor.app often spawn Occam with `PATH=/usr/bin:/bin` while launching via an absolute Homebrew Node. Workers then failed to find `node`, and `Process.Start` threw into an opaque MCP `An error occurred invoking 'occam_transcode'`. `launch-mcp-host.mjs` now stamps `OCCAM_NODE_BIN` + prepends Node's directory to `PATH`; Core maps spawn failures to typed `workers_unavailable` and probes well-known Node paths. Selftest: `scripts/lib/stamp-node-runtime-env.selftest.mjs`.
+- **GUI MCP hosts with stripped PATH (canonical Node runtime contract)** — Bionic / LM Studio / Cursor.app often spawn Occam with `PATH=/usr/bin:/bin`. Absolute Homebrew `command` was not enough: Core workers still looked up bare `node`. Occam now records install-time Node at `{OCCAM_HOME}/runtime/node-bin`, stamps `OCCAM_NODE_BIN` in `launch-mcp-host.mjs` / `occam-wrapper.sh`, embeds absolute Node in user `occam` CLI launchers, and registers Connect/snippet MCP with `process.execPath` (never `OCCAM_NODE_BIN` in host env). Core reads the same precedence and maps spawn failures to typed `workers_unavailable`. Regression: `scripts/lib/gui-starved-path-mcp.selftest.mjs`. Selftests: `resolve-node-runtime`, `stamp-node-runtime-env`, connect, install-user-cli.
 
 - **Windows/Linux one-liner quiet install vs older release tarballs** — public bootstrap no longer relies on artifact-side `-Quiet`/`--quiet` flags (pre-`6ea0480` packs ignore them and flood doctor/SSRF/PDF/smoke JSON). Legacy fallback now captures child I/O (PowerShell `*>&1`) so default `irm | iex` stays product-facing while checks still run. Verbose: `OCCAM_VERBOSE=1`.
 

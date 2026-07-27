@@ -41,19 +41,23 @@ function testPathHelpers() {
 
 function testLaunchers() {
   const home = "C:\\Users\\Test User\\.local\\share\\ff-occam";
-  const cmd = renderWindowsCmdLauncher(home);
+  const node = "C:\\Program Files\\nodejs\\node.exe";
+  const cmd = renderWindowsCmdLauncher(home, node);
   assert.match(cmd, /set "OCCAM_HOME=C:\\Users\\Test User\\.local\\share\\ff-occam"/);
-  assert.match(cmd, /node "%OCCAM_HOME%\\scripts\\occam\.mjs" %\*/);
+  assert.match(cmd, /set "OCCAM_NODE_BIN=C:\\Program Files\\nodejs\\node\.exe"/);
+  assert.match(cmd, /"%OCCAM_NODE_BIN%" "%OCCAM_HOME%\\scripts\\occam\.mjs" %\*/);
   assert.doesNotMatch(cmd, /FF-Occam/);
 
-  const ps1 = renderWindowsPs1Launcher(home);
+  const ps1 = renderWindowsPs1Launcher(home, node);
   assert.match(ps1, /\$env:OCCAM_HOME = 'C:\\Users\\Test User\\.local\\share\\ff-occam'/);
+  assert.match(ps1, /\$env:OCCAM_NODE_BIN = 'C:\\Program Files\\nodejs\\node\.exe'/);
   assert.match(ps1, /scripts\\occam\.mjs/);
   assert.match(ps1, /@args/);
 
-  const sh = renderUnixLauncher("/opt/Occam Home/ff-occam");
+  const sh = renderUnixLauncher("/opt/Occam Home/ff-occam", "/opt/homebrew/bin/node");
   assert.match(sh, /OCCAM_HOME='.*Occam Home.*ff-occam'/);
-  assert.match(sh, /exec node "\$OCCAM_HOME\/scripts\/occam\.mjs"/);
+  assert.match(sh, /OCCAM_NODE_BIN='\/opt\/homebrew\/bin\/node'/);
+  assert.match(sh, /exec "\$OCCAM_NODE_BIN" "\$OCCAM_HOME\/scripts\/occam\.mjs"/);
   assert.equal(shellSingleQuote("a'b"), `'a'\\''b'`);
 }
 
