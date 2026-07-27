@@ -105,7 +105,8 @@ async function testSharedFdIsUnsafe() {
  */
 async function testSequentialTerminalIoLifecycle() {
   const root = mkdtempSync(join(tmpdir(), "occam-tty-seq-"));
-  const path = join(root, "term.txt");
+  const inPath = join(root, "in.txt");
+  const outPath = join(root, "out.txt");
   /** @type {Error[]} */
   const unhandled = [];
   const onUnhandled = (err) => {
@@ -115,9 +116,10 @@ async function testSequentialTerminalIoLifecycle() {
 
   try {
     for (const answer of ["n", "3", "q"]) {
-      writeFileSync(path, `${answer}\n`);
-      // writeFlags 'r+' — do not truncate the fixture the reader needs.
-      const pair = openTerminalIo(path, { writeFlags: "r+" });
+      // Separate read/write paths — a single r+ file lets question() overwrite the answer.
+      writeFileSync(inPath, `${answer}\n`);
+      writeFileSync(outPath, "");
+      const pair = openTerminalIo(inPath, { writePath: outPath, writeFlags: "w" });
       assert.ok(pair, "openTerminalIo must succeed on a regular file");
       const rl = createInterface({ input: pair.input, output: pair.output });
       const got = await rl.question("prompt> ");
