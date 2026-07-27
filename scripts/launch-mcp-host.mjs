@@ -18,6 +18,7 @@ import {
 } from "./lib/host-install-gate.mjs";
 import { resolveHostBinary } from "./lib/resolve-host-binary.mjs";
 import { mergeOnboardEnv } from "./lib/operator/onboard-config.mjs";
+import { stampNodeRuntimeEnv } from "./lib/stamp-node-runtime-env.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = process.env.OCCAM_HOME?.trim() || join(scriptDir, "..");
@@ -34,6 +35,10 @@ const env = mergeOnboardEnv({
   OCCAM_PARENT_PID: String(process.pid),
   OCCAM_PARENT_LABEL: process.env.OCCAM_PARENT_LABEL?.trim() || "launch-mcp-host",
 });
+// GUI MCP hosts (Bionic / LM Studio / Cursor.app) often spawn with PATH=/usr/bin:/bin.
+// Absolute node for this launcher is not enough — Core workers still resolve via
+// OCCAM_NODE_BIN / PATH. Stamp both from process.execPath before spawning the host.
+stampNodeRuntimeEnv(env, process.execPath);
 const spawnOpts = { stdio: "inherit", env, cwd: root };
 
 function runChild(command, args) {
