@@ -63,6 +63,7 @@ export const OPERATOR_OVERLAY_FILES = Object.freeze([
   "scripts/lib/operator/tty.mjs",
   "scripts/lib/operator/control-actions.mjs",
   "scripts/lib/operator/control-loop.mjs",
+  "scripts/lib/operator/update-check.mjs",
   "scripts/lib/operator/connect/index.mjs",
   "scripts/lib/operator/connect/kinds.mjs",
   "scripts/lib/operator/connect/launch-spec.mjs",
