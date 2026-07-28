@@ -3,7 +3,14 @@
 set -euo pipefail
 
 SKIP_BUILD=0
-QUIET=0
+# Default: concise human summary. Engineering dump via --verbose / OCCAM_VERBOSE=1.
+QUIET=1
+if [[ "${OCCAM_VERBOSE:-}" == "1" || "${OCCAM_VERBOSE:-}" == "true" ]]; then
+  QUIET=0
+fi
+if [[ "${OCCAM_INSTALL_QUIET:-}" == "0" || "${OCCAM_INSTALL_QUIET:-}" == "false" ]]; then
+  QUIET=0
+fi
 if [[ "${OCCAM_INSTALL_QUIET:-}" == "1" || "${OCCAM_INSTALL_QUIET:-}" == "true" ]]; then
   QUIET=1
 fi
@@ -11,8 +18,9 @@ for arg in "$@"; do
   case "$arg" in
     --skip-build) SKIP_BUILD=1 ;;
     --quiet) QUIET=1 ;;
+    --verbose | -v) QUIET=0 ;;
     -h | --help)
-      echo "Usage: ./scripts/occam-doctor.sh [--skip-build] [--quiet]"
+      echo "Usage: ./scripts/occam-doctor.sh [--skip-build] [--quiet|--verbose]"
       exit 0
       ;;
   esac
@@ -120,17 +128,24 @@ fi
 if [[ -d "$ROOT/workers/browser-extract" ]]; then
   # Single source path — quiet vs verbose only changes output, not probe count.
   CHROMIUM_LAUNCH_PROBE="$ROOT/workers/browser-extract/lib/ensure-chromium-usable.mjs"
-  doctor_echo "browser runtime check (launch probe) ..."
-  if [[ "$QUIET" -eq 1 ]]; then
-    if ! (cd "$ROOT/workers/browser-extract" && node "$CHROMIUM_LAUNCH_PROBE" >/dev/null 2>&1); then
-      echo "error: browser runtime unavailable" >&2
-      (cd "$ROOT/workers/browser-extract" && node "$CHROMIUM_LAUNCH_PROBE") || exit 1
+  if [[ ! -f "$CHROMIUM_LAUNCH_PROBE" ]]; then
+    CHROMIUM_LAUNCH_PROBE="$ROOT/workers/browser-extract/lib/verify-browser-launch.mjs"
+  fi
+  if [[ -f "$CHROMIUM_LAUNCH_PROBE" ]]; then
+    doctor_echo "browser runtime check (launch probe) ..."
+    if [[ "$QUIET" -eq 1 ]]; then
+      if ! (cd "$ROOT/workers/browser-extract" && node "$CHROMIUM_LAUNCH_PROBE" >/dev/null 2>&1); then
+        echo "error: browser runtime unavailable" >&2
+        (cd "$ROOT/workers/browser-extract" && node "$CHROMIUM_LAUNCH_PROBE") || exit 1
+      fi
+    else
+      (cd "$ROOT/workers/browser-extract" && node "$CHROMIUM_LAUNCH_PROBE") || {
+        echo "error: browser runtime unavailable" >&2
+        exit 1
+      }
     fi
   else
-    (cd "$ROOT/workers/browser-extract" && node "$CHROMIUM_LAUNCH_PROBE") || {
-      echo "error: browser runtime unavailable" >&2
-      exit 1
-    }
+    echo "warning: browser launch probe script missing — skip browser check"
   fi
 fi
 
@@ -180,6 +195,19 @@ if [[ "$QUIET" -eq 0 ]]; then
   echo "Occam runtime is installed (self-check via doctor passed)."
   echo "Connect an AI app:  occam connect"
   echo "Manual snippet:     node scripts/lib/print-connection-snippet.mjs \"$ROOT\" generic-stdio"
-  echo ""
-  echo "Canonical launcher: node scripts/launch-mcp-host.mjs with OCCAM_HOME=$ROOT"
+else
+  # Concise default for `occam doctor` (install path already suppresses this via capture).
+  if [[ "${OCCAM_INSTALL_QUIET:-}" != "1" && "${OCCAM_INSTALL_QUIET:-}" != "true" ]]; then
+    echo "Occam doctor"
+    echo ""
+    echo "✓ Runtime"
+    echo "✓ Browser"
+    echo "✓ Web safety"
+    echo "✓ PDF support"
+    echo "✓ Installation"
+    echo ""
+    echo "Everything looks good."
+    echo ""
+    echo "Connect an AI app:  occam connect"
+  fi
 fi

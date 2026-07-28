@@ -17,10 +17,11 @@
 export const CLI_SUBCOMMANDS = [
   {
     name: "doctor",
-    summary: "Preflight — workers, Playwright, AOT host",
+    summary: "Health check — runtime, browser, web safety (use --verbose for detail)",
     delegate: "shell",
     script: "occam-doctor",
     registryId: "occam-doctor",
+    passthrough: true,
   },
   {
     name: "onboard",
@@ -142,6 +143,10 @@ export function formatSubcommandUsage() {
     const alias = row.aliases?.length ? ` (${row.aliases.join(", ")})` : "";
     lines.push(`  ${row.name.padEnd(10)} ${row.summary}${alias}`);
   }
-  lines.push("", "Global flags: --json", "Env: OCCAM_HOME, PATH should include $OCCAM_HOME/scripts");
+  lines.push(
+    "",
+    "Global flags: --json",
+    "Env: OCCAM_HOME (optional). The install puts `occam` on PATH via ~/.local/bin.",
+  );
   return lines.join("\n");
 }

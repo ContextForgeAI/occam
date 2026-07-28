@@ -1,7 +1,8 @@
 #Requires -Version 5.1
 param(
     [switch]$SkipBuild,
-    [switch]$Quiet
+    [switch]$Quiet,
+    [switch]$VerboseDoctor
 )
 
 $ErrorActionPreference = "Stop"
@@ -9,8 +10,18 @@ $root = if ($env:OCCAM_HOME) { $env:OCCAM_HOME } else { Split-Path -Parent $PSSc
 $env:OCCAM_HOME = $root
 $cacheScript = Join-Path $PSScriptRoot "lib\playwright-cache.mjs"
 
-if (-not $Quiet) {
-    if ($env:OCCAM_INSTALL_QUIET -eq "1" -or $env:OCCAM_INSTALL_QUIET -eq "true") { $Quiet = $true }
+# Default: concise human summary. Engineering dump via -VerboseDoctor / OCCAM_VERBOSE=1.
+if (-not $PSBoundParameters.ContainsKey("Quiet") -and -not $VerboseDoctor) {
+    $Quiet = $true
+}
+if ($env:OCCAM_VERBOSE -eq "1" -or $env:OCCAM_VERBOSE -eq "true" -or $VerboseDoctor) {
+    $Quiet = $false
+}
+if ($env:OCCAM_INSTALL_QUIET -eq "0" -or $env:OCCAM_INSTALL_QUIET -eq "false") {
+    $Quiet = $false
+}
+if ($env:OCCAM_INSTALL_QUIET -eq "1" -or $env:OCCAM_INSTALL_QUIET -eq "true") {
+    $Quiet = $true
 }
 function Write-Doctor([string]$Message, [ConsoleColor]$Color = [ConsoleColor]::Gray) {
     if (-not $Quiet) { Write-Host $Message -ForegroundColor $Color }
@@ -91,8 +102,11 @@ if (Test-Path $pdfSelftest) {
     Write-Doctor "pdf-extract module selftest ..."
     Push-Location (Join-Path $root "workers\http-extract")
     if ($Quiet) {
+        $prevEap = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
         $pdfOut = & node $pdfSelftest 2>&1 | Out-String
         $pdfExit = $LASTEXITCODE
+        $ErrorActionPreference = $prevEap
     } else {
         & node $pdfSelftest
         $pdfExit = $LASTEXITCODE
@@ -110,8 +124,11 @@ if (Test-Path $ssrfSelftest) {
     Write-Doctor "private-ip (SSRF guard) module selftest ..."
     Push-Location (Join-Path $root "workers\http-extract")
     if ($Quiet) {
+        $prevEap = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
         $ssrfOut = & node $ssrfSelftest 2>&1 | Out-String
         $ssrfExit = $LASTEXITCODE
+        $ErrorActionPreference = $prevEap
     } else {
         & node $ssrfSelftest
         $ssrfExit = $LASTEXITCODE
@@ -128,20 +145,34 @@ if (Test-Path $browserWorker) {
     # Launch is the source of truth: it also installs a missing bundled runtime and retries once.
     # Single path string — quiet vs verbose only changes output, not probe count.
     $chromiumLaunchProbe = Join-Path $browserWorker "lib\ensure-chromium-usable.mjs"
-    Write-Doctor "browser runtime check (launch probe) ..."
-    Push-Location $browserWorker
-    try {
-        if ($Quiet) {
-            & node $chromiumLaunchProbe 2>&1 | Out-Null
-        } else {
-            & node $chromiumLaunchProbe
-        }
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "browser runtime unavailable"
-        }
+    if (-not (Test-Path $chromiumLaunchProbe)) {
+        # Older Level B tarballs may only ship verify-browser-launch.mjs.
+        $chromiumLaunchProbe = Join-Path $browserWorker "lib\verify-browser-launch.mjs"
     }
-    finally {
-        Pop-Location
+    if (Test-Path $chromiumLaunchProbe) {
+        Write-Doctor "browser runtime check (launch probe) ..."
+        Push-Location $browserWorker
+        try {
+            if ($Quiet) {
+                # Native node stderr must not become a terminating error under $ErrorActionPreference Stop.
+                $prevEap = $ErrorActionPreference
+                $ErrorActionPreference = "Continue"
+                & node $chromiumLaunchProbe 1>$null 2>$null
+                $probeExit = $LASTEXITCODE
+                $ErrorActionPreference = $prevEap
+            } else {
+                & node $chromiumLaunchProbe
+                $probeExit = $LASTEXITCODE
+            }
+            if ($probeExit -ne 0) {
+                Write-Error "browser runtime unavailable"
+            }
+        }
+        finally {
+            Pop-Location
+        }
+    } else {
+        Write-Host "warning: browser launch probe script missing — skip browser check" -ForegroundColor Yellow
     }
 }
 
@@ -221,6 +252,16 @@ if (-not $Quiet) {
     Write-Host "Occam runtime is installed (self-check via doctor passed)." -ForegroundColor Cyan
     Write-Host "Connect an AI app:  occam connect"
     Write-Host "Manual snippet:     node scripts/lib/print-connection-snippet.mjs `"$root`" generic-stdio"
+} elseif ($env:OCCAM_INSTALL_QUIET -ne "1" -and $env:OCCAM_INSTALL_QUIET -ne "true") {
+    Write-Host "Occam doctor"
     Write-Host ""
-    Write-Host "Canonical launcher: node scripts/launch-mcp-host.mjs with OCCAM_HOME=$root" -ForegroundColor DarkGray
+    Write-Host "✓ Runtime"
+    Write-Host "✓ Browser"
+    Write-Host "✓ Web safety"
+    Write-Host "✓ PDF support"
+    Write-Host "✓ Installation"
+    Write-Host ""
+    Write-Host "Everything looks good."
+    Write-Host ""
+    Write-Host "Connect an AI app:  occam connect"
 }

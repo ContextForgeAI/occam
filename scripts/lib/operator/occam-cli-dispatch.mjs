@@ -60,12 +60,21 @@ export function dispatchSubcommand(sub, occamHome, passthroughArgs = []) {
         return 1;
       }
       const doctorArgs = [...passthroughArgs];
-      if (sub.name === "doctor" && isLevelBInstall(occamHome) && !doctorArgs.includes("--skip-build")) {
+      if (sub.name === "doctor" && isLevelBInstall(occamHome) && !doctorArgs.includes("--skip-build") && !doctorArgs.includes("-SkipBuild")) {
         doctorArgs.push("--skip-build");
       }
+      const psArgs =
+        sub.name === "doctor"
+          ? doctorArgs.map((a) => {
+              if (a === "--skip-build") return "-SkipBuild";
+              if (a === "--quiet") return "-Quiet";
+              if (a === "--verbose" || a === "-v") return "-VerboseDoctor";
+              return a;
+            })
+          : doctorArgs;
       const result = spawnSync(
         "powershell",
-        ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ps1, ...doctorArgs],
+        ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ps1, ...psArgs],
         { cwd: occamHome, env, stdio: "inherit" },
       );
       return result.status ?? 1;
