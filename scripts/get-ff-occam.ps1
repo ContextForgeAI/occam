@@ -147,42 +147,37 @@ download failed $($script:OccamEmDash) is the release tarball published?
 # public main when the release tarball predates occam-connect. Prepends bin onto
 # current-process PATH so PowerShell resolves this launcher first.
 function Install-OccamUserCommand([string]$OccamHome) {
-  $helper = Join-Path $OccamHome "scripts\lib\operator\install-user-cli.mjs"
   $helperTmpDir = $null
-  if (-not (Test-Path $helper)) {
-    # Stage full ESM closure (relative imports) — not a single flat temp file.
-    # Manifest: scripts/lib/operator/install-user-cli-temp-manifest.mjs
-    $helperTmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("occam-install-user-cli-" + [guid]::NewGuid().ToString("N"))
-    New-Item -ItemType Directory -Path (Join-Path $helperTmpDir "scripts\lib\operator") -Force | Out-Null
-    $base = if ($env:OCCAM_OVERLAY_BASE_URL) {
-      $env:OCCAM_OVERLAY_BASE_URL.TrimEnd("/").TrimEnd("\")
-    } else {
-      "https://raw.githubusercontent.com/ContextForgeAI/occam/main"
+  # Always stage helper from public main so OPERATOR_OVERLAY_FILES stays current.
+  # Manifest: scripts/lib/operator/install-user-cli-temp-manifest.mjs
+  $helperTmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("occam-install-user-cli-" + [guid]::NewGuid().ToString("N"))
+  New-Item -ItemType Directory -Path (Join-Path $helperTmpDir "scripts\lib\operator") -Force | Out-Null
+  $overlayBase = if ($env:OCCAM_OVERLAY_BASE_URL) {
+    $env:OCCAM_OVERLAY_BASE_URL.TrimEnd("/").TrimEnd("\")
+  } else {
+    "https://raw.githubusercontent.com/ContextForgeAI/occam/main"
+  }
+  try {
+    Invoke-WebRequest -Uri ($overlayBase + "/scripts/lib/operator/install-user-cli.mjs") `
+      -OutFile (Join-Path $helperTmpDir "scripts\lib\operator\install-user-cli.mjs") -UseBasicParsing
+    Invoke-WebRequest -Uri ($overlayBase + "/scripts/lib/resolve-node-runtime.mjs") `
+      -OutFile (Join-Path $helperTmpDir "scripts\lib\resolve-node-runtime.mjs") -UseBasicParsing
+    $helper = Join-Path $helperTmpDir "scripts\lib\operator\install-user-cli.mjs"
+    if (-not (Test-Path $helper) -or -not (Test-Path (Join-Path $helperTmpDir "scripts\lib\resolve-node-runtime.mjs"))) {
+      throw "incomplete helper staging"
     }
-    try {
-      Invoke-WebRequest -Uri ($base + "/scripts/lib/operator/install-user-cli.mjs") `
-        -OutFile (Join-Path $helperTmpDir "scripts\lib\operator\install-user-cli.mjs") -UseBasicParsing
-      Invoke-WebRequest -Uri ($base + "/scripts/lib/resolve-node-runtime.mjs") `
-        -OutFile (Join-Path $helperTmpDir "scripts\lib\resolve-node-runtime.mjs") -UseBasicParsing
-      $helper = Join-Path $helperTmpDir "scripts\lib\operator\install-user-cli.mjs"
-      if (-not (Test-Path $helper) -or -not (Test-Path (Join-Path $helperTmpDir "scripts\lib\resolve-node-runtime.mjs"))) {
-        throw "incomplete helper staging"
-      }
-    } catch {
-      Write-Host ($script:OccamFail + " Could not install the occam command (download failed).") -ForegroundColor Red
-      Write-Host "Re-run with `$env:OCCAM_VERBOSE=1 for details." -ForegroundColor Yellow
-      if ($helperTmpDir) { Remove-Item -Recurse -Force $helperTmpDir -ErrorAction SilentlyContinue }
-      throw
-    }
+  } catch {
+    Write-Host ($script:OccamFail + " Could not install the occam command (download failed).") -ForegroundColor Red
+    Write-Host "Re-run with `$env:OCCAM_VERBOSE=1 for details." -ForegroundColor Yellow
+    if ($helperTmpDir) { Remove-Item -Recurse -Force $helperTmpDir -ErrorAction SilentlyContinue }
+    throw
   }
 
   $prevEap = $ErrorActionPreference
   $ErrorActionPreference = "Continue"
   try {
-    $cliArgs = @($helper, "--home", $OccamHome, "--json")
-    if ($env:OCCAM_OVERLAY_BASE_URL) {
-      $cliArgs += @("--base-url", $env:OCCAM_OVERLAY_BASE_URL.TrimEnd("/").TrimEnd("\"))
-    }
+    # Always refresh operator CLI from public main (Level B tarballs lag git).
+    $cliArgs = @($helper, "--home", $OccamHome, "--base-url", $overlayBase, "--json")
     $jsonOut = & node @cliArgs *>&1 | ForEach-Object { "$_" }
     if ($LASTEXITCODE -ne 0) {
       Write-Host ($script:OccamFail + " Could not install the occam command.") -ForegroundColor Red

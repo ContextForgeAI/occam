@@ -358,42 +358,38 @@ run_legacy_step() {
 # CLI from public main when the release tarball lacks occam-connect.
 install_occam_user_command() {
   local home="$1"
-  local helper="$home/scripts/lib/operator/install-user-cli.mjs"
   local helper_tmp=""
-  if [[ ! -f "$helper" ]]; then
-    # Stage full ESM closure (relative imports) — not a single flat temp file.
-    # Manifest: scripts/lib/operator/install-user-cli-temp-manifest.mjs
-    helper_tmp="$(mktemp -d "${TMPDIR:-/tmp}/occam-install-user-cli.XXXXXX")"
-    local base="${OCCAM_OVERLAY_BASE_URL:-https://raw.githubusercontent.com/ContextForgeAI/occam/main}"
-    base="${base%/}"
-    mkdir -p "$helper_tmp/scripts/lib/operator"
-    if ! curl -fsSL "$base/scripts/lib/operator/install-user-cli.mjs" -o "$helper_tmp/scripts/lib/operator/install-user-cli.mjs" \
-      || ! curl -fsSL "$base/scripts/lib/resolve-node-runtime.mjs" -o "$helper_tmp/scripts/lib/resolve-node-runtime.mjs"; then
-      echo "✗ Could not install the occam command (download failed)." >&2
-      echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
-      rm -rf "$helper_tmp"
-      exit 1
-    fi
-    if [[ ! -f "$helper_tmp/scripts/lib/operator/install-user-cli.mjs" \
-      || ! -f "$helper_tmp/scripts/lib/resolve-node-runtime.mjs" ]]; then
-      echo "✗ Could not install the occam command (incomplete helper staging)." >&2
-      echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
-      rm -rf "$helper_tmp"
-      exit 1
-    fi
-    helper="$helper_tmp/scripts/lib/operator/install-user-cli.mjs"
+  # Always stage helper from public main so OPERATOR_OVERLAY_FILES stays current
+  # even when Level B already shipped an older install-user-cli.mjs.
+  # Manifest: scripts/lib/operator/install-user-cli-temp-manifest.mjs
+  helper_tmp="$(mktemp -d "${TMPDIR:-/tmp}/occam-install-user-cli.XXXXXX")"
+  local base="${OCCAM_OVERLAY_BASE_URL:-https://raw.githubusercontent.com/ContextForgeAI/occam/main}"
+  base="${base%/}"
+  mkdir -p "$helper_tmp/scripts/lib/operator"
+  if ! curl -fsSL "$base/scripts/lib/operator/install-user-cli.mjs" -o "$helper_tmp/scripts/lib/operator/install-user-cli.mjs" \
+    || ! curl -fsSL "$base/scripts/lib/resolve-node-runtime.mjs" -o "$helper_tmp/scripts/lib/resolve-node-runtime.mjs"; then
+    echo "✗ Could not install the occam command (download failed)." >&2
+    echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
+    rm -rf "$helper_tmp"
+    exit 1
   fi
+  if [[ ! -f "$helper_tmp/scripts/lib/operator/install-user-cli.mjs" \
+    || ! -f "$helper_tmp/scripts/lib/resolve-node-runtime.mjs" ]]; then
+    echo "✗ Could not install the occam command (incomplete helper staging)." >&2
+    echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
+    rm -rf "$helper_tmp"
+    exit 1
+  fi
+  local helper="$helper_tmp/scripts/lib/operator/install-user-cli.mjs"
 
   local json
   set +e
-  if [[ -n "${OCCAM_OVERLAY_BASE_URL:-}" ]]; then
-    json="$(node "$helper" --home "$home" --base-url "${OCCAM_OVERLAY_BASE_URL%/}" --json 2>&1)"
-  else
-    json="$(node "$helper" --home "$home" --json 2>&1)"
-  fi
+  # Always refresh operator CLI overlay from the same base.
+  # Level B tarballs lag git; gap-only overlay leaves stale doctor/update/contract UX.
+  json="$(node "$helper" --home "$home" --base-url "$base" --json 2>&1)"
   local code=$?
   set -e
-  if [[ -n "$helper_tmp" ]]; then rm -rf "$helper_tmp"; fi
+  rm -rf "$helper_tmp"
   if [[ "$code" -ne 0 ]]; then
     echo "✗ Could not install the occam command." >&2
     echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
