@@ -174,7 +174,7 @@ export function runSmoke(occamHome, extraArgs = []) {
 export async function runUpdateCheck(occamHome, opts = {}) {
   const update = await checkForUpdate({ occamHome, fetch: opts.fetch });
   return {
-    ok: !update.error || update.updateAvailable !== undefined,
+    ok: !update.error,
     message: update.upgradeHint,
     data: update,
   };

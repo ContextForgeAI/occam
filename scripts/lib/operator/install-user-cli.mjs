@@ -33,6 +33,10 @@ export const OPERATOR_OVERLAY_FILES = Object.freeze([
   "scripts/occam.mjs",
   "scripts/occam.ps1",
   "scripts/occam",
+  "scripts/occam-doctor.sh",
+  "scripts/occam-doctor.ps1",
+  "scripts/check-public-mcp-contract.mjs",
+  "corpora/public-mcp-schema-fingerprint.txt",
   "scripts/occam-connect.mjs",
   "scripts/occam-chat.mjs",
   "scripts/lib/mcp-stdio-client.mjs",
@@ -419,7 +423,11 @@ export async function applyOperatorOverlay(baseUrl, occamHome, opts = {}) {
     const dest = join(occamHome, ...rel.split("/"));
     mkdirSync(dirname(dest), { recursive: true });
     writeFileSync(dest, text, "utf8");
-    if (rel.endsWith("/occam") || rel === "scripts/occam") {
+    if (
+      rel.endsWith("/occam") ||
+      rel === "scripts/occam" ||
+      rel.endsWith("occam-doctor.sh")
+    ) {
       try {
         chmodSync(dest, 0o755);
       } catch {

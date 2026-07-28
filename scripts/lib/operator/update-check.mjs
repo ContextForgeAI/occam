@@ -83,7 +83,7 @@ export function releaseBaseToApiUrl(releaseBase) {
 
 /**
  * @param {typeof fetch} fetchFn
- * @param {string} releasesApiUrl full URL to latest release JSON endpoint
+ * @param {string} releasesApiUrl full URL to releases list or …/releases/latest
  */
 export async function fetchLatestReleaseTag(fetchFn, releasesApiUrl) {
   const allowHttp = process.env.OCCAM_RELEASE_ALLOW_HTTP === "1";
@@ -95,9 +95,19 @@ export async function fetchLatestReleaseTag(fetchFn, releasesApiUrl) {
   }
 
   try {
-    const response = await fetchFn(releasesApiUrl, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(15_000),
+    // Prefer a list endpoint so prereleases (rc.*) are visible. GitHub's
+    // /releases/latest ignores prereleases and 404s when only RCs exist.
+    let listUrl = releasesApiUrl;
+    if (/\/releases\/latest\/?$/i.test(listUrl)) {
+      listUrl = listUrl.replace(/\/latest\/?$/i, "") + "?per_page=15";
+    } else if (/\/releases\/?$/i.test(listUrl) && !/[?&]per_page=/.test(listUrl)) {
+      listUrl += (listUrl.includes("?") ? "&" : "?") + "per_page=15";
+    }
+
+    // Do not use AbortSignal here: on Windows Node 24, abort timers + process.exit
+    // can trip libuv UV_HANDLE_CLOSING assertions after a successful fetch.
+    const response = await fetchFn(listUrl, {
+      headers: { Accept: "application/vnd.github+json" },
     });
 
     if (!response.ok) {
@@ -105,12 +115,18 @@ export async function fetchLatestReleaseTag(fetchFn, releasesApiUrl) {
     }
 
     const body = await response.json();
-    const tag = typeof body.tag_name === "string" ? body.tag_name : null;
-    if (!tag) {
-      return { latest: null, error: "release API missing tag_name" };
+    /** @type {unknown[]} */
+    const items = Array.isArray(body) ? body : body && typeof body === "object" ? [body] : [];
+    for (const item of items) {
+      if (!item || typeof item !== "object") continue;
+      const row = /** @type {{ draft?: boolean, tag_name?: string }} */ (item);
+      if (row.draft) continue;
+      if (typeof row.tag_name === "string" && row.tag_name.trim()) {
+        return { latest: row.tag_name.replace(/^v/i, ""), error: null };
+      }
     }
 
-    return { latest: tag.replace(/^v/i, ""), error: null };
+    return { latest: null, error: "release API missing tag_name" };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return { latest: null, error: message };
@@ -166,18 +182,17 @@ export async function checkForUpdate(opts) {
   if (updateAvailable) {
     upgradeHint = [
       `Newer release v${latest} available (installed v${installed}).`,
-      `Level B: curl get-ff-occam.sh with OCCAM_VERSION=${latest}`,
-      `Or: install.sh --from-url .../ff-occam-${latest}-${rid}.tar.gz`,
+      `Re-run the one-line installer to update, or set OCCAM_VERSION=${latest}.`,
     ].join(" ");
   } else if (error) {
-    upgradeHint = `Could not check remote release: ${error}. Set OCCAM_LATEST_VERSION to compare manually.`;
+    upgradeHint = `Could not check for updates: ${error}. Set OCCAM_LATEST_VERSION to compare manually.`;
   } else {
-    upgradeHint = `Installed v${installed} — up to date with channel latest.`;
+    upgradeHint = `Installed v${installed} — up to date.`;
   }
 
   return {
     installed,
-    latest: effectiveLatest,
+    latest: latest ?? (error ? null : effectiveLatest),
     rid,
     updateAvailable,
     upgradeHint,

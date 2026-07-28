@@ -140,6 +140,14 @@ function stageReleaseTree(version, rid, publishedBinary, stageExeName) {
   const profilesDest = path.join(stageRoot, "profiles");
   copyTreeFiltered(profilesSrc, profilesDest, () => true);
 
+  // Public `occam contract` fingerprint (EF-035 companion).
+  const fingerprintSrc = path.join(repoRoot, "corpora", "public-mcp-schema-fingerprint.txt");
+  if (fs.existsSync(fingerprintSrc)) {
+    const corporaDest = path.join(stageRoot, "corpora");
+    fs.mkdirSync(corporaDest, { recursive: true });
+    fs.copyFileSync(fingerprintSrc, path.join(corporaDest, "public-mcp-schema-fingerprint.txt"));
+  }
+
   const skillsSrc = path.join(repoRoot, "skills", "occam");
   if (fs.existsSync(skillsSrc)) {
     const skillsDest = path.join(stageRoot, "skills", "occam");

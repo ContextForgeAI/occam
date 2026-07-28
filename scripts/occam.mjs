@@ -95,7 +95,9 @@ async function main() {
           console.log(status.data.update.upgradeHint);
         }
       }
-      process.exit(status.ok ? 0 : 1);
+      // Prefer exitCode over process.exit — Windows Node+fetch can assert in libuv on hard exit.
+      process.exitCode = status.ok ? 0 : 1;
+      return;
     }
 
     if (sub.internalAction === "update") {
@@ -105,7 +107,8 @@ async function main() {
       } else {
         console.log(result.message);
       }
-      process.exit(result.ok ? 0 : 1);
+      process.exitCode = result.ok ? 0 : 1;
+      return;
     }
 
     console.error(`error: unhandled internal action ${sub.internalAction}`);
