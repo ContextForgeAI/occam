@@ -1,0 +1,15 @@
+{
+  "ok": false,
+  "url": {
+    "url": "http://127.0.0.1:9/occam-marketing-proof",
+    "finalUrl": null
+  },
+  "failure": {
+    "code": "private_url_blocked",
+    "message": "Private or local URLs are blocked."
+  },
+  "focus": {
+    "status": "not_requested"
+  },
+  "verdict": "not_evaluated"
+}

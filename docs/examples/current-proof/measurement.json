@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-07-30T22:59:32.729Z",
+  "sourceSha": "3d871d34f52180f8e0046f505de577b6aa3417e4",
+  "method": "Compare the UTF-8 byte length of the fetched HTML response body after HTTP content decoding with the UTF-8 byte length of result.markdown.",
+  "inputBodyBytesAfterHttpDecoding": 559,
+  "outputMarkdownUtf8Bytes": 167,
+  "byteReductionForThisExamplePercent": 70.1,
+  "tokenizer": null,
+  "qualification": "This is one reproducible example, not a universal size or token-savings guarantee."
+}

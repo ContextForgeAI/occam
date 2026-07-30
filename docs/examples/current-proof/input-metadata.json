@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-07-30T22:59:32.729Z",
+  "sourceSha": "3d871d34f52180f8e0046f505de577b6aa3417e4",
+  "input": {
+    "url": "https://example.com/",
+    "finalUrl": "https://example.com/",
+    "status": 200,
+    "contentType": "text/html",
+    "contentEncoding": "br",
+    "bodyBytesAfterHttpDecoding": 559,
+    "bodySha256": "ff67a9d764d6a2367a187734e697f6a53217db9a21c101d410a113ca871a299d"
+  },
+  "invocation": {
+    "transport": "MCP stdio",
+    "tool": "occam_transcode",
+    "arguments": {
+      "url": "https://example.com/"
+    },
+    "outputProfile": "default options; only the required url argument"
+  },
+  "failureInvocation": {
+    "transport": "MCP stdio",
+    "tool": "occam_transcode",
+    "arguments": {
+      "url": "http://127.0.0.1:9/occam-marketing-proof"
+    },
+    "environment": {
+      "OCCAM_ALLOW_PRIVATE_URLS": "unset/empty"
+    }
+  }
+}
