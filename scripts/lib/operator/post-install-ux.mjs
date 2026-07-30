@@ -230,11 +230,12 @@ async function main() {
   writeSilentOnboard(occamHome);
 
   if (opts.skipConnect || !existsSync(join(occamHome, "scripts", "occam-connect.mjs"))) {
-    emit("Occam is installed.");
-    emit("Connect an AI app later with: occam connect");
+    emit("Occam is installed, but it is not connected to an AI app yet.");
+    emit("Next: occam connect");
+    emit("Or with Ollama: occam chat");
     emit("");
-    emit("Documentation:");
-    emit("https://contextforgeai.github.io/occam/");
+    emit("First success guide:");
+    emit("https://contextforgeai.github.io/occam/quick-start/");
     if (quiet) assertQuietTranscript(outLines.join("\n"));
     process.exit(0);
   }

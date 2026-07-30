@@ -9,6 +9,11 @@
  * - `mcp reload`: disposes cached runtimes; "Active agents use new MCP config on their next runtime build"
  *   → no full gateway restart required for next runtime build; still surface reload note
  * - `mcp unset` removes without prompt
+ *
+ * Detection honesty (2026-07-30 friend false-positive):
+ * - NEVER treat `npx openclaw` as installed OpenClaw — every Node machine has npx.
+ * - NEVER treat bare ~/.openclaw residue as a connectable host.
+ * - Connectable = usable `openclaw` executable on PATH (STRONG signal only).
  */
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -28,27 +33,35 @@ import { VERIFICATION_LEVELS } from "../verification.mjs";
 export const OPENCLAW_ADAPTER_ID = "openclaw";
 
 /**
- * Prefer PATH binary, else npx openclaw.
- * @returns {{ command: string, prefixArgs: string[], label: string }}
+ * Usable OpenClaw CLI only — never npx fallback (npx would false-detect every Node install).
+ * @returns {{ command: string, prefixArgs: string[], label: string }|null}
  */
-function resolveOpenClawInvoker() {
+export function resolveOpenClawInvoker() {
   const bin = which("openclaw");
-  if (bin) {
-    return { command: bin, prefixArgs: [], label: bin };
-  }
-  const npx = which("npx");
-  if (!npx) {
-    throw new Error("openclaw not found on PATH and npx unavailable");
-  }
-  return {
-    command: npx,
-    prefixArgs: ["--yes", "openclaw"],
-    label: "npx openclaw",
-  };
+  if (!bin) return null;
+  return { command: bin, prefixArgs: [], label: bin };
 }
 
 export function openclawConfigPath() {
   return join(homedir(), ".openclaw", "openclaw.json");
+}
+
+export function openclawHomeDir() {
+  return join(homedir(), ".openclaw");
+}
+
+/**
+ * Stale config/home without a usable CLI — diagnostics only, never auto-connect.
+ * @returns {{ residue: boolean, signals: string[] }}
+ */
+export function describeOpenClawResidue() {
+  /** @type {string[]} */
+  const signals = [];
+  const homeDir = openclawHomeDir();
+  const path = openclawConfigPath();
+  if (existsSync(homeDir)) signals.push(`dir:${homeDir}`);
+  if (existsSync(path)) signals.push(`config:${path}`);
+  return { residue: signals.length > 0 && !which("openclaw"), signals };
 }
 
 /**
@@ -75,11 +88,7 @@ export function createOpenClawAdapter(ctx) {
   const occamHome = ctx.occamHome;
 
   function invoker() {
-    try {
-      return resolveOpenClawInvoker();
-    } catch {
-      return null;
-    }
+    return resolveOpenClawInvoker();
   }
 
   /**
@@ -167,13 +176,14 @@ export function createOpenClawAdapter(ctx) {
     detect() {
       const inv = invoker();
       const path = openclawConfigPath();
-      const homeDir = join(homedir(), ".openclaw");
-      const detected = Boolean(inv) || existsSync(homeDir) || existsSync(path);
+      const homeDir = openclawHomeDir();
+      const residue = describeOpenClawResidue();
+      // STRONG only: usable openclaw on PATH. Residue alone is never connectable.
+      const detected = Boolean(inv);
       /** @type {'high'|'medium'|'low'} */
       let confidence = "low";
-      if (inv && (existsSync(homeDir) || which("openclaw"))) confidence = "high";
+      if (inv && (existsSync(homeDir) || existsSync(path))) confidence = "high";
       else if (inv) confidence = "medium";
-      else if (existsSync(homeDir)) confidence = "medium";
       return {
         id: OPENCLAW_ADAPTER_ID,
         name: "OpenClaw",
@@ -182,6 +192,8 @@ export function createOpenClawAdapter(ctx) {
         confidence,
         executable: inv?.label ?? null,
         configPath: path,
+        residue: residue.residue,
+        residueSignals: residue.signals,
       };
     },
 
@@ -235,7 +247,12 @@ export function createOpenClawAdapter(ctx) {
      */
     apply(opts = {}) {
       if (!invoker()) {
-        return { ok: false, applied: false, error: "openclaw CLI not available" };
+        return {
+          ok: false,
+          applied: false,
+          error:
+            "OpenClaw CLI not found on PATH (stale ~/.openclaw alone is not enough)",
+        };
       }
       const inspected = this.inspect();
       if (inspected.parseError) {
@@ -289,8 +306,9 @@ export function createOpenClawAdapter(ctx) {
       if (!invoker()) {
         return {
           ok: false,
-          level: VERIFICATION_LEVELS.CONFIG_VALID,
-          error: "openclaw CLI not available",
+          level: VERIFICATION_LEVELS.INSTALLED,
+          error:
+            "OpenClaw CLI not found on PATH — cannot verify (config residue is not a live host)",
         };
       }
       const status = runOpenClaw(["mcp", "status"], { timeoutMs: 60_000 });

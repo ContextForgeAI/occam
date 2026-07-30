@@ -176,3 +176,6 @@ jobs:
       # tier rules need a guard on every push.
       - name: Validate MCP host connect platform
         run: node scripts/lib/operator/connect.selftest.mjs
+
+      - name: Validate friend first-use acceptance scenarios
+        run: node scripts/lib/operator/friend-first-use.selftest.mjs

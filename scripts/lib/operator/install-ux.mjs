@@ -25,8 +25,11 @@ export const FORBIDDEN_DEFAULT_OUTPUT = Object.freeze([
   "verify-install: commit=",
 ]);
 
+/** Docs hub — prefer FIRST_SUCCESS_URL in installer/connect endings. */
 export const DOCS_URL = "https://contextforgeai.github.io/occam/";
-export const TRY_PROMPT = 'Try asking your agent:\n"Read https://developer.mozilla.org using Occam"';
+/** Canonical post-install next page: install → first successful Occam result. */
+export const FIRST_SUCCESS_URL = "https://contextforgeai.github.io/occam/quick-start/";
+export const TRY_PROMPT = 'Try asking your agent:\n"Use Occam to read https://example.com"';
 
 /**
  * @param {NodeJS.ProcessEnv} [env]
@@ -344,7 +347,7 @@ export function renderInstallConnectSection(opts) {
 
   lines.push("");
   lines.push("Documentation:");
-  lines.push(DOCS_URL);
+  lines.push(FIRST_SUCCESS_URL);
   return lines.join("\n");
 }
 

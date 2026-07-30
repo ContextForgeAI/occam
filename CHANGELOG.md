@@ -8,6 +8,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Fixed
 
+- **Friend first-use — OpenClaw false Ready + post-install dead end** — OpenClaw is
+  connectable only when a real `openclaw` binary is on PATH. Stale `~/.openclaw` and
+  `npx openclaw` no longer count as an installed host (every Node machine has npx).
+  Hermes/home-only residue is the same class of signal. Verify failure after apply
+  rolls back with a human “Not connected” message (no “host discovery not confirmed;
+  rolled back” as the primary instruction). Post-install summary always answers
+  “what do I do now?” with one concrete path (`occam chat` when Ollama exists,
+  exact host + prompt when Ready, or `occam connect` + first-success URL).
+  Terminal/docs link: `https://contextforgeai.github.io/occam/quick-start/`.
+  Fixture: `corpora/friend-first-use-2026-07-30.md`. Selftest:
+  `scripts/lib/operator/friend-first-use.selftest.mjs`.
+
 - **GUI MCP hosts with stripped PATH (canonical Node runtime contract)** — Bionic / LM Studio / Cursor.app often spawn Occam with `PATH=/usr/bin:/bin`. Absolute Homebrew `command` was not enough: Core workers still looked up bare `node`. Occam now records install-time Node at `{OCCAM_HOME}/runtime/node-bin`, stamps `OCCAM_NODE_BIN` in `launch-mcp-host.mjs` / `occam-wrapper.sh`, embeds absolute Node in user `occam` CLI launchers, and registers Connect/snippet MCP with `process.execPath` (never `OCCAM_NODE_BIN` in host env). Core reads the same precedence and maps spawn failures to typed `workers_unavailable`. Regression: `scripts/lib/gui-starved-path-mcp.selftest.mjs`. Selftests: `resolve-node-runtime`, `stamp-node-runtime-env`, connect, install-user-cli.
 
 - **Windows/Linux one-liner quiet install vs older release tarballs** — public bootstrap no longer relies on artifact-side `-Quiet`/`--quiet` flags (pre-`6ea0480` packs ignore them and flood doctor/SSRF/PDF/smoke JSON). Legacy fallback now captures child I/O (PowerShell `*>&1`) so default `irm | iex` stays product-facing while checks still run. Verbose: `OCCAM_VERBOSE=1`.

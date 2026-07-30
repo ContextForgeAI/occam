@@ -257,13 +257,16 @@ export function createHermesAdapter(ctx) {
     detect() {
       const inv = resolveHermesInvoker();
       const configPath = hermesConfigPath();
-      const homeExists = existsSync(resolveHermesHome());
-      const detected = Boolean(inv) || homeExists || existsSync(configPath);
+      const homeDir = resolveHermesHome();
+      const homeExists = existsSync(homeDir);
+      const configExists = existsSync(configPath);
+      // STRONG only: usable `hermes` on PATH. Stale ~/.hermes alone is not connectable.
+      const detected = Boolean(inv);
+      const residue = !inv && (homeExists || configExists);
       /** @type {'high'|'medium'|'low'} */
       let confidence = "low";
-      if (inv && (homeExists || existsSync(configPath))) confidence = "high";
+      if (inv && (homeExists || configExists)) confidence = "high";
       else if (inv) confidence = "medium";
-      else if (homeExists) confidence = "medium";
       return {
         id: HERMES_ADAPTER_ID,
         name: "Hermes Agent",
@@ -272,6 +275,13 @@ export function createHermesAdapter(ctx) {
         confidence,
         executable: inv?.label ?? null,
         configPath,
+        residue,
+        residueSignals: residue
+          ? [
+              ...(homeExists ? [`dir:${homeDir}`] : []),
+              ...(configExists ? [`config:${configPath}`] : []),
+            ]
+          : [],
       };
     },
 

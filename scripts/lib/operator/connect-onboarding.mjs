@@ -27,7 +27,7 @@ import {
   resolveInstallOutcome,
   okLine,
   progressLine,
-  DOCS_URL,
+  FIRST_SUCCESS_URL,
 } from "./install-ux.mjs";
 import { canPromptInteractively, askControllingTty, isControllingTtyError } from "./tty.mjs";
 
@@ -139,8 +139,8 @@ function skippedResult(opts) {
     lines.push(...detail.split("\n"));
   }
   lines.push("");
-  lines.push("Documentation:");
-  lines.push(DOCS_URL);
+  lines.push("First success guide:");
+  lines.push(FIRST_SUCCESS_URL);
 
   const cleaned = lines.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
   return {
@@ -246,8 +246,8 @@ export async function runConnectOnboarding(opts) {
     const lines = [
       "Detection only — no AI app configurations were changed.",
       "",
-      "Documentation:",
-      DOCS_URL,
+      "First success guide:",
+      FIRST_SUCCESS_URL,
     ];
     if (verbose) {
       const detectReport = await runConnect({
@@ -268,21 +268,33 @@ export async function runConnectOnboarding(opts) {
   }
 
   if (candidates.length === 0) {
+    const ollama = runtimes.some(
+      (r) => r.id === "ollama" || /ollama/i.test(r.name || ""),
+    );
     /** @type {string[]} */
     const zeroLines = [
       detectedAll.length
         ? "Occam found AI tools, but none are ready for automatic connection yet."
         : "No compatible AI apps were found.",
       "",
-      "Occam is installed.",
+      "Occam is installed, but it is not connected to an AI app yet.",
       "No AI app configurations were changed.",
       "",
-      "When you're ready:",
-      "  occam connect",
-      "",
-      "Documentation:",
-      DOCS_URL,
+      "What to do now:",
     ];
+    if (ollama) {
+      zeroLines.push("Ollama is installed. To use a local model with Occam:");
+      zeroLines.push("  occam chat");
+      zeroLines.push("");
+      zeroLines.push("Or connect a supported chat app later:");
+      zeroLines.push("  occam connect");
+    } else {
+      zeroLines.push("1. Install a supported AI app, then run: occam connect");
+      zeroLines.push("2. Or follow the first-success guide below.");
+    }
+    zeroLines.push("");
+    zeroLines.push("First success guide:");
+    zeroLines.push(FIRST_SUCCESS_URL);
     if (verbose && detectedAll.length) {
       zeroLines.splice(
         1,
@@ -293,7 +305,14 @@ export async function runConnectOnboarding(opts) {
       );
     }
     return {
-      connectReport: null,
+      connectReport: {
+        hosts: detectedAll.map((h) => ({ ...h, detected: true })),
+        connections: [],
+        runtimes,
+        ready: false,
+        status: "Installed",
+        message: "no connectable host",
+      },
       outcome: resolveInstallOutcome({ installOk: true, skippedConnect: true }),
       transcript: zeroLines.join("\n"),
       only: [],
