@@ -1,121 +1,199 @@
 <div class="oc-hero" markdown="1">
 
-<p class="oc-wordmark">Local host · MCP</p>
+<p class="oc-wordmark">Local-first web context for AI agents.</p>
 
 </div>
 
-# Occam
+# Give your AI the page — not the webpage noise.
 
 <div class="oc-hero oc-hero--rest" markdown="1">
 
 <p class="oc-hero-lead">
-A locally run host that helps AI agents acquire usable web content, shape it for context windows, fail honestly when content is unknown, and optionally attach integrity artifacts verifiable against a key.
+Occam reads live web pages, removes the noise, and returns compact,
+source-linked content your AI agent can actually use.
 </p>
 
 <p class="oc-hero-actions">
-<a class="oc-btn oc-btn--primary" href="quick-start/">Get started</a>
-<a class="oc-btn oc-btn--secondary" href="handbook/">Read the handbook</a>
+<a class="oc-btn oc-btn--primary" href="quick-start/">Get your first result</a>
+<a class="oc-btn oc-btn--secondary" href="#real-output">See real output</a>
 </p>
 
 <div class="oc-proof" markdown="0">
-<span class="oc-prompt">$</span> occam connect<br>
+<span class="oc-prompt">URL</span> https://example.com/<br>
 <br>
-Detects supported AI / MCP hosts and configures live-validated ones.<br>
-Statuses: <span class="oc-ok">Ready</span> · Almost ready · Action required · Not ready
+559 decoded HTML bytes → <span class="oc-ok">167 Markdown bytes</span><br>
+Current source · exact method · reproducible result
 </div>
 
 </div>
+
+For developers and technical users building or running AI agents, especially in
+local and self-hosted environments.
+
+## Real output
+
+At source SHA `3d871d34f52180f8e0046f505de577b6aa3417e4`,
+Occam read [`https://example.com/`](https://example.com/) using
+`occam_transcode` with only its required `url` argument:
+
+```markdown
+# Example Domain
+
+This domain is for use in documentation examples without needing permission.
+Avoid use in operations.
+```
+
+The HTML response body was **559 UTF-8 bytes** after HTTP decoding. The
+returned Markdown was **167 UTF-8 bytes** — **70.1% fewer bytes in this
+example**. No tokenizer was used, so this is not a token-savings claim.
+
+The result keeps the requested and final URLs, extraction backend, content
+hash, and an optional signed integrity receipt. Inspect the
+[complete output, measurement method, and reproduction scripts](examples/current-proof/README.md).
+
+## Webpages were designed for people, not context windows
+
+An ordinary page can contain navigation, scripts, repeated interface text,
+cookie controls, footers, and large amounts of raw markup around the part an
+agent actually needs.
+
+Passing all of that through wastes a local model's limited context and makes
+larger models work around irrelevant text. A search result can help find the
+source; Occam focuses on reading the chosen source and preparing usable page
+content for the agent.
+
+## A useful result — or an explicit unknown
+
+**When the read succeeds**, Occam returns compact content with its source URL
+and result metadata.
+
+**When the read does not succeed**, Occam returns `ok: false` with a failure
+code. The content is unknown; the agent should not fill the gap from memory.
+
+The proof fixture includes a controlled private-destination case that returns:
+
+```json
+{
+  "ok": false,
+  "failure": {
+    "code": "private_url_blocked",
+    "message": "Private or local URLs are blocked."
+  }
+}
+```
+
+This predictable failure is a trust feature, not the main reason to try Occam:
+start with the successful read.
+
+## Choose your workflow
+
+<div class="oc-task-list" markdown="1">
+
+**Supported AI application** — install, run `occam connect`, then open a new
+conversation. Validation tiers apply; not every host is automatic.
+
+**Cursor** — connect, restart or reload when asked, then open a new chat.
+Live-validated connection path.
+
+**Hermes Agent** — connect only when Hermes is genuinely installed.
+Live-validated; failed verification can report **Not connected**.
+
+**Local Ollama runtime** — run `occam chat` with a tool-capable local model.
+**Experimental.**
+
+**Your own agent** — use the MCP contract and generated snippet.
+
+</div>
+
+[Choose a path and get the exact first prompt](quick-start.md) ·
+[See host validation tiers](mcp-hosts.md)
+
+Ollama is a model runtime, not an MCP host. Experimental `occam chat` calls the
+documented local Ollama API and uses Occam's acquisition stack. It is not a
+native integration inside the Ollama App and does not use Ollama Web Search.
+
+## How Occam works
 
 <nav class="oc-path" aria-label="Occam request path">
-  <span class="oc-path__step">URL</span>
+  <span class="oc-path__step">web page</span>
   <span class="oc-path__sep" aria-hidden="true">→</span>
-  <span class="oc-path__step"><span class="oc-system-label">Acquire</span></span>
+  <span class="oc-path__step"><span class="oc-system-label">acquisition</span></span>
   <span class="oc-path__sep" aria-hidden="true">→</span>
-  <span class="oc-path__step"><span class="oc-system-label">Shape</span></span>
+  <span class="oc-path__step">useful content</span>
   <span class="oc-path__sep" aria-hidden="true">→</span>
-  <span class="oc-path__step">usable context</span>
-  <span class="oc-path__branch">
-    <span class="oc-path__sep" aria-hidden="true">↳</span>
-    <span class="oc-path__step oc-path__step--gate"><span class="oc-system-label">Unknown</span> <code>ok:false</code></span>
-    <span class="oc-path__sep" aria-hidden="true">·</span>
-    <span class="oc-path__step"><span class="oc-system-label">Check</span> vs key</span>
-  </span>
+  <span class="oc-path__step">compact agent context</span>
+  <span class="oc-path__sep" aria-hidden="true">→</span>
+  <span class="oc-path__step">source information</span>
 </nav>
+
+Occam starts with a lightweight local read and can use a local browser when the
+page requires it. It then returns the useful content and metadata through one
+agent-facing contract. Focus, budgets, structured extraction, sessions, and
+verification are available when the task needs more control.
+
+[How Occam works](how-occam-works.md) · [Read one page](guides/read-a-page.md) ·
+[Choose a tool](choosing-a-tool.md)
+
+## Why Occam
 
 <div class="oc-pillars" markdown="1">
 
 <div class="oc-pillar" markdown="1">
-<div class="oc-pillar-label">Acquire</div>
-<p>HTTP → browser → optional managed acquisition — a gated ladder. Live extract by default.</p>
+<div class="oc-pillar-label">Cleaner context</div>
+<p>Useful page content instead of navigation, scripts, repeated UI, and irrelevant boilerplate.</p>
 </div>
 
 <div class="oc-pillar" markdown="1">
-<div class="oc-pillar-label">Shape</div>
-<p>Token-bounded, focused Markdown and structured fields sized for agent context windows.</p>
+<div class="oc-pillar-label">Predictable behavior</div>
+<p>A real result when Occam can read the source, and an explicit failure when it cannot.</p>
 </div>
 
 <div class="oc-pillar" markdown="1">
-<div class="oc-pillar-label">Check</div>
-<p>Honest <code>ok:false</code> when content is unknown, plus optional integrity artifacts vs a key.</p>
+<div class="oc-pillar-label">One reusable layer</div>
+<p>A consistent web-context layer across currently supported AI tools.</p>
 </div>
 
 </div>
 
-<p class="oc-meta-line"><strong>Version:</strong> 1.0.0-rc.2 · <strong>License:</strong> AGPL-3.0-or-later · <a href="https://contextforgeai.github.io/occam/">Docs site</a> · <a href="https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt"><code>llms.txt</code></a> · <a href="ask-ai/">Ask AI</a></p>
+## Trust and local control
 
-<p class="oc-meta-line">Core MCP tools are registry-defined; runtime <code>tools/list</code> varies by <strong>profile</strong> and <strong>opt-in</strong> flags — do not treat a fixed “15” as a health check by itself.</p>
+Normal page reading runs on your machine by default. Private and local
+destinations are denied unless the operator explicitly allows them. Connection
+changes require an explicit install/connect action, and failed host
+verification can be undone.
 
-## Start with a task
+Local-first is not an absolute “never cloud” claim. The origin website is a
+network source, and explicitly configured search, managed acquisition, proxy,
+or remote transport providers can change the boundary.
 
-<div class="oc-task-list" markdown="1">
+Optional Receipt v1 artifacts can check returned-byte integrity against a
+supplied key. They do not prove truth, identity, or authentic origin.
 
-[**Read one page**](guides/read-a-page.md) — `occam_transcode` · [Quick Start](quick-start.md)
+[Trust & Safety](trust-and-safety.md) ·
+[Installation safety](trust/installation-safety.md) ·
+[Receipts](receipts.md)
 
-[**Research several sources**](guides/research-multiple.md) — `occam_digest`
+## Get your first Occam result
 
-[**Search & discover**](guides/search-and-discover.md) — probe / map / search
+Install Occam, choose the path for your AI application or local runtime, and
+use one exact prompt against the same stable page used in the proof.
 
-[**Login / session walls**](guides/sessions.md) — [Sessions](sessions.md)
+<p class="oc-hero-actions">
+<a class="oc-btn oc-btn--primary" href="quick-start/">Get your first result</a>
+<a class="oc-btn oc-btn--secondary" href="examples/current-proof/">Inspect the proof</a>
+</p>
 
-[**Extract structured fields**](guides/structured-extraction.md) — playbooks · [Playbooks](playbooks.md)
+<p class="oc-meta-line"><strong>Version:</strong> 1.0.0-rc.2 · <strong>Status:</strong> release candidate · <strong>License:</strong> AGPL-3.0-or-later</p>
 
-[**Verify an artifact**](guides/verify-sources.md) — receipts · `occam_verify`
+## Explore deeper
 
-[**Understand Occam deeply**](handbook/index.md) — [What is Occam?](what-is-occam.md) · [How Occam works](how-occam-works.md)
-
-</div>
-
-More task → tool routes: [Choosing a tool](choosing-a-tool.md) · [Examples](examples/index.md) · [Recipes](recipes.md) · [Claims](guides/claims.md)
-
-## Explore the system
-
-<div class="oc-explore" markdown="1">
-
-**Acquisition** — [Acquisition](acquisition.md) · [Networking](networking.md) · [Sessions](sessions.md)
-
-**Materialization** — [Materialization](materialization.md) · [Concepts](concepts.md)
-
-**Discovery** — [Search & discover](guides/search-and-discover.md) · [Choosing a tool](choosing-a-tool.md)
-
-**Playbooks** — [Playbooks](playbooks.md) · [Datasets](datasets.md)
-
-**Trust** — [Trust & Safety](trust-and-safety.md) · [Receipts](receipts.md) · [Receipt verification](receipt_verification.md)
-
-**Operations** — [Install](install.md) · [Getting started](getting-started.md) · [Operators](operators.md) · [Connect](connect/index.md) · [MCP hosts](mcp-hosts.md)
-
-</div>
-
-## Deeper routes
-
-[Tool index](tools/index.md) · [Tools reference](tools-reference.md) · [Configuration](configuration.md) · [Transports](transports.md) · [Failure codes](failure-codes.md) · [MCP API](reference/mcp-api.md) · [Handbook](handbook/index.md) · [Experimental](experimental.md) · [Operators](operators.md) · [Troubleshooting](troubleshooting.md) · [FAQ](faq.md) · [Full documentation map](documentation-map.md)
-
-## Packages
-
-This RC ships via **GitHub Release** archives — **npm is not a GA 1.0 channel.**
-
-- [`@ff-occam/mcp`](https://github.com/ContextForgeAI/occam/tree/main/packages/occam-mcp) — launcher package (non-GA)  
-- [`@ff-occam/agent-sdk`](https://github.com/ContextForgeAI/occam/tree/main/packages/occam-agent-sdk) — TypeScript workflows  
-- [`@ff-occam/skill`](https://github.com/ContextForgeAI/occam/tree/main/packages/occam-skill) — portable agent skill  
+[Task router](choosing-a-tool.md) · [Examples](examples/index.md) ·
+[Recipes](recipes.md) · [Tools](tools/index.md) ·
+[Tools reference](tools-reference.md) · [MCP API](reference/mcp-api.md) ·
+[Handbook](handbook/index.md) · [Experimental](experimental.md) ·
+[Operators](operators.md) · [Troubleshooting](troubleshooting.md) ·
+[FAQ](faq.md) · [Full documentation map](documentation-map.md) ·
+[Ask AI](ask-ai.md) · [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt)
 
 ## All top-level pages
 
