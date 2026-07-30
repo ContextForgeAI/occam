@@ -3,20 +3,44 @@
 Install Occam, choose one workflow, and finish with a real page read. Do not
 stop at “installed.”
 
-The same first prompt is used throughout this guide:
+<div class="oc-first-prompt" markdown="1">
+
+**Exact first prompt** (same for every path):
 
 > Use Occam to read https://example.com/ and summarize the page. Include the
 > source URL.
 
+</div>
+
 ## Choose your path
 
-| Your setup | Start here |
-|------------|------------|
-| Supported AI application | [Path A](#path-a-supported-ai-application) |
-| Cursor | [Path B](#path-b-cursor) |
-| Hermes Agent | [Path C](#path-c-hermes-agent) |
-| Local Ollama model | [Path D — experimental](#path-d-local-ollama-model-experimental) |
-| No supported application detected | [Path E](#path-e-no-supported-application-detected) |
+<div class="oc-path-chooser" markdown="0">
+  <a class="oc-path-card" href="#path-b-cursor">
+    <span class="oc-path-card__name">Cursor</span>
+    <span class="oc-status oc-status--stable">Live-validated</span>
+    <span class="oc-path-card__hint">New Cursor chat after connect</span>
+  </a>
+  <a class="oc-path-card" href="#path-c-hermes-agent">
+    <span class="oc-path-card__name">Hermes Agent</span>
+    <span class="oc-status oc-status--stable">Live-validated</span>
+    <span class="oc-path-card__hint">Only if Hermes is genuinely installed</span>
+  </a>
+  <a class="oc-path-card" href="#path-a-supported-ai-application">
+    <span class="oc-path-card__name">Supported AI application</span>
+    <span class="oc-status oc-status--limited">Tiers apply</span>
+    <span class="oc-path-card__hint">Another MCP-capable app</span>
+  </a>
+  <a class="oc-path-card oc-path-card--experimental" href="#path-d-local-ollama-model-experimental">
+    <span class="oc-path-card__name">Local Ollama model</span>
+    <span class="oc-status oc-status--experimental">Experimental</span>
+    <span class="oc-path-card__hint">Type in <code>occam chat</code></span>
+  </a>
+  <a class="oc-path-card" href="#path-e-no-supported-application-detected">
+    <span class="oc-path-card__name">No supported app detected</span>
+    <span class="oc-status oc-status--advanced">Install or integrate</span>
+    <span class="oc-path-card__hint">Connect later · snippet · or chat</span>
+  </a>
+</div>
 
 Occam normally appears as a tool **inside your AI application**. The `occam`
 terminal commands install, connect, check, and diagnose that tool. The
@@ -46,13 +70,13 @@ asks which one to configure.
 
 Read the final status before continuing:
 
-| Status | Meaning |
-|--------|---------|
-| **Connected and ready** | The host confirmed the connection |
-| **Needs restart** | Configuration is present; restart or reload the named application |
-| **Not connected** | The attempt failed verification or was undone; Occam is not available in that application |
-| **Needs your action** | Complete the named trust, permission, conflict, or paste step |
-| **No apps ready** | Occam is installed, but no AI application is connected yet |
+<div class="oc-status-grid" markdown="0">
+  <div class="oc-status-row"><strong>Connected and ready</strong><span>The host confirmed the connection</span></div>
+  <div class="oc-status-row"><strong>Needs restart</strong><span>Configuration is present; restart or reload the named application</span></div>
+  <div class="oc-status-row"><strong>Not connected</strong><span>The attempt failed verification or was undone; Occam is not available in that application</span></div>
+  <div class="oc-status-row"><strong>Needs your action</strong><span>Complete the named trust, permission, conflict, or paste step</span></div>
+  <div class="oc-status-row"><strong>No apps ready</strong><span>Occam is installed, but no AI application is connected yet</span></div>
+</div>
 
 `npm` / `npx` is not the supported 1.0 release install path. See
 [Install](install.md) for the full contract.
@@ -77,15 +101,29 @@ host; see [MCP hosts](mcp-hosts.md).
     > Use Occam to read https://example.com/ and summarize the page. Include
     > the source URL.
 
-| Question | Answer |
-|----------|--------|
-| **Where do I type?** | In a new conversation in the connected AI application. |
-| **What should happen?** | The application asks an Occam page-reading tool to read the live URL, then summarizes the returned page content. |
-| **How do I know Occam was used?** | If the application shows tool activity, look for an `occam_*` call, usually `occam_transcode`. The result should identify `https://example.com/` as its source. Do not rely on a plausible answer alone. |
-| **What if it was not used?** | Run `occam status`, then `occam smoke`. If the local host is healthy, run `occam connect` again and follow its host-specific instruction. |
+<div class="oc-qa" markdown="0">
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">Where do I type?</div>
+    <div class="oc-qa__a">In a new conversation in the connected AI application.</div>
+  </div>
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">What should happen?</div>
+    <div class="oc-qa__a">The application asks an Occam page-reading tool to read the live URL, then summarizes the returned page content.</div>
+  </div>
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">How do I know Occam was used?</div>
+    <div class="oc-qa__a">If the application shows tool activity, look for an <code>occam_*</code> call, usually <code>occam_transcode</code>. The result should identify <code>https://example.com/</code> as its source. Do not rely on a plausible answer alone.</div>
+  </div>
+  <div class="oc-qa__item oc-qa__item--recover">
+    <div class="oc-qa__q">What if it was not used?</div>
+    <div class="oc-qa__a">Run <code>occam status</code>, then <code>occam smoke</code>. If the local host is healthy, run <code>occam connect</code> again and follow its host-specific instruction.</div>
+  </div>
+</div>
 
-Success is a real tool call and live page content, not the model explaining what
-Occam is or running `which occam` in a shell.
+!!! tip "Success signal"
+
+    A real tool call and live page content — not the model explaining what
+    Occam is or running `which occam` in a shell.
 
 ## Path B: Cursor
 
@@ -106,12 +144,24 @@ make an already-open chat reload its tools.
     > Use Occam to read https://example.com/ and summarize the page. Include
     > the source URL.
 
-| Question | Answer |
-|----------|--------|
-| **Where do I type?** | In a new Cursor chat after the requested restart or reload. |
-| **What should happen?** | Cursor calls an Occam tool and uses the returned `Example Domain` content. |
-| **How do I know Occam was used?** | Inspect the tool activity Cursor exposes for that chat and look for an `occam_*` tool. UI labels can change, so this guide does not depend on a specific button name. |
-| **What if tools are absent?** | Run `occam smoke`. If it passes, run `occam connect --only cursor`, follow the printed restart/reload step, and create another new chat. |
+<div class="oc-qa" markdown="0">
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">Where do I type?</div>
+    <div class="oc-qa__a">In a new Cursor chat after the requested restart or reload.</div>
+  </div>
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">What should happen?</div>
+    <div class="oc-qa__a">Cursor calls an Occam tool and uses the returned <code>Example Domain</code> content.</div>
+  </div>
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">How do I know Occam was used?</div>
+    <div class="oc-qa__a">Inspect the tool activity Cursor exposes for that chat and look for an <code>occam_*</code> tool. UI labels can change, so this guide does not depend on a specific button name.</div>
+  </div>
+  <div class="oc-qa__item oc-qa__item--recover">
+    <div class="oc-qa__q">What if tools are absent?</div>
+    <div class="oc-qa__a">Run <code>occam smoke</code>. If it passes, run <code>occam connect --only cursor</code>, follow the printed restart/reload step, and create another new chat.</div>
+  </div>
+</div>
 
 ## Path C: Hermes Agent
 
@@ -133,13 +183,28 @@ enough, and configuration alone does not prove that Hermes loaded Occam.
     > Use Occam to read https://example.com/ and summarize the page. Include
     > the source URL.
 
-| Question | Answer |
-|----------|--------|
-| **Where do I type?** | In a new Hermes conversation, not in the terminal used for `occam connect`. |
-| **What should happen?** | Hermes calls the local Occam MCP server and summarizes the live page. |
-| **How do I know Occam was used?** | Hermes should expose or call Occam tools. A shell lookup such as `which occam` is not an Occam web read. |
-| **What does Not connected mean?** | Verification did not establish readiness. Occam may have undone the attempted registration. Do not test Hermes as if Occam were available. |
-| **What should I retry?** | Run `occam doctor`, then `occam connect --only hermes`. Follow the resulting diagnostic or use another validated path. |
+<div class="oc-qa" markdown="0">
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">Where do I type?</div>
+    <div class="oc-qa__a">In a new Hermes conversation, not in the terminal used for <code>occam connect</code>.</div>
+  </div>
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">What should happen?</div>
+    <div class="oc-qa__a">Hermes calls the local Occam MCP server and summarizes the live page.</div>
+  </div>
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">How do I know Occam was used?</div>
+    <div class="oc-qa__a">Hermes should expose or call Occam tools. A shell lookup such as <code>which occam</code> is not an Occam web read.</div>
+  </div>
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">What does Not connected mean?</div>
+    <div class="oc-qa__a">Verification did not establish readiness. Occam may have undone the attempted registration. Do not test Hermes as if Occam were available.</div>
+  </div>
+  <div class="oc-qa__item oc-qa__item--recover">
+    <div class="oc-qa__q">What should I retry?</div>
+    <div class="oc-qa__a">Run <code>occam doctor</code>, then <code>occam connect --only hermes</code>. Follow the resulting diagnostic or use another validated path.</div>
+  </div>
+</div>
 
 ## Path D: local Ollama model (experimental)
 
@@ -162,12 +227,24 @@ Ollama is a model runtime, not an MCP host.
 
 6. Type `/exit` to leave the chat.
 
-| Question | Answer |
-|----------|--------|
-| **Where do I type?** | In the terminal opened by `occam chat`. |
-| **What should happen?** | The local model asks Occam to read the URL, and the terminal shows a reading/tool status before the answer. |
-| **How do I know Occam was used?** | The answer follows an Occam tool call and uses the live `Example Domain` content. |
-| **What if it was not used?** | Read the terminal message. Start Ollama if it is unreachable; install/select a tool-capable model if no compatible model is available; run `occam doctor` if the Occam tools are unavailable. |
+<div class="oc-qa" markdown="0">
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">Where do I type?</div>
+    <div class="oc-qa__a">In the terminal opened by <code>occam chat</code>.</div>
+  </div>
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">What should happen?</div>
+    <div class="oc-qa__a">The local model asks Occam to read the URL, and the terminal shows a reading/tool status before the answer.</div>
+  </div>
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">How do I know Occam was used?</div>
+    <div class="oc-qa__a">The answer follows an Occam tool call and uses the live <code>Example Domain</code> content.</div>
+  </div>
+  <div class="oc-qa__item oc-qa__item--recover">
+    <div class="oc-qa__q">What if it was not used?</div>
+    <div class="oc-qa__a">Read the terminal message. Start Ollama if it is unreachable; install/select a tool-capable model if no compatible model is available; run <code>occam doctor</code> if the Occam tools are unavailable.</div>
+  </div>
+</div>
 
 This path requires no Ollama login and does not use Ollama Web Search. Occam
 calls the documented local Ollama API and uses its own acquisition stack. It is
@@ -201,12 +278,24 @@ Choose one:
     Then use the [transport](transports.md) and
     [MCP API](reference/mcp-api.md) documentation.
 
-| Question | Answer |
-|----------|--------|
-| **Where do I type the first prompt?** | In the supported application you connect later, the `occam chat` terminal, or your custom MCP client. |
-| **What exactly do I type?** | Use the same `https://example.com/` first prompt at the top of this guide. |
-| **What should happen?** | The chosen host completes a real Occam tool call and returns source-linked page content. |
-| **What if it does not?** | Run `occam status`, `occam doctor`, and `occam smoke`; then connect or configure the chosen host. |
+<div class="oc-qa" markdown="0">
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">Where do I type the first prompt?</div>
+    <div class="oc-qa__a">In the supported application you connect later, the <code>occam chat</code> terminal, or your custom MCP client.</div>
+  </div>
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">What exactly do I type?</div>
+    <div class="oc-qa__a">Use the same <code>https://example.com/</code> first prompt at the top of this guide.</div>
+  </div>
+  <div class="oc-qa__item">
+    <div class="oc-qa__q">What should happen?</div>
+    <div class="oc-qa__a">The chosen host completes a real Occam tool call and returns source-linked page content.</div>
+  </div>
+  <div class="oc-qa__item oc-qa__item--recover">
+    <div class="oc-qa__q">What if it does not?</div>
+    <div class="oc-qa__a">Run <code>occam status</code>, <code>occam doctor</code>, and <code>occam smoke</code>; then connect or configure the chosen host.</div>
+  </div>
+</div>
 
 ## Diagnostics
 
@@ -232,20 +321,22 @@ More help: [Troubleshooting](troubleshooting.md).
 
 ## You have your first result when
 
-- your selected application or chat terminal made a real Occam tool call;
-- the result contains the live `Example Domain` page content and source URL; or
-- Occam returned `ok: false` and the application handled the page as unknown
-  instead of inventing content.
+!!! success "First-result checklist"
+
+    - your selected application or chat terminal made a real Occam tool call;
+    - the result contains the live `Example Domain` page content and source URL; or
+    - Occam returned `ok: false` and the application handled the page as unknown
+      instead of inventing content.
 
 The reproducible success and controlled failure are available in the
 [current proof fixture](examples/current-proof/README.md).
 
 After first success:
 
-| Goal | Next guide |
-|------|------------|
-| Read a difficult or JavaScript-heavy page | [Read a page](guides/read-a-page.md) |
-| Use authenticated access | [Sessions](guides/sessions.md) |
-| Research several URLs | [Research multiple sources](guides/research-multiple.md) |
-| Check an integrity receipt | [Verify a source](guides/verify-sources.md) |
-| Understand the architecture | [How Occam works](how-occam-works.md) |
+<div class="oc-next-grid" markdown="0">
+  <a class="oc-next" href="guides/read-a-page/"><strong>Read a difficult page</strong><span>JavaScript-heavy sources</span></a>
+  <a class="oc-next" href="guides/sessions/"><strong>Authenticated access</strong><span>Sessions / login walls</span></a>
+  <a class="oc-next" href="guides/research-multiple/"><strong>Research several URLs</strong><span>Multi-source digest</span></a>
+  <a class="oc-next" href="guides/verify-sources/"><strong>Check an integrity receipt</strong><span>Verify a source</span></a>
+  <a class="oc-next" href="how-occam-works/"><strong>Understand the architecture</strong><span>How Occam works</span></a>
+</div>
