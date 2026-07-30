@@ -146,7 +146,8 @@ export function evaluateReadyState(state) {
       hostBlocked: false,
       ready: false,
       status: "Configured — host discovery incomplete",
-      message: `Config written (${levelLabel(state.hostLevel)}); host discovery not confirmed`,
+      message:
+        "Config was written, but Occam could not confirm the app loaded the connection yet",
       occamLevel: state.occamLevel,
       hostLevel: state.hostLevel,
     };

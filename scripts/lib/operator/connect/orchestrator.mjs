@@ -412,18 +412,22 @@ export async function runConnect(opts) {
         }
         row.rollback = rollbackResult;
 
-        // Keep original verify failure primary; surface rollback separately.
+        // Keep verify failure primary; surface rollback with human product language.
         readyState.ready = false;
+        readyState.rolledBack = rollbackResult.ok === true;
+        readyState.rollbackKind = rollbackResult.kind;
         if (!readyState.status || readyState.status === "Ready") {
-          readyState.status = "Configured — host discovery incomplete";
+          readyState.status = "Not connected";
         }
-        const verifyMsg = readyState.message || hostVerify.message || "verify failed";
         if (rollbackResult.ok) {
-          readyState.message = `${verifyMsg}; rolled back (${rollbackResult.kind})`;
+          readyState.message =
+            `${adapter.name} was detected, but Occam could not confirm that ${adapter.name} ` +
+            `loaded the connection. The attempted change was undone. ` +
+            `Occam is not available in ${adapter.name} yet.`;
         } else {
-          readyState.message = `${verifyMsg}; rollback ${rollbackResult.kind} failed: ${
-            rollbackResult.error || "unknown"
-          }`;
+          readyState.message =
+            `${adapter.name} could not be verified, and Occam could not fully undo the change ` +
+            `(${rollbackResult.error || "unknown"}). Do not assume Occam works there yet.`;
           readyState.rollbackFailed = true;
         }
       }

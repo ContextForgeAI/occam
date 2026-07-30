@@ -77,7 +77,10 @@ export {
 export {
   createOpenClawAdapter,
   openclawConfigPath,
+  openclawHomeDir,
   readOpenClawServer,
+  resolveOpenClawInvoker,
+  describeOpenClawResidue,
 } from "./adapters/openclaw.mjs";
 export {
   createClaudeCodeAdapter,

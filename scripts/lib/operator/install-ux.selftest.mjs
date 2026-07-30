@@ -249,10 +249,10 @@ function testQuietTranscriptFixtureChecklist() {
     "Ready.",
     "",
     'Try asking your agent:',
-    '"Read https://developer.mozilla.org using Occam"',
+    '"Use Occam to read https://example.com"',
     "",
-    "Documentation:",
-    "https://contextforgeai.github.io/occam/",
+    "First success guide:",
+    "https://contextforgeai.github.io/occam/quick-start/",
   ].join("\n");
   assertQuietTranscript(good);
   assert.equal(findForbiddenDefaultOutput(good).length, 0);
