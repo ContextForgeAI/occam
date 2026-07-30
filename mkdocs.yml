@@ -109,10 +109,17 @@ nav:
   - Getting Started:
       - What is Occam?: what-is-occam.md
       - Install: install.md
-      - Connect your AI: connect/index.md
       - Your first web read: getting-started.md
       - How Occam works: how-occam-works.md
       - What happened after install?: connect/after-install.md
+      - Troubleshooting: troubleshooting.md
+  - Use with your AI app:
+      - Overview: connect/index.md
+      - Supported hosts: mcp-hosts.md
+      - Automatic connection: connect/automatic.md
+      - Explicit --only hosts: connect/explicit-only.md
+      - Manual / generic MCP: connect/manual.md
+      - Connection troubleshooting: connect/troubleshooting.md
   - Guides:
       - Task router: choosing-a-tool.md
       - Read a page: guides/read-a-page.md
@@ -124,6 +131,7 @@ nav:
       - Sessions / login walls: guides/sessions.md
   - Examples:
       - Overview: examples/index.md
+      - Current proof: examples/current-proof/README.md
       - Read one page: examples/read-one-page.md
       - Difficult JS page: examples/difficult-js-page.md
       - Research several URLs: examples/research-several.md
@@ -138,12 +146,6 @@ nav:
       - "EXPERIMENTAL: watch": examples/watch-experimental.md
       - "EXPERIMENTAL: crosscheck": examples/crosscheck-experimental.md
       - More recipes: recipes.md
-  - Connect:
-      - Supported hosts: mcp-hosts.md
-      - Automatic connection: connect/automatic.md
-      - Explicit --only hosts: connect/explicit-only.md
-      - Manual / generic MCP: connect/manual.md
-      - Connection troubleshooting: connect/troubleshooting.md
   - Trust & Safety:
       - Overview: trust-and-safety.md
       - Local-first model: trust/local-first.md
