@@ -357,16 +357,30 @@ body.oc-page-reference .md-typeset pre {
 }
 
 body.oc-page-home .md-typeset {
-  --oc-content-measure: 40rem;
+  --oc-content-measure: 48rem;
 }
 
-body.oc-page-home .md-sidebar--secondary {
-  display: none;
-}
-
+/* Homepage product landing width — sidebars suppressed via page frontmatter */
 @media screen and (min-width: 76.25em) {
   body.oc-page-home .md-main__inner {
+    margin-left: 0;
     margin-right: 0;
+  }
+
+  body.oc-page-home .md-content {
+    margin: 0 auto;
+    max-width: min(100%, 56rem);
+  }
+
+  body.oc-page-home .md-content__inner {
+    margin: 0 1.25rem;
+  }
+
+  /* Material hides the drawer toggle on desktop; restore it when nav is page-hidden */
+  body.oc-page-home label.md-header__button[for="__drawer"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   body.oc-page-wide .md-grid,
@@ -380,6 +394,27 @@ body.oc-page-home .md-sidebar--secondary {
   body.oc-page-reference .md-sidebar--secondary {
     width: 10.5rem;
   }
+}
+
+/* Homepage: page-hidden nav must still open in the header drawer at any width */
+body.oc-page-home #__drawer:checked ~ .md-container .md-sidebar--primary[hidden] {
+  display: block !important;
+  visibility: visible !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 12.75rem;
+  z-index: 4;
+  transform: none;
+  background: var(--oc-bg-elevated);
+  box-shadow: 0 0 0 1px var(--oc-border), 8px 0 24px color-mix(in srgb, var(--oc-text) 12%, transparent);
+}
+
+body.oc-page-home #__drawer:checked ~ .md-container .md-sidebar--primary[hidden] .md-sidebar__scrollwrap {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
 }
 
 .md-typeset h1 {
@@ -658,7 +693,7 @@ body.oc-page-home .md-sidebar--secondary {
   font-weight: 650;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  line-height: 1;
+  line-height: 1.2;
   padding: 0.28em 0.45em;
   border: 1px solid var(--oc-border-strong);
   border-radius: 2px;
@@ -666,6 +701,16 @@ body.oc-page-home .md-sidebar--secondary {
   background: var(--oc-bg-elevated);
   vertical-align: 0.05em;
   white-space: nowrap;
+}
+
+.oc-status--friendly,
+.md-typeset .oc-status--friendly {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  white-space: normal;
+  max-width: 100%;
 }
 
 .oc-status--core,
@@ -1560,23 +1605,70 @@ body.oc-page-handbook .md-typeset h2[id^="check"] {
   max-width: var(--oc-content-measure, 42rem);
 }
 
-/* ========== Marketing-first Phase 3 ========== */
+/* ========== Marketing-first Phase 3 / 3.1 ========== */
 
 body.oc-page-home .md-typeset {
-  --oc-content-measure: 44rem;
+  --oc-content-measure: 48rem;
 }
 
 body.oc-page-home .md-typeset > h1 {
   max-width: 22ch;
 }
 
-/* Hero visual: noise → compact */
+body.oc-page-home .oc-hero,
+body.oc-page-home .oc-compare,
+body.oc-page-home .oc-measure-note,
+body.oc-page-home .oc-result-pair,
+body.oc-page-home .oc-workflows,
+body.oc-page-home .oc-flow,
+body.oc-page-home .oc-trust,
+body.oc-page-home .oc-pillars {
+  max-width: min(100%, 48rem);
+}
+
+.oc-brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 0.85rem;
+  color: var(--oc-text-secondary);
+}
+
+.oc-brand-mark__glyph {
+  font-size: 0.95rem;
+  line-height: 1;
+  color: var(--oc-text);
+}
+
+.oc-brand-mark__rule {
+  display: inline-block;
+  width: 1.1rem;
+  height: 1px;
+  background: var(--oc-border-strong);
+}
+
+.oc-brand-mark__letters {
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.22em;
+  color: var(--oc-text);
+}
+
+.oc-hero-audience {
+  margin: -0.65rem 0 1.35rem !important;
+  max-width: 34rem !important;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--oc-text-secondary);
+}
+
+/* Hero visual: conceptual noise → compact */
 .oc-hero-visual {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   gap: 0.65rem;
   align-items: stretch;
-  max-width: min(100%, 36rem);
+  max-width: min(100%, 40rem);
   margin: 0 0 0.25rem;
 }
 
@@ -1604,7 +1696,18 @@ body.oc-page-home .md-typeset > h1 {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--oc-text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.oc-hero-visual__concept {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--oc-text-secondary);
   margin-bottom: 0.45rem;
+  opacity: 0.9;
 }
 
 .oc-hero-visual__noise {
@@ -1802,6 +1905,43 @@ body.oc-page-home .md-typeset > h1 {
   word-break: break-all;
 }
 
+.md-typeset details.oc-proof-disclosure {
+  margin: 0.55rem 0 0;
+  border: none !important;
+  border-left: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0;
+}
+
+.md-typeset details.oc-proof-disclosure > summary {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.15rem 0 0.15rem 0 !important;
+  padding-left: 0 !important;
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--oc-accent) !important;
+  cursor: pointer;
+}
+
+.md-typeset details.oc-proof-disclosure > summary::before {
+  display: none !important;
+}
+
+.md-typeset details.oc-proof-disclosure[open] > summary {
+  margin-bottom: 0.45rem;
+}
+
+.md-typeset details.oc-proof-disclosure p,
+.md-typeset details.oc-proof-disclosure {
+  font-size: 0.84rem;
+  color: var(--oc-text-secondary);
+}
+
 /* Success vs explicit unknown */
 .oc-result-pair {
   display: grid;
@@ -1968,6 +2108,60 @@ body.oc-page-home .md-typeset > h1 {
   font-size: 0.78em;
 }
 
+.oc-workflow__cta,
+.oc-path-card__cta {
+  display: block;
+  margin-top: auto;
+  padding-top: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--oc-accent);
+  letter-spacing: 0.01em;
+}
+
+.oc-workflow:hover .oc-workflow__cta,
+.oc-workflow:focus-visible .oc-workflow__cta,
+.oc-path-card:hover .oc-path-card__cta,
+.oc-path-card:focus-visible .oc-path-card__cta {
+  color: color-mix(in srgb, var(--oc-accent) 75%, var(--oc-text));
+}
+
+.oc-recovery {
+  max-width: min(100%, 46rem);
+  margin: 0 0 1.5rem;
+  padding: 0.95rem 1rem;
+  border: 1px dashed var(--oc-border-strong);
+  border-radius: var(--oc-radius);
+  background: color-mix(in srgb, var(--oc-bg-subtle) 70%, var(--oc-bg-elevated));
+}
+
+.oc-recovery__label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--oc-text);
+  margin-bottom: 0.3rem;
+}
+
+.oc-recovery__text {
+  margin: 0 0 0.55rem !important;
+  max-width: none !important;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--oc-text-secondary);
+}
+
+.oc-recovery__cta {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--oc-accent);
+  text-decoration: none !important;
+}
+
+.oc-recovery__cta:hover,
+.oc-recovery__cta:focus-visible {
+  color: var(--oc-text);
+}
+
 /* How it works flow */
 .oc-flow {
   display: flex;
@@ -2107,7 +2301,7 @@ body.oc-page-home .oc-sitemap-quiet + p {
   background: var(--oc-bg-elevated);
   text-decoration: none !important;
   color: inherit !important;
-  min-height: 5.5rem;
+  min-height: 0;
   transition: border-color 0.12s ease;
 }
 
@@ -2257,9 +2451,31 @@ body.oc-page-prose .oc-first-prompt {
   }
 
   .oc-hero-visual__arrow {
-    transform: rotate(90deg);
-    justify-self: center;
-    padding: 0.1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    transform: none;
+    padding: 0.15rem 0;
+    font-size: 0.72rem;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--oc-text-secondary);
+  }
+
+  .oc-hero-visual__arrow::before {
+    content: "then";
+    font-family: var(--oc-font-sans);
+  }
+
+  /* Hide the glyph arrow on stacked mobile; "then" label is clearer */
+  .oc-hero-visual__arrow {
+    font-size: 0;
+  }
+
+  .oc-hero-visual__arrow::before {
+    font-size: 0.72rem;
   }
 
   .oc-flow__sep {
@@ -2279,7 +2495,38 @@ body.oc-page-prose .oc-first-prompt {
 @media screen and (max-width: 44.984375em) {
   body.oc-page-home .md-typeset > h1 {
     max-width: none;
-    font-size: clamp(1.7rem, 8vw, 2.2rem);
+    font-size: clamp(1.85rem, 7.2vw, 2.25rem);
+    line-height: 1.18;
+    letter-spacing: -0.03em;
+    margin: 0.15rem 0 0.85rem;
+  }
+
+  body.oc-page-home .oc-wordmark {
+    letter-spacing: 0.1em;
+    margin-bottom: 0.55rem;
+  }
+
+  body.oc-page-home .oc-brand-mark {
+    margin-bottom: 0.65rem;
+  }
+
+  body.oc-page-home .oc-hero--rest {
+    padding-bottom: 1.5rem;
+  }
+
+  body.oc-page-home .oc-hero-lead {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 0.85rem;
+  }
+
+  body.oc-page-home .oc-hero-audience {
+    margin-bottom: 1.15rem !important;
+  }
+
+  body.oc-page-home .oc-hero-actions {
+    gap: 0.55rem;
+    margin-bottom: 1.35rem;
   }
 
   .oc-workflows,
@@ -2289,6 +2536,11 @@ body.oc-page-prose .oc-first-prompt {
     grid-template-columns: 1fr;
   }
 
+  .oc-workflow,
+  .oc-path-card {
+    padding: 0.9rem 0.95rem;
+  }
+
   .oc-compare__meta li span {
     min-width: 100%;
   }
@@ -2296,6 +2548,62 @@ body.oc-page-prose .oc-first-prompt {
   .oc-qa__item--recover {
     margin-left: 0;
     margin-right: 0;
+  }
+}
+
+/* Kill mobile drawer residue: no peeking borders / active inset strips */
+@media screen and (max-width: 76.1875em) {
+  .md-sidebar--primary,
+  .md-sidebar--secondary {
+    box-shadow: none !important;
+  }
+
+  .md-sidebar--primary .md-sidebar__scrollwrap,
+  .md-sidebar--secondary .md-sidebar__scrollwrap {
+    box-shadow: none;
+    border: none;
+  }
+
+  .md-nav--primary .md-nav--secondary {
+    border-left: none;
+    margin-left: 0;
+    padding-left: 0.35rem;
+  }
+
+  .md-nav__link--active,
+  .md-nav--primary .md-nav__item--active > .md-nav__link {
+    box-shadow: none;
+    border-left: 2px solid var(--oc-accent);
+    padding-left: calc(0.6rem - 2px);
+  }
+
+  /* Closed primary drawer must not paint into the content column */
+  #__drawer:not(:checked) ~ .md-container .md-sidebar--primary {
+    visibility: hidden;
+  }
+
+  #__drawer:checked ~ .md-container .md-sidebar--primary {
+    visibility: visible;
+  }
+
+  /*
+   * Closed mobile search was painting a ~32px tall strip down the left edge
+   * (.md-search-result__meta background + result list borders).
+   */
+  #__search:not(:checked) ~ .md-header .md-search__output,
+  #__search:not(:checked) ~ .md-header .md-search__scrollwrap,
+  #__search:not(:checked) ~ .md-header .md-search-result,
+  #__search:not(:checked) ~ .md-header .md-search-result__meta {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .md-main__inner {
+    margin-left: 0 !important;
   }
 }
 
