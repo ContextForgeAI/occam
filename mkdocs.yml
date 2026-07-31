@@ -37,7 +37,6 @@ theme:
         name: Dark mode
   features:
     - navigation.sections
-    - navigation.expand
     - navigation.indexes
     - navigation.top
     - navigation.footer
@@ -110,7 +109,6 @@ nav:
       - What is Occam?: what-is-occam.md
       - Install: install.md
       - Your first web read: getting-started.md
-      - How Occam works: how-occam-works.md
       - What happened after install?: connect/after-install.md
       - Troubleshooting: troubleshooting.md
   - Use with your AI app:
@@ -121,7 +119,7 @@ nav:
       - Manual / generic MCP: connect/manual.md
       - Connection troubleshooting: connect/troubleshooting.md
   - Guides:
-      - Task router: choosing-a-tool.md
+      - Task routing: choosing-a-tool.md
       - Read a page: guides/read-a-page.md
       - Research several sources: guides/research-multiple.md
       - Search and discover: guides/search-and-discover.md
@@ -143,89 +141,100 @@ nav:
       - Session profile: examples/session-profile.md
       - Proxy use: examples/proxy-use.md
       - Signed dataset export: examples/dataset-export.md
-      - "EXPERIMENTAL: watch": examples/watch-experimental.md
-      - "EXPERIMENTAL: crosscheck": examples/crosscheck-experimental.md
+      - "Experimental: watch": examples/watch-experimental.md
+      - "Experimental: crosscheck": examples/crosscheck-experimental.md
       - More recipes: recipes.md
-  - Trust & Safety:
-      - Overview: trust-and-safety.md
-      - Local-first model: trust/local-first.md
-      - Honest failures: trust/honest-failures.md
-      - Receipts: receipts.md
-      - Receipt verification: receipt_verification.md
-      - Playbooks: playbooks.md
-      - Datasets: datasets.md
-      - Installation safety: trust/installation-safety.md
-      - Security policy: trust/security-policy.md
   - Capabilities:
-      - Acquisition: acquisition.md
-      - Materialization: materialization.md
-      - Networking / proxies: networking.md
-      - Sessions: sessions.md
+      - Overview: capabilities/index.md
+      - Web access:
+          - Acquisition: acquisition.md
+          - Networking and proxies: networking.md
+      - Knowledge processing:
+          - Materialization: materialization.md
+          - Playbooks: playbooks.md
+      - Runtime:
+          - Sessions: sessions.md
+          - Operators: operators.md
       - Experimental: experimental.md
-      - Operators: operators.md
   - Reference:
-      - Documentation map: documentation-map.md
+      - Reference overview: documentation-map.md
       - Concepts: concepts.md
+      - Client and diagnostics:
+          - Client capabilities: tools/occam_client_capabilities.md
+          - Probe: tools/occam_probe.md
+      - Read and transform:
+          - Transcode: tools/occam_transcode.md
+          - Digest: tools/occam_digest.md
+          - Extract knowledge: tools/occam_extract_knowledge.md
+      - Search and discovery:
+          - Search: tools/occam_search.md
+          - Map: tools/occam_map.md
+      - Playbooks:
+          - Resolve playbook: tools/occam_playbook_resolve.md
+          - Lint playbook: tools/occam_playbook_lint.md
+          - Heal playbook: tools/occam_playbook_heal.md
+          - Save playbook: tools/occam_playbook_save.md
+      - Validation and receipts:
+          - Verify: tools/occam_verify.md
+          - Claim check: tools/occam_claim_check.md
+          - Attest: tools/occam_attest.md
+          - Dataset export: tools/occam_dataset_export.md
+      - Experimental tools:
+          - Batch: tools/occam_batch.md
+          - Watch: tools/occam_watch.md
+          - Crosscheck: tools/occam_crosscheck.md
+          - Failure atlas: tools/occam_failure_atlas.md
       - Tool index: tools/index.md
-      - occam_client_capabilities: tools/occam_client_capabilities.md
-      - occam_transcode: tools/occam_transcode.md
-      - occam_probe: tools/occam_probe.md
-      - occam_digest: tools/occam_digest.md
-      - occam_playbook_resolve: tools/occam_playbook_resolve.md
-      - occam_map: tools/occam_map.md
-      - occam_playbook_heal: tools/occam_playbook_heal.md
-      - occam_playbook_save: tools/occam_playbook_save.md
-      - occam_extract_knowledge: tools/occam_extract_knowledge.md
-      - occam_search: tools/occam_search.md
-      - occam_verify: tools/occam_verify.md
-      - occam_claim_check: tools/occam_claim_check.md
-      - occam_attest: tools/occam_attest.md
-      - occam_playbook_lint: tools/occam_playbook_lint.md
-      - occam_dataset_export: tools/occam_dataset_export.md
-      - "Opt-in: batch": tools/occam_batch.md
-      - "Opt-in: watch": tools/occam_watch.md
-      - "Opt-in: crosscheck": tools/occam_crosscheck.md
-      - "Opt-in: failure atlas": tools/occam_failure_atlas.md
-      - Tool reference: tools-reference.md
+      - Compact tool reference: tools-reference.md
       - Failure codes: failure-codes.md
       - Configuration: configuration.md
       - Transports: transports.md
       - MCP API: reference/mcp-api.md
       - FAQ: faq.md
-  - Handbook:
-      - Overview: handbook/index.md
-      - 01 What Occam is: handbook/01-what-occam-is.md
-      - 02 Honesty contract: handbook/02-honesty-contract.md
-      - 03 Standing up an install: handbook/03-standing-up-an-install.md
-      - 04 Request path: handbook/04-request-path.md
-      - 05 Acquisition ladder: handbook/05-acquisition-ladder.md
-      - 06 When acquisition is hard: handbook/06-when-acquisition-is-hard.md
-      - 07 Materialization: handbook/07-materialization-token-contract.md
-      - 08 Structured output: handbook/08-structured-differential-output.md
-      - 09 Discovery: handbook/09-discovery-before-acquisition.md
-      - 10 Digest: handbook/10-many-sources-digest.md
-      - 11 Playbook resolution: handbook/11-playbooks-resolution.md
-      - 12 Authoring playbooks: handbook/12-authoring-playbook.md
-      - 13 Typed extraction: handbook/13-typed-field-extraction.md
-      - 14 What a receipt proves: handbook/14-what-a-receipt-proves.md
-      - 15 Verifying: handbook/15-verifying.md
-      - 16 Evidence for claims: handbook/16-evidence-for-claims.md
-      - 17 Opt-in surfaces: handbook/17-opt-in-surfaces.md
-      - 18 Exposure: handbook/18-exposure.md
-      - 19 Operating an install: handbook/19-operating-an-install.md
-      - 20 Automatic behaviors: handbook/20-automatic-behaviors.md
-      - 21 State and footprint: handbook/21-state-and-footprint.md
-      - 22 Configuration: handbook/22-configuration.md
-      - 23 Security posture: handbook/23-security-posture.md
-      - 24 Composing tools: handbook/24-composing-tools.md
-      - 25 Diagnosing bad results: handbook/25-diagnosing-bad-results.md
-      - 26 Architecture internals: handbook/26-architecture-internals.md
-      - 27 Checking this book: handbook/27-checking-this-book.md
-      - Status labels: handbook/appendix-status-labels.md
-  - Operators: operators.md
+  - Trust and security:
+      - Overview: trust-and-safety.md
+      - Local-first model: trust/local-first.md
+      - Honest failures: trust/honest-failures.md
+      - Security policy: trust/security-policy.md
+      - Installation safety: trust/installation-safety.md
+      - Receipts: receipts.md
+      - Receipt verification: receipt_verification.md
+      - Datasets: datasets.md
+  - Architecture:
+      - Overview: how-occam-works.md
+      - Semantic contract: architecture/semantic-contract.md
+      - Handbook:
+          - Overview: handbook/index.md
+          - 01 What Occam is: handbook/01-what-occam-is.md
+          - 02 Honesty contract: handbook/02-honesty-contract.md
+          - 03 Standing up an install: handbook/03-standing-up-an-install.md
+          - 04 Request path: handbook/04-request-path.md
+          - 05 Acquisition ladder: handbook/05-acquisition-ladder.md
+          - 06 When acquisition is hard: handbook/06-when-acquisition-is-hard.md
+          - 07 Materialization: handbook/07-materialization-token-contract.md
+          - 08 Structured output: handbook/08-structured-differential-output.md
+          - 09 Discovery: handbook/09-discovery-before-acquisition.md
+          - 10 Digest: handbook/10-many-sources-digest.md
+          - 11 Playbook resolution: handbook/11-playbooks-resolution.md
+          - 12 Authoring playbooks: handbook/12-authoring-playbook.md
+          - 13 Typed extraction: handbook/13-typed-field-extraction.md
+          - 14 What a receipt proves: handbook/14-what-a-receipt-proves.md
+          - 15 Verifying: handbook/15-verifying.md
+          - 16 Evidence for claims: handbook/16-evidence-for-claims.md
+          - 17 Opt-in surfaces: handbook/17-opt-in-surfaces.md
+          - 18 Exposure: handbook/18-exposure.md
+          - 19 Operating an install: handbook/19-operating-an-install.md
+          - 20 Automatic behaviors: handbook/20-automatic-behaviors.md
+          - 21 State and footprint: handbook/21-state-and-footprint.md
+          - 22 Configuration: handbook/22-configuration.md
+          - 23 Security posture: handbook/23-security-posture.md
+          - 24 Composing tools: handbook/24-composing-tools.md
+          - 25 Diagnosing bad results: handbook/25-diagnosing-bad-results.md
+          - 26 Architecture internals: handbook/26-architecture-internals.md
+          - 27 Checking this book: handbook/27-checking-this-book.md
+          - Status labels: handbook/appendix-status-labels.md
   - Developers:
       - Contributing: developers/contributing.md
-      - Semantic contract: architecture/semantic-contract.md
       - Quality baseline: quality-baseline.md
       - Roadmap: roadmap.md
       - Vision: developers/vision.md
