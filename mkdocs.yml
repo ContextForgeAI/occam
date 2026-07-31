@@ -192,7 +192,6 @@ nav:
       - Transports: transports.md
       - MCP API: reference/mcp-api.md
       - FAQ: faq.md
-      - Troubleshooting: troubleshooting.md
   - Handbook:
       - Overview: handbook/index.md
       - 01 What Occam is: handbook/01-what-occam-is.md
