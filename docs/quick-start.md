@@ -5,10 +5,20 @@ stop at “installed.”
 
 <div class="oc-first-prompt" markdown="1">
 
-**Exact first prompt** (same for every path):
+**Quick connection test** (same for every path):
 
 > Use Occam to read https://example.com/ and summarize the page. Include the
 > source URL.
+
+This proves the tool call works. The page is deliberately small.
+
+**Optional richer prompt** (after the connection test succeeds):
+
+> Use Occam to read https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide
+> and summarize what the guide covers. Include the source URL.
+
+This is a stable public documentation page used in Occam’s smoke corpus — useful
+enough to show compact, source-linked content without relying on a flaky site.
 
 </div>
 
@@ -17,29 +27,34 @@ stop at “installed.”
 <div class="oc-path-chooser" markdown="0">
   <a class="oc-path-card" href="#path-b-cursor">
     <span class="oc-path-card__name">Cursor</span>
-    <span class="oc-status oc-status--stable">Live-validated</span>
+    <span class="oc-status oc-status--friendly oc-status--stable">Validated</span>
     <span class="oc-path-card__hint">New Cursor chat after connect</span>
+    <span class="oc-path-card__cta">Open Cursor guide →</span>
   </a>
   <a class="oc-path-card" href="#path-c-hermes-agent">
     <span class="oc-path-card__name">Hermes Agent</span>
-    <span class="oc-status oc-status--stable">Live-validated</span>
+    <span class="oc-status oc-status--friendly oc-status--limited">Supported · verification required</span>
     <span class="oc-path-card__hint">Only if Hermes is genuinely installed</span>
+    <span class="oc-path-card__cta">Open Hermes guide →</span>
   </a>
   <a class="oc-path-card" href="#path-a-supported-ai-application">
-    <span class="oc-path-card__name">Supported AI application</span>
-    <span class="oc-status oc-status--limited">Tiers apply</span>
-    <span class="oc-path-card__hint">Another MCP-capable app</span>
+    <span class="oc-path-card__name">Another AI app</span>
+    <span class="oc-status oc-status--friendly oc-status--limited">Support varies</span>
+    <span class="oc-path-card__hint">Another MCP-capable application</span>
+    <span class="oc-path-card__cta">Use another AI app →</span>
   </a>
   <a class="oc-path-card oc-path-card--experimental" href="#path-d-local-ollama-model-experimental">
     <span class="oc-path-card__name">Local Ollama model</span>
-    <span class="oc-status oc-status--experimental">Experimental</span>
-    <span class="oc-path-card__hint">Type in <code>occam chat</code></span>
+    <span class="oc-status oc-status--friendly oc-status--experimental">Experimental</span>
+    <span class="oc-path-card__hint">Type in the Occam chat terminal</span>
+    <span class="oc-path-card__cta">Start local Ollama chat →</span>
   </a>
-  <a class="oc-path-card" href="#path-e-no-supported-application-detected">
-    <span class="oc-path-card__name">No supported app detected</span>
-    <span class="oc-status oc-status--advanced">Install or integrate</span>
-    <span class="oc-path-card__hint">Connect later · snippet · or chat</span>
-  </a>
+</div>
+
+<div class="oc-recovery" markdown="0">
+  <div class="oc-recovery__label">No supported app detected?</div>
+  <p class="oc-recovery__text">The install can still succeed. Connect a host later, use experimental chat, or integrate your own MCP client.</p>
+  <a class="oc-recovery__cta" href="#path-e-no-supported-application-detected">Open recovery options →</a>
 </div>
 
 Occam normally appears as a tool **inside your AI application**. The `occam`
@@ -96,10 +111,7 @@ host; see [MCP hosts](mcp-hosts.md).
 
 3. Follow the exact restart, reload, trust, or paste instruction in the result.
 4. Open a **new conversation** in the selected application.
-5. Type:
-
-    > Use Occam to read https://example.com/ and summarize the page. Include
-    > the source URL.
+5. Type the [quick connection test](#choose-how-you-use-ai) prompt.
 
 <div class="oc-qa" markdown="0">
   <div class="oc-qa__item">
@@ -127,7 +139,7 @@ host; see [MCP hosts](mcp-hosts.md).
 
 ## Path B: Cursor
 
-Cursor has a live-validated connection path, but a configuration write does not
+Cursor has a validated connection path, but a configuration write does not
 make an already-open chat reload its tools.
 
 1. Install Occam.
@@ -139,10 +151,7 @@ make an already-open chat reload its tools.
 
 3. Restart or reload Cursor if the connect result asks.
 4. Open a **new Cursor chat**.
-5. Type:
-
-    > Use Occam to read https://example.com/ and summarize the page. Include
-    > the source URL.
+5. Type the [quick connection test](#choose-how-you-use-ai) prompt.
 
 <div class="oc-qa" markdown="0">
   <div class="oc-qa__item">
@@ -167,6 +176,8 @@ make an already-open chat reload its tools.
 
 Hermes must be genuinely installed. A leftover configuration directory is not
 enough, and configuration alone does not prove that Hermes loaded Occam.
+Continue only when connect verification succeeds — do not treat Hermes as ready
+from a config write alone.
 
 1. Install Occam.
 2. Connect Hermes:
@@ -176,12 +187,10 @@ enough, and configuration alone does not prove that Hermes loaded Occam.
     ```
 
 3. Continue only if the result says Hermes is ready or gives a concrete
-   restart/session instruction.
+   restart/session instruction. If the result is **Not connected**, stop and use
+   another path.
 4. Open a **new Hermes conversation**.
-5. Type:
-
-    > Use Occam to read https://example.com/ and summarize the page. Include
-    > the source URL.
+5. Type the [quick connection test](#choose-how-you-use-ai) prompt.
 
 <div class="oc-qa" markdown="0">
   <div class="oc-qa__item">
@@ -220,11 +229,8 @@ Ollama is a model runtime, not an MCP host.
     ```
 
 4. Select a tool-capable model or accept the offered default.
-5. At the `>` prompt, type:
-
-    > Use Occam to read https://example.com/ and summarize the page. Include
-    > the source URL.
-
+5. At the `>` prompt, type the [quick connection test](#choose-how-you-use-ai)
+   prompt.
 6. Type `/exit` to leave the chat.
 
 <div class="oc-qa" markdown="0">
@@ -285,7 +291,7 @@ Choose one:
   </div>
   <div class="oc-qa__item">
     <div class="oc-qa__q">What exactly do I type?</div>
-    <div class="oc-qa__a">Use the same <code>https://example.com/</code> first prompt at the top of this guide.</div>
+    <div class="oc-qa__a">Use the same quick connection test at the top of this guide.</div>
   </div>
   <div class="oc-qa__item">
     <div class="oc-qa__q">What should happen?</div>
