@@ -8,17 +8,6 @@ For a learning path (not schemas), use [Guides](guides/read-a-page.md) or
 [Examples](examples/index.md). For capability domains (not tools), see
 [Capabilities](capabilities/index.md).
 
-## Source-of-truth order
-
-| Priority | Source | Use it for |
-|---|---|---|
-| 1 | Runtime `tools/list` | Tool availability and input JSON Schema |
-| 2 | [MCP API contract](reference/mcp-api.md) | Response shapes and cross-tool semantics |
-| 3 | [Per-tool pages](tools/index.md) | Usage, examples, failure handling |
-| 4 | Guides / examples / handbook | Learning and workflows |
-
-If two pages disagree, prefer the higher-priority source and report drift.
-
 ## Which tool should I use?
 
 | You want to… | Open | Canonical id |
@@ -79,16 +68,37 @@ Absent from default `tools/list` until an env flag is set. See also
 
 - [Batch](tools/occam_batch.md) · [Watch](tools/occam_watch.md) · [Crosscheck](tools/occam_crosscheck.md) · [Failure atlas](tools/occam_failure_atlas.md)
 
+### Protocol and configuration
+
+How the host is wired and spoken to.
+
+- [Configuration](configuration.md) · [Transports](transports.md) · [MCP API](reference/mcp-api.md)
+
+### Contracts and errors
+
+Schemas-adjacent tables and typed failure registry.
+
+- [Tool index](tools/index.md) · [Compact tool reference](tools-reference.md) · [Failure codes](failure-codes.md)
+
+## Source-of-truth order
+
+| Priority | Source | Use it for |
+|---|---|---|
+| 1 | Runtime `tools/list` | Tool availability and input JSON Schema |
+| 2 | [MCP API contract](reference/mcp-api.md) | Response shapes and cross-tool semantics |
+| 3 | [Per-tool pages](tools/index.md) | Usage, examples, failure handling |
+| 4 | Guides / examples / handbook | Learning and workflows |
+
+If two pages disagree, prefer the higher-priority source and report drift.
+
 ## Supporting reference
 
 | Page | Purpose |
 |------|---------|
 | [Concepts](concepts.md) | Backends, sessions, playbooks, receipts |
-| [Failure codes](failure-codes.md) | Typed `failure.code` registry |
-| [Configuration](configuration.md) | Environment variables |
-| [Transports](transports.md) | stdio, WebSocket, batch HTTP |
-| [MCP API](reference/mcp-api.md) | Contract-level response shapes |
 | [FAQ](faq.md) | Short answers |
+| [Trust and security](trust-and-safety.md) | Honesty, receipts, install safety |
+| [Signed datasets](datasets.md) | Auditable multi-URL export |
 
 ## LLM reading order
 

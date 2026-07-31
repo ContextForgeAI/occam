@@ -127,23 +127,23 @@ nav:
       - Verify a source: guides/verify-sources.md
       - Check a claim: guides/claims.md
       - Sessions / login walls: guides/sessions.md
-  - Examples:
-      - Overview: examples/index.md
-      - Current proof: examples/current-proof/README.md
-      - Read one page: examples/read-one-page.md
-      - Difficult JS page: examples/difficult-js-page.md
-      - Research several URLs: examples/research-several.md
-      - Search then research: examples/search-then-research.md
-      - Discover then research: examples/discover-then-research.md
-      - Verify a receipt: examples/verify-receipt.md
-      - Check a claim: examples/check-a-claim.md
-      - Structured extraction: examples/structured-extraction.md
-      - Session profile: examples/session-profile.md
-      - Proxy use: examples/proxy-use.md
-      - Signed dataset export: examples/dataset-export.md
-      - "Experimental: watch": examples/watch-experimental.md
-      - "Experimental: crosscheck": examples/crosscheck-experimental.md
-      - More recipes: recipes.md
+      - Examples:
+          - Overview: examples/index.md
+          - Current proof: examples/current-proof/README.md
+          - Read one page: examples/read-one-page.md
+          - Difficult JS page: examples/difficult-js-page.md
+          - Research several URLs: examples/research-several.md
+          - Search then research: examples/search-then-research.md
+          - Discover then research: examples/discover-then-research.md
+          - Verify a receipt: examples/verify-receipt.md
+          - Check a claim: examples/check-a-claim.md
+          - Structured extraction: examples/structured-extraction.md
+          - Session profile: examples/session-profile.md
+          - Proxy use: examples/proxy-use.md
+          - Signed dataset export: examples/dataset-export.md
+          - "Experimental: watch": examples/watch-experimental.md
+          - "Experimental: crosscheck": examples/crosscheck-experimental.md
+          - More recipes: recipes.md
   - Capabilities:
       - Overview: capabilities/index.md
       - Web access:
@@ -156,6 +156,15 @@ nav:
           - Sessions: sessions.md
           - Operators: operators.md
       - Experimental: experimental.md
+  - Trust and security:
+      - Overview: trust-and-safety.md
+      - Local-first model: trust/local-first.md
+      - Honest failures: trust/honest-failures.md
+      - Security policy: trust/security-policy.md
+      - Installation safety: trust/installation-safety.md
+      - Receipts: receipts.md
+      - Receipt verification: receipt_verification.md
+      - Signed datasets: datasets.md
   - Reference:
       - Reference overview: documentation-map.md
       - Concepts: concepts.md
@@ -184,22 +193,15 @@ nav:
           - Watch: tools/occam_watch.md
           - Crosscheck: tools/occam_crosscheck.md
           - Failure atlas: tools/occam_failure_atlas.md
-      - Tool index: tools/index.md
-      - Compact tool reference: tools-reference.md
-      - Failure codes: failure-codes.md
-      - Configuration: configuration.md
-      - Transports: transports.md
-      - MCP API: reference/mcp-api.md
+      - Protocol and configuration:
+          - Configuration: configuration.md
+          - Transports: transports.md
+          - MCP API: reference/mcp-api.md
+      - Contracts and errors:
+          - Tool index: tools/index.md
+          - Compact tool reference: tools-reference.md
+          - Failure codes: failure-codes.md
       - FAQ: faq.md
-  - Trust and security:
-      - Overview: trust-and-safety.md
-      - Local-first model: trust/local-first.md
-      - Honest failures: trust/honest-failures.md
-      - Security policy: trust/security-policy.md
-      - Installation safety: trust/installation-safety.md
-      - Receipts: receipts.md
-      - Receipt verification: receipt_verification.md
-      - Datasets: datasets.md
   - Architecture:
       - Overview: how-occam-works.md
       - Semantic contract: architecture/semantic-contract.md
