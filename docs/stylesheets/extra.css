@@ -236,6 +236,36 @@ body {
   letter-spacing: 0.01em;
 }
 
+/* Nested task groups (e.g. Reference → Read and transform → leaf) */
+.md-nav--primary .md-nav .md-nav .md-nav__item--nested > .md-nav__link {
+  font-weight: 600;
+  font-size: 0.74rem;
+  color: var(--oc-text);
+}
+
+.md-nav--primary .md-nav .md-nav .md-nav .md-nav__link {
+  font-size: 0.72rem;
+  font-weight: 450;
+  padding-top: 0.22rem;
+  padding-bottom: 0.22rem;
+  color: var(--oc-text-secondary);
+}
+
+.md-nav--primary .md-nav .md-nav {
+  margin-left: 0.15rem;
+}
+
+.md-nav--primary .md-nav .md-nav .md-nav {
+  border-left: 1px solid var(--oc-border);
+  margin-left: 0.4rem;
+  padding-left: 0.45rem;
+}
+
+.md-nav--primary .md-nav__item--active > .md-nav__link,
+.md-nav--primary .md-nav__item--active > .md-nav__link--active {
+  color: var(--oc-text);
+}
+
 .md-nav__link {
   font-size: 0.78rem;
   margin-top: 0.05rem;
@@ -244,6 +274,7 @@ body {
   color: var(--oc-text-secondary);
   border-radius: 0;
   line-height: 1.35;
+  min-height: 1.75rem;
 }
 
 .md-nav__link:hover {
