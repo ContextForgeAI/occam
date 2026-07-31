@@ -96,7 +96,7 @@ universal reduction rate.
 <summary>Method and source revision</summary>
 
 Source revision
-`3d871d34f52180f8e0046f505de577b6aa3417e4`.
+`acb1e1b31b13ba19a2d0ee115ae8389b9887deef`.
 Full method, complete output, and reproduction scripts:
 [current proof fixture](examples/current-proof/README.md).
 

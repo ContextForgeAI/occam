@@ -21,7 +21,7 @@ especially in local and self-hosted environments.
 
 ## Real input. Current output.
 
-At source SHA `3d871d34f52180f8e0046f505de577b6aa3417e4`,
+At source SHA `acb1e1b31b13ba19a2d0ee115ae8389b9887deef`,
 Occam read [`https://example.com/`](https://example.com/) with the default
 `occam_transcode` options:
 

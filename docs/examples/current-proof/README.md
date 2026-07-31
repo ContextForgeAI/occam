@@ -2,7 +2,7 @@
 
 This fixture records one successful live page read and one controlled failure
 from Occam Core `1.0.0-rc.2` at source SHA
-`3d871d34f52180f8e0046f505de577b6aa3417e4`.
+`acb1e1b31b13ba19a2d0ee115ae8389b9887deef`.
 
 It is deliberately small. The fixture proves the behavior of this example; it
 is not a universal success-rate, size-reduction, or token-savings claim.
