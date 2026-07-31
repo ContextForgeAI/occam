@@ -15,12 +15,14 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
-const FORBIDDEN_IDENTITY =
-  /^(cursor|cursoragent|codex|claude|openai|anthropic)(\b|[._-])/i;
+/** Exact AI-tool display names (not substrings of ordinary human names). */
+const FORBIDDEN_EXACT_NAME =
+  /^(cursor|cursoragent|codex|openai|anthropic|claude code|claude bot|claude\.ai)$/i;
 
 const FORBIDDEN_EMAIL =
   /(cursoragent@cursor\.com|@cursor\.com$|@cursor\.sh$|@openai\.com$|@anthropic\.com$)/i;
 
+/** Trailer keys that attribute authorship to AI tools. */
 const FORBIDDEN_TRAILER =
   /^(Co-authored-by|Made-with|Generated-by|Assisted-by|AI-generated-by):\s*.*(Cursor|cursoragent|Codex|Claude|OpenAI|Anthropic)\b/im;
 
@@ -46,11 +48,15 @@ function git(args) {
 function identityForbidden(name, email) {
   const n = (name || "").trim();
   const e = (email || "").trim();
-  if (n && FORBIDDEN_IDENTITY.test(n)) return `name=${n}`;
+  if (n && FORBIDDEN_EXACT_NAME.test(n)) return `name=${n}`;
+  // Bare "Claude" is only forbidden with an Anthropic automation email.
+  if (/^claude$/i.test(n) && /@anthropic\.com$/i.test(e)) return `name=${n}`;
   if (e && FORBIDDEN_EMAIL.test(e)) return `email=${e}`;
   if (e) {
     const local = e.split("@")[0] || "";
-    if (FORBIDDEN_IDENTITY.test(local)) return `email=${e}`;
+    if (/^(cursor|cursoragent|codex|openai|anthropic)([._-]|$)/i.test(local)) {
+      return `email=${e}`;
+    }
   }
   return null;
 }
@@ -82,35 +88,41 @@ export function evaluateCommit({
   return { hash: hash || "(message)", errors };
 }
 
-function defaultRange() {
+function defaultRangeSpec() {
   const event = process.env.GITHUB_EVENT_NAME || "";
   const base = process.env.GITHUB_BASE_REF;
   const sha = process.env.GITHUB_SHA;
   if (event === "pull_request" && base && sha) {
-    return `origin/${base}..${sha}`;
+    // Prefer merge-base range; fall back to origin/base..sha then reachable tip.
+    return {
+      primary: `origin/${base}..${sha}`,
+      fallbackReachable: sha,
+    };
   }
   if (event === "push" && process.env.GITHUB_EVENT_BEFORE && sha) {
     const before = process.env.GITHUB_EVENT_BEFORE;
-    if (/^0+$/.test(before)) return sha;
-    return `${before}..${sha}`;
+    if (/^0+$/.test(before)) {
+      // First push of a branch: scan full reachable history from tip.
+      return { primary: null, fallbackReachable: sha };
+    }
+    return {
+      primary: `${before}..${sha}`,
+      // Force-push / rewritten history: old tip may be absent or unrelated.
+      fallbackReachable: sha,
+    };
   }
   for (const candidate of ["public/main", "origin/main", "main"]) {
     try {
       git(["rev-parse", "--verify", candidate]);
-      return `${candidate}..HEAD`;
+      return { primary: `${candidate}..HEAD`, fallbackReachable: "HEAD" };
     } catch {
       /* try next */
     }
   }
-  return "HEAD";
+  return { primary: null, fallbackReachable: "HEAD" };
 }
 
-function loadCommits(range) {
-  const fmt = "%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%B%x1e";
-  const raw =
-    range === "HEAD" || !String(range).includes("..")
-      ? git(["log", "-1", `--format=${fmt}`, range || "HEAD"])
-      : git(["log", range, `--format=${fmt}`]);
+function parseLog(raw) {
   if (!raw.trim()) return [];
   return raw
     .split("\x1e")
@@ -126,6 +138,37 @@ function loadCommits(range) {
         message: parts[5] || "",
       };
     });
+}
+
+function loadCommitsFromArgs(gitArgs) {
+  const fmt = "%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%B%x1e";
+  return parseLog(git(["log", ...gitArgs, `--format=${fmt}`]));
+}
+
+function loadCommits(rangeOrSpec) {
+  if (typeof rangeOrSpec === "string") {
+    const range = rangeOrSpec;
+    if (!range.includes("..")) {
+      // Explicit single rev without "..": check that commit only (CLI convenience).
+      return loadCommitsFromArgs(["-1", range || "HEAD"]);
+    }
+    return loadCommitsFromArgs([range]);
+  }
+
+  const spec = rangeOrSpec || defaultRangeSpec();
+  if (spec.primary) {
+    try {
+      // Ensure both ends exist when possible; force-push may omit "before".
+      const before = spec.primary.split("..")[0];
+      if (before) git(["cat-file", "-e", `${before}^{commit}`]);
+      return loadCommitsFromArgs([spec.primary]);
+    } catch {
+      /* fall through */
+    }
+  }
+  const tip = spec.fallbackReachable || "HEAD";
+  // Full ancestry from tip — used after force-push / first push / missing base.
+  return loadCommitsFromArgs([tip]);
 }
 
 export function main(argv = process.argv.slice(2)) {
@@ -149,17 +192,17 @@ export function main(argv = process.argv.slice(2)) {
     return 0;
   }
 
-  const range = args.range || defaultRange();
+  const rangeLabel = args.range || "(auto)";
   let commits;
   try {
-    commits = loadCommits(range);
+    commits = args.range ? loadCommits(args.range) : loadCommits(defaultRangeSpec());
   } catch (err) {
-    console.error(`git-attribution: cannot read range ${range}: ${err.message || err}`);
+    console.error(`git-attribution: cannot read range ${rangeLabel}: ${err.message || err}`);
     return 1;
   }
 
   if (commits.length === 0) {
-    console.log(`git-attribution: OK — no commits in ${range}`);
+    console.log(`git-attribution: OK — no commits in ${rangeLabel}`);
     return 0;
   }
 
@@ -170,7 +213,9 @@ export function main(argv = process.argv.slice(2)) {
   }
 
   if (failures.length) {
-    console.error(`git-attribution: FAILED (${failures.length}/${commits.length} in ${range})`);
+    console.error(
+      `git-attribution: FAILED (${failures.length}/${commits.length} in ${rangeLabel})`,
+    );
     for (const f of failures) {
       console.error(`  ${String(f.hash).slice(0, 12)}`);
       for (const e of f.errors) console.error(`    - ${e}`);
@@ -178,7 +223,7 @@ export function main(argv = process.argv.slice(2)) {
     return 1;
   }
 
-  console.log(`git-attribution: OK — ${commits.length} commit(s) in ${range}`);
+  console.log(`git-attribution: OK — ${commits.length} commit(s) in ${rangeLabel}`);
   return 0;
 }
 

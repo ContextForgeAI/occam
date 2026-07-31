@@ -115,6 +115,22 @@ Ordinary documentation or code that mentions Cursor, Codex, Claude, or OpenAI
 as product integrations is fine. Attribution trailers and author/committer
 fields are not.
 
+CI runs `scripts/check-git-attribution.mjs` on pull requests and pushes; that is
+the authoritative enforcement layer.
+
+A file under `scripts/git-hooks/` is **not** enabled automatically for every
+clone. Optional local protection (strips forbidden AI trailers before the editor
+finalizes the message):
+
+```bash
+# from the repository root (POSIX / Git Bash)
+cp scripts/git-hooks/prepare-commit-msg .git/hooks/prepare-commit-msg
+chmod +x .git/hooks/prepare-commit-msg
+
+# Windows PowerShell
+Copy-Item -Force scripts/git-hooks/prepare-commit-msg .git/hooks/prepare-commit-msg
+```
+
 Local check:
 
 ```bash
