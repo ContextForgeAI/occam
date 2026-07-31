@@ -274,7 +274,9 @@ or remote transport providers can change the boundary.
 Optional Receipt v1 artifacts can check returned-byte integrity against a
 supplied key. They do not prove truth, identity, or authentic origin.
 
-[Trust & Safety](trust-and-safety.md) ·
+[Trust and security](trust-and-safety.md) ·
+[Capabilities](capabilities/index.md) ·
+[Reference overview](documentation-map.md) ·
 [Installation safety](trust/installation-safety.md) ·
 [Receipts](receipts.md)
 
@@ -297,14 +299,14 @@ finish with a real page read.
 [Tools reference](tools-reference.md) · [MCP API](reference/mcp-api.md) ·
 [Handbook](handbook/index.md) · [Experimental](experimental.md) ·
 [Operators](operators.md) · [Troubleshooting](troubleshooting.md) ·
-[FAQ](faq.md) · [Full documentation map](documentation-map.md) ·
+[FAQ](faq.md) · [Reference overview](documentation-map.md) ·
 [Ask AI](ask-ai.md) · [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt)
 
 <div class="oc-sitemap-quiet" markdown="1">
 
 ## All top-level pages
 
-Compact index (gate + scanning). Narrative map: [Documentation map](documentation-map.md).
+Compact index (gate + scanning). Narrative map: [Reference overview](documentation-map.md).
 
 [acquisition](acquisition.md) · [ask-ai](ask-ai.md) · [choosing-a-tool](choosing-a-tool.md) · [concepts](concepts.md) · [configuration](configuration.md) · [datasets](datasets.md) · [documentation-map](documentation-map.md) · [experimental](experimental.md) · [failure-codes](failure-codes.md) · [faq](faq.md) · [friend-test](friend-test.md) · [getting-started](getting-started.md) · [how-occam-works](how-occam-works.md) · [install](install.md) · [materialization](materialization.md) · [mcp-hosts](mcp-hosts.md) · [networking](networking.md) · [operators](operators.md) · [playbooks](playbooks.md) · [quality-baseline](quality-baseline.md) · [quick-start](quick-start.md) · [receipt_verification](receipt_verification.md) · [receipts](receipts.md) · [recipes](recipes.md) · [roadmap](roadmap.md) · [sessions](sessions.md) · [tools-reference](tools-reference.md) · [transports](transports.md) · [troubleshooting](troubleshooting.md) · [trust-and-safety](trust-and-safety.md) · [what-is-occam](what-is-occam.md)
 

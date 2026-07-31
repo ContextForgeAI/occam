@@ -1,4 +1,4 @@
-# Trust & Safety
+# Trust and security
 
 What Occam's trust layer actually does — and what it deliberately does **not** claim. Stated only as far as the shipped product supports today.
 
