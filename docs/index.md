@@ -1,4 +1,12 @@
+---
+hide:
+  - navigation
+  - toc
+---
+
 <div class="oc-hero" markdown="1">
+
+<p class="oc-brand-mark" aria-label="Occam"><span class="oc-brand-mark__glyph" aria-hidden="true">⌥</span><span class="oc-brand-mark__rule" aria-hidden="true"></span><span class="oc-brand-mark__letters">O C C A M</span></p>
 
 <p class="oc-wordmark">Local-first web context for AI agents.</p>
 
@@ -13,14 +21,20 @@ Occam reads live web pages, removes the noise, and returns compact,
 source-linked content your AI agent can actually use.
 </p>
 
+<p class="oc-hero-audience">
+For developers and technical users building or running AI agents — especially
+local and self-hosted setups.
+</p>
+
 <p class="oc-hero-actions">
 <a class="oc-btn oc-btn--primary" href="quick-start/">Get your first result</a>
 <a class="oc-btn oc-btn--secondary" href="#real-output">See real output</a>
 </p>
 
-<div class="oc-hero-visual" aria-label="Webpage noise becomes compact source-linked content">
+<div class="oc-hero-visual" aria-label="Conceptual comparison: typical webpage input becomes compact agent context">
   <div class="oc-hero-visual__panel oc-hero-visual__panel--noise">
-    <span class="oc-hero-visual__label">Raw webpage noise</span>
+    <span class="oc-hero-visual__label">Typical webpage input</span>
+    <span class="oc-hero-visual__concept">Conceptual · not a measured page</span>
     <ul class="oc-hero-visual__noise" aria-hidden="true">
       <li>nav · scripts · chrome</li>
       <li>cookie banners · footers</li>
@@ -29,33 +43,35 @@ source-linked content your AI agent can actually use.
   </div>
   <span class="oc-hero-visual__arrow" aria-hidden="true">→</span>
   <div class="oc-hero-visual__panel oc-hero-visual__panel--clean">
-    <span class="oc-hero-visual__label">Compact, source-linked</span>
+    <span class="oc-hero-visual__label">Compact agent context</span>
     <p class="oc-hero-visual__clean">Useful page content your agent can use — with the source URL attached.</p>
   </div>
 </div>
 
 </div>
 
-For developers and technical users building or running AI agents, especially in
-local and self-hosted environments.
-
 ## Real output
 
-<div class="oc-compare" markdown="0">
+One deterministic smoke fixture. Bytes, not tokens. Not a universal benchmark.
+
+<div class="oc-compare oc-compare--measured" markdown="0">
   <div class="oc-compare__panel oc-compare__panel--before">
-    <div class="oc-compare__eyebrow">Webpage input</div>
-    <div class="oc-compare__title">Noise around the page</div>
+    <div class="oc-compare__eyebrow">Measured input</div>
+    <div class="oc-compare__title">Live HTML body</div>
     <p class="oc-compare__url"><a href="https://example.com/">https://example.com/</a></p>
-    <ul class="oc-compare__noise">
-      <li>Navigation chrome</li>
-      <li>Scripts and markup</li>
-      <li>Repeated UI text</li>
-      <li>Boilerplate around the body</li>
-    </ul>
+    <pre class="oc-compare__md oc-compare__md--input"><code>&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;Example Domain&lt;/title&gt;…
+&lt;body&gt;
+  &lt;h1&gt;Example Domain&lt;/h1&gt;
+  &lt;p&gt;This domain is for use in documentation
+  examples…&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
     <p class="oc-compare__measure">559 UTF-8 HTML bytes <span class="oc-compare__measure-note">after HTTP decoding</span></p>
   </div>
   <div class="oc-compare__panel oc-compare__panel--after">
-    <div class="oc-compare__eyebrow">Occam output</div>
+    <div class="oc-compare__eyebrow">Measured output</div>
     <div class="oc-compare__title">Compact Markdown</div>
     <pre class="oc-compare__md"><code># Example Domain
 
@@ -72,12 +88,19 @@ Avoid use in operations.</code></pre>
 
 <div class="oc-measure-note" markdown="1">
 
-In this reproducible example, the HTML response body was **559 UTF-8 bytes**
-after HTTP decoding. Occam returned **167 UTF-8 bytes** of Markdown — **70.1%
-fewer bytes for this page**. No tokenizer was used, so this is not a token
-claim. Source SHA `3d871d34f52180f8e0046f505de577b6aa3417e4`.
+For this one page, Occam returned **70.1% fewer UTF-8 bytes** than the decoded
+HTML body (559 → 167). No tokenizer was used — not a token claim, and not a
+universal reduction rate.
 
-[Method, complete output, and reproduction scripts](examples/current-proof/README.md)
+<details class="oc-proof-disclosure">
+<summary>Method and source revision</summary>
+
+Source revision
+`3d871d34f52180f8e0046f505de577b6aa3417e4`.
+Full method, complete output, and reproduction scripts:
+[current proof fixture](examples/current-proof/README.md).
+
+</details>
 
 </div>
 
@@ -91,6 +114,10 @@ Passing all of that through wastes a local model's limited context and makes
 larger models work around irrelevant text. A search result can help find the
 source; Occam focuses on reading the chosen source and preparing usable page
 content for the agent.
+
+A richer before/after fixture with realistic page chrome is planned as a
+follow-up; until then, the conceptual comparison above explains the job, and
+`example.com` remains the deterministic smoke proof.
 
 ## A useful result — or an explicit unknown
 
@@ -125,75 +152,38 @@ private-destination case above.
 
 ## Choose your workflow
 
+Three routes. Pick one, then open the matching Quick Start path for the exact
+prompt.
+
 <div class="oc-workflows" markdown="0">
   <a class="oc-workflow" href="quick-start/#path-b-cursor">
     <div class="oc-workflow__head">
-      <span class="oc-workflow__name">Cursor</span>
-      <span class="oc-status oc-status--stable">Live-validated</span>
+      <span class="oc-workflow__name">Use Occam in an AI application</span>
+      <span class="oc-status oc-status--friendly oc-status--stable">Validated paths</span>
     </div>
-    <p class="oc-workflow__fit">You use Cursor as your AI coding app.</p>
-    <dl class="oc-workflow__facts">
-      <div><dt>Command</dt><dd><code>occam connect --only cursor</code></dd></div>
-      <div><dt>Where to type</dt><dd>A new Cursor chat after restart/reload</dd></div>
-      <div><dt>Next</dt><dd>Exact first prompt in Quick Start</dd></div>
-    </dl>
-  </a>
-  <a class="oc-workflow" href="quick-start/#path-c-hermes-agent">
-    <div class="oc-workflow__head">
-      <span class="oc-workflow__name">Hermes Agent</span>
-      <span class="oc-status oc-status--stable">Live-validated</span>
-    </div>
-    <p class="oc-workflow__fit">Hermes is genuinely installed — not leftover config.</p>
-    <dl class="oc-workflow__facts">
-      <div><dt>Command</dt><dd><code>occam connect --only hermes</code></dd></div>
-      <div><dt>Where to type</dt><dd>A new Hermes conversation</dd></div>
-      <div><dt>Next</dt><dd>Continue only if ready; failed verify → Not connected</dd></div>
-    </dl>
-  </a>
-  <a class="oc-workflow" href="quick-start/#path-a-supported-ai-application">
-    <div class="oc-workflow__head">
-      <span class="oc-workflow__name">Supported MCP app</span>
-      <span class="oc-status oc-status--limited">Tiers apply</span>
-    </div>
-    <p class="oc-workflow__fit">Another MCP-capable AI application the installer detects.</p>
-    <dl class="oc-workflow__facts">
-      <div><dt>Command</dt><dd><code>occam connect</code></dd></div>
-      <div><dt>Where to type</dt><dd>A new conversation in that app</dd></div>
-      <div><dt>Next</dt><dd>Validation tiers differ by host</dd></div>
-    </dl>
+    <p class="oc-workflow__fit">Connect Cursor, Hermes, or another MCP-capable app, then type the first prompt in a new conversation.</p>
+    <span class="oc-workflow__cta">Open AI app paths →</span>
   </a>
   <a class="oc-workflow oc-workflow--experimental" href="quick-start/#path-d-local-ollama-model-experimental">
     <div class="oc-workflow__head">
-      <span class="oc-workflow__name">Local Ollama model</span>
-      <span class="oc-status oc-status--experimental">Experimental</span>
+      <span class="oc-workflow__name">Use a local Ollama model</span>
+      <span class="oc-status oc-status--friendly oc-status--experimental">Experimental</span>
     </div>
-    <p class="oc-workflow__fit">Tool-capable local model via <code>occam chat</code> — not an MCP host.</p>
-    <dl class="oc-workflow__facts">
-      <div><dt>Command</dt><dd><code>occam chat</code></dd></div>
-      <div><dt>Where to type</dt><dd>The <code>occam chat</code> terminal prompt</dd></div>
-      <div><dt>Next</dt><dd>Not native Ollama App · no Ollama Web Search</dd></div>
-    </dl>
+    <p class="oc-workflow__fit">Tool-capable local model via Occam’s terminal chat — Ollama is a model runtime, not an MCP host.</p>
+    <span class="oc-workflow__cta">Start local Ollama chat →</span>
   </a>
   <a class="oc-workflow" href="quick-start/#path-e-no-supported-application-detected">
     <div class="oc-workflow__head">
-      <span class="oc-workflow__name">Developer integration</span>
-      <span class="oc-status oc-status--advanced">MCP contract</span>
+      <span class="oc-workflow__name">Integrate Occam into an agent</span>
+      <span class="oc-status oc-status--friendly oc-status--advanced">Developer</span>
     </div>
-    <p class="oc-workflow__fit">You are wiring your own agent or MCP client.</p>
-    <dl class="oc-workflow__facts">
-      <div><dt>Command</dt><dd><code>occam snippet</code></dd></div>
-      <div><dt>Where to type</dt><dd>Your custom MCP client</dd></div>
-      <div><dt>Next</dt><dd>Use the MCP API and generated snippet</dd></div>
-    </dl>
+    <p class="oc-workflow__fit">Wire your own MCP client with the generated launch snippet and API contract.</p>
+    <span class="oc-workflow__cta">Developer integration →</span>
   </a>
 </div>
 
-[Choose a path and get the exact first prompt](quick-start.md) ·
+[Choose a detailed path and get the exact first prompt](quick-start.md) ·
 [See host validation tiers](mcp-hosts.md)
-
-Ollama is a model runtime, not an MCP host. Experimental `occam chat` calls the
-documented local Ollama API and uses Occam's acquisition stack. It is not a
-native integration inside the Ollama App and does not use Ollama Web Search.
 
 ## How Occam works
 
@@ -291,7 +281,7 @@ supplied key. They do not prove truth, identity, or authentic origin.
 ## Get your first Occam result
 
 Install Occam, choose the path for your AI application or local runtime, and
-use one exact prompt against the same stable page used in the proof.
+finish with a real page read.
 
 <p class="oc-hero-actions">
 <a class="oc-btn oc-btn--primary" href="quick-start/">Get your first result</a>
