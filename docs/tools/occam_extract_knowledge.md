@@ -1,4 +1,6 @@
-# occam_extract_knowledge
+# Extract typed knowledge
+
+**Canonical tool:** `occam_extract_knowledge`
 
 Extract typed structured fields from a page (e.g. title, price, author) as `facts[]`, driven by the
 site's playbook `knowledge_schema`.

@@ -1,4 +1,6 @@
-# occam_crosscheck
+# Crosscheck sources (opt-in)
+
+**Canonical tool:** `occam_crosscheck`
 
 **Multi-source comparison / source agreement** — one host fetches a URL through 2–4 local vantages
 (HTTP vs browser, anonymous vs session) and compares content fingerprints (`blockMerkleRoot` or

@@ -1,4 +1,6 @@
-# occam_probe
+# Probe a source
+
+**Canonical tool:** `occam_probe`
 
 Cheaply diagnose a URL before paying for a full fetch: page class, risks, redirect chain, an
 extractability score (0–1), and the recommended backend for `occam_transcode`.

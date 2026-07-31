@@ -1,4 +1,6 @@
-# occam_playbook_resolve
+# Resolve a playbook
+
+**Canonical tool:** `occam_playbook_resolve`
 
 Look up the saved extraction recipe (playbook/genome) for a URL or host: content selectors,
 knowledge schema, agent notes, and **signature integrity status** relative to your local key.

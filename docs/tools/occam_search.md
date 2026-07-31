@@ -1,4 +1,6 @@
-# occam_search
+# Search the web
+
+**Canonical tool:** `occam_search`
 
 Open-web search (query → result URLs) via a configured provider (SearXNG, Brave, or Tavily). Your
 discovery step when you don't have URLs yet.

@@ -1,4 +1,6 @@
-# occam_client_capabilities
+# Set client capabilities
+
+**Canonical tool:** `occam_client_capabilities`
 
 Declare the client's context window once per host session so later reads can choose a safe default
 output budget. Call with no arguments to inspect the current setting.

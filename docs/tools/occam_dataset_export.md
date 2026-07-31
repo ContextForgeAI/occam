@@ -1,4 +1,6 @@
-# occam_dataset_export
+# Export a signed dataset
+
+**Canonical tool:** `occam_dataset_export`
 
 Build a signed, auditable dataset from a set of URLs (1–20): each row is transcoded with its own
 Receipt v1 (when receipts enabled), and one manifest signature covers the ordered row Merkle root.

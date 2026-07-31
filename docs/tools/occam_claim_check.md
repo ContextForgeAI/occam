@@ -1,4 +1,6 @@
-# occam_claim_check
+# Check a claim
+
+**Canonical tool:** `occam_claim_check`
 
 **Evidence / support lookup** over extracted page content: retrieve blocks that clear a lexical BM25
 floor for a claim string, attach Merkle membership proofs, and return a signed Receipt v1 for the

@@ -1,4 +1,6 @@
-# occam_playbook_lint
+# Lint a playbook
+
+**Canonical tool:** `occam_playbook_lint`
 
 Statically validate a playbook/genome JSON against the 1.x schema — no network, pure and
 deterministic.

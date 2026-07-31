@@ -1,4 +1,6 @@
-# occam_transcode
+# Transcode a page
+
+**Canonical tool:** `occam_transcode`
 
 Extract one web page (or PDF) as clean, compact, LLM-ready Markdown — a live fetch, never model
 memory. Only `url` is required; everything else is opt-in.

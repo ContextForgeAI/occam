@@ -1,4 +1,4 @@
-# Tools — which tool for which job
+# Tool index
 
 Occam exposes **15 tools by default**; **6 more are opt-in** via host environment flags.
 All tools return a **JSON string** (camelCase). The trust rule everywhere: **`ok: false` means the

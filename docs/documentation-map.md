@@ -1,6 +1,12 @@
-# Documentation map
+# Reference overview
 
-Exhaustive page index for Occam Docs v3. For a short entry path, start at the [home page](index.md) or [Choosing a tool](choosing-a-tool.md).
+Task-oriented map of Occam’s **MCP tools** and supporting reference pages.
+Friendly names below are for navigation; the canonical identifier is always the
+``occam_*`` tool name on each page and in runtime `tools/list`.
+
+For a learning path (not schemas), use [Guides](guides/read-a-page.md) or
+[Examples](examples/index.md). For capability domains (not tools), see
+[Capabilities](capabilities/index.md).
 
 ## Source-of-truth order
 
@@ -13,50 +19,81 @@ Exhaustive page index for Occam Docs v3. For a short entry path, start at the [h
 
 If two pages disagree, prefer the higher-priority source and report drift.
 
-## Full map
+## Which tool should I use?
+
+| You want to… | Open | Canonical id |
+|---|---|---|
+| Size later reads to your model window | [Client capabilities](tools/occam_client_capabilities.md) | `occam_client_capabilities` |
+| Decide if a URL is worth fetching | [Probe](tools/occam_probe.md) | `occam_probe` |
+| Read one page as Markdown | [Transcode](tools/occam_transcode.md) | `occam_transcode` |
+| Research several URLs at once | [Digest](tools/occam_digest.md) | `occam_digest` |
+| Extract typed fields | [Extract knowledge](tools/occam_extract_knowledge.md) | `occam_extract_knowledge` |
+| Search the open web | [Search](tools/occam_search.md) | `occam_search` |
+| Discover links on a site | [Map](tools/occam_map.md) | `occam_map` |
+| Look up / draft / save a site recipe | [Playbooks group](tools/occam_playbook_resolve.md) | `occam_playbook_*` |
+| Prove a receipt or cite a block | [Verify](tools/occam_verify.md) | `occam_verify` |
+| Check whether a page backs a claim | [Claim check](tools/occam_claim_check.md) | `occam_claim_check` |
+
+Full picker table: [Tool index](tools/index.md). Compact table: [Compact tool reference](tools-reference.md).
+
+## Groups in this Reference section
+
+### Client and diagnostics
+
+Inspect before you spend a full extract.
+
+- [Client capabilities](tools/occam_client_capabilities.md) — `occam_client_capabilities`
+- [Probe](tools/occam_probe.md) — `occam_probe`
+
+### Read and transform
+
+Stable page readers and transformers.
+
+- [Transcode](tools/occam_transcode.md) — `occam_transcode`
+- [Digest](tools/occam_digest.md) — `occam_digest`
+- [Extract knowledge](tools/occam_extract_knowledge.md) — `occam_extract_knowledge`
+
+### Search and discovery
+
+Find URLs when you do not already have them.
+
+- [Search](tools/occam_search.md) — `occam_search`
+- [Map](tools/occam_map.md) — `occam_map`
+
+### Playbooks
+
+Site recipes for harder extracts (stable tools; authoring is advanced).
+
+- [Resolve](tools/occam_playbook_resolve.md) · [Lint](tools/occam_playbook_lint.md) · [Heal](tools/occam_playbook_heal.md) · [Save](tools/occam_playbook_save.md)
+
+### Validation and receipts
+
+Integrity and citation workflows. A verified receipt proves **integrity relative to a key you supply** — not factual truth or authorship.
+
+- [Verify](tools/occam_verify.md) · [Claim check](tools/occam_claim_check.md) · [Attest](tools/occam_attest.md) · [Dataset export](tools/occam_dataset_export.md)
+
+### Experimental tools
+
+Absent from default `tools/list` until an env flag is set. See also
+[Experimental capabilities](experimental.md).
+
+- [Batch](tools/occam_batch.md) · [Watch](tools/occam_watch.md) · [Crosscheck](tools/occam_crosscheck.md) · [Failure atlas](tools/occam_failure_atlas.md)
+
+## Supporting reference
 
 | Page | Purpose |
 |------|---------|
-| [Quick Start](quick-start.md) | First success |
-| [What is Occam?](what-is-occam.md) | Product mental model |
-| [How Occam works](how-occam-works.md) | User-level architecture |
-| [Getting started](getting-started.md) | First web read + operator CLI |
-| [Install](install.md) | Canonical install reference |
-| [Operators](operators.md) | CLI, doctor, connect, packaging |
-| [MCP hosts](mcp-hosts.md) | Connect tiers and safety |
-| [Connect](connect/index.md) | Automatic / `--only` / manual |
-| [Choosing a tool](choosing-a-tool.md) | Task router |
-| [Guides](guides/read-a-page.md) | Task-oriented how-tos |
-| [Examples](examples/index.md) | Copy/paste workflows |
-| [Recipes](recipes.md) | Additional multi-tool flows |
-| [Concepts](concepts.md) | Backends, playbooks, sessions, receipts |
-| [Acquisition](acquisition.md) | Gated HTTP→browser ladder |
-| [Materialization](materialization.md) | Token budgets and structured output |
-| [Networking](networking.md) | Proxies and SSRF scope |
-| [Sessions](sessions.md) | Authenticated access tiers |
-| [Experimental](experimental.md) | Watch / crosscheck / batch / atlas |
-| [Trust & Safety](trust-and-safety.md) | Honesty, local-first, install safety |
-| [Receipts](receipts.md) | Human receipt guide |
-| [Receipt verification](receipt_verification.md) | Normative receipt format |
-| [Playbooks](playbooks.md) | Site recipes and signature v1/v2 |
-| [Datasets](datasets.md) | Auditable multi-URL export |
-| [Handbook](handbook/index.md) | Deep technical textbook |
-| [Per-tool index](tools/index.md) | One page per tool |
-| [Tools reference](tools-reference.md) | Compact reference |
+| [Concepts](concepts.md) | Backends, sessions, playbooks, receipts |
+| [Failure codes](failure-codes.md) | Typed `failure.code` registry |
 | [Configuration](configuration.md) | Environment variables |
 | [Transports](transports.md) | stdio, WebSocket, batch HTTP |
-| [Failure codes](failure-codes.md) | Typed failures |
-| [Troubleshooting](troubleshooting.md) | Symptom → fix |
+| [MCP API](reference/mcp-api.md) | Contract-level response shapes |
 | [FAQ](faq.md) | Short answers |
-| [Ask AI](ask-ai.md) | LLM / assistant entry |
-| [Quality baseline](quality-baseline.md) | Public quality claims |
-| [Roadmap](roadmap.md) | Shipped / not shipped |
-| [Semantic contract](architecture/semantic-contract.md) | Developer invariants |
 
 ## LLM reading order
 
 1. [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt) once  
-2. [Choosing a tool](choosing-a-tool.md)  
+2. [Task routing](choosing-a-tool.md)  
 3. One page under [tools/](tools/index.md)  
 4. [Failure codes](failure-codes.md) only after `ok: false`  
 5. [Handbook](handbook/index.md) for deep comprehension  

@@ -1,4 +1,6 @@
-# occam_playbook_save
+# Save a playbook
+
+**Canonical tool:** `occam_playbook_save`
 
 Save an extraction playbook/genome JSON locally. By default (`verify=true`) dry-runs a transcode with
 the recipe and rejects failures of the **local quality gate heuristic**.

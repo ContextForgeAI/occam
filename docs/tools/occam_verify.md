@@ -1,4 +1,6 @@
-# occam_verify
+# Verify a receipt
+
+**Canonical tool:** `occam_verify`
 
 Verify Receipt v1 integrity **against a public key you supply** — offline signature check, live drift
 re-check, Merkle citation proofs, and watch history chain verification.

@@ -1,4 +1,6 @@
-# occam_playbook_heal
+# Heal a playbook
+
+**Canonical tool:** `occam_playbook_heal`
 
 When a transcode fails on a hard site with no recipe: capture the page's DOM skeleton plus selector
 candidates so **you** can draft a playbook for it. This tool gathers evidence; it does not write a

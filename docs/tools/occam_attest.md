@@ -1,4 +1,6 @@
-# occam_attest
+# Attest citations
+
+**Canonical tool:** `occam_attest`
 
 **Heuristic citation assessment** for a batch of `{claim, sourceUrl}` rows — **not** cryptographic
 attestation, not proof of truth, and not vendor/root identity certification.

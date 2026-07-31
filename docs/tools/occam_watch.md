@@ -1,4 +1,6 @@
-# occam_watch
+# Watch a page (opt-in)
+
+**Canonical tool:** `occam_watch`
 
 Stateful page-change watch. The first call records the page; later calls return `changed:
 true/false` plus a block-level diff when it changed. State is kept server-side, keyed by URL.

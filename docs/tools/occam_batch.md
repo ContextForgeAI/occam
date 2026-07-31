@@ -1,4 +1,6 @@
-# occam_batch_submit / occam_batch_status / occam_batch_results
+# Batch jobs (opt-in)
+
+**Canonical tool:** `occam_batch_submit / occam_batch_status / occam_batch_results`
 
 Fire-and-forget asynchronous transcode of a URL list: submit returns a `job_id` immediately; poll
 status; then page the results.

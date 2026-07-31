@@ -1,4 +1,6 @@
-# occam_failure_atlas
+# Failure atlas (opt-in)
+
+**Canonical tool:** `occam_failure_atlas`
 
 Read the running host's per-host failure atlas: which hosts look **walled in this session**
 (captcha / login / 4xx dominance — retrying may be wasted) vs which merely had transient failures.

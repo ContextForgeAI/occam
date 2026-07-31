@@ -1,4 +1,6 @@
-# occam_digest
+# Digest several sources
+
+**Canonical tool:** `occam_digest`
 
 Research several pages at once: digest up to 8 URLs into per-page excerpts plus an optional
 combined Markdown block.

@@ -1,4 +1,6 @@
-# occam_map
+# Map a site
+
+**Canonical tool:** `occam_map`
 
 Discover a site's same-domain links from its homepage, sitemap, or robots.txt — HTTP-only, up to
 64 URLs.
