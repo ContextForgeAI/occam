@@ -1,0 +1,8 @@
+#!/bin/sh
+# Local prepare-commit-msg: remove forbidden AI authorship trailers.
+MSG_FILE="$1"
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+if [ -f "$ROOT/scripts/git-hooks/strip-ai-attribution-trailers.mjs" ]; then
+  node "$ROOT/scripts/git-hooks/strip-ai-attribution-trailers.mjs" "$MSG_FILE" || true
+fi
+exit 0

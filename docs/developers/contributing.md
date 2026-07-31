@@ -10,6 +10,10 @@ Also read:
 - [Semantic contract](../architecture/semantic-contract.md) — durable extract invariants  
 - [Quality baseline](../quality-baseline.md) — public quality claims  
 
+Git authorship is human accountability: see **Git authorship** in the root
+[CONTRIBUTING.md](https://github.com/ContextForgeAI/occam/blob/main/CONTRIBUTING.md).
+AI tools must not appear as author, committer, or co-author.
+
 ### Preview this documentation site
 
 ```bash

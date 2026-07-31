@@ -38,6 +38,8 @@ jobs:
         run: |
           node scripts/check-docs.mjs
           node scripts/check-docs-brand.mjs
+          node scripts/check-git-attribution.selftest.mjs
+          node scripts/check-git-attribution.mjs
 
       - name: Connect docs claims (selftest)
         run: node scripts/lib/operator/connect.selftest.mjs

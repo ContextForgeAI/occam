@@ -139,6 +139,11 @@ jobs:
       - name: Validate human and LLM documentation
         run: node scripts/check-docs.mjs
 
+      - name: Git attribution guard
+        run: |
+          node scripts/check-git-attribution.selftest.mjs
+          node scripts/check-git-attribution.mjs
+
       - name: Validate environment catalog against code
         run: node scripts/lib/operator/env-catalog.selftest.mjs
 

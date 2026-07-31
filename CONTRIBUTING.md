@@ -96,6 +96,32 @@ chore(ci): update occam-release.yml for .NET 10
 
 Prefixes: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `perf`.
 
+### Git authorship
+
+Git author and committer identify the human who reviewed the change and accepts
+responsibility for it.
+
+AI tools may assist development, but must not be recorded as Git authors,
+committers, or co-authors. Do not add trailers such as:
+
+- `Co-authored-by: Cursor …`
+- `Co-authored-by: Codex …`
+- `Co-authored-by: Claude …`
+- `Made-with:` / `Generated-by:` for AI tools
+
+unless the maintainer explicitly requests a specific disclosure.
+
+Ordinary documentation or code that mentions Cursor, Codex, Claude, or OpenAI
+as product integrations is fine. Attribution trailers and author/committer
+fields are not.
+
+Local check:
+
+```bash
+node scripts/check-git-attribution.mjs
+node scripts/check-git-attribution.selftest.mjs
+```
+
 ### Code style
 
 - **C#:** Follow existing patterns. Use `sealed` classes where possible. Prefer `record` for immutable data. Use source-generated JSON (`JsonSerializerContext`) for AOT compatibility.
