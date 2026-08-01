@@ -22,21 +22,21 @@
     "tokensUsed": 42,
     "truncationStrategy": null,
     "confidence": 0.7188,
-    "elapsedMs": 770,
+    "elapsedMs": 767,
     "signed": {
       "v": 1,
       "kind": "extraction",
       "url": "https://example.com/",
       "finalUrl": "https://example.com/",
       "backend": "node_readability_turndown",
-      "ts": "2026-07-30T22:59:37Z",
+      "ts": "2026-08-01T10:53:26Z",
       "toolchain": "ff-occam/1.0.0-rc.2",
       "contentHash": "sha256:5945db6fd8137aa377638814ca9bb1ac0a663fd90a97f11f86c3f5c09cfb40e3",
       "tokens": 42,
       "confidence": 0.7188,
       "keyId": "k1:1a830d71a14381a8",
       "alg": "ecdsa-p256-sha256",
-      "sig": "rtGGoJRp8gpcsix4iMip4mMzLUFRBdLHlYJp7pkDijpvhpCbCWW23aQRv8yaSVXaT_l0SkYaGnNv349EiKRr7w"
+      "sig": "O1TPMRmU4N-awHW9JBb8aS2zPrO5w4tNA6JLi8xI-Lns4gZRIw96DylA93vUhCcJxEtYQoYm0UotzCJ4tr_gwg"
     },
     "tokenEstimator": "heuristic-unicode-v1"
   },
@@ -44,7 +44,7 @@
     {
       "backend": "node_readability_turndown",
       "ok": true,
-      "latencyMs": 770,
+      "latencyMs": 767,
       "transportOk": true,
       "usable": true
     }
@@ -56,11 +56,11 @@
     "canonical": null
   },
   "timings": {
-    "totalMs": 3796,
+    "totalMs": 3809,
     "preflightMs": 0,
-    "routeMs": 3796,
-    "networkMs": 693,
-    "parseMs": 78,
+    "routeMs": 3809,
+    "networkMs": 681,
+    "parseMs": 85,
     "postProcessMs": 0,
     "compileMs": 0
   },

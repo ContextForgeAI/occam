@@ -12,13 +12,15 @@ hide:
 
 </div>
 
-# Give your AI the page — not the webpage noise.
+# Stop wasting your agent's context on webpage noise.
 
 <div class="oc-hero oc-hero--rest" markdown="1">
 
 <p class="oc-hero-lead">
-Occam reads live web pages, removes the noise, and returns compact,
-source-linked content your AI agent can actually use.
+Most pages wrap the useful part in navigation, scripts, repeated interface
+text, consent controls, and raw markup. Occam removes that presentation layer
+before it reaches the model and returns compact, source-linked content your
+agent can actually use.
 </p>
 
 <p class="oc-hero-audience">
@@ -28,83 +30,85 @@ local and self-hosted setups.
 
 <p class="oc-hero-actions">
 <a class="oc-btn oc-btn--primary" href="quick-start/">Get your first result</a>
-<a class="oc-btn oc-btn--secondary" href="#real-output">See real output</a>
+<a class="oc-btn oc-btn--secondary" href="#measured-before-and-after">See the transformation</a>
 </p>
 
-<div class="oc-hero-visual" aria-label="Conceptual comparison: typical webpage input becomes compact agent context">
+<div class="oc-hero-visual" aria-label="Measured comparison: controlled webpage input becomes compact agent context">
   <div class="oc-hero-visual__panel oc-hero-visual__panel--noise">
-    <span class="oc-hero-visual__label">Typical webpage input</span>
-    <span class="oc-hero-visual__concept">Conceptual · not a measured page</span>
+    <span class="oc-hero-visual__label">Controlled webpage</span>
+    <span class="oc-hero-visual__concept">Measured fixture · 5,297 UTF-8 bytes</span>
     <ul class="oc-hero-visual__noise" aria-hidden="true">
-      <li>nav · scripts · chrome</li>
-      <li>cookie banners · footers</li>
-      <li>repeated UI · markup</li>
+      <li>navigation · search · scripts</li>
+      <li>related links · newsletter form</li>
+      <li>cookie notice · footer · layout CSS</li>
     </ul>
   </div>
   <span class="oc-hero-visual__arrow" aria-hidden="true">→</span>
   <div class="oc-hero-visual__panel oc-hero-visual__panel--clean">
     <span class="oc-hero-visual__label">Compact agent context</span>
-    <p class="oc-hero-visual__clean">Useful page content your agent can use — with the source URL attached.</p>
+    <p class="oc-hero-visual__clean">Article structure and useful text preserved — 1,736 UTF-8 bytes, with the source URL attached.</p>
   </div>
 </div>
 
 </div>
 
-## Real output
+## Measured before and after
 
-One deterministic smoke fixture. Bytes, not tokens. Not a universal benchmark.
+One controlled representative fixture. Bytes, not tokens. Not a universal
+benchmark.
 
 <div class="oc-compare oc-compare--measured" markdown="0">
   <div class="oc-compare__panel oc-compare__panel--before">
     <div class="oc-compare__eyebrow">Measured input</div>
-    <div class="oc-compare__title">Live HTML body</div>
-    <p class="oc-compare__url"><a href="https://example.com/">https://example.com/</a></p>
-    <pre class="oc-compare__md oc-compare__md--input"><code>&lt;!doctype html&gt;
-&lt;html&gt;
-&lt;head&gt;&lt;title&gt;Example Domain&lt;/title&gt;…
-&lt;body&gt;
-  &lt;h1&gt;Example Domain&lt;/h1&gt;
-  &lt;p&gt;This domain is for use in documentation
-  examples…&lt;/p&gt;
-&lt;/body&gt;
-&lt;/html&gt;</code></pre>
-    <p class="oc-compare__measure">559 UTF-8 HTML bytes <span class="oc-compare__measure-note">after HTTP decoding</span></p>
+    <div class="oc-compare__title">Article plus webpage chrome</div>
+    <p class="oc-compare__url"><a href="examples/current-proof/representative-input.html">Open the controlled input</a></p>
+    <pre class="oc-compare__md oc-compare__md--input"><code>&lt;header&gt;…search…&lt;/header&gt;
+&lt;nav&gt;…repeated links…&lt;/nav&gt;
+&lt;main&gt;
+  &lt;article&gt;Web context without the chrome…&lt;/article&gt;
+  &lt;aside&gt;…newsletter…related reading…&lt;/aside&gt;
+&lt;/main&gt;
+&lt;section&gt;…cookie notice…&lt;/section&gt;
+&lt;footer&gt;…company links…&lt;/footer&gt;</code></pre>
+    <p class="oc-compare__measure">5,297 UTF-8 HTML bytes</p>
   </div>
   <div class="oc-compare__panel oc-compare__panel--after">
     <div class="oc-compare__eyebrow">Measured output</div>
     <div class="oc-compare__title">Compact Markdown</div>
-    <pre class="oc-compare__md"><code># Example Domain
+    <pre class="oc-compare__md"><code># Web context without the chrome
 
-This domain is for use in documentation examples without needing permission.
-Avoid use in operations.</code></pre>
+AI agents rarely need the whole interface of a webpage.
+They need the useful text, its structure, and enough
+source information to explain where the material came from.</code></pre>
     <ul class="oc-compare__meta">
       <li><span>State</span> ok: true</li>
-      <li><span>Requested / final</span> https://example.com/</li>
+      <li><span>Preserved</span> headings, paragraphs, list, code</li>
       <li><span>Source</span> attached in the result</li>
     </ul>
-    <p class="oc-compare__measure">167 UTF-8 Markdown bytes</p>
+    <p class="oc-compare__measure">1,736 UTF-8 Markdown bytes</p>
   </div>
 </div>
 
 <div class="oc-measure-note" markdown="1">
 
-For this one page, Occam returned **70.1% fewer UTF-8 bytes** than the decoded
-HTML body (559 → 167). No tokenizer was used — not a token claim, and not a
-universal reduction rate.
+For this controlled page, Occam returned **67.2% fewer UTF-8 bytes** than the
+HTML body (5,297 → 1,736). No tokenizer was used — not a token claim, not an
+answer-quality claim, and not a universal reduction rate.
 
 <details class="oc-proof-disclosure">
 <summary>Method and source revision</summary>
 
-Source revision
-`acb1e1b31b13ba19a2d0ee115ae8389b9887deef`.
-Full method, complete output, and reproduction scripts:
-[current proof fixture](examples/current-proof/README.md).
+Runtime source revision
+`669e8dcae1afa7ddcf1ca5cf9388c4615e3a3603`.
+Full method, complete input/output, the minimal live smoke proof, controlled
+failure, and reproduction scripts:
+[current proof bundle](examples/current-proof/README.md).
 
 </details>
 
 </div>
 
-## Webpages were designed for people, not context windows
+## The cost grows with every source
 
 An ordinary page can contain navigation, scripts, repeated interface text,
 cookie controls, footers, and large amounts of raw markup around the part an
@@ -115,9 +119,9 @@ larger models work around irrelevant text. A search result can help find the
 source; Occam focuses on reading the chosen source and preparing usable page
 content for the agent.
 
-A richer before/after fixture with realistic page chrome is planned as a
-follow-up; until then, the conceptual comparison above explains the job, and
-`example.com` remains the deterministic smoke proof.
+The measured fixture above makes that transformation inspectable. The proof
+bundle also retains `example.com` as the minimal live smoke case so the richer
+marketing example does not replace the smallest deterministic contract check.
 
 ## A useful result — or an explicit unknown
 

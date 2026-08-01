@@ -1,0 +1,9 @@
+{
+  "name": "@contextforgeai/occam-demo-gateway",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node demo-gateway.selftest.mjs"
+  }
+}

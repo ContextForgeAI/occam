@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Occam demo gateway prototype</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Local prototype · not a public service</p>
+    <h1>See the webpage noise disappear.</h1>
+    <p>Submit one public HTTP(S) page. The prototype uses the HTTP extractor
+    only and returns compact Markdown or an explicit typed failure.</p>
+    <form id="demo-form">
+      <label for="url">Public page URL</label>
+      <div class="row">
+        <input id="url" name="url" type="url" value="https://example.com/" required maxlength="2048">
+        <button type="submit">Read with Occam</button>
+      </div>
+    </form>
+    <p class="limits">No cookies, logins, custom headers, browser fallback, or
+    private destinations. Requests are rate- and size-limited.</p>
+    <section id="result" aria-live="polite" aria-busy="false"></section>
+  </main>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

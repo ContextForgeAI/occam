@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-01T10:53:26.089Z",
+  "runtimeSourceSha": "669e8dcae1afa7ddcf1ca5cf9388c4615e3a3603",
+  "method": "Compare the UTF-8 byte length of the controlled HTML response body with the UTF-8 byte length of result.markdown.",
+  "inputBodyBytesAfterHttpDecoding": 5297,
+  "outputMarkdownUtf8Bytes": 1736,
+  "byteReductionForThisExamplePercent": 67.2,
+  "tokenizer": null,
+  "qualification": "This controlled page demonstrates removal of representative webpage chrome. It is not a universal size, token-savings, or answer-quality guarantee."
+}

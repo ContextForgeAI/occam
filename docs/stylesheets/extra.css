@@ -1701,7 +1701,7 @@ body.oc-page-home .oc-pillars {
   color: var(--oc-text-secondary);
 }
 
-/* Hero visual: conceptual noise → compact */
+/* Hero visual: measured webpage chrome → compact context */
 .oc-hero-visual {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -1784,6 +1784,53 @@ body.oc-page-home .oc-pillars {
   font-size: 1.1rem;
   font-weight: 600;
   user-select: none;
+}
+
+@keyframes oc-proof-noise {
+  0%, 18%, 100% {
+    border-left-color: var(--oc-border-strong);
+    opacity: 0.92;
+    transform: translateX(0);
+  }
+  42%, 64% {
+    border-left-color: var(--oc-border);
+    opacity: 0.66;
+    transform: translateX(0.2rem);
+  }
+}
+
+@keyframes oc-proof-arrow {
+  0%, 22%, 100% {
+    opacity: 0.55;
+    transform: translateX(0);
+  }
+  44%, 62% {
+    opacity: 1;
+    transform: translateX(0.18rem);
+  }
+}
+
+@keyframes oc-proof-clean {
+  0%, 36%, 100% {
+    box-shadow: none;
+    transform: translateX(0);
+  }
+  58%, 76% {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--oc-accent) 30%, transparent);
+    transform: translateX(0.12rem);
+  }
+}
+
+body.oc-page-home .oc-hero-visual__panel--noise {
+  animation: oc-proof-noise 7s ease-in-out infinite;
+}
+
+body.oc-page-home .oc-hero-visual__arrow {
+  animation: oc-proof-arrow 7s ease-in-out infinite;
+}
+
+body.oc-page-home .oc-hero-visual__panel--clean {
+  animation: oc-proof-clean 7s ease-in-out infinite;
 }
 
 /* Before / after proof */
@@ -2660,6 +2707,5 @@ body.oc-page-prose .oc-first-prompt {
     align-items: baseline;
   }
 }
-
 
 

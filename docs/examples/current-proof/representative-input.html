@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Web context without the chrome | Northstar Engineering</title>
+  <meta name="description" content="A controlled, representative page for the Occam current-proof fixture.">
+  <link rel="canonical" href="https://contextforgeai.github.io/occam/examples/current-proof/representative-input.html">
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { margin: 0; }
+    header, nav, main, aside, footer, .cookie-banner { padding: 1rem 8vw; }
+    nav ul, footer ul { display: flex; flex-wrap: wrap; gap: 1rem; list-style: none; padding: 0; }
+    .layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(14rem, 1fr); gap: 2rem; }
+    article { max-width: 48rem; }
+    pre { overflow: auto; padding: 1rem; background: #171a21; color: #f5f7fa; }
+    .cookie-banner { border-top: 1px solid currentColor; }
+    @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+  </style>
+  <script>window.analyticsQueue = window.analyticsQueue || [];</script>
+</head>
+<body>
+  <header>
+    <p>Northstar Engineering Journal</p>
+    <form role="search">
+      <label for="site-search">Search the journal</label>
+      <input id="site-search" name="q" type="search" placeholder="Search">
+      <button type="submit">Search</button>
+    </form>
+  </header>
+
+  <nav aria-label="Primary navigation">
+    <ul>
+      <li><a href="#platform">Platform</a></li>
+      <li><a href="#research">Research</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="#company">Company</a></li>
+      <li><a href="#newsletter">Newsletter</a></li>
+    </ul>
+  </nav>
+
+  <main class="layout">
+    <article>
+      <p>Agent infrastructure · 8 minute read</p>
+      <h1>Web context without the chrome</h1>
+      <p>AI agents rarely need the whole interface of a webpage. They need the
+      useful text, its structure, and enough source information to explain
+      where the material came from.</p>
+
+      <h2>The hidden cost of a page read</h2>
+      <p>A typical page wraps an article in navigation, consent controls,
+      repeated links, related-content cards, scripts, and layout markup. When
+      an agent receives that representation unchanged, limited context is
+      spent on interface text before the actual task begins.</p>
+      <p>The problem compounds during research. Reading several sources can
+      repeat the same headers and footers many times, leaving less room for the
+      evidence that the model must compare.</p>
+
+      <h2>Shape the source before the model sees it</h2>
+      <p>A web-context layer should preserve headings, paragraphs, lists, code,
+      and the source URL while removing presentation-only material. It should
+      also return an explicit failure when a page cannot be read instead of
+      asking the model to reconstruct missing content from memory.</p>
+      <pre><code>web page
+  -&gt; useful page structure
+  -&gt; compact agent context
+  -&gt; source-linked result</code></pre>
+
+      <h2>What to measure</h2>
+      <p>Measure the input and output using a declared method. A byte comparison
+      can show representation size for one fixture, but it is not automatically
+      a token-savings, answer-quality, or universal coverage claim. Record the
+      source revision and keep the complete output available for inspection.</p>
+
+      <h2>Operational boundary</h2>
+      <p>Public demos need stricter limits than local tools. They must reject
+      private destinations, cap response sizes, bound execution time, and
+      expose typed failures for rate limits or access walls. Cookies and
+      authenticated sessions do not belong in an anonymous demo.</p>
+    </article>
+
+    <aside aria-label="Related reading">
+      <h2>Related reading</h2>
+      <ul>
+        <li><a href="#context-windows">A field guide to context windows</a></li>
+        <li><a href="#browser-automation">When browser automation is necessary</a></li>
+        <li><a href="#source-integrity">Source integrity is not truth proof</a></li>
+        <li><a href="#failure-taxonomy">Designing an honest failure taxonomy</a></li>
+      </ul>
+      <h2 id="newsletter">Weekly engineering notes</h2>
+      <p>One practical systems article every Thursday.</p>
+      <form>
+        <label for="email">Work email</label>
+        <input id="email" name="email" type="email" placeholder="you@example.com">
+        <button type="submit">Subscribe</button>
+      </form>
+    </aside>
+  </main>
+
+  <section class="cookie-banner" aria-label="Cookie notice">
+    <h2>Your privacy choices</h2>
+    <p>We use optional analytics to understand which articles are useful.</p>
+    <button type="button">Accept analytics</button>
+    <button type="button">Use necessary cookies only</button>
+  </section>
+
+  <footer>
+    <p>Northstar Engineering Journal</p>
+    <ul>
+      <li><a href="#about">About</a></li>
+      <li><a href="#careers">Careers</a></li>
+      <li><a href="#privacy">Privacy</a></li>
+      <li><a href="#terms">Terms</a></li>
+      <li><a href="#status">Status</a></li>
+    </ul>
+    <p>Copyright 2026 Northstar Systems. Controlled documentation fixture.</p>
+  </footer>
+</body>
+</html>
