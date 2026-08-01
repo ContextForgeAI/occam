@@ -6,3 +6,4 @@ repo_root="$(cd -- "$fixture_dir/../../.." && pwd)"
 
 cd "$repo_root"
 node "$fixture_dir/reproduce.mjs"
+node "$fixture_dir/reproduce-representative.mjs"

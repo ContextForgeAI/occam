@@ -1,8 +1,8 @@
 # Current Occam proof
 
-This fixture records one successful live page read and one controlled failure
-from Occam Core `1.0.0-rc.2` at source SHA
-`acb1e1b31b13ba19a2d0ee115ae8389b9887deef`.
+This evidence bundle records a minimal live page read, a representative
+webpage-noise transformation, and one controlled failure from Occam Core
+`1.0.0-rc.2`.
 
 It is deliberately small. The fixture proves the behavior of this example; it
 is not a universal success-rate, size-reduction, or token-savings claim.
@@ -38,6 +38,40 @@ Avoid use in operations.
 The full artifacts are
 [success-output.md](success-output.md) and
 [success-result.json](success-result.json).
+
+## Representative webpage transformation
+
+The controlled [input page](representative-input.html) wraps an engineering
+article in primary navigation, search, related links, a newsletter form, a
+cookie notice, scripts, layout CSS, and a footer. It is deliberately more
+representative than `example.com` while remaining stable and inspectable.
+
+Occam preserved the article heading, paragraphs, section structure, and code
+sample while removing the presentation-only chrome. The recorded output begins:
+
+```markdown
+# Web context without the chrome
+
+Agent infrastructure · 8 minute read
+
+AI agents rarely need the whole interface of a webpage. They need the useful
+text, its structure, and enough source information to explain where the
+material came from.
+```
+
+For this controlled page:
+
+- **Input:** 5,297 UTF-8 HTML bytes.
+- **Output:** 1,736 UTF-8 Markdown bytes.
+- **Result:** 67.2% fewer bytes in this fixture.
+
+No tokenizer was used. This is not a universal size, token-savings, or
+answer-quality claim. The input body hash and runtime source revision are in
+[representative-input-metadata.json](representative-input-metadata.json); the
+method is in
+[representative-measurement.json](representative-measurement.json). Inspect the
+complete [Markdown output](representative-output.md) or
+[tool result](representative-result.json).
 
 ## Measurement
 
@@ -88,16 +122,19 @@ and the Occam worker dependencies prepared by `occam doctor`.
     bash ./docs/examples/current-proof/reproduce.sh
     ```
 
-The script starts the local MCP host over stdio, calls `occam_transcode` for
-both cases, refreshes the JSON/Markdown artifacts, and exits non-zero if either
-contract changes.
+The wrapper first refreshes the minimal live success and controlled failure.
+It then starts a loopback server for the representative input, launches a
+second local MCP session with private-URL access explicitly enabled for that
+fixture only, and refreshes its JSON/Markdown artifacts. It exits non-zero if
+any expected contract or article-content check changes.
 
 Expected marker:
 
 ```text
 CURRENT_PROOF_OK ... failure=private_url_blocked
+REPRESENTATIVE_PROOF_OK ... reduction=67.2%
 ```
 
-Timing, signature, and capture timestamp fields are expected to change between
-runs. The success content, byte counts, and policy result are bounded by the
-recorded source page and current Occam behavior.
+Timing, signature, local port, and capture timestamp fields are expected to
+change between runs. The success content, byte counts, and policy result are
+bounded by the recorded source pages and current Occam behavior.

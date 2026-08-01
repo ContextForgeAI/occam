@@ -17,7 +17,7 @@ You are working in **FFOccamMCP**, the L0 core of **FF-Occam MCP**. **Read this 
 | Params: on `occam_transcode` **only `url` is required** — every other is an off-by-default opt-in (~19, grouped by `[core]`/`[tokens]`/`[structured]`/`[fetch]`/`[watch]`/`[advanced]`); full param tables are code-generated → **canonical in `MCP_API_SPEC.md` + `docs/tools-reference.md`** (don't hand-count here) | `revisit_diff`, legacy `web_map` |
 | L1b: probe, domain tiers, agentHints | federation cache, legacy `web_*` |
 | Workers: `workers/http-extract/extract.mjs`, `workers/browser-extract/browser-extract.mjs`, **`workers/css-extract/css-extract.mjs`** | gate-unit monolith |
-| Browser daemon (host auto-start) | Compare Lab in this repo |
+| Browser daemon (host auto-start) | Public live demo (`showcase/demo-gateway` is a local, non-shipping prototype only) |
 | `scripts/occam-doctor.ps1` | 12-tool public wiki |
 | Gate `benchmarks/l0-gate` → `L0_GATE_OK` / `L0_GATE_FAST_OK` / `L1A_TOKEN_OK` / `L1B_PROBE_OK` / `L1_FAILURE_TAXONOMY_OK` / `L2_DIGEST_OK` / `L2_MAP_OK` / **`L2_SESSION_OK`** / **`L2_TRANSPORT_OK`** / **`L2_EGRESS_OK`** / **`L2_MEDIA_REFS_OK`** / **`L3_HEAL_LEARN_OK`** / **`L4_GENOME_OK`** / **`L5_BATCH_OK`** / **`L6_BROWSER_POOL_OK`** / **`L7_RESOURCE_SAFETY_OK`** / **`L8_AGENT_FIRST_OK`** (L9 golden set folds into `L0_GATE_OK`) | Wide Validation, wave2-eval |
 
@@ -237,6 +237,8 @@ scripts/run-l0-orphan-audit.ps1
 scripts/run-l0-browser-bench.ps1
 scripts/run-l0-ram-stress.ps1
 scripts/run-browser-daemon.ps1
+
+showcase/demo-gateway/             # local non-shipping public-demo prototype; never a Core/MCP surface
 
 docs/                    # curated public hub + focused per-tool pages
 docs-internal/           # local engineering (gitignored)

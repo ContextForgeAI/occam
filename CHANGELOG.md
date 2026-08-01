@@ -27,6 +27,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Changed
 
+- **Pain-first public entry pages** — README and documentation homepage now
+  lead with the context cost of webpage chrome and show a reproducible
+  representative transformation before deeper product detail. The current
+  proof bundle retains the minimal live `example.com` smoke case and adds a
+  controlled page with navigation, forms, related links, consent UI, scripts,
+  and footer content; all public measurements remain fixture-scoped byte
+  comparisons, not token or answer-quality claims.
+
 - **Install UX — one quiet command to Ready** — public bootstrap (`get-ff-occam.ps1` / `.sh`) no longer
   prints Level B / phantom `host_target` / doctor fixture dumps / `commit=unknown` / premature
   “MCP host ready” / duplicate onboard instructions. Default install is ~15–25 lines:

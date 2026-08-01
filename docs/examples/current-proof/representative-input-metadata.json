@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-01T10:53:26.089Z",
+  "runtimeSourceSha": "669e8dcae1afa7ddcf1ca5cf9388c4615e3a3603",
+  "input": {
+    "localReproductionUrl": "http://127.0.0.1:65280/representative-input.html",
+    "publishedUrl": "https://contextforgeai.github.io/occam/examples/current-proof/representative-input.html",
+    "contentType": "text/html; charset=utf-8",
+    "bodyBytesAfterHttpDecoding": 5297,
+    "bodySha256": "5b0c7adc9585ed4a322a2c0edb789cb376ce1f932ebc6be31134c47a4eb105ef"
+  },
+  "invocation": {
+    "transport": "MCP stdio",
+    "tool": "occam_transcode",
+    "arguments": {
+      "url": "<local fixture URL>"
+    },
+    "environment": {
+      "OCCAM_ALLOW_PRIVATE_URLS": "1"
+    },
+    "outputProfile": "default options; only the required url argument"
+  }
+}

@@ -2,16 +2,18 @@
 
 *Local-first web context for AI agents.*
 
-## Give your AI the page — not the webpage noise.
+## Stop wasting your agent's context on webpage noise.
 
-Occam reads live web pages, removes the noise, and returns compact,
-source-linked content your AI agent can actually use.
+Most pages wrap the useful part in navigation, scripts, repeated interface
+text, consent controls, and raw markup. Occam removes that presentation layer
+before it reaches the model and returns compact, source-linked content your
+agent can actually use.
 
 It is for developers and technical users building or running AI agents,
 especially in local and self-hosted environments.
 
 **[Get your first result](docs/quick-start.md)** ·
-[See real output](docs/examples/current-proof/README.md) ·
+[See the transformation](docs/examples/current-proof/README.md#representative-webpage-transformation) ·
 [Read the documentation](https://contextforgeai.github.io/occam/)
 
 > **Current status:** Occam Core `1.0.0-rc.2` is a release candidate. The MCP
@@ -19,27 +21,31 @@ especially in local and self-hosted environments.
 > `occam chat` and other features listed as experimental are not stable 1.0
 > interfaces.
 
-## Real input. Current output.
+## See the webpage noise disappear
 
-At source SHA `acb1e1b31b13ba19a2d0ee115ae8389b9887deef`,
-Occam read [`https://example.com/`](https://example.com/) with the default
-`occam_transcode` options:
+The current proof bundle includes a controlled engineering article wrapped in
+navigation, search, related links, a newsletter form, a cookie notice, scripts,
+layout CSS, and a footer. With the default `occam_transcode` options, Occam
+kept the article structure and returned:
 
 ```markdown
-# Example Domain
+# Web context without the chrome
 
-This domain is for use in documentation examples without needing permission.
-Avoid use in operations.
+AI agents rarely need the whole interface of a webpage. They need the useful
+text, its structure, and enough source information to explain where the
+material came from.
 ```
 
-In this reproducible example, the HTML response body was **559 UTF-8 bytes**
-after HTTP decoding. Occam returned **167 UTF-8 bytes** of Markdown — **70.1%
-fewer bytes for this page**. No tokenizer was used, so this is not a token
-claim.
+The controlled HTML body is **5,297 UTF-8 bytes**. Occam returned **1,736 UTF-8
+bytes** of Markdown — **67.2% fewer bytes in this fixture**. No tokenizer was
+used, so this is not a token-savings or answer-quality claim and not a universal
+reduction rate.
 
-The result also records the requested URL, final URL, extraction backend,
-content hash, and an optional signed integrity receipt. See the
-[method, complete output, and controlled failure](docs/examples/current-proof/README.md).
+Inspect the [input page](https://contextforgeai.github.io/occam/examples/current-proof/representative-input.html),
+[complete output](docs/examples/current-proof/representative-output.md), and
+[measurement method](docs/examples/current-proof/representative-measurement.json).
+The bundle also retains the minimal live `example.com` smoke proof and a
+controlled typed failure.
 
 ## Install to first result
 
