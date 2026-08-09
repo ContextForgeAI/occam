@@ -7,16 +7,30 @@
  * deadlock the HTTP event loop.
  */
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn, spawnSync } from "node:child_process";
 import { createServer } from "node:http";
 import { extname } from "node:path";
+import { resolveRid } from "./resolve-rid.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "..", "..");
+
+function writeLevelBProbeTree(root) {
+  const rid = resolveRid();
+  mkdirSync(join(root, "scripts"), { recursive: true });
+  writeFileSync(join(root, "VERSION"), "1.0.0-rc.2\n");
+  writeFileSync(
+    join(root, "release-manifest.json"),
+    `${JSON.stringify({ version: "1.0.0-rc.2", rid, layout: "level-b" })}\n`,
+  );
+  writeFileSync(join(root, rid.startsWith("win-") ? "OccamMcp.Core.exe" : "OccamMcp.Core"), "fake");
+  writeFileSync(join(root, "scripts", "occam.mjs"), "// probe\n");
+  writeFileSync(join(root, "scripts", "launch-mcp-host.mjs"), "// probe\n");
+}
 
 function contentType(filePath) {
   switch (extname(filePath)) {
@@ -161,7 +175,7 @@ function testFileModePrepare() {
   const runner = join(repoRoot, "scripts", "_tmp-file-prepare-probe.ps1");
   const probeRoot = mkdtempSync(join(tmpdir(), "occam-file-probe-"));
   try {
-    writeFileSync(join(probeRoot, "OccamMcp.Core.exe"), "fake");
+    writeLevelBProbeTree(probeRoot);
     const boot = readFileSync(join(repoRoot, "scripts", "get-ff-occam.ps1"), "utf8");
     const head = extractBootstrapHead(boot);
     writeFileSync(
@@ -200,7 +214,7 @@ async function testProductStyleIrmIex() {
   const probeRoot = mkdtempSync(join(tmpdir(), "occam-product-pipe-"));
   const probePs1 = join(probeRoot, "probe.ps1");
   try {
-    writeFileSync(join(probeRoot, "OccamMcp.Core.exe"), "fake");
+    writeLevelBProbeTree(probeRoot);
     writeFileSync(
       probePs1,
       `

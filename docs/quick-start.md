@@ -341,7 +341,7 @@ occam uninstall --dry-run   # registrations, generated launcher, release tree
 
 Default uninstall preserves local state, skills, backups, the response cache,
 and the shared Playwright browser cache. State and cache cleanup require
-explicit flags. See [Install: disconnect or uninstall](install.md#disconnect-or-uninstall)
+explicit flags. See [installation safety: disconnect and uninstall](trust/installation-safety.md#disconnect-and-uninstall)
 for the complete boundary.
 
 ## You have your first result when
