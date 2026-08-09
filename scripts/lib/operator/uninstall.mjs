@@ -14,10 +14,12 @@ import {
   readdirSync,
   readFileSync,
   realpathSync,
+  renameSync,
   rmSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { homedir, platform, tmpdir } from "node:os";
 import {
   isAbsolute,
@@ -79,6 +81,65 @@ export function looksLikeGeneratedLauncher(body, occamHome, name, platformName =
     return markers.includes("@echo off") && markers.includes("setlocal");
   }
   return markers.includes("#!/usr/bin/env bash") && markers.includes("set -euo pipefail");
+}
+
+/**
+ * Remove a recognized release install tree.
+ * On Windows, Node's rmSync often hits EPERM while Defender or an open module
+ * handle briefly locks files. Renaming the tree aside clears OCCAM_HOME first;
+ * trash cleanup is best-effort.
+ * @param {string} installPath
+ */
+export function removeReleaseInstallTree(installPath) {
+  const target = resolve(String(installPath || ""));
+  if (!existsSync(target)) return;
+  try {
+    rmSync(target, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 100,
+    });
+    if (!existsSync(target)) return;
+  } catch {
+    // fall through to rename-aside path
+  }
+
+  if (platform() === "win32") {
+    const trash = `${target}.occam-uninstall-${Date.now()}`;
+    renameSync(target, trash);
+    try {
+      rmSync(trash, {
+        recursive: true,
+        force: true,
+        maxRetries: 10,
+        retryDelay: 100,
+      });
+    } catch {
+      spawnSync(
+        "powershell.exe",
+        [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-Command",
+          `Remove-Item -LiteralPath '${trash.replace(/'/g, "''")}' -Recurse -Force -ErrorAction SilentlyContinue`,
+        ],
+        { stdio: "ignore", windowsHide: true },
+      );
+    }
+    if (existsSync(target)) {
+      throw new Error(`install tree is still present after removal: ${target}`);
+    }
+    return;
+  }
+
+  rmSync(target, {
+    recursive: true,
+    force: true,
+    maxRetries: 10,
+    retryDelay: 100,
+  });
 }
 
 /**
@@ -733,18 +794,7 @@ export function executeLocalUninstallPlan(plan, deps = {}) {
           if (isSameOrInside(install.path, process.cwd())) {
             (deps.chdir || process.chdir)(plan.homeDir);
           }
-          // Windows: release archives often mark files read-only; Node needs force +
-          // retries so uninstall can clear EPERM while Defender briefly locks files.
-          // Do not run with cwd inside the tree being removed (see CLI dispatch).
-          const removeInstall =
-            deps.removeInstall ||
-            ((path) =>
-              rmSync(path, {
-                recursive: true,
-                force: true,
-                maxRetries: 10,
-                retryDelay: 100,
-              }));
+          const removeInstall = deps.removeInstall || removeReleaseInstallTree;
           removeInstall(install.path);
           if (existsSync(install.path)) {
             throw new Error("install tree is still present after removal");
