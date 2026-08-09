@@ -86,7 +86,8 @@ function printReloadHint() {
   log("  Cursor: Settings → MCP → Reload (or restart Cursor)");
   log("  Hermes: restart the ff-occam MCP child process");
   log("");
-  log("After reload, tools/list should show 9 occam_* tools with the new binary.");
+  log("After reload, tools/list should include occam_client_capabilities and occam_transcode.");
+  log("Run `occam contract` for the current registry instead of relying on a hand-counted tool total.");
   log(`Published host: ${publishExePath(root)}`);
 }
 

@@ -1,25 +1,25 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { readOccamVersion } from "./onboard-schema.mjs";
+import { isPublishedReleaseRid, resolvePublishedRid } from "../resolve-rid.mjs";
 
 /**
  * @returns {string}
  */
-export function detectReleaseRid() {
-  const override = process.env.OCCAM_RID?.trim();
+export function detectReleaseRid(
+  platform = process.platform,
+  arch = process.arch,
+  override = process.env.OCCAM_RID?.trim(),
+) {
   if (override) {
+    if (!isPublishedReleaseRid(override)) {
+      throw new Error(
+        `unsupported OCCAM_RID: ${override} (published RIDs: win-x64, linux-x64, osx-arm64)`,
+      );
+    }
     return override;
   }
-
-  if (process.platform === "win32") {
-    return "win-x64";
-  }
-
-  if (process.platform === "darwin") {
-    return process.arch === "arm64" ? "osx-arm64" : "osx-x64";
-  }
-
-  return "linux-x64";
+  return resolvePublishedRid(platform, arch);
 }
 
 /**

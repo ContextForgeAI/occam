@@ -307,10 +307,13 @@ function testNoPhantomHermesInManualDefault() {
   assert.match(sh, /install_occam_user_command/);
   assert.match(ps1, /install-user-cli\.mjs/);
   assert.match(sh, /install-user-cli\.mjs/);
-  // Temp helper must stage ESM deps (not a single flat .mjs) — Mac public install regression.
+  // The user-command helper and ESM dependency must come from the verified archive.
   assert.match(ps1, /resolve-node-runtime\.mjs/);
   assert.match(sh, /resolve-node-runtime\.mjs/);
-  assert.match(sh, /mktemp -d "\$\{TMPDIR:-\/tmp\}\/occam-install-user-cli\.XXXXXX"/);
+  assert.match(ps1, /"--no-overlay"/);
+  assert.match(sh, /--no-overlay/);
+  assert.doesNotMatch(ps1, /OCCAM_OVERLAY_BASE_URL/);
+  assert.doesNotMatch(sh, /OCCAM_OVERLAY_BASE_URL/);
   // First-run must show life during long steps and continue into connect.
   assert.match(ps1, /Installing runtime/);
   assert.match(sh, /Installing runtime/);

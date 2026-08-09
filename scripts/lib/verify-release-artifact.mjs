@@ -3,14 +3,15 @@
  * Lightweight release artifact check (CI) — no Playwright / doctor.
  * Verifies external manifest sha256 and tarball layout.
  */
-import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { execFileSync, execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-
-const SUPPORTED_RIDS = new Set(["win-x64", "linux-x64", "osx-arm64", "osx-x64"]);
+import { validateReleaseRoot } from "./operator/install-user-cli.mjs";
+import { verifyReleaseManifest } from "./verify-release-manifest.mjs";
+import { isPublishedReleaseRid } from "./resolve-rid.mjs";
+import { preflightTarGzArchive } from "./archive-preflight.mjs";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "../..");
@@ -53,43 +54,45 @@ function readLatestReleasedVersion() {
   fail("could not read version from CHANGELOG.md — pass --version");
 }
 
-function sha256File(filePath) {
-  const hash = crypto.createHash("sha256");
-  hash.update(fs.readFileSync(filePath));
-  return hash.digest("hex");
-}
-
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const rid = args.rid;
   if (!rid) {
     fail("--rid is required");
   }
-  if (!SUPPORTED_RIDS.has(rid)) {
+  if (!isPublishedReleaseRid(rid)) {
     fail(`unsupported RID: ${rid}`);
   }
 
   const version = args.version ?? readLatestReleasedVersion();
   const outputDir = path.resolve(args.outputDir ?? path.join(repoRoot, "artifacts", "releases"));
   const stageName = `ff-occam-${version}-${rid}`;
-  const tarballPath = path.join(outputDir, `${stageName}.tar.gz`);
-  const manifestPath = path.join(outputDir, `${stageName}-manifest.json`);
-
-  if (!fs.existsSync(tarballPath)) {
-    fail(`tarball not found: ${tarballPath}`);
+  let manifestVerification;
+  try {
+    manifestVerification = verifyReleaseManifest({ version, rid, outputDir });
+  } catch (error) {
+    fail(error instanceof Error ? error.message : String(error));
   }
-  if (!fs.existsSync(manifestPath)) {
-    fail(`manifest not found: ${manifestPath}`);
+  const { actualSha, manifest, tarballPath } = manifestVerification;
+  if (manifest.runtimeLayout !== "self-contained-v1") {
+    fail(
+      `manifest runtime layout mismatch (expected self-contained-v1, got ${manifest.runtimeLayout})`,
+    );
+  }
+  if (manifest.signaturePolicy !== "required-cosign-v1" && manifest.signaturePolicy !== "sha256-only") {
+    fail(
+      `manifest signaturePolicy missing or unsupported (got ${String(manifest.signaturePolicy)})`,
+    );
   }
 
-  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-  if (manifest.version !== version || manifest.rid !== rid) {
-    fail(`manifest version/rid mismatch (expected ${version}/${rid})`);
-  }
-
-  const actualSha = sha256File(tarballPath);
-  if (actualSha !== manifest.sha256) {
-    fail(`sha256 mismatch (manifest=${manifest.sha256} actual=${actualSha})`);
+  const expectedRoot = stageName;
+  try {
+    const preflight = preflightTarGzArchive({ archivePath: tarballPath, expectedRoot });
+    if (preflight.problems.length > 0) {
+      fail(`archive preflight failed:\n  ${preflight.problems.join("\n  ")}`);
+    }
+  } catch (error) {
+    fail(error instanceof Error ? error.message : String(error));
   }
 
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "ff-occam-verify-"));
@@ -153,6 +156,11 @@ function main() {
     const launchScript = path.join(extractRoot, "scripts", "launch-mcp-host.mjs");
     if (!fs.existsSync(launchScript)) {
       fail("missing scripts/launch-mcp-host.mjs in tarball");
+    }
+
+    const releaseProblems = validateReleaseRoot(extractRoot, { version, rid });
+    if (releaseProblems.length > 0) {
+      fail(`release archive is incomplete:\n  ${releaseProblems.join("\n  ")}`);
     }
 
     const sizeBytes = fs.statSync(tarballPath).size;

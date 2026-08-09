@@ -14,23 +14,35 @@ if [[ -n "${BASH_SOURCE[0]:-}" ]] && [[ -f "${BASH_SOURCE[0]}" ]]; then
 fi
 
 detect_rid() {
-  local os arch
-  os="$(uname -s 2>/dev/null || echo Linux)"
-  arch="$(uname -m 2>/dev/null || echo x86_64)"
-  case "$os" in
-    Darwin)
-      case "$arch" in
-        arm64|aarch64) echo "osx-arm64" ;;
-        *)             echo "osx-x64" ;;
-      esac
+  local os="${1:-}" arch="${2:-}"
+  [[ -n "$os" ]] || os="$(uname -s 2>/dev/null || echo unknown)"
+  [[ -n "$arch" ]] || arch="$(uname -m 2>/dev/null || echo unknown)"
+  case "${os}/${arch}" in
+    Darwin/arm64|Darwin/aarch64) echo "osx-arm64" ;;
+    Linux/x86_64|Linux/amd64) echo "linux-x64" ;;
+    MINGW*/x86_64|MINGW*/amd64|MSYS*/x86_64|MSYS*/amd64|CYGWIN*/x86_64|CYGWIN*/amd64|Windows_NT/x86_64|Windows_NT/amd64)
+      echo "win-x64"
       ;;
-    MINGW*|MSYS*|CYGWIN*|Windows_NT) echo "win-x64" ;;
-    *) echo "linux-x64" ;;
+    *)
+      echo "error: no public Occam release for ${os}/${arch} (published RIDs: win-x64, linux-x64, osx-arm64)" >&2
+      return 1
+      ;;
   esac
 }
 
-VERSION="${OCCAM_VERSION:-1.0.0-rc.2}"
+assert_published_rid() {
+  case "$1" in
+    win-x64|linux-x64|osx-arm64) return 0 ;;
+    *)
+      echo "error: unsupported OCCAM_RID: $1 (published RIDs: win-x64, linux-x64, osx-arm64)" >&2
+      return 1
+      ;;
+  esac
+}
+
+VERSION="${OCCAM_VERSION:-1.0.0-rc.3}"
 RID="${OCCAM_RID:-$(detect_rid)}"
+assert_published_rid "$RID"
 INSTALL_DIR="${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}"
 # Legacy snippet hint only — never printed as a selected host before the user chooses.
 HOST_TARGET="${OCCAM_HOST:-}"
@@ -47,6 +59,11 @@ RELEASE_URL="${OCCAM_RELEASE_URL:-${RELEASE_BASE}/ff-occam-${VERSION}-${RID}.tar
 MANIFEST_URL="${OCCAM_RELEASE_MANIFEST_URL:-${RELEASE_BASE}/ff-occam-${VERSION}-${RID}-manifest.json}"
 
 MIN_NODE_MAJOR=20
+INSTALL_TRANSACTION_TARGET=""
+INSTALL_TRANSACTION_BACKUP=""
+INSTALL_TRANSACTION_ACTIVE=0
+INSTALL_TRANSACTION_COMMITTED=0
+BOOTSTRAP_TMP=""
 
 v_echo() {
   if [[ "$VERBOSE" -eq 1 ]]; then
@@ -108,46 +125,28 @@ need_cmd() {
 # Stop install-scoped Occam hosts. Does not delete the install tree.
 prepare_install_replace() {
   local dir="$1"
+  local staged="${2:-}"
   [[ -e "$dir" ]] || return 0
 
   local helper=""
-  local helper_tmp=""
-  if [[ -n "$ROOT_DIR" && -f "$ROOT_DIR/scripts/lib/prepare-install-replace.mjs" ]]; then
+  if [[ -n "$staged" && -f "$staged/scripts/lib/prepare-install-replace.mjs" ]]; then
+    # Prefer the helper from the archive whose SHA-256 was just verified.
+    helper="$staged/scripts/lib/prepare-install-replace.mjs"
+  elif [[ -n "$ROOT_DIR" && -f "$ROOT_DIR/scripts/lib/prepare-install-replace.mjs" ]]; then
     helper="$ROOT_DIR/scripts/lib/prepare-install-replace.mjs"
   elif [[ -f "$dir/scripts/lib/prepare-install-replace.mjs" ]]; then
     helper="$dir/scripts/lib/prepare-install-replace.mjs"
   else
-    local base="${OCCAM_OVERLAY_BASE_URL:-https://raw.githubusercontent.com/ContextForgeAI/occam/main}"
-    base="${base%/}"
-    helper_tmp="$(mktemp -d "${TMPDIR:-/tmp}/occam-prepare.XXXXXX")"
-    if ! curl -fsSL "$base/scripts/lib/prepare-install-replace.mjs" -o "$helper_tmp/prepare-install-replace.mjs" \
-      || ! curl -fsSL "$base/scripts/lib/install-target-inspect.mjs" -o "$helper_tmp/install-target-inspect.mjs" \
-      || ! curl -fsSL "$base/scripts/lib/stop-occam-processes.mjs" -o "$helper_tmp/stop-occam-processes.mjs" \
-      || ! curl -fsSL "$base/scripts/lib/resolve-rid.mjs" -o "$helper_tmp/resolve-rid.mjs"; then
-      rm -rf "$helper_tmp"
-      cat >&2 <<'EOF'
-Occam is currently in use.
-
-Close or restart these AI apps before updating:
-• Any app that has Occam connected (Cursor, Claude Desktop, …)
-
-Then run the installer again.
-
-No files were changed.
-EOF
-      exit 2
-    fi
-    helper="$helper_tmp/prepare-install-replace.mjs"
+    echo "error: verified release archive is missing the install replacement helper" >&2
+    echo "No files were changed." >&2
+    return 1
   fi
 
-  set +e
-  local json
-  json="$(node "$helper" --dir "$dir" --json 2>&1)"
-  local code=$?
-  set -e
-  if [[ -n "$helper_tmp" ]]; then rm -rf "$helper_tmp"; fi
-  if [[ "$code" -eq 0 ]]; then
+  local json code
+  if json="$(node "$helper" --dir "$dir" --rid "$RID" --json 2>&1)"; then
     return 0
+  else
+    code=$?
   fi
   node -e "try{const j=JSON.parse(process.argv[1]); if(j.message) console.error(j.message)}catch(e){process.exit(1)}" "$json" 2>/dev/null || cat >&2 <<'EOF'
 Occam is currently in use.
@@ -159,12 +158,41 @@ Then run the installer again.
 
 No files were changed.
 EOF
-  exit 2
+  return 2
+}
+
+assert_safe_tree_path() {
+  local value="$1" label="$2"
+  if [[ -z "$value" ]]; then
+    echo "error: ${label} path is empty (internal installer error)" >&2
+    return 1
+  fi
+  node -e '
+    const path = require("path");
+    const value = path.resolve(process.argv[1]);
+    const root = path.parse(value).root;
+    const home = process.env.HOME ? path.resolve(process.env.HOME) : "";
+    if (value === root || (home && value === home)) {
+      console.error(`error: ${process.argv[2]} path is too broad: ${value}`);
+      process.exit(1);
+    }
+    process.stdout.write(value);
+  ' "$value" "$label"
+}
+
+assert_transaction_backup_path() {
+  local target="$1" backup="$2"
+  [[ -n "$backup" ]] || return 0
+  if [[ "$(dirname "$backup")" != "$(dirname "$target")" || "$backup" != "${target}.pre-replace-"* ]]; then
+    echo "error: backup path escaped the install transaction boundary: $backup" >&2
+    return 1
+  fi
 }
 
 replace_install_tree() {
-  local target="$1"
-  local staged="$2"
+  local target staged
+  target="$(assert_safe_tree_path "$1" install)"
+  staged="$(assert_safe_tree_path "$2" staging)"
   local backup=""
   if [[ -e "$target" ]]; then
     backup="${target}.pre-replace-$$"
@@ -190,9 +218,84 @@ EOF
     echo "The previous Occam install was restored when possible." >&2
     exit 1
   fi
-  if [[ -n "$backup" ]]; then
-    rm -rf "$backup" || true
+  INSTALL_TRANSACTION_TARGET="$target"
+  INSTALL_TRANSACTION_BACKUP="$backup"
+  INSTALL_TRANSACTION_ACTIVE=1
+  INSTALL_TRANSACTION_COMMITTED=0
+}
+
+rollback_install_transaction() {
+  [[ "$INSTALL_TRANSACTION_ACTIVE" -eq 1 ]] || return 0
+  local target="$INSTALL_TRANSACTION_TARGET" backup="$INSTALL_TRANSACTION_BACKUP"
+  target="$(assert_safe_tree_path "$target" install)" || return 1
+  assert_transaction_backup_path "$target" "$backup" || return 1
+
+  echo "Install validation failed after the release tree was replaced." >&2
+  echo "Stopping processes started from the new install before rollback..." >&2
+  local stop_code=0
+  if prepare_install_replace "$target" "$target"; then
+    stop_code=0
+  else
+    stop_code=$?
   fi
+  if [[ "$stop_code" -ne 0 ]]; then
+    echo "error: rollback could not stop every process using the new install." >&2
+    echo "The failed install was preserved at: $target" >&2
+    if [[ -n "$backup" ]]; then
+      echo "The previous install backup was preserved at: $backup" >&2
+    fi
+    echo "Close AI apps using Occam, then move the backup back into place." >&2
+    return 1
+  fi
+
+  cd "$(dirname "$target")"
+  rm -rf -- "$target"
+  if [[ -n "$backup" && -e "$backup" ]]; then
+    mv "$backup" "$target"
+    echo "The previous Occam install was restored: $target" >&2
+  else
+    echo "The failed fresh Occam install was removed: $target" >&2
+  fi
+  INSTALL_TRANSACTION_ACTIVE=0
+  INSTALL_TRANSACTION_TARGET=""
+  INSTALL_TRANSACTION_BACKUP=""
+}
+
+commit_install_transaction() {
+  [[ "$INSTALL_TRANSACTION_ACTIVE" -eq 1 ]] || return 0
+  local target="$INSTALL_TRANSACTION_TARGET" backup="$INSTALL_TRANSACTION_BACKUP"
+  target="$(assert_safe_tree_path "$target" install)"
+  assert_transaction_backup_path "$target" "$backup"
+  if [[ -n "$backup" && -e "$backup" ]]; then
+    if ! rm -rf -- "$backup" || [[ -e "$backup" ]]; then
+      echo "warning: install succeeded, but the previous-tree backup could not be removed: $backup" >&2
+      echo "Review that exact path and remove it manually after confirming Occam works." >&2
+    fi
+  fi
+  INSTALL_TRANSACTION_COMMITTED=1
+  INSTALL_TRANSACTION_ACTIVE=0
+  INSTALL_TRANSACTION_TARGET=""
+  INSTALL_TRANSACTION_BACKUP=""
+}
+
+bootstrap_on_exit() {
+  local code=$?
+  trap - EXIT
+  if [[ "$INSTALL_TRANSACTION_ACTIVE" -eq 1 && "$INSTALL_TRANSACTION_COMMITTED" -ne 1 ]]; then
+    local rollback_code=0
+    if rollback_install_transaction; then
+      rollback_code=0
+    else
+      rollback_code=$?
+    fi
+    if [[ "$rollback_code" -ne 0 ]]; then
+      code=1
+    fi
+  fi
+  if [[ -n "$BOOTSTRAP_TMP" && -d "$BOOTSTRAP_TMP" ]]; then
+    rm -rf -- "$BOOTSTRAP_TMP"
+  fi
+  exit "$code"
 }
 
 ensure_node_on_path() {
@@ -255,9 +358,93 @@ json_field() {
     const fs = require('fs');
     const j = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
     const v = j[process.argv[2]];
-    if (v == null || v === '') process.exit(2);
+    if (v == null || v === '') {
+      console.error('error: release manifest missing ' + process.argv[2]);
+      process.exit(2);
+    }
     process.stdout.write(String(v));
   " "$1" "$2"
+}
+
+json_field_optional() {
+  node -e "
+    const fs = require('fs');
+    const j = JSON.parse(fs.readFileSync(process.argv[1], 'utf8'));
+    const v = j[process.argv[2]];
+    if (v == null || v === '') process.exit(0);
+    process.stdout.write(String(v));
+  " "$1" "$2"
+}
+
+# Fail closed before any extract. Uses repo archive-preflight.mjs when available,
+# otherwise tar member listing + the same path/symlink rules via Node builtins.
+preflight_release_archive() {
+  local archive="$1"
+  local expected_root="$2"
+  if [[ -n "$ROOT_DIR" && -f "$ROOT_DIR/scripts/lib/archive-preflight.mjs" ]]; then
+    node "$ROOT_DIR/scripts/lib/archive-preflight.mjs" \
+      --archive "$archive" \
+      --expected-root "$expected_root"
+    return 0
+  fi
+  local listing="$BOOTSTRAP_TMP/tar-list.txt"
+  if ! tar -tvzf "$archive" >"$listing"; then
+    echo "error: unable to list archive members before extract" >&2
+    exit 1
+  fi
+  node - "$listing" "$expected_root" <<'NODE'
+const fs = require("fs");
+const [listingPath, expectedRoot] = process.argv.slice(2);
+const lines = fs.readFileSync(listingPath, "utf8").split(/\r?\n/).filter(Boolean);
+const names = [];
+for (const line of lines) {
+  const type = line[0];
+  let name = "";
+  const arrow = line.indexOf(" -> ");
+  if (arrow !== -1 && (type === "l" || type === "h")) {
+    name = line.slice(0, arrow).trim().split(/\s+/).slice(8).join(" ");
+    console.error(`error: ${type === "l" ? "symlink" : "hardlink"} archive members are not allowed: ${name || line}`);
+    process.exit(1);
+  }
+  // bsdtar/GNU: permissions ... name  OR  name at end after size/date fields
+  const parts = line.trim().split(/\s+/);
+  name = parts.slice(8).join(" ");
+  if (!name) {
+    console.error("error: unable to parse archive member listing line");
+    process.exit(1);
+  }
+  names.push(name.replace(/\\/g, "/"));
+}
+function unsafePath(p) {
+  const n = String(p || "").replace(/\\/g, "/");
+  if (!n) return "empty archive member path";
+  if (n.startsWith("/") || n.startsWith("~")) return `absolute archive member path: ${p}`;
+  if (/^[A-Za-z]:(\/|$)/.test(n)) return `windows drive archive member path: ${p}`;
+  if (n.startsWith("//")) return `unc archive member path: ${p}`;
+  if (n.split("/").includes("..")) return `path traversal in archive member: ${p}`;
+  return null;
+}
+const roots = new Set();
+for (const name of names) {
+  const reason = unsafePath(name);
+  if (reason) {
+    console.error(`error: ${reason}`);
+    process.exit(1);
+  }
+  const root = name.split("/").filter(Boolean)[0];
+  if (root) roots.add(root);
+}
+if (!roots.has(expectedRoot)) {
+  console.error(`error: missing expected archive root directory: ${expectedRoot}`);
+  process.exit(1);
+}
+for (const root of roots) {
+  if (root !== expectedRoot) {
+    console.error(`error: unexpected archive root entries: ${root}`);
+    process.exit(1);
+  }
+}
+NODE
 }
 
 download() {
@@ -277,17 +464,39 @@ download() {
 install_release() {
   local tmp
   tmp="$(mktemp -d "${TMPDIR:-/tmp}/ff-occam-get.XXXXXX")"
-  # shellcheck disable=SC2064
-  trap "rm -rf $(printf '%q' "$tmp")" EXIT
+  BOOTSTRAP_TMP="$tmp"
 
   local manifest_path="$tmp/manifest.json"
   local tarball_path="$tmp/release.tar.gz"
 
   download "$MANIFEST_URL" "$manifest_path"
-  local expected_sha rid manifest_version
+  local expected_sha rid manifest_version manifest_tarball runtime_layout expected_tarball
   expected_sha="$(json_field "$manifest_path" sha256 | tr '[:upper:]' '[:lower:]')"
   rid="$(json_field "$manifest_path" rid)"
   manifest_version="$(json_field "$manifest_path" version)"
+  manifest_tarball="$(json_field "$manifest_path" tarball)"
+  runtime_layout="$(json_field "$manifest_path" runtimeLayout)"
+  expected_tarball="ff-occam-${VERSION}-${RID}.tar.gz"
+  if [[ "$manifest_version" != "$VERSION" ]]; then
+    echo "error: release manifest version mismatch (expected $VERSION, got $manifest_version)" >&2
+    exit 1
+  fi
+  if [[ "$rid" != "$RID" ]]; then
+    echo "error: release manifest RID mismatch (expected $RID, got $rid)" >&2
+    exit 1
+  fi
+  if [[ "$manifest_tarball" != "$expected_tarball" ]]; then
+    echo "error: release manifest tarball mismatch (expected $expected_tarball, got $manifest_tarball)" >&2
+    exit 1
+  fi
+  if [[ "$runtime_layout" != "self-contained-v1" ]]; then
+    echo "error: release manifest runtime layout mismatch (expected self-contained-v1, got $runtime_layout)" >&2
+    exit 1
+  fi
+  if [[ ! "$expected_sha" =~ ^[0-9a-f]{64}$ ]]; then
+    echo "error: release manifest sha256 must be 64 hexadecimal characters" >&2
+    exit 1
+  fi
 
   download "$RELEASE_URL" "$tarball_path"
   local actual_sha
@@ -300,6 +509,48 @@ install_release() {
   fi
   v_echo "sha256: OK"
   v_echo "release: version=$manifest_version rid=$rid"
+
+  local signature_policy
+  signature_policy="$(json_field_optional "$manifest_path" signaturePolicy)"
+  if [[ -z "$signature_policy" ]]; then
+    signature_policy="sha256-only"
+  fi
+  case "$signature_policy" in
+    sha256-only) ;;
+    required-cosign-v1)
+      local bundle_path="$tmp/release.tar.gz.bundle"
+      local bundle_url="${RELEASE_URL}.bundle"
+      if [[ -n "${OCCAM_RELEASE_BUNDLE_URL:-}" ]]; then
+        bundle_url="$OCCAM_RELEASE_BUNDLE_URL"
+      fi
+      download "$bundle_url" "$bundle_path"
+      if [[ -n "$ROOT_DIR" && -f "$ROOT_DIR/scripts/lib/verify-release-signature.mjs" ]]; then
+        node "$ROOT_DIR/scripts/lib/verify-release-signature.mjs" \
+          --manifest "$manifest_path" \
+          --archive "$tarball_path" \
+          --bundle "$bundle_path" \
+          --version "$VERSION"
+      else
+        if ! command -v cosign >/dev/null 2>&1; then
+          echo "error: signaturePolicy=required-cosign-v1 requires the cosign CLI on PATH" >&2
+          exit 1
+        fi
+        local expected_identity
+        expected_identity="https://github.com/ContextForgeAI/occam/.github/workflows/occam-release.yml@refs/tags/v${VERSION}"
+        cosign verify-blob "$tarball_path" \
+          --bundle "$bundle_path" \
+          --certificate-identity "$expected_identity" \
+          --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+      fi
+      ;;
+    *)
+      echo "error: unsupported release signaturePolicy: $signature_policy" >&2
+      exit 1
+      ;;
+  esac
+
+  local expected_root="ff-occam-${VERSION}-${RID}"
+  preflight_release_archive "$tarball_path" "$expected_root"
 
   local parent
   parent="$(dirname "$INSTALL_DIR")"
@@ -315,12 +566,21 @@ install_release() {
     staged="${entries[0]}"
   fi
 
-  prepare_install_replace "$INSTALL_DIR"
+  local runtime_checker="$staged/scripts/lib/operator/install-user-cli.mjs"
+  if [[ ! -f "$runtime_checker" ]] \
+    || ! node "$runtime_checker" --check-release-root "$staged" \
+      --version "$VERSION" --rid "$RID" >/dev/null; then
+    echo "error: verified release archive is incomplete" >&2
+    echo "No files were changed." >&2
+    exit 1
+  fi
+
+  prepare_install_replace "$INSTALL_DIR" "$staged"
   replace_install_tree "$INSTALL_DIR" "$staged"
   v_echo "extracted: $INSTALL_DIR"
 
   rm -rf "$tmp"
-  trap - EXIT
+  BOOTSTRAP_TMP=""
 }
 
 # Run a legacy-tarball child: quiet = capture I/O (old packs ignore --quiet flags).
@@ -355,42 +615,20 @@ run_legacy_step() {
   fi
 }
 
-# Install ~/.local/bin/occam and ensure current-shell PATH (prepend). Overlay connect
-# CLI from public main when the release tarball lacks occam-connect.
+# Install ~/.local/bin/occam from the verified release and prepend it to this shell's PATH.
 install_occam_user_command() {
   local home="$1"
-  local helper_tmp=""
-  # Always stage helper from public main so OPERATOR_OVERLAY_FILES stays current
-  # even when Level B already shipped an older install-user-cli.mjs.
-  # Manifest: scripts/lib/operator/install-user-cli-temp-manifest.mjs
-  helper_tmp="$(mktemp -d "${TMPDIR:-/tmp}/occam-install-user-cli.XXXXXX")"
-  local base="${OCCAM_OVERLAY_BASE_URL:-https://raw.githubusercontent.com/ContextForgeAI/occam/main}"
-  base="${base%/}"
-  mkdir -p "$helper_tmp/scripts/lib/operator"
-  if ! curl -fsSL "$base/scripts/lib/operator/install-user-cli.mjs" -o "$helper_tmp/scripts/lib/operator/install-user-cli.mjs" \
-    || ! curl -fsSL "$base/scripts/lib/resolve-node-runtime.mjs" -o "$helper_tmp/scripts/lib/resolve-node-runtime.mjs"; then
-    echo "✗ Could not install the occam command (download failed)." >&2
-    echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
-    rm -rf "$helper_tmp"
+  local helper="$home/scripts/lib/operator/install-user-cli.mjs"
+  if [[ ! -f "$helper" || ! -f "$home/scripts/lib/resolve-node-runtime.mjs" ]]; then
+    echo "✗ Verified release archive is missing the occam command installer." >&2
     exit 1
   fi
-  if [[ ! -f "$helper_tmp/scripts/lib/operator/install-user-cli.mjs" \
-    || ! -f "$helper_tmp/scripts/lib/resolve-node-runtime.mjs" ]]; then
-    echo "✗ Could not install the occam command (incomplete helper staging)." >&2
-    echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
-    rm -rf "$helper_tmp"
-    exit 1
-  fi
-  local helper="$helper_tmp/scripts/lib/operator/install-user-cli.mjs"
 
   local json
   set +e
-  # Always refresh operator CLI overlay from the same base.
-  # Level B tarballs lag git; gap-only overlay leaves stale doctor/update/contract UX.
-  json="$(node "$helper" --home "$home" --base-url "$base" --json 2>&1)"
+  json="$(node "$helper" --home "$home" --no-overlay --json 2>&1)"
   local code=$?
   set -e
-  rm -rf "$helper_tmp"
   if [[ "$code" -ne 0 ]]; then
     echo "✗ Could not install the occam command." >&2
     echo "Re-run with OCCAM_VERBOSE=1 for details." >&2
@@ -440,12 +678,12 @@ run_post_install() {
 
   local post_ux="$INSTALL_DIR/scripts/lib/operator/post-install-ux.mjs"
   if [[ -f "$post_ux" ]]; then
-    install_occam_user_command "$INSTALL_DIR"
     local args=(--setup "$SETUP_MODE" --version "$VERSION" --download-ok)
     if [[ "$VERBOSE" -eq 1 ]]; then
       args+=(--verbose)
     fi
     node "$post_ux" "${args[@]}"
+    install_occam_user_command "$INSTALL_DIR"
     return
   fi
 
@@ -471,8 +709,6 @@ run_post_install() {
   run_legacy_step "Self-check" node "$INSTALL_DIR/scripts/hermes-smoke.mjs"
   echo "✓ Self-check passed"
 
-  install_occam_user_command "$INSTALL_DIR"
-
   local connect_js="$INSTALL_DIR/scripts/occam-connect.mjs"
   if [[ -f "$connect_js" ]]; then
     # Avoid "${arr[@]}" with empty array under `set -u` (macOS bash 3.2 / bash 5).
@@ -488,9 +724,12 @@ run_post_install() {
     echo "Connect an AI app later with:"
     echo "  occam connect"
   fi
+
+  install_occam_user_command "$INSTALL_DIR"
 }
 
 main() {
+  trap bootstrap_on_exit EXIT
   resolve_setup_mode
   need_cmd curl
   need_cmd tar
@@ -508,6 +747,7 @@ main() {
 
   install_release
   run_post_install
+  commit_install_transaction
 }
 
 main "$@"

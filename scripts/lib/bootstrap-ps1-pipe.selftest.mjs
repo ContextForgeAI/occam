@@ -7,29 +7,27 @@
  * deadlock the HTTP event loop.
  */
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn, spawnSync } from "node:child_process";
 import { createServer } from "node:http";
 import { extname } from "node:path";
-import { resolveRid } from "./resolve-rid.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "..", "..");
 
-function writeLevelBProbeTree(root) {
-  const rid = resolveRid();
+function writeRecognizedReleaseTree(root) {
   mkdirSync(join(root, "scripts"), { recursive: true });
+  writeFileSync(join(root, "OccamMcp.Core.exe"), "fake");
   writeFileSync(join(root, "VERSION"), "1.0.0-rc.2\n");
   writeFileSync(
     join(root, "release-manifest.json"),
-    `${JSON.stringify({ version: "1.0.0-rc.2", rid, layout: "level-b" })}\n`,
+    `${JSON.stringify({ version: "1.0.0-rc.2", rid: "win-x64", layout: "level-b" })}\n`,
   );
-  writeFileSync(join(root, rid.startsWith("win-") ? "OccamMcp.Core.exe" : "OccamMcp.Core"), "fake");
-  writeFileSync(join(root, "scripts", "occam.mjs"), "// probe\n");
-  writeFileSync(join(root, "scripts", "launch-mcp-host.mjs"), "// probe\n");
+  writeFileSync(join(root, "scripts", "occam.mjs"), "// fixture\n");
+  writeFileSync(join(root, "scripts", "launch-mcp-host.mjs"), "// fixture\n");
 }
 
 function contentType(filePath) {
@@ -163,7 +161,7 @@ function testSourceGuards() {
   );
   assert.match(ps1, /IsNullOrWhiteSpace\(\$PSScriptRoot\)/);
   assert.match(ps1, /Assert-SafeInstallPath/);
-  assert.match(ps1, /OCCAM_OVERLAY_BASE_URL/);
+  assert.doesNotMatch(ps1, /OCCAM_OVERLAY_BASE_URL/);
   // Pipe-safe Unicode: no raw checkmark/ellipsis in executable strings.
   assert.doesNotMatch(ps1, /[✓✗•…]/);
   assert.match(ps1, /\[char\]0x2713/);
@@ -175,7 +173,7 @@ function testFileModePrepare() {
   const runner = join(repoRoot, "scripts", "_tmp-file-prepare-probe.ps1");
   const probeRoot = mkdtempSync(join(tmpdir(), "occam-file-probe-"));
   try {
-    writeLevelBProbeTree(probeRoot);
+    writeRecognizedReleaseTree(probeRoot);
     const boot = readFileSync(join(repoRoot, "scripts", "get-ff-occam.ps1"), "utf8");
     const head = extractBootstrapHead(boot);
     writeFileSync(
@@ -214,26 +212,31 @@ async function testProductStyleIrmIex() {
   const probeRoot = mkdtempSync(join(tmpdir(), "occam-product-pipe-"));
   const probePs1 = join(probeRoot, "probe.ps1");
   try {
-    writeLevelBProbeTree(probeRoot);
+    writeRecognizedReleaseTree(probeRoot);
+    // Product bootstrap uses this helper from the verified archive. The source
+    // tree supplies the complete dependency closure for this focused pipe test.
+    const stagedRoot = repoRoot;
     writeFileSync(
       probePs1,
       `
 $ErrorActionPreference = 'Stop'
-$env:OCCAM_OVERLAY_BASE_URL = '${srv.base}'
-$raw = (Invoke-WebRequest -Uri ($env:OCCAM_OVERLAY_BASE_URL + '/scripts/get-ff-occam.ps1') -UseBasicParsing).Content
+$base = '${srv.base}'
+$raw = (Invoke-WebRequest -Uri ($base + '/scripts/get-ff-occam.ps1') -UseBasicParsing).Content
 $m = [regex]::Match($raw, '(?m)^Resolve-SetupMode\\s*$')
 if (-not $m.Success) { throw 'Resolve-SetupMode call not found' }
 $probeDir = '${probeRoot.replace(/'/g, "''")}'
+$stagedDir = '${stagedRoot.replace(/'/g, "''")}'
 $tail = @'
 Write-Output ("PSScriptRoot=[" + $PSScriptRoot + "]")
 Write-Output ("PSCommandPath=[" + $PSCommandPath + "]")
 if (-not [string]::IsNullOrEmpty($PSScriptRoot)) { throw "PSScriptRoot not empty under iex" }
 if (-not [string]::IsNullOrEmpty($PSCommandPath)) { throw "PSCommandPath not empty under iex" }
-$r = Invoke-PrepareInstallReplace 'REPLACE_PROBE_DIR'
+$r = Invoke-PrepareInstallReplace 'REPLACE_PROBE_DIR' 'REPLACE_STAGED_DIR'
 if (-not $r) { throw "prepare returned false" }
 Write-Output "PIPE_PREPARE_OK"
 '@
 $tail = $tail.Replace('REPLACE_PROBE_DIR', $probeDir)
+$tail = $tail.Replace('REPLACE_STAGED_DIR', $stagedDir)
 Invoke-Expression ($raw.Substring(0, $m.Index) + [Environment]::NewLine + $tail)
 `.trimStart(),
       "utf8",
@@ -268,8 +271,8 @@ async function testUnicodeProgressUnderIrmIex() {
       probePs1,
       `
 $ErrorActionPreference = 'Stop'
-$env:OCCAM_OVERLAY_BASE_URL = '${srv.base}'
-$raw = (Invoke-WebRequest -Uri ($env:OCCAM_OVERLAY_BASE_URL + '/scripts/get-ff-occam.ps1') -UseBasicParsing).Content
+$base = '${srv.base}'
+$raw = (Invoke-WebRequest -Uri ($base + '/scripts/get-ff-occam.ps1') -UseBasicParsing).Content
 $m = [regex]::Match($raw, '(?m)^Resolve-SetupMode\\s*$')
 if (-not $m.Success) { throw 'Resolve-SetupMode call not found' }
 Invoke-Expression $raw.Substring(0, $m.Index)
