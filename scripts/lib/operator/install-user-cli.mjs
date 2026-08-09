@@ -140,6 +140,8 @@ export function renderWindowsCmdLauncher(occamHome, nodeBin = process.execPath) 
   const home = pathWin32.resolve(String(occamHome || ""));
   const node = pathWin32.resolve(String(nodeBin || "node"));
   // cmd.exe: quote paths; %* forwards args. OCCAM_HOME pinned to this install.
+  // uninstall/disconnect: stage scripts outside OCCAM_HOME first so Node does not
+  // keep module handles that block Windows directory removal (EPERM/EBUSY).
   return [
     "@echo off",
     "setlocal",
@@ -151,8 +153,23 @@ export function renderWindowsCmdLauncher(occamHome, nodeBin = process.execPath) 
     '  "%OCCAM_NODE_BIN%" "%OCCAM_HOME%\\scripts\\occam-chat.mjs" %*',
     "  exit /b %ERRORLEVEL%",
     ")",
+    'if /I "%~1"=="uninstall" goto :occam_removal',
+    'if /I "%~1"=="disconnect" goto :occam_removal',
     '"%OCCAM_NODE_BIN%" "%OCCAM_HOME%\\scripts\\occam.mjs" %*',
     "exit /b %ERRORLEVEL%",
+    ":occam_removal",
+    'set "OCCAM_STAGE=%TEMP%\\occam-removal-%RANDOM%%RANDOM%"',
+    'mkdir "%OCCAM_STAGE%" >nul 2>&1',
+    'xcopy /E /I /Y /Q "%OCCAM_HOME%\\scripts" "%OCCAM_STAGE%\\scripts\\" >nul',
+    'if errorlevel 1 (',
+    '  echo Failed to stage Occam removal scripts outside OCCAM_HOME. 1>&2',
+    '  exit /b 1',
+    ")",
+    'set "OCCAM_UNINSTALL_REEXEC=1"',
+    'if /I "%~1"=="uninstall" ("%OCCAM_NODE_BIN%" "%OCCAM_STAGE%\\scripts\\occam-uninstall.mjs" %*) else ("%OCCAM_NODE_BIN%" "%OCCAM_STAGE%\\scripts\\occam-disconnect.mjs" %*)',
+    "set ERR=%ERRORLEVEL%",
+    'rd /s /q "%OCCAM_STAGE%" >nul 2>&1',
+    "exit /b %ERR%",
     "",
   ].join("\r\n");
 }
@@ -182,6 +199,17 @@ export function renderWindowsPs1Launcher(occamHome, nodeBin = process.execPath) 
     "  if ($args.Count -gt 1) { $chatArgs = $args[1..($args.Count - 1)] }",
     "  & $env:OCCAM_NODE_BIN (Join-Path $env:OCCAM_HOME 'scripts\\occam-chat.mjs') @chatArgs",
     "  exit $LASTEXITCODE",
+    "}",
+    "if ($args.Count -ge 1 -and ($args[0] -eq 'uninstall' -or $args[0] -eq 'disconnect')) {",
+    "  $stage = Join-Path $env:TEMP ('occam-removal-' + [guid]::NewGuid().ToString('N'))",
+    "  New-Item -ItemType Directory -Force -Path (Join-Path $stage 'scripts') | Out-Null",
+    "  Copy-Item -Recurse -Force (Join-Path $env:OCCAM_HOME 'scripts\\*') (Join-Path $stage 'scripts')",
+    "  $env:OCCAM_UNINSTALL_REEXEC = '1'",
+    "  $script = if ($args[0] -eq 'uninstall') { 'occam-uninstall.mjs' } else { 'occam-disconnect.mjs' }",
+    "  & $env:OCCAM_NODE_BIN (Join-Path $stage \"scripts\\$script\") @args",
+    "  $code = $LASTEXITCODE",
+    "  Remove-Item -Recurse -Force $stage -ErrorAction SilentlyContinue",
+    "  exit $code",
     "}",
     "& $env:OCCAM_NODE_BIN (Join-Path $env:OCCAM_HOME 'scripts\\occam.mjs') @args",
     "exit $LASTEXITCODE",

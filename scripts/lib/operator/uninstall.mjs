@@ -107,7 +107,13 @@ export function removeReleaseInstallTree(installPath) {
 
   if (platform() === "win32") {
     const trash = `${target}.occam-uninstall-${Date.now()}`;
-    renameSync(target, trash);
+    try {
+      renameSync(target, trash);
+    } catch (err) {
+      throw new Error(
+        `unable to move install tree aside for removal: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
     try {
       rmSync(trash, {
         recursive: true,
@@ -924,6 +930,8 @@ export function parseRemovalArgs(argv, command) {
   const out = { json: false, dryRun: false, removeState: false, removeCache: false, help: false, only: [] };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
+    // Windows launcher may forward the CLI verb as argv[0].
+    if (arg === command) continue;
     if (arg === "--json") out.json = true;
     else if (arg === "--dry-run") out.dryRun = true;
     else if (arg === "--remove-state" && command === "uninstall") out.removeState = true;
