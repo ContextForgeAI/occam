@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { findSubcommand } from "./occam-cli-subcommands.mjs";
@@ -22,6 +22,30 @@ export function resolveScriptPath(occamHome, relativePath) {
 }
 
 /**
+ * Stage scripts outside OCCAM_HOME so Windows can delete the install tree
+ * while uninstall/disconnect modules are loaded.
+ * @param {string} occamHome
+ * @param {string} scriptRelative under scripts/
+ * @returns {{ scriptPath: string, cleanup: () => void }}
+ */
+export function stageRemovalScript(occamHome, scriptRelative) {
+  const stagingRoot = mkdtempSync(join(tmpdir(), "occam-removal-"));
+  const scriptsSrc = join(occamHome, "scripts");
+  const scriptsDst = join(stagingRoot, "scripts");
+  cpSync(scriptsSrc, scriptsDst, { recursive: true });
+  return {
+    scriptPath: join(scriptsDst, scriptRelative),
+    cleanup: () => {
+      try {
+        rmSync(stagingRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
+      } catch {
+        /* best-effort */
+      }
+    },
+  };
+}
+
+/**
  * @param {import("./occam-cli-subcommands.mjs").CliSubcommand} sub
  * @param {string} occamHome
  * @param {string[]} passthroughArgs
@@ -30,10 +54,22 @@ export function dispatchSubcommand(sub, occamHome, passthroughArgs = []) {
   const env = { ...process.env, OCCAM_HOME: occamHome };
 
   if (sub.delegate === "node") {
-    const scriptPath = resolveScriptPath(occamHome, sub.script ?? "");
+    let scriptPath = resolveScriptPath(occamHome, sub.script ?? "");
     if (!existsSync(scriptPath)) {
       console.error(`error: missing ${scriptPath}`);
       return 1;
+    }
+
+    let cleanup = () => {};
+    if (sub.name === "uninstall" || sub.name === "disconnect") {
+      const staged = stageRemovalScript(occamHome, sub.script ?? "");
+      scriptPath = staged.scriptPath;
+      cleanup = staged.cleanup;
+      if (!existsSync(scriptPath)) {
+        cleanup();
+        console.error(`error: missing staged ${scriptPath}`);
+        return 1;
+      }
     }
 
     const args = [scriptPath];
@@ -46,16 +82,20 @@ export function dispatchSubcommand(sub, occamHome, passthroughArgs = []) {
     // Chat is normally `exec`'d by the user launcher. If reached via
     // `node occam.mjs chat`, spawnSync is fine for non-interactive --once/--help.
     // Uninstall/disconnect must not use OCCAM_HOME as cwd: on Windows the
-    // process cwd keeps a handle and recursive rm fails with EPERM.
+    // process cwd keeps a handle and recursive rm fails with EPERM/EBUSY.
     const cwd =
       sub.name === "uninstall" || sub.name === "disconnect" ? tmpdir() : occamHome;
 
-    const result = spawnSync(process.execPath, args, {
-      cwd,
-      env,
-      stdio: "inherit",
-    });
-    return result.status ?? 1;
+    try {
+      const result = spawnSync(process.execPath, args, {
+        cwd,
+        env,
+        stdio: "inherit",
+      });
+      return result.status ?? 1;
+    } finally {
+      cleanup();
+    }
   }
 
   if (sub.delegate === "shell") {
