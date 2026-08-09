@@ -57,7 +57,7 @@
       <_Parameter1>L0Gate</_Parameter1>
     </AssemblyAttribute>
     <PackageReference Include="ModelContextProtocol" Version="1.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
     <!-- SI-15: RFC3161 time-stamp tokens (Rfc3161TimestampRequest/Token) for time-anchored receipts. -->
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.0" />
   </ItemGroup>
