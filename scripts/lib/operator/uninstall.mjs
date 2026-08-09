@@ -733,7 +733,18 @@ export function executeLocalUninstallPlan(plan, deps = {}) {
           if (isSameOrInside(install.path, process.cwd())) {
             (deps.chdir || process.chdir)(plan.homeDir);
           }
-          const removeInstall = deps.removeInstall || ((path) => rmSync(path, { recursive: true, force: false }));
+          // Windows: release archives often mark files read-only; Node needs force +
+          // retries so uninstall can clear EPERM while Defender briefly locks files.
+          // Do not run with cwd inside the tree being removed (see CLI dispatch).
+          const removeInstall =
+            deps.removeInstall ||
+            ((path) =>
+              rmSync(path, {
+                recursive: true,
+                force: true,
+                maxRetries: 10,
+                retryDelay: 100,
+              }));
           removeInstall(install.path);
           if (existsSync(install.path)) {
             throw new Error("install tree is still present after removal");
@@ -778,7 +789,12 @@ export function executeLocalUninstallPlan(plan, deps = {}) {
           results.push({ ...responseCache, ok: false, outcome: "failed", reason: rechecked.reason });
           hardFailure = true;
         } else {
-          rmSync(responseCache.path, { recursive: true, force: false });
+          rmSync(responseCache.path, {
+            recursive: true,
+            force: true,
+            maxRetries: 10,
+            retryDelay: 100,
+          });
           results.push({ ...responseCache, outcome: "removed" });
         }
       } catch (err) {
@@ -820,7 +836,12 @@ export function executeLocalUninstallPlan(plan, deps = {}) {
           results.push({ ...state, ok: false, outcome: "failed", reason: rechecked.reason });
           hardFailure = true;
         } else {
-          rmSync(state.path, { recursive: true, force: false });
+          rmSync(state.path, {
+            recursive: true,
+            force: true,
+            maxRetries: 10,
+            retryDelay: 100,
+          });
           results.push({ ...state, outcome: "removed" });
         }
       } catch (err) {

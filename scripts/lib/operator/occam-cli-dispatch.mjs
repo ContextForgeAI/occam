@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { findSubcommand } from "./occam-cli-subcommands.mjs";
 
@@ -44,8 +45,13 @@ export function dispatchSubcommand(sub, occamHome, passthroughArgs = []) {
 
     // Chat is normally `exec`'d by the user launcher. If reached via
     // `node occam.mjs chat`, spawnSync is fine for non-interactive --once/--help.
+    // Uninstall/disconnect must not use OCCAM_HOME as cwd: on Windows the
+    // process cwd keeps a handle and recursive rm fails with EPERM.
+    const cwd =
+      sub.name === "uninstall" || sub.name === "disconnect" ? tmpdir() : occamHome;
+
     const result = spawnSync(process.execPath, args, {
-      cwd: occamHome,
+      cwd,
       env,
       stdio: "inherit",
     });

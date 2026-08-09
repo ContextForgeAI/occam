@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import {
+  chmodSync,
+  constants as fsConstants,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -500,6 +502,33 @@ function testInstallMetadataRecheckRestoresLaunchers() {
   rmSync(fixture, { recursive: true, force: true });
 }
 
+function testReadonlyReleaseTreeRemoval() {
+  const fixture = mkdtempSync(join(tmpdir(), "occam-uninstall-readonly-"));
+  const home = join(fixture, "home");
+  const install = join(home, ".local", "share", "ff-occam");
+  writeReleaseTree(install);
+  const locked = join(install, "OccamMcp.Core.exe");
+  writeFileSync(locked, "fake-binary");
+  chmodSync(locked, fsConstants.S_IRUSR | fsConstants.S_IRGRP | fsConstants.S_IROTH);
+  writeGeneratedLaunchers(home, install);
+  const plan = buildLocalUninstallPlan({
+    occamHome: install,
+    homeDir: home,
+    platform: process.platform,
+    env: {},
+    tempDir: fixture,
+  });
+  assert.equal(plan.ok, true);
+  assert.equal(plan.blocked, false);
+  const result = executeLocalUninstallPlan(plan, {
+    prepareInstall: () => ({ ok: true, stopped: [] }),
+    chdir: () => {},
+  });
+  assert.equal(result.ok, true, result.targets?.find((t) => t.kind === "install")?.reason || "uninstall ok");
+  assert.equal(existsSync(install), false, "readonly release tree must be removable");
+  rmSync(fixture, { recursive: true, force: true });
+}
+
 function main() {
   testDisconnectOwnershipDryRunAndIdempotency();
   testBroadAndUnresolvedPathsRefused();
@@ -510,6 +539,7 @@ function main() {
   testReleaseMetadataAndCacheSymlinkRefusal();
   testInstallDeleteFailureRestoresLaunchers();
   testInstallMetadataRecheckRestoresLaunchers();
+  testReadonlyReleaseTreeRemoval();
   console.log("uninstall.selftest.mjs OK");
 }
 
