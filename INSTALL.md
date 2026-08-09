@@ -10,52 +10,62 @@
 
 **Requirements:** Node.js **20+** (installer also checks Homebrew locations `/opt/homebrew/bin` and `/usr/local/bin` when `node` is not already on `PATH`). No .NET SDK on the install machine.
 
-**Current release:** `1.0.0-rc.2` (GitHub Release tag `v1.0.0-rc.2`).
+**Published release:** `1.0.0-rc.2` (GitHub Release tag `v1.0.0-rc.2`).  
+**Next candidate in this tree:** `1.0.0-rc.3` (not published yet — do not point public `main` install defaults at it until the release assets exist).
 
 ---
 
 ## Canonical install (one path)
 
-### Linux / macOS
+### Linux x64 / macOS Apple Silicon
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
 ```
 
-### Windows (PowerShell)
+### Windows x64 (PowerShell)
 
 ```powershell
 irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
 ```
 
-### Supported GA install path
+### Supported release channel
 
-**GA install = GitHub Release tarball + bootstrap scripts below.** Manual tarball + manifest is also GA.
+The supported release channel is a GitHub Release tarball plus the bootstrap
+scripts below. Manual extraction is not a supported install path.
 
-| Channel | GA? | Notes |
-|---------|-----|-------|
-| Bootstrap scripts (`get-ff-occam.*`) | **Yes** | Recommended |
-| Manual tarball + `*-manifest.json` | **Yes** | Air-gap / mirror |
+| Channel | Supported? | Notes |
+|---------|------------|-------|
+| Bootstrap scripts (`get-ff-occam.*`) | **Yes** | Recommended release path |
+| Manual tarball + `*-manifest.json` | **No** | Integrity inspection only; bypasses guarded install and onboarding |
 | `git clone` + doctor | Build path | Requires .NET 10 SDK |
-| `npx @ff-occam/mcp` | **No** | Not a supported 1.0 install channel |
+| `npx @ff-occam/mcp` | **No** | Not a supported release channel |
 | Cosign `.bundle` on Releases | **Not enforced** | May exist as metadata; **no shipped path verifies Cosign** — integrity is SHA-256 vs manifest only |
+
+Public binaries are published for exactly `win-x64`, `linux-x64`, and
+`osx-arm64`. Intel macOS, Linux ARM64, Windows ARM64, and other architectures are
+not release-install targets. The bootstrap rejects them before any network
+request. `OCCAM_RID` accepts only those three published values; it is not an
+emulation or cross-platform compatibility switch.
 
 ### What the bootstrap does
 
-1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases  
-2. Verifies **SHA-256** of the archive against the manifest (**not** Cosign)  
-3. Extracts into `OCCAM_INSTALL_DIR` (default `~/.local/share/ff-occam`)  
-4. Runs **doctor** (`--skip-build`) — npm workers + Playwright (quiet by default)  
-5. Verifies the Occam host (`verify-install` + smoke) — expect **15** `occam_*` tools  
-6. Writes operator defaults to `~/.occam/onboard.json` (no second `OCCAM_HOME` prompt)  
-7. Installs a user-scoped **`occam`** launcher (`~/.local/bin`; Windows: `occam.cmd` + `occam.ps1`) and prepends that directory to the **User** PATH (and the current shell PATH) so `occam` resolves immediately after install  
-8. Runs **`occam connect`** — detects AI/MCP hosts; one host auto-connects; multiple hosts confirm first (or `OCCAM_CONNECT_ALL=1` for automation)  
-9. Reports **Ready** only after host verification — or **Installed** / **Almost ready** / **Action required** as appropriate  
+1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases
+2. Requires the manifest version, RID, and tarball name to match the requested release, then verifies the archive **SHA-256** (**not** Cosign)
+3. Extracts to staging and checks the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR` (default `~/.local/share/ff-occam`). An existing target must itself be a consistent Level B Occam release for the current RID; source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
+4. Uses only helpers inside that verified archive — it does **not** fetch a mutable post-install source overlay
+5. Runs **doctor** (`--skip-build`) — npm workers + Playwright (quiet by default)
+6. Verifies the Occam host (`verify-install` + smoke) — expect **15** `occam_*` tools
+7. Writes operator defaults to `~/.occam/onboard.json` (no second `OCCAM_HOME` prompt)
+8. Installs a user-scoped **`occam`** launcher (`~/.local/bin`; Windows: `occam.cmd` + `occam.ps1`) and prepends that directory to the **User** PATH (and the current shell PATH) so `occam` resolves immediately after install. Existing launchers are replaced only when they exactly match an Occam-generated current or previous-release launcher; unrelated same-named files stop the install, and multi-file launcher updates roll back as one transaction
+9. Runs **`occam connect`** — detects AI/MCP hosts; one host auto-connects; multiple hosts confirm first (or `OCCAM_CONNECT_ALL=1` for automation)
+10. Reports **Ready** only after host verification — or **Installed** / **Almost ready** / **Action required** as appropriate
+11. Keeps the previous release tree until doctor, self-check, launcher setup, and Connect finish; a failure stops processes from the new tree and restores the previous tree (or removes a failed fresh tree)
 
 Default output is quiet (~15–25 lines). Internals: `OCCAM_VERBOSE=1`.  
 After install, `occam connect` / `occam doctor` resolve without a manual PATH export.
 
-**What install mutates:** install tree under `OCCAM_HOME`, `~/.occam/onboard.json`, signing key on first host start (`~/.occam/keys/`), host MCP configs (+ backups), Playwright cache. Removing the install directory alone does **not** remove all `~/.occam/` state or host configs.
+**What install mutates:** install tree under `OCCAM_HOME`, `~/.occam/onboard.json`, signing key on first host start (`~/.occam/keys/`), host MCP configs (+ backups), Playwright cache. Removing the install directory alone does **not** remove all `~/.occam/` state or host configs; use the scoped `occam uninstall --dry-run` flow below.
 
 Human walkthrough: [docs/quick-start.md](docs/quick-start.md) · Host tiers: [docs/mcp-hosts.md](docs/mcp-hosts.md) · Safety: [docs/trust/installation-safety.md](docs/trust/installation-safety.md)
 
@@ -63,12 +73,13 @@ Optional env (compatibility — same on all platforms):
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `OCCAM_SETUP` | `auto` (when unset) | `auto` \| `manual` \| `ask` — default install never prompts; `ask` shows menu only on a true interactive TTY |
+| `OCCAM_SETUP` | `auto` (when unset) | `auto` \| `manual` \| `ask` — setup-mode selection does not prompt by default; connecting multiple detected hosts may still require confirmation |
 | `OCCAM_CONNECT_ALL` | unset | `1` — non-interactive installs may configure every detected Tier-A host; without it, multiple hosts are left for an explicit confirm / `occam connect` |
 | `OCCAM_VERBOSE` | unset | `1` — show doctor/smoke/connect internals during install |
 | `OCCAM_HOST` | (none) | Legacy preference for the **fallback** connection snippet only (`hermes` or `cursor`) — not a phantom pre-selected host |
 | `OCCAM_INSTALL_DIR` | `~/.local/share/ff-occam` | Install root |
-| `OCCAM_VERSION` | `1.0.0-rc.2` | Release version |
+| `OCCAM_VERSION` | `1.0.0-rc.3` (candidate default; published channel remains `1.0.0-rc.2` until cut) | Release version |
+| `OCCAM_RID` | detected | Published RID override: `win-x64` \| `linux-x64` \| `osx-arm64` only |
 
 `OCCAM_HOST` does **not** replace `occam connect`. Prefer letting connect detect and configure validated hosts.
 
@@ -116,6 +127,60 @@ Safety: unmanaged `ff-occam` entries are left alone; configs are backed up; writ
 
 ---
 
+## Disconnect or uninstall
+
+Preview host-registration removal without changing anything:
+
+```bash
+occam disconnect --dry-run
+```
+
+Then remove only registrations that carry Occam's ownership marker or point at
+the Occam launcher:
+
+```bash
+occam disconnect
+# One host only:
+occam disconnect --only cursor
+```
+
+Preview the complete uninstall before running it:
+
+```bash
+occam uninstall --dry-run
+occam uninstall
+```
+
+Default uninstall disconnects managed hosts, removes the generated `occam`
+launcher, and removes a recognized release install tree. Its preview inventories
+the opt-in response cache and shared Playwright cache, but preserves both by
+default. It does **not** delete source checkouts, unmanaged host entries,
+`*.occam-bak` files, installed skills, the Playwright cache, or `~/.occam/` state.
+
+Delete only Occam's flat response cache (`OCCAM_CACHE_DIR`, default
+`{TEMP}/occam-cache`) with an explicit scope:
+
+```bash
+occam uninstall --dry-run --remove-cache
+occam uninstall --remove-cache
+```
+
+The shared Playwright browser cache is never removed automatically because other
+Playwright applications may use it.
+
+To also delete local state — including signing keys, session profiles, and
+operator settings — make that destructive scope explicit:
+
+```bash
+occam uninstall --dry-run --remove-cache --remove-state
+occam uninstall --remove-cache --remove-state
+```
+
+The command fails closed on relative, broad, symlinked, malformed, or ambiguous
+targets. Details: [installation safety](docs/trust/installation-safety.md#disconnect-and-uninstall).
+
+---
+
 ## Manual / generic MCP (advanced)
 
 Only when connect cannot cover your client. Use the snippet printed as fallback, or:
@@ -145,6 +210,36 @@ Do **not** put LLM API keys in Occam's env.
 
 ---
 
+## Maintainer: publish a GitHub Release
+
+Do not create the next `v<semver>` tag until all of these are true:
+
+- CI is green on the exact commit and that commit is contained in `main`.
+- The GitHub `github-release` environment exists and requires an independent
+  reviewer for deployments from version tags.
+- GitHub immutable Releases are enabled for the repository.
+- The versioned bootstrap defaults and release notes point at the same tag.
+
+The `occam-release` workflow always builds exactly `linux-x64`, `osx-arm64`, and
+`win-x64`. Pull requests and `main` exercise those builds with read-only
+repository permissions. A tag run gives write and OIDC permissions only to the
+protected publish job after all three builds pass.
+
+The publish job downloads the exact six archive/manifest workflow artifacts,
+revalidates every manifest SHA-256 binding, signs exactly three archives with
+keyless Cosign, verifies the expected workflow identity and tamper rejection,
+and creates one **draft** containing exactly nine assets. It verifies that draft
+before changing `draft` to `false` once. It never uploads assets after
+publication, so the flow is compatible with immutable Releases.
+
+If the job fails before publication, there is no visible partial Release. A
+failed run can leave a private draft; the next run intentionally refuses to
+overwrite any existing draft or Release for the tag. Inspect and remove that
+draft only after the failure is understood. `sign-release.yml` is verification
+only; it cannot sign or modify a Release.
+
+---
+
 ## Advanced / contributors
 
 ### Git clone + build (.NET 10 SDK required)
@@ -160,30 +255,17 @@ occam connect
 
 Windows: `.\scripts\occam-doctor.ps1`.
 
-### Manual tarball (air-gap / mirror)
+### Mirrors and offline environments
 
-Download both assets for your RID from the GitHub Release, then:
+Do not extract a release archive over an existing install by hand. That skips
+manifest binding, pre-swap runtime checks, process-safe replacement, launcher
+setup, doctor, and Connect.
 
-```bash
-INSTALL_DIR="${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}"
-mkdir -p "$INSTALL_DIR"
-tar -xzf ff-occam-1.0.0-rc.2-<rid>.tar.gz -C "$INSTALL_DIR" --strip-components=1
-export OCCAM_HOME="$INSTALL_DIR"
-bash scripts/occam-doctor.sh --skip-build
-node scripts/hermes-smoke.mjs
-occam connect
-```
-
-Expected asset names:
-
-```text
-ff-occam-1.0.0-rc.2-linux-x64.tar.gz
-ff-occam-1.0.0-rc.2-linux-x64-manifest.json
-ff-occam-1.0.0-rc.2-osx-arm64.tar.gz
-ff-occam-1.0.0-rc.2-osx-arm64-manifest.json
-ff-occam-1.0.0-rc.2-win-x64.tar.gz
-ff-occam-1.0.0-rc.2-win-x64-manifest.json
-```
+For a connected internal mirror, host the versioned archive and manifest over
+HTTPS, audit a bootstrap copied from the same immutable release tag, and set
+`OCCAM_RELEASE_BASE` plus `OCCAM_VERSION` before running that local bootstrap.
+The current installer still downloads npm and Playwright dependencies when they
+are absent, so Occam does **not** ship a complete air-gap installer.
 
 ---
 
