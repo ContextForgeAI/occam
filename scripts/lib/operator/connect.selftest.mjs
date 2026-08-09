@@ -284,6 +284,90 @@ function testOwnershipAndCleanup() {
     true,
   );
   assert.equal(
+    looksLikeOccamManagedEntry(
+      {
+        command: "node",
+        args: ["/tmp/ff-occam/scripts/launch-mcp-host.mjs"],
+        env: {},
+      },
+      "/tmp/ff-occam",
+    ),
+    true,
+  );
+  assert.equal(
+    looksLikeOccamManagedEntry(
+      {
+        command: "node",
+        args: ["/tmp/ff-occam-old/scripts/launch-mcp-host.mjs"],
+        env: {},
+      },
+      "/tmp/ff-occam",
+    ),
+    false,
+    "a sibling install launcher must not confer ownership",
+  );
+  assert.equal(
+    looksLikeOccamManagedEntry(
+      {
+        command: "/tmp/ff-occam/scripts/occam-wrapper.sh",
+        args: [],
+        env: {},
+      },
+      "/tmp/ff-occam",
+    ),
+    true,
+    "generated wrappers remain recognized",
+  );
+  assert.equal(
+    looksLikeOccamManagedEntry(
+      {
+        command: "/tmp/ff-occam-old/scripts/occam-wrapper.sh",
+        args: [],
+        env: {},
+      },
+      "/tmp/ff-occam",
+    ),
+    false,
+  );
+  assert.equal(
+    looksLikeOccamManagedEntry(
+      {
+        command: "custom",
+        args: [],
+        env: {
+          OCCAM_HOME: "/tmp/ff-occam-old",
+          [OCCAM_MANAGED_ENV_KEY]: OCCAM_MANAGED_MARKER,
+        },
+      },
+      "/tmp/ff-occam",
+    ),
+    false,
+    "the shared marker must be bound to the requested install root",
+  );
+  assert.equal(
+    looksLikeOccamManagedEntry(
+      {
+        command: "node",
+        args: ["C:/FF-Occam/scripts/launch-mcp-host.mjs"],
+        env: {},
+      },
+      "c:\\ff-occam",
+    ),
+    true,
+    "Windows ownership paths compare case-insensitively",
+  );
+  assert.equal(
+    looksLikeOccamManagedEntry(
+      {
+        command: "node",
+        args: ["C:/ff-occam-old/scripts/launch-mcp-host.mjs"],
+        env: {},
+      },
+      "C:\\ff-occam",
+    ),
+    false,
+  );
+  assert.equal(
     looksLikeOccamManagedEntry({
       command: "custom",
       args: [],

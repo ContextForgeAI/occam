@@ -11,6 +11,62 @@
 import { OCCAM_MANAGED_ENV_KEY, OCCAM_MANAGED_MARKER } from "./kinds.mjs";
 import { normalizePathish } from "./process.mjs";
 import { normalizeOccamHome } from "./launch-spec.mjs";
+import { posix as pathPosix, win32 as pathWin32 } from "node:path";
+
+const MANAGED_PATH_SUFFIXES = [
+  "/scripts/launch-mcp-host.mjs",
+  "/scripts/occam-wrapper.sh",
+];
+
+/** @param {string} value */
+function stripOuterQuotes(value) {
+  const text = String(value || "").trim();
+  if (
+    text.length >= 2 &&
+    ((text.startsWith('"') && text.endsWith('"')) ||
+      (text.startsWith("'") && text.endsWith("'")))
+  ) {
+    return text.slice(1, -1);
+  }
+  return text;
+}
+
+/** @param {string} value */
+function isWindowsPathish(value) {
+  const normalized = normalizePathish(stripOuterQuotes(value));
+  return /^[A-Za-z]:\//.test(normalized) || normalized.startsWith("//");
+}
+
+/** @param {string} value */
+function managedPathRoot(value) {
+  const raw = normalizePathish(stripOuterQuotes(value));
+  if (!raw) return null;
+  const windows = isWindowsPathish(raw);
+  const normalized = windows
+    ? normalizePathish(pathWin32.normalize(raw.replace(/\//g, "\\")))
+    : pathPosix.normalize(raw);
+  const comparable = windows ? normalized.toLowerCase() : normalized;
+  for (const suffix of MANAGED_PATH_SUFFIXES) {
+    const expectedSuffix = windows ? suffix.toLowerCase() : suffix;
+    if (comparable.endsWith(expectedSuffix)) {
+      const root = normalized.slice(0, -suffix.length).replace(/\/+$/, "");
+      return root || null;
+    }
+  }
+  return null;
+}
+
+/** @param {string} left @param {string} right */
+function samePath(left, right) {
+  const rawLeft = normalizePathish(stripOuterQuotes(left));
+  const rawRight = normalizePathish(stripOuterQuotes(right));
+  if (!rawLeft || !rawRight) return false;
+  const windows = isWindowsPathish(rawLeft) || isWindowsPathish(rawRight);
+  const normalize = windows
+    ? (value) => normalizePathish(pathWin32.normalize(value.replace(/\//g, "\\"))).toLowerCase()
+    : (value) => pathPosix.normalize(value);
+  return normalize(rawLeft) === normalize(rawRight);
+}
 
 /**
  * @param {{ command?: string, args?: string[], env?: Record<string, string>, cwd?: string }|null|undefined} entry
@@ -19,22 +75,28 @@ import { normalizeOccamHome } from "./launch-spec.mjs";
 export function looksLikeOccamManagedEntry(entry, occamHome = "") {
   if (!entry) return false;
   const env = entry.env || {};
-  if (env[OCCAM_MANAGED_ENV_KEY] === OCCAM_MANAGED_MARKER) return true;
-
+  const marked = env[OCCAM_MANAGED_ENV_KEY] === OCCAM_MANAGED_MARKER;
   const home = normalizeOccamHome(occamHome);
-  const cmd = normalizePathish(entry.command || "");
-  const args = (entry.args || []).map((a) => normalizePathish(a));
+  const pathRoots = [entry.command || "", ...(entry.args || [])]
+    .map(managedPathRoot)
+    .filter(Boolean);
 
-  if (cmd.includes("occam-wrapper.sh") || cmd.endsWith("/occam-wrapper.sh")) {
-    return true;
+  // Generic inspection without a requested root preserves the legacy signal:
+  // a marker or an exact generated launcher/wrapper path means Occam-managed.
+  if (!home) return marked || pathRoots.length > 0;
+
+  // With a requested root (all mutation/removal paths), every ownership-bearing
+  // path must bind to that exact root. A marker alone is intentionally not
+  // enough: it is shared by every Occam installation on the machine.
+  const explicitRoots = [];
+  if (env.OCCAM_HOME) explicitRoots.push(env.OCCAM_HOME);
+  if (entry.cwd) explicitRoots.push(entry.cwd);
+  if ([...pathRoots, ...explicitRoots].some((root) => !samePath(root, home))) {
+    return false;
   }
-  if (args.some((a) => a.includes("launch-mcp-host.mjs"))) {
-    return true;
-  }
-  if (home && cmd.includes(normalizePathish(home)) && cmd.includes("occam-wrapper")) {
-    return true;
-  }
-  return false;
+
+  if (pathRoots.length > 0) return true;
+  return marked && explicitRoots.length > 0;
 }
 
 /**

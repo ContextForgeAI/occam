@@ -1,0 +1,1215 @@
+/**
+ * Reversible operator removal for Occam.
+ *
+ * Safety boundaries:
+ * - disconnect removes only registrations recognized by the Connect ownership rules;
+ * - uninstall removes only generated launchers and a self-contained release tree;
+ * - user state is preserved unless --remove-state is explicit;
+ * - broad, relative, symlinked, ambiguous, and malformed targets fail closed.
+ */
+import {
+  chmodSync,
+  existsSync,
+  lstatSync,
+  readdirSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
+import { homedir, platform, tmpdir } from "node:os";
+import {
+  isAbsolute,
+  join,
+  parse as parsePath,
+  relative,
+  resolve,
+  posix as pathPosix,
+  win32 as pathWin32,
+} from "node:path";
+import { createHostAdapters } from "./connect/registry.mjs";
+import { looksLikeOccamManagedEntry } from "./connect/ownership.mjs";
+import { resolveUserBinDir } from "./install-user-cli.mjs";
+import { prepareInstallTreeReplace } from "../stop-occam-processes.mjs";
+import { resolveRid } from "../resolve-rid.mjs";
+
+export const REMOVAL_SCHEMA_VERSION = "1";
+
+/** @param {string} path */
+function isRegularFile(path) {
+  try {
+    return lstatSync(path).isFile();
+  } catch {
+    return false;
+  }
+}
+
+/** @param {string} value @param {string} [platformName] */
+function pathKey(value, platformName = platform()) {
+  const normalized = (platformName === "win32"
+    ? pathWin32.resolve(value)
+    : pathPosix.resolve(String(value).replace(/\\/g, "/")))
+    .replace(/\\/g, "/")
+    .replace(/\/$/, "");
+  return platformName === "win32" ? normalized.toLowerCase() : normalized;
+}
+
+/** @param {string} parent @param {string} child */
+export function isSameOrInside(parent, child) {
+  const rel = relative(resolve(parent), resolve(child));
+  return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
+}
+
+/**
+ * Resolve a destructive target without silently accepting a relative or broad path.
+ * @param {string} rawPath
+ * @param {{ homeDir?: string, label?: string }} [opts]
+ */
+export function validateScopedPath(rawPath, opts = {}) {
+  const label = opts.label || "target";
+  const raw = String(rawPath || "").trim();
+  if (!raw) {
+    return { ok: false, path: "", reason: `${label} path is empty` };
+  }
+  if (!isAbsolute(raw)) {
+    return { ok: false, path: raw, reason: `${label} path must be absolute` };
+  }
+
+  const absolute = resolve(raw);
+  if (pathKey(absolute) === pathKey(parsePath(absolute).root)) {
+    return { ok: false, path: absolute, reason: `${label} cannot be a filesystem root` };
+  }
+
+  const home = resolve(opts.homeDir || homedir());
+  if (pathKey(absolute) === pathKey(home)) {
+    return { ok: false, path: absolute, reason: `${label} cannot be the user home directory` };
+  }
+
+  return { ok: true, path: absolute, reason: "" };
+}
+
+/**
+ * @param {string} occamHome
+ * @param {{ homeDir?: string, rid?: string }} [opts]
+ */
+export function inspectInstallTarget(occamHome, opts = {}) {
+  const scoped = validateScopedPath(occamHome, {
+    homeDir: opts.homeDir,
+    label: "OCCAM_HOME",
+  });
+  if (!scoped.ok) {
+    return { kind: "install", action: "refuse", ...scoped };
+  }
+
+  const target = scoped.path;
+  let stat;
+  try {
+    stat = lstatSync(target);
+  } catch (err) {
+    if (err && typeof err === "object" && err.code === "ENOENT") {
+      return {
+        kind: "install",
+        action: "absent",
+        ok: true,
+        path: target,
+        reason: "install tree is already absent",
+      };
+    }
+    return {
+      kind: "install",
+      action: "refuse",
+      ok: false,
+      path: target,
+      reason: `cannot inspect install tree: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
+  if (!stat.isDirectory()) {
+    return {
+      kind: "install",
+      action: "refuse",
+      ok: false,
+      path: target,
+      reason: "OCCAM_HOME is not a directory",
+    };
+  }
+  if (stat.isSymbolicLink()) {
+    return {
+      kind: "install",
+      action: "refuse",
+      ok: false,
+      path: target,
+      reason: "symlinked install roots are not removed automatically",
+    };
+  }
+
+  try {
+    if (pathKey(realpathSync(target)) !== pathKey(target)) {
+      return {
+        kind: "install",
+        action: "refuse",
+        ok: false,
+        path: target,
+        reason: "resolved install path differs from OCCAM_HOME",
+      };
+    }
+  } catch (err) {
+    return {
+      kind: "install",
+      action: "refuse",
+      ok: false,
+      path: target,
+      reason: `cannot resolve install tree: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
+
+  if (existsSync(join(target, ".git"))) {
+    return {
+      kind: "install",
+      action: "preserve",
+      ok: true,
+      path: target,
+      reason: "source checkout detected; repository files are never uninstalled",
+    };
+  }
+
+  const versionPath = join(target, "VERSION");
+  const manifestPath = join(target, "release-manifest.json");
+  const scripts = ["scripts/occam.mjs", "scripts/launch-mcp-host.mjs"];
+  const missing = ["VERSION", "release-manifest.json", ...scripts].filter(
+    (rel) => !isRegularFile(join(target, ...rel.split("/"))),
+  );
+  if (missing.length) {
+    return {
+      kind: "install",
+      action: "refuse",
+      ok: false,
+      path: target,
+      reason: `not a recognized release install (missing ${missing.join(", ")})`,
+    };
+  }
+
+  let version = "";
+  /** @type {{ version?: unknown, rid?: unknown, layout?: unknown }} */
+  let manifest = {};
+  try {
+    version = readFileSync(versionPath, "utf8").trim();
+    manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  } catch (err) {
+    return {
+      kind: "install",
+      action: "refuse",
+      ok: false,
+      path: target,
+      reason: `invalid release metadata: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
+  const expectedRid = opts.rid || resolveRid();
+  const metadataProblems = [];
+  if (!version) metadataProblems.push("VERSION is empty");
+  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) {
+    metadataProblems.push("manifest root is not an object");
+  } else {
+    if (manifest.version !== version) metadataProblems.push("manifest version does not match VERSION");
+    if (manifest.layout !== "level-b") metadataProblems.push("manifest layout is not level-b");
+    if (manifest.rid !== expectedRid) metadataProblems.push(`manifest RID is not ${expectedRid}`);
+  }
+  const hostNames = expectedRid.startsWith("win-")
+    ? ["OccamMcp.Core.exe", "FFOccamMcp.Core.exe"]
+    : ["OccamMcp.Core", "FFOccamMcp.Core"];
+  if (!hostNames.some((name) => isRegularFile(join(target, name)))) {
+    metadataProblems.push(`missing ${hostNames.join(" or ")}`);
+  }
+  if (metadataProblems.length) {
+    return {
+      kind: "install",
+      action: "refuse",
+      ok: false,
+      path: target,
+      reason: `not a recognized release install (${metadataProblems.join("; ")})`,
+    };
+  }
+
+  return {
+    kind: "install",
+    action: "remove",
+    ok: true,
+    path: target,
+    reason: "self-contained Occam release tree",
+  };
+}
+
+/** @param {string} body @param {string} occamHome @param {string} name @param {string} [platformName] */
+export function looksLikeGeneratedLauncher(body, occamHome, name, platformName = platform()) {
+  const rawBody = String(body || "").replace(/\\/g, "/");
+  const markers = rawBody.toLowerCase();
+  const home = pathKey(occamHome, platformName);
+  const lines = rawBody.split(/\r?\n/).map((line) => line.trim());
+  const homeAssignment = platformName === "win32"
+    ? name === "occam.ps1"
+      ? `$env:OCCAM_HOME = '${home.replace(/'/g, "''")}'`
+      : `set "OCCAM_HOME=${home}"`
+    : `export OCCAM_HOME='${home.replace(/'/g, "'\\''")}'`;
+  const declaresExactHome = lines.some((line) =>
+    platformName === "win32"
+      ? line.toLowerCase() === homeAssignment.toLowerCase()
+      : line === homeAssignment,
+  );
+  const pointsAtInstall =
+    declaresExactHome &&
+    markers.includes("occam_home") &&
+    markers.includes("scripts/occam.mjs");
+  if (!pointsAtInstall) return false;
+
+  if (name === "occam.ps1") {
+    return markers.includes("auto-generated by occam install");
+  }
+  if (name === "occam.cmd") {
+    return markers.includes("@echo off") && markers.includes("setlocal");
+  }
+  return markers.includes("#!/usr/bin/env bash") && markers.includes("set -euo pipefail");
+}
+
+/**
+ * @param {string} occamHome
+ * @param {{ homeDir?: string, platform?: string }} [opts]
+ */
+export function planLauncherTargets(occamHome, opts = {}) {
+  const home = opts.homeDir || homedir();
+  const binDir = resolveUserBinDir(home);
+  const names = (opts.platform || platform()) === "win32"
+    ? ["occam.cmd", "occam.ps1"]
+    : ["occam"];
+
+  return names.map((name) => {
+    const target = join(binDir, name);
+    if (!existsSync(target)) {
+      return {
+        kind: "launcher",
+        name,
+        path: target,
+        action: "absent",
+        ok: true,
+        reason: "launcher is already absent",
+      };
+    }
+    let body = "";
+    try {
+      body = readFileSync(target, "utf8");
+    } catch (err) {
+      return {
+        kind: "launcher",
+        name,
+        path: target,
+        action: "refuse",
+        ok: false,
+        reason: `cannot inspect launcher: ${err instanceof Error ? err.message : String(err)}`,
+      };
+    }
+    if (!looksLikeGeneratedLauncher(body, occamHome, name, opts.platform || platform())) {
+      return {
+        kind: "launcher",
+        name,
+        path: target,
+        action: "preserve",
+        ok: true,
+        reason: "launcher is not recognized as generated for this OCCAM_HOME",
+      };
+    }
+    return {
+      kind: "launcher",
+      name,
+      path: target,
+      action: "remove",
+      ok: true,
+      reason: "generated Occam launcher",
+    };
+  });
+}
+
+/**
+ * @param {{ homeDir?: string, removeState?: boolean }} [opts]
+ */
+export function inspectStateTarget(opts = {}) {
+  const home = resolve(opts.homeDir || homedir());
+  const target = join(home, ".occam");
+  if (opts.removeState !== true) {
+    return {
+      kind: "state",
+      action: "preserve",
+      ok: true,
+      path: target,
+      reason: "local state is preserved by default",
+    };
+  }
+  if (pathKey(target) !== pathKey(join(home, ".occam"))) {
+    return {
+      kind: "state",
+      action: "refuse",
+      ok: false,
+      path: target,
+      reason: "state target did not resolve to the user-scoped .occam directory",
+    };
+  }
+  if (!existsSync(target)) {
+    return {
+      kind: "state",
+      action: "absent",
+      ok: true,
+      path: target,
+      reason: "local state is already absent",
+    };
+  }
+  const stat = lstatSync(target);
+  if (!stat.isDirectory() || stat.isSymbolicLink()) {
+    return {
+      kind: "state",
+      action: "refuse",
+      ok: false,
+      path: target,
+      reason: "state target must be a real user-scoped directory",
+    };
+  }
+  return {
+    kind: "state",
+    action: "remove",
+    ok: true,
+    path: target,
+    reason: "--remove-state explicitly requested",
+  };
+}
+
+/** @param {string} target */
+function topLevelInventory(target) {
+  try {
+    const names = readdirSync(target);
+    return { entryCount: names.length, entries: names };
+  } catch {
+    return { entryCount: null, entries: [] };
+  }
+}
+
+/**
+ * Inventory the opt-in response cache. It is removable only with an explicit
+ * flag and only when the configured directory is narrow, real, and flat-cache-shaped.
+ * @param {{
+ *   env?: NodeJS.ProcessEnv,
+ *   tempDir?: string,
+ *   homeDir?: string,
+ *   removeCache?: boolean,
+ * }} [opts]
+ */
+export function inspectResponseCacheTarget(opts = {}) {
+  const env = opts.env || process.env;
+  const configured = String(env.OCCAM_CACHE_DIR || "").trim();
+  const raw = configured || join(opts.tempDir || tmpdir(), "occam-cache");
+  const scoped = validateScopedPath(raw, {
+    homeDir: opts.homeDir,
+    label: "response cache",
+  });
+  if (!scoped.ok) {
+    return {
+      kind: "response-cache",
+      action: opts.removeCache ? "refuse" : "preserve",
+      ok: opts.removeCache !== true,
+      path: scoped.path || raw,
+      configured: Boolean(configured),
+      exists: false,
+      entryCount: null,
+      reason: `${scoped.reason}; cache preserved`,
+    };
+  }
+
+  const target = scoped.path;
+  const tempRoot = resolve(opts.tempDir || tmpdir());
+  const defaultTarget = join(tempRoot, "occam-cache");
+  const isDefaultTarget = !configured && pathKey(target) === pathKey(defaultTarget);
+  const depth = relative(parsePath(target).root, target)
+    .split(/[\\/]+/)
+    .filter(Boolean).length;
+  const home = resolve(opts.homeDir || homedir());
+  if (
+    opts.removeCache &&
+    (depth < 2 || isSameOrInside(target, home) || isSameOrInside(target, tempRoot))
+  ) {
+    return {
+      kind: "response-cache",
+      action: "refuse",
+      ok: false,
+      path: target,
+      configured: Boolean(configured),
+      exists: existsSync(target),
+      entryCount: null,
+      reason: "response cache target is too broad; preserved",
+    };
+  }
+  if (!existsSync(target)) {
+    return {
+      kind: "response-cache",
+      action: "absent",
+      ok: true,
+      path: target,
+      configured: Boolean(configured),
+      exists: false,
+      entryCount: 0,
+      reason: "opt-in response cache is absent",
+    };
+  }
+
+  let stat;
+  try {
+    stat = lstatSync(target);
+  } catch (err) {
+    return {
+      kind: "response-cache",
+      action: opts.removeCache ? "refuse" : "preserve",
+      ok: opts.removeCache !== true,
+      path: target,
+      configured: Boolean(configured),
+      exists: true,
+      entryCount: null,
+      reason: `cannot inspect response cache: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
+  if (!stat.isDirectory() || stat.isSymbolicLink()) {
+    return {
+      kind: "response-cache",
+      action: opts.removeCache ? "refuse" : "preserve",
+      ok: opts.removeCache !== true,
+      path: target,
+      configured: Boolean(configured),
+      exists: true,
+      entryCount: null,
+      reason: "response cache target is not a real directory; preserved",
+    };
+  }
+
+  const inventory = topLevelInventory(target);
+  const unknown = inventory.entries.filter(
+    (name) => !/^[0-9a-f]{64}\.json(?:\.tmp)?$/i.test(name),
+  );
+  if (opts.removeCache && unknown.length) {
+    return {
+      kind: "response-cache",
+      action: "refuse",
+      ok: false,
+      path: target,
+      configured: Boolean(configured),
+      exists: true,
+      entryCount: inventory.entryCount,
+      reason: `response cache contains unrecognized entries (${unknown.slice(0, 3).join(", ")})`,
+    };
+  }
+  if (opts.removeCache && !isDefaultTarget && inventory.entryCount === 0) {
+    return {
+      kind: "response-cache",
+      action: "refuse",
+      ok: false,
+      path: target,
+      configured: true,
+      exists: true,
+      entryCount: 0,
+      reason: "empty custom response cache has no recognizable Occam entries; preserved",
+    };
+  }
+  return {
+    kind: "response-cache",
+    action: opts.removeCache ? "remove" : "preserve",
+    ok: true,
+    path: target,
+    configured: Boolean(configured),
+    exists: true,
+    entryCount: inventory.entryCount,
+    reason: opts.removeCache
+      ? "--remove-cache explicitly requested for the opt-in response cache"
+      : "opt-in response cache is preserved by default",
+  };
+}
+
+/**
+ * Inventory the shared Playwright browser cache. This target is never removed
+ * by Occam uninstall because other Playwright applications may own it too.
+ * @param {{ env?: NodeJS.ProcessEnv, homeDir?: string, platform?: string }} [opts]
+ */
+export function inspectPlaywrightCacheTarget(opts = {}) {
+  const env = opts.env || process.env;
+  const plat = opts.platform || platform();
+  const home = opts.homeDir || homedir();
+  let raw = String(
+    env.OCCAM_PLAYWRIGHT_BROWSERS_PATH || env.PLAYWRIGHT_BROWSERS_PATH || "",
+  ).trim();
+  if (!raw) {
+    if (plat === "win32") {
+      const localAppData = String(env.LOCALAPPDATA || "").trim();
+      raw = localAppData ? join(localAppData, "ms-playwright") : join(home, "AppData", "Local", "ms-playwright");
+    } else if (plat === "darwin") {
+      raw = join(home, "Library", "Caches", "ms-playwright");
+    } else {
+      raw = join(home, ".cache", "ms-playwright");
+    }
+  }
+
+  const absolute = isAbsolute(raw) ? resolve(raw) : raw;
+  const exists = isAbsolute(raw) && existsSync(absolute);
+  let entryCount = 0;
+  let symlink = false;
+  if (exists) {
+    try {
+      symlink = lstatSync(absolute).isSymbolicLink();
+      entryCount = symlink ? null : topLevelInventory(absolute).entryCount;
+    } catch {
+      entryCount = null;
+    }
+  }
+  return {
+    kind: "playwright-cache",
+    action: "preserve",
+    ok: true,
+    path: absolute,
+    exists,
+    entryCount,
+    symlink,
+    reason: isAbsolute(raw)
+      ? "shared Playwright browser cache is never removed automatically"
+      : "relative Playwright cache path is unresolved and preserved",
+  };
+}
+
+/**
+ * @param {{
+ *   occamHome: string,
+ *   only?: string[],
+ *   adapters?: Record<string, object>,
+ * }} opts
+ */
+export function buildDisconnectPlan(opts) {
+  const scoped = validateScopedPath(opts.occamHome, { label: "OCCAM_HOME" });
+  if (!scoped.ok) {
+    return {
+      schemaVersion: REMOVAL_SCHEMA_VERSION,
+      command: "disconnect",
+      ok: false,
+      blocked: true,
+      error: scoped.reason,
+      rows: [],
+    };
+  }
+
+  const adapters = opts.adapters || createHostAdapters({ occamHome: scoped.path });
+  const available = Object.keys(adapters);
+  const selected = opts.only?.length ? [...new Set(opts.only)] : available;
+  const unknown = selected.filter((id) => !adapters[id]);
+  if (unknown.length > 0) {
+    return {
+      schemaVersion: REMOVAL_SCHEMA_VERSION,
+      command: "disconnect",
+      ok: false,
+      blocked: true,
+      error: `unknown host id(s): ${unknown.join(", ")}`,
+      available,
+      rows: [],
+    };
+  }
+
+  const rows = selected.map((id) => {
+    const adapter = /** @type {any} */ (adapters[id]);
+    /** @type {any} */
+    let inspected;
+    try {
+      inspected = adapter.inspect();
+    } catch (err) {
+      const row = {
+        id,
+        name: adapter.name || id,
+        action: "refuse",
+        ok: false,
+        reason: `inspection failed: ${err instanceof Error ? err.message : String(err)}`,
+      };
+      Object.defineProperty(row, "_adapter", { value: adapter });
+      return row;
+    }
+
+    const path = inspected.path || inspected.configPath || null;
+    let action = "absent";
+    let reason = "no ff-occam registration";
+    let ok = true;
+    if (inspected.ambiguous === true) {
+      action = "refuse";
+      reason = "host config target is ambiguous";
+      ok = false;
+    } else if (inspected.parseError === true) {
+      action = "refuse";
+      reason = inspected.error || "host config cannot be parsed safely";
+      ok = false;
+    } else if (inspected.registered === true && !inspected.entry) {
+      action = "refuse";
+      reason = "ff-occam registration exists but its ownership cannot be decoded";
+      ok = false;
+    } else if (inspected.registered === true) {
+      if (looksLikeOccamManagedEntry(inspected.entry, scoped.path)) {
+        action = "remove";
+        reason = "Occam-managed registration";
+      } else {
+        action = "preserve";
+        reason = "ff-occam registration is not recognized as Occam-managed";
+      }
+    }
+    const row = { id, name: adapter.name || id, path, action, ok, reason };
+    Object.defineProperty(row, "_adapter", { value: adapter });
+    return row;
+  });
+
+  return {
+    schemaVersion: REMOVAL_SCHEMA_VERSION,
+    command: "disconnect",
+    ok: rows.every((row) => row.ok !== false),
+    blocked: rows.some((row) => row.action === "refuse"),
+    occamHome: scoped.path,
+    rows,
+  };
+}
+
+/** @param {ReturnType<typeof buildDisconnectPlan>} plan */
+export function executeDisconnectPlan(plan) {
+  if (plan.blocked || !plan.ok) {
+    return { ...plan, ok: false, applied: false };
+  }
+
+  const rows = plan.rows.map((planned) => {
+    if (planned.action !== "remove") {
+      return { ...planned, outcome: planned.action };
+    }
+    const adapter = /** @type {any} */ (planned._adapter);
+    try {
+      const before = adapter.inspect();
+      if (before.registered !== true) {
+        return { ...planned, outcome: "absent", reason: "registration is already absent" };
+      }
+      if (
+        before.ambiguous === true ||
+        before.parseError === true ||
+        !before.entry ||
+        !looksLikeOccamManagedEntry(before.entry, plan.occamHome)
+      ) {
+        return {
+          ...planned,
+          ok: false,
+          outcome: "preserved",
+          reason: "registration ownership changed after planning; preserved",
+        };
+      }
+      const result = adapter.rollback();
+      const after = adapter.inspect();
+      const removed = result?.ok !== false && after.registered !== true;
+      return {
+        ...planned,
+        ok: removed,
+        outcome: removed ? "removed" : "failed",
+        backupPath: result?.backupPath || result?.result?.backupPath || null,
+        reason: removed
+          ? "managed registration removed"
+          : result?.error || "registration is still present after removal",
+      };
+    } catch (err) {
+      return {
+        ...planned,
+        ok: false,
+        outcome: "failed",
+        reason: err instanceof Error ? err.message : String(err),
+      };
+    }
+  });
+  return {
+    schemaVersion: REMOVAL_SCHEMA_VERSION,
+    command: "disconnect",
+    ok: rows.every((row) => row.ok !== false),
+    blocked: false,
+    applied: rows.some((row) => row.outcome === "removed"),
+    occamHome: plan.occamHome,
+    rows,
+  };
+}
+
+/**
+ * @param {{
+ *   occamHome: string,
+ *   homeDir?: string,
+ *   platform?: string,
+ *   rid?: string,
+ *   removeState?: boolean,
+ *   removeCache?: boolean,
+ *   env?: NodeJS.ProcessEnv,
+ *   tempDir?: string,
+ * }} opts
+ */
+export function buildLocalUninstallPlan(opts) {
+  const install = inspectInstallTarget(opts.occamHome, { homeDir: opts.homeDir, rid: opts.rid });
+  const launchers = install.path
+    ? planLauncherTargets(install.path, { homeDir: opts.homeDir, platform: opts.platform })
+    : [];
+  const state = inspectStateTarget({ homeDir: opts.homeDir, removeState: opts.removeState });
+  let responseCache = inspectResponseCacheTarget({
+    env: opts.env,
+    tempDir: opts.tempDir,
+    homeDir: opts.homeDir,
+    removeCache: opts.removeCache,
+  });
+  const playwrightCache = inspectPlaywrightCacheTarget({
+    env: opts.env,
+    homeDir: opts.homeDir,
+    platform: opts.platform,
+  });
+  if (
+    responseCache.action === "remove" &&
+    ((install.path &&
+      (isSameOrInside(responseCache.path, install.path) ||
+        isSameOrInside(install.path, responseCache.path))) ||
+      (state.path &&
+        (isSameOrInside(responseCache.path, state.path) ||
+          isSameOrInside(state.path, responseCache.path))))
+  ) {
+    responseCache = {
+      ...responseCache,
+      action: "refuse",
+      ok: false,
+      reason: "response cache overlaps another uninstall target; preserved",
+    };
+  }
+  const targets = [...launchers, responseCache, playwrightCache, state, install];
+  const plan = {
+    schemaVersion: REMOVAL_SCHEMA_VERSION,
+    command: "uninstall-local",
+    ok: targets.every((target) => target.ok !== false),
+    blocked: targets.some((target) => target.action === "refuse"),
+    occamHome: install.path || String(opts.occamHome || ""),
+    homeDir: resolve(opts.homeDir || homedir()),
+    platform: opts.platform || platform(),
+    rid: opts.rid || resolveRid(),
+    removeState: opts.removeState === true,
+    removeCache: opts.removeCache === true,
+    targets,
+  };
+  Object.defineProperty(plan, "_cacheContext", {
+    value: { env: opts.env, tempDir: opts.tempDir, homeDir: opts.homeDir },
+  });
+  return plan;
+}
+
+/**
+ * @param {ReturnType<typeof buildLocalUninstallPlan>} plan
+ * @param {{
+ *   prepareInstall?: (path: string) => { ok: boolean, message?: string, stopped?: object[] },
+ *   chdir?: (path: string) => void,
+ *   removeInstall?: (path: string) => void,
+ * }} [deps]
+ */
+export function executeLocalUninstallPlan(plan, deps = {}) {
+  if (plan.blocked || !plan.ok) {
+    return { ...plan, ok: false, applied: false };
+  }
+
+  const install = plan.targets.find((target) => target.kind === "install");
+  if (install?.action === "remove") {
+    const prepare = deps.prepareInstall || ((path) => prepareInstallTreeReplace(path, { force: true }));
+    const ready = prepare(install.path);
+    if (!ready.ok) {
+      return {
+        ...plan,
+        ok: false,
+        applied: false,
+        error: ready.message || "Occam install tree is still in use",
+        stopped: ready.stopped || [],
+      };
+    }
+  }
+
+  const results = [];
+  const removedLauncherSnapshots = [];
+  let hardFailure = false;
+  let launchersRestored = false;
+  for (const target of plan.targets.filter((row) => row.kind === "launcher")) {
+    if (target.action !== "remove") {
+      results.push({ ...target, outcome: target.action });
+      continue;
+    }
+    try {
+      if (!existsSync(target.path)) {
+        results.push({ ...target, outcome: "absent" });
+        continue;
+      }
+      const body = readFileSync(target.path, "utf8");
+      if (!looksLikeGeneratedLauncher(body, plan.occamHome, target.name, plan.platform)) {
+        results.push({
+          ...target,
+          ok: false,
+          outcome: "failed",
+          reason: "launcher ownership changed after planning; preserved",
+        });
+        hardFailure = true;
+        continue;
+      }
+      const mode = lstatSync(target.path).mode;
+      unlinkSync(target.path);
+      removedLauncherSnapshots.push({ path: target.path, body, mode });
+      results.push({ ...target, outcome: "removed" });
+    } catch (err) {
+      results.push({
+        ...target,
+        ok: false,
+        outcome: "failed",
+        reason: err instanceof Error ? err.message : String(err),
+      });
+      hardFailure = true;
+    }
+  }
+
+  function restoreRemovedLaunchers(reason) {
+    if (launchersRestored) return;
+    launchersRestored = true;
+    for (const snap of removedLauncherSnapshots) {
+      const row = results.find((item) => item.kind === "launcher" && item.path === snap.path);
+      try {
+        if (existsSync(snap.path)) {
+          throw new Error("launcher path was recreated by another process");
+        }
+        writeFileSync(snap.path, snap.body, "utf8");
+        try {
+          chmodSync(snap.path, snap.mode & 0o777);
+        } catch {
+          // Windows and unusual filesystems may not expose Unix modes.
+        }
+        if (row) {
+          row.ok = false;
+          row.outcome = "restored";
+          row.reason = reason;
+        }
+      } catch (err) {
+        if (row) {
+          row.ok = false;
+          row.outcome = "restore-failed";
+          row.reason = `launcher restore failed: ${err instanceof Error ? err.message : String(err)}`;
+        }
+      }
+    }
+  }
+
+  if (hardFailure && removedLauncherSnapshots.length) {
+    restoreRemovedLaunchers("launcher restored because another launcher step failed");
+  }
+
+  if (install) {
+    if (install.action !== "remove") {
+      results.push({ ...install, outcome: install.action });
+    } else if (hardFailure) {
+      results.push({
+        ...install,
+        ok: false,
+        outcome: "preserved",
+        reason: "install tree preserved because an earlier removal step failed",
+      });
+    } else {
+      try {
+        const rechecked = inspectInstallTarget(install.path, { homeDir: plan.homeDir, rid: plan.rid });
+        if (rechecked.action === "absent") {
+          results.push({ ...install, outcome: "absent" });
+        } else if (rechecked.action !== "remove") {
+          if (removedLauncherSnapshots.length) {
+            restoreRemovedLaunchers("launcher restored because install ownership changed after planning");
+          }
+          results.push({ ...install, ok: false, outcome: "failed", reason: rechecked.reason });
+          hardFailure = true;
+        } else {
+          if (isSameOrInside(install.path, process.cwd())) {
+            (deps.chdir || process.chdir)(plan.homeDir);
+          }
+          const removeInstall = deps.removeInstall || ((path) => rmSync(path, { recursive: true, force: false }));
+          removeInstall(install.path);
+          if (existsSync(install.path)) {
+            throw new Error("install tree is still present after removal");
+          }
+          results.push({ ...install, outcome: "removed" });
+        }
+      } catch (err) {
+        if (removedLauncherSnapshots.length) {
+          restoreRemovedLaunchers("launcher restored because install tree removal failed");
+        }
+        results.push({
+          ...install,
+          ok: false,
+          outcome: "failed",
+          reason: err instanceof Error ? err.message : String(err),
+        });
+        hardFailure = true;
+      }
+    }
+  }
+
+  const responseCache = plan.targets.find((target) => target.kind === "response-cache");
+  if (responseCache) {
+    if (responseCache.action !== "remove") {
+      results.push({ ...responseCache, outcome: responseCache.action });
+    } else if (hardFailure) {
+      results.push({
+        ...responseCache,
+        ok: false,
+        outcome: "preserved",
+        reason: "response cache preserved because an earlier removal step failed",
+      });
+    } else {
+      try {
+        const rechecked = inspectResponseCacheTarget({
+          ...(plan._cacheContext || {}),
+          removeCache: true,
+        });
+        if (rechecked.action === "absent") {
+          results.push({ ...responseCache, outcome: "absent" });
+        } else if (rechecked.action !== "remove") {
+          results.push({ ...responseCache, ok: false, outcome: "failed", reason: rechecked.reason });
+          hardFailure = true;
+        } else {
+          rmSync(responseCache.path, { recursive: true, force: false });
+          results.push({ ...responseCache, outcome: "removed" });
+        }
+      } catch (err) {
+        results.push({
+          ...responseCache,
+          ok: false,
+          outcome: "failed",
+          reason: err instanceof Error ? err.message : String(err),
+        });
+        hardFailure = true;
+      }
+    }
+  }
+
+  const playwrightCache = plan.targets.find((target) => target.kind === "playwright-cache");
+  if (playwrightCache) {
+    results.push({ ...playwrightCache, outcome: "preserve" });
+  }
+
+  // Credential-bearing state is deliberately last. A failed launcher or
+  // install-tree step must never erase sessions/keys from an incomplete uninstall.
+  const state = plan.targets.find((target) => target.kind === "state");
+  if (state) {
+    if (state.action !== "remove") {
+      results.push({ ...state, outcome: state.action });
+    } else if (hardFailure) {
+      results.push({
+        ...state,
+        ok: false,
+        outcome: "preserved",
+        reason: "local state preserved because an earlier removal step failed",
+      });
+    } else {
+      try {
+        const rechecked = inspectStateTarget({ homeDir: plan.homeDir, removeState: true });
+        if (rechecked.action === "absent") {
+          results.push({ ...state, outcome: "absent" });
+        } else if (rechecked.action !== "remove") {
+          results.push({ ...state, ok: false, outcome: "failed", reason: rechecked.reason });
+          hardFailure = true;
+        } else {
+          rmSync(state.path, { recursive: true, force: false });
+          results.push({ ...state, outcome: "removed" });
+        }
+      } catch (err) {
+        results.push({
+          ...state,
+          ok: false,
+          outcome: "failed",
+          reason: err instanceof Error ? err.message : String(err),
+        });
+        hardFailure = true;
+      }
+    }
+  }
+
+  return {
+    schemaVersion: REMOVAL_SCHEMA_VERSION,
+    command: "uninstall-local",
+    ok: !hardFailure && results.every((row) => row.ok !== false),
+    blocked: false,
+    applied: results.some((row) => row.outcome === "removed"),
+    occamHome: plan.occamHome,
+    removeState: plan.removeState,
+    removeCache: plan.removeCache,
+    targets: results,
+  };
+}
+
+/** @param {string[]} argv @param {'disconnect'|'uninstall'} command */
+export function parseRemovalArgs(argv, command) {
+  const out = { json: false, dryRun: false, removeState: false, removeCache: false, help: false, only: [] };
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (arg === "--json") out.json = true;
+    else if (arg === "--dry-run") out.dryRun = true;
+    else if (arg === "--remove-state" && command === "uninstall") out.removeState = true;
+    else if (arg === "--remove-cache" && command === "uninstall") out.removeCache = true;
+    else if (arg === "--only" && command === "disconnect") {
+      const value = argv[++i];
+      if (!value) throw new Error("--only requires a comma-separated host id list");
+      out.only.push(...value.split(",").map((v) => v.trim()).filter(Boolean));
+    } else if (arg === "-h" || arg === "--help") out.help = true;
+    else throw new Error(`unknown ${command} option: ${arg}`);
+  }
+  return out;
+}
+
+/** @param {'disconnect'|'uninstall'} command */
+export function removalHelp(command) {
+  if (command === "disconnect") {
+    return `usage: occam disconnect [--dry-run] [--only IDS] [--json]\n\nRemoves only Occam-managed ff-occam host registrations.\nUnmanaged entries and all local Occam files are preserved.`;
+  }
+  return `usage: occam uninstall [--dry-run] [--remove-cache] [--remove-state] [--json]\n\nDisconnects managed hosts, removes generated launchers, then removes a recognized\nrelease install tree. The response cache requires --remove-cache. Source checkouts,\nskills, shared Playwright cache, backups, and ~/.occam state are preserved unless\ntheir documented explicit scope applies.`;
+}
+
+/** @param {any} report */
+export function renderRemovalReport(report) {
+  const preview = report.dryRun === true;
+  const lines = [`Occam — ${report.command === "disconnect" ? "Disconnect" : "Uninstall"}${preview ? " (dry run)" : ""}`, ""];
+  if (report.error) lines.push(`Blocked: ${report.error}`, "");
+
+  const disconnect = report.command === "disconnect" ? report : report.disconnect;
+  if (disconnect) {
+    const rows = disconnect.rows || [];
+    const removals = rows.filter((row) => preview ? row.action === "remove" : row.outcome === "removed");
+    const preserved = rows.filter(
+      (row) =>
+        row.action === "preserve" ||
+        row.action === "refuse" ||
+        row.outcome === "preserved" ||
+        row.outcome === "failed" ||
+        row.outcome === "restore-failed",
+    );
+    if (removals.length) {
+      lines.push(preview ? "Managed registrations to remove:" : "Managed registrations removed:");
+      for (const row of removals) lines.push(`- ${row.name}${row.path ? ` — ${row.path}` : ""}`);
+      lines.push("");
+    }
+    for (const row of preserved) {
+      lines.push(`${row.action === "refuse" || row.outcome === "failed" ? "Blocked" : "Preserved"}: ${row.name} — ${row.reason}`);
+    }
+    if (preserved.length) lines.push("");
+  }
+
+  const local = report.local;
+  if (local) {
+    if (local.error) lines.push(`Blocked: ${local.error}`, "");
+    for (const target of local.targets || []) {
+      if (target.action === "absent" || target.outcome === "absent") {
+        if (target.kind === "response-cache" || target.kind === "playwright-cache") {
+          lines.push(`Absent: ${target.path} — ${target.reason}`);
+        }
+        continue;
+      }
+      const blocked =
+        target.action === "refuse" ||
+        target.outcome === "failed" ||
+        target.outcome === "restore-failed";
+      const verb = blocked
+        ? "Blocked"
+        : preview
+          ? target.action === "remove" ? "Remove" : "Preserve"
+          : target.outcome === "removed" ? "Removed" : "Preserved";
+      const inventory = Number.isInteger(target.entryCount)
+        ? ` (${target.entryCount} top-level entr${target.entryCount === 1 ? "y" : "ies"})`
+        : "";
+      lines.push(`${verb}: ${target.path}${inventory} — ${target.reason}`);
+    }
+    lines.push("");
+  }
+
+  if (preview) {
+    lines.push(report.ok ? "No files or host settings were changed." : "No changes were made because the plan is blocked.");
+  } else if (report.ok) {
+    lines.push(report.command === "disconnect" ? "Disconnect complete. Reload affected AI applications." : "Uninstall complete.");
+  } else {
+    lines.push("Removal incomplete. Review the blocked or failed targets above.");
+  }
+  return lines.join("\n");
+}
+
+/**
+ * @param {'disconnect'|'uninstall'} command
+ * @param {string[]} argv
+ * @param {{
+ *   occamHome?: string,
+ *   homeDir?: string,
+ *   platform?: string,
+ *   rid?: string,
+ *   env?: NodeJS.ProcessEnv,
+ *   tempDir?: string,
+ *   adapters?: Record<string, object>,
+ * }} [ctx]
+ */
+export async function runRemovalCli(command, argv, ctx = {}) {
+  let args;
+  try {
+    args = parseRemovalArgs(argv, command);
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : String(err));
+    console.error(removalHelp(command));
+    return 2;
+  }
+  if (args.help) {
+    console.log(removalHelp(command));
+    return 0;
+  }
+
+  const occamHome = String(ctx.occamHome || process.env.OCCAM_HOME || "").trim();
+  const disconnectPlan = buildDisconnectPlan({
+    occamHome,
+    only: args.only.length ? args.only : undefined,
+    adapters: ctx.adapters,
+  });
+
+  /** @type {any} */
+  let report;
+  if (command === "disconnect") {
+    report = args.dryRun
+      ? { ...disconnectPlan, dryRun: true }
+      : executeDisconnectPlan(disconnectPlan);
+  } else {
+    const localPlan = buildLocalUninstallPlan({
+      occamHome,
+      homeDir: ctx.homeDir,
+      platform: ctx.platform,
+      rid: ctx.rid,
+      removeState: args.removeState,
+      removeCache: args.removeCache,
+      env: ctx.env,
+      tempDir: ctx.tempDir,
+    });
+    if (args.dryRun || disconnectPlan.blocked || localPlan.blocked) {
+      report = {
+        schemaVersion: REMOVAL_SCHEMA_VERSION,
+        command: "uninstall",
+        dryRun: args.dryRun,
+        ok: !disconnectPlan.blocked && !localPlan.blocked,
+        blocked: disconnectPlan.blocked || localPlan.blocked,
+        error: disconnectPlan.error || undefined,
+        disconnect: disconnectPlan,
+        local: localPlan,
+      };
+    } else {
+      const disconnected = executeDisconnectPlan(disconnectPlan);
+      const local = disconnected.ok
+        ? executeLocalUninstallPlan(localPlan)
+        : { ...localPlan, ok: false, applied: false, error: "install files preserved because disconnect failed" };
+      report = {
+        schemaVersion: REMOVAL_SCHEMA_VERSION,
+        command: "uninstall",
+        dryRun: false,
+        ok: disconnected.ok && local.ok,
+        blocked: false,
+        disconnect: disconnected,
+        local,
+      };
+    }
+  }
+
+  if (args.json) console.log(JSON.stringify(report, null, 2));
+  else console.log(renderRemovalReport(report));
+  return report.ok ? 0 : 1;
+}

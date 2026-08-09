@@ -41,6 +41,22 @@ export const CLI_SUBCOMMANDS = [
     passthrough: true,
   },
   {
+    name: "disconnect",
+    summary: "Remove only Occam-managed registrations from AI/MCP hosts",
+    delegate: "node",
+    script: "occam-disconnect.mjs",
+    registryId: "occam-disconnect",
+    passthrough: true,
+  },
+  {
+    name: "uninstall",
+    summary: "Preview or remove this release install without deleting state by default",
+    delegate: "node",
+    script: "occam-uninstall.mjs",
+    registryId: "occam-uninstall",
+    passthrough: true,
+  },
+  {
     name: "help",
     summary: "CLI catalog and command detail",
     delegate: "node",
