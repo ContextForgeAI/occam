@@ -328,6 +328,7 @@ function Invoke-PrepareInstallReplace([string]$Dir) {
     $helperTmp = $helperDir
     try {
       Invoke-WebRequest -Uri ($base + "/scripts/lib/prepare-install-replace.mjs") -OutFile (Join-Path $helperDir "prepare-install-replace.mjs") -UseBasicParsing
+      Invoke-WebRequest -Uri ($base + "/scripts/lib/install-target-inspect.mjs") -OutFile (Join-Path $helperDir "install-target-inspect.mjs") -UseBasicParsing
       Invoke-WebRequest -Uri ($base + "/scripts/lib/stop-occam-processes.mjs") -OutFile (Join-Path $helperDir "stop-occam-processes.mjs") -UseBasicParsing
       Invoke-WebRequest -Uri ($base + "/scripts/lib/resolve-rid.mjs") -OutFile (Join-Path $helperDir "resolve-rid.mjs") -UseBasicParsing
       $helper = Join-Path $helperDir "prepare-install-replace.mjs"

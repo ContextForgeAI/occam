@@ -121,6 +121,7 @@ prepare_install_replace() {
     base="${base%/}"
     helper_tmp="$(mktemp -d "${TMPDIR:-/tmp}/occam-prepare.XXXXXX")"
     if ! curl -fsSL "$base/scripts/lib/prepare-install-replace.mjs" -o "$helper_tmp/prepare-install-replace.mjs" \
+      || ! curl -fsSL "$base/scripts/lib/install-target-inspect.mjs" -o "$helper_tmp/install-target-inspect.mjs" \
       || ! curl -fsSL "$base/scripts/lib/stop-occam-processes.mjs" -o "$helper_tmp/stop-occam-processes.mjs" \
       || ! curl -fsSL "$base/scripts/lib/resolve-rid.mjs" -o "$helper_tmp/resolve-rid.mjs"; then
       rm -rf "$helper_tmp"

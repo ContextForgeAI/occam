@@ -13,9 +13,10 @@
  *
  * Compatibility:
  *   - manifests without signaturePolicy → treated as legacy sha256-only
- *     (cannot satisfy self-contained-v1 installs; bootstrap rejects those first)
+ *     (compatible with published Level B / rc.2 installers)
  *   - signaturePolicy=sha256-only → integrity only
  *   - signaturePolicy=required-cosign-v1 → Cosign bundle required + identity match
+ *     (for future signed releases; not required by current public bootstrap)
  */
 import fs from "node:fs";
 import path from "node:path";

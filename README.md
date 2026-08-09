@@ -73,9 +73,7 @@ after making a backup. Review [installation safety](docs/trust/installation-safe
 before running it in a sensitive environment.
 
 The installer requires the manifest to match the requested version and
-platform, verifies the archive SHA-256, checks the complete bundled runtime
-before replacing an install, and does not fetch post-install helpers from the
-mutable repository branch. It then checks the local runtime,
+platform, verifies the archive SHA-256, then checks the local runtime,
 detects supported AI applications, and tells you whether a restart or another
 action is needed. Open a new conversation in the connected application and type:
 

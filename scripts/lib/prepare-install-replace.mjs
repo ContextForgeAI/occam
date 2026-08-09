@@ -11,7 +11,7 @@ import { realpathSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { prepareInstallTreeReplace } from "./stop-occam-processes.mjs";
-import { inspectInstallTarget } from "./operator/uninstall.mjs";
+import { inspectInstallTarget } from "./install-target-inspect.mjs";
 
 function parseArgs(argv) {
   let dir = "";

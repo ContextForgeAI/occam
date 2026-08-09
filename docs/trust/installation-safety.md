@@ -4,7 +4,11 @@
 
 The canonical installer downloads a GitHub Release archive and verifies **SHA-256** against the published `*-manifest.json` before extract.
 
-The requested version, platform RID, and tarball name must match the manifest. Before replacing an existing install, the bootstrap also validates the extracted host binary, `VERSION`, inner release manifest, and runtime-helper set. Post-install steps run from that verified archive; they do not fetch helper overlays from the mutable repository branch.
+The requested version, platform RID, and tarball name must match the manifest.
+Before replacing an existing install, the bootstrap validates release markers on
+the extracted tree where available (`VERSION`, inner release manifest, host
+binary). Replacement helpers may still be refreshed from the repository overlay
+used by the published Level B bootstrap.
 
 Replacement is ownership-gated in both directions. The staged tree must pass the
 release checks above, and an existing `OCCAM_INSTALL_DIR` must be a real,
@@ -76,7 +80,7 @@ ambiguous entry is preserved; unsafe ambiguity blocks the operation.
 1. Disconnect managed host registrations. If this fails, install files stay in place.
 2. Stop only Occam host processes whose command path is under this `OCCAM_HOME`.
 3. Remove generated `occam` launcher files that point at this `OCCAM_HOME`.
-4. Remove `OCCAM_HOME` only when it is a recognized self-contained release tree.
+4. Remove `OCCAM_HOME` only when it is a recognized Level B release tree.
 5. Remove the narrow response cache only when `--remove-cache` was explicit.
 6. Remove `~/.occam/` last, and only when `--remove-state` was explicit and every earlier step succeeded.
 

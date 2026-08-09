@@ -78,9 +78,8 @@ Requires Node.js 20+. The release install does not require the .NET SDK.
     irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
     ```
 
-The installer verifies the requested release and complete bundled runtime before
-replacing an existing install. Post-install helpers come from that verified
-archive, not the mutable repository branch. It then checks the local runtime,
+The installer verifies the requested release archive against its SHA-256
+manifest, then checks the local runtime,
 detects supported applications, and explains the next action. If it detects one
 supported application, it can connect it. If it finds several, it asks which one
 to configure.

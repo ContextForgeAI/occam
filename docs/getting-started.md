@@ -4,9 +4,9 @@
 
 If you still need install: [Quick Start](quick-start.md) · canonical reference [Install](install.md) · root [`INSTALL.md`](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md).
 
-Release installs validate the requested version, platform archive, and complete
-bundled runtime before replacing an existing install. No post-install helper is
-downloaded from the mutable repository branch.
+Release installs verify the archive SHA-256 against the published manifest
+before extract. Review [installation safety](trust/installation-safety.md)
+for what install mutates and how to remove it.
 
 ---
 
