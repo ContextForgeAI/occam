@@ -39,18 +39,27 @@
 
 Receipts in API responses are **portable artifacts** — persistence is caller-owned.
 
-### Outside the install directory
+### Uninstall boundaries
 
 Removing `OCCAM_HOME` alone does **not** uninstall Occam. Surviving footprint includes entire `~/.occam/`, host MCP configs, skill directories, Playwright cache, and temp cache orphans.
 
 ### What survives events
+
+The supported path is different from manual deletion. Run
+`occam uninstall --dry-run` first, then `occam uninstall`: it removes only
+recognized generated launchers, exact Occam-owned host registrations, and a
+validated release tree. By default it preserves `~/.occam/`, skills,
+host-config backups, the opt-in response cache, and the shared Playwright
+cache. State and response-cache removal require explicit flags.
 
 | Event | Survives | Lost |
 |-------|----------|------|
 | Host restart | All persistent + host configuration | In-memory atlas, pools, caches (recreated) |
 | Upgrade (replace install tree) | `~/.occam`, host configs, Playwright cache | Install-tree files unless preserved |
 | Uninstall install dir only | **Everything under `~/.occam`**, host configs, skills, Playwright | Binaries under install |
-| `occam refresh` | Disk state | Running processes machine-wide |
+| Default `occam uninstall` | `~/.occam`, skills, response cache, host-config backups, shared Playwright cache | Managed registrations, generated launchers, recognized release tree |
+| `occam uninstall --remove-cache --remove-state` | Skills, host-config backups, shared Playwright cache | Default targets plus the scoped response cache and `~/.occam` state |
+| `occam refresh` | Disk state and sibling installs | Running hosts bound to this `OCCAM_HOME` |
 
 ### Unbounded growth / no cleanup
 
@@ -81,6 +90,9 @@ Removing `OCCAM_HOME` alone does **not** uninstall Occam. Surviving footprint in
 ---
 
 ## Limitations
+
+The supported uninstall previews exact owned targets. It never removes the
+shared Playwright cache automatically because another application may own it.
 
 - Windows key permission hardening is a no-op; POSIX `chmod` failure may be swallowed.
 - Multi-process safety is not guaranteed for watch/batch stores.

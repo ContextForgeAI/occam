@@ -66,22 +66,27 @@ terminal.
 
 Requires Node.js 20+. The release install does not require the .NET SDK.
 
-=== "Linux / macOS"
+=== "Linux x64 / macOS Apple Silicon"
 
     ```bash
     curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
     ```
 
-=== "Windows"
+=== "Windows x64"
 
     ```powershell
     irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
     ```
 
-The installer downloads and verifies the release archive, checks the local
-runtime, detects supported applications, and explains the next action. If it
-detects one supported application, it can connect it. If it finds several, it
-asks which one to configure.
+The installer verifies the requested release and complete bundled runtime before
+replacing an existing install. Post-install helpers come from that verified
+archive, not the mutable repository branch. It then checks the local runtime,
+detects supported applications, and explains the next action. If it detects one
+supported application, it can connect it. If it finds several, it asks which one
+to configure.
+
+Release binaries exist for Windows x64, Linux x64, and Apple Silicon macOS. An
+unsupported CPU/OS combination is rejected before download.
 
 Read the final status before continuing:
 
@@ -324,6 +329,21 @@ Use the result in this order:
 4. If connect reports **Not connected**, do not treat that host as ready.
 
 More help: [Troubleshooting](troubleshooting.md).
+
+## Preview removal
+
+Before deciding to keep Occam, you can inspect exactly what removal would
+change:
+
+```bash
+occam disconnect --dry-run  # managed host registrations only
+occam uninstall --dry-run   # registrations, generated launcher, release tree
+```
+
+Default uninstall preserves local state, skills, backups, the response cache,
+and the shared Playwright browser cache. State and cache cleanup require
+explicit flags. See [Install: disconnect or uninstall](install.md#disconnect-or-uninstall)
+for the complete boundary.
 
 ## You have your first result when
 

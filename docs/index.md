@@ -25,7 +25,8 @@ agent can actually use.
 
 <p class="oc-hero-audience">
 For developers and technical users building or running AI agents — especially
-local and self-hosted setups.
+local and self-hosted setups. Search finds pages and browser automation operates
+interfaces; Occam turns a known URL into compact context or an explicit failure.
 </p>
 
 <p class="oc-hero-actions">

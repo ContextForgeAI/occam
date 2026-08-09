@@ -6,9 +6,12 @@ The full security policy (supported versions, reporting process, trust boundarie
 
 ## Report a vulnerability
 
-Do **not** open a public issue for security vulnerabilities.
+Do **not** put vulnerability details in a public issue.
 
-- Prefer GitHub [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidelines-on-reporting-and-writing-information-about-vulnerabilities) on [ContextForgeAI/occam](https://github.com/ContextForgeAI/occam) when enabled.  
-- **Email:** OWNER DECISION REQUIRED — no public security contact address is published yet.
+- GitHub private vulnerability reporting is not currently enabled for this
+  repository, and no public security email is published.
+- Until a confidential channel exists, open a public issue **without
+  vulnerability details** and ask the maintainer to establish a private channel
+  before sending the report.
 
 Human trust overview: [Trust & Safety](../trust-and-safety.md)

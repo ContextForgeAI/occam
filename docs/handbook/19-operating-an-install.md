@@ -21,10 +21,12 @@ The operator path is **first-class product surface** — parallel to MCP tools, 
 | `occam doctor` | npm, Playwright, dotnet publish readiness | May install browser bits and packages |
 | `occam connect` | Detect + mutate host MCP configs (≤15 adapters) | Third-party config files + `.occam-bak` siblings |
 | `occam onboard` / `settings` | Writes `~/.occam/onboard.json` | Merged into **every** later launch via `launch-mcp-host` |
-| `occam refresh` / `restart` | Kills Occam processes, re-runs doctor path | **Every** `OccamMcp.Core[.exe]` on the machine — no scope flag |
+| `occam refresh` / `restart` | Stops hosts launched from this `OCCAM_HOME`, then re-runs the doctor path | Processes whose executable or command line resolves inside this install tree |
 | `occam session` | Import/export session profiles | Plaintext cookie retention under `_imports/` by default |
 | `occam smoke` | Live extract smoke | Network |
 | `occam update` | Release fetch | Network |
+| `occam disconnect` | Removes only host registrations owned by this install | Third-party config files; unrelated entries are preserved |
+| `occam uninstall` | Disconnects managed hosts and removes a recognized release install | Generated launchers and install tree; state/cache removal is explicit |
 | `occam snippet` / `help` / `status` / `control` / `contract` / `skill` | Info, control, skill install | Skill install `rmSync`s destination |
 
 ### Host-binary offline verbs (not via `occam` wrapper)
@@ -44,14 +46,22 @@ The operator wrapper exits with "unknown command" for `verify`, `keys`, and `ins
 
 - **Level A / Level B tarball:** Primary supported install. Integrity check is **sha256 manifest**, not cosign — the release `.bundle` is unused by shipped install paths (honesty-only metadata).
 - **npm `@ff-occam/mcp`:** NOT GA — do not document as public install path.
-- **Docker:** HEALTHCHECK may invoke unsupported verbs — no production-readiness claim.
+- **Docker:** HEALTHCHECK uses the non-blocking `version-surface` verb. It proves
+  process startup, not browser, network, or extraction readiness.
 
-Install is destructive replacement with no rollback. Onboarding may write config before verification completes.
+Release replacement is transactional: the old install is retained until the
+new runtime completes its post-install checks. A failed update restores the old
+tree; a failed fresh install removes the incomplete tree. The installer rejects
+unknown, source-checkout, symlinked, or metadata-inconsistent targets before it
+stops processes or moves files.
 
 ### Connect honesty
 
-- Mutates third-party configs; rollback is dead for restart-required hosts — back up before connecting.
-- Tarball may omit scripts that help text advertises — verify files on disk after install.
+- Mutates third-party configs and writes backups. Disconnect removes only an
+  entry whose command and `OCCAM_HOME` match this install; ambiguous or changed
+  ownership fails closed.
+- The bootstrap checks the complete release runtime set before replacement;
+  missing advertised helpers reject the archive before the existing tree moves.
 
 ### Keys export trap
 
@@ -63,7 +73,10 @@ Install is destructive replacement with no rollback. Onboarding may write config
 
 **LOCAL.** Run host-binary `keys export` against an empty `--keys-root` directory. A key appears that never signed any receipt.
 
-**LOCAL (careful).** Before `occam refresh`, note other Occam installs on the machine; refresh kills all hosts by binary name regardless of `OCCAM_HOME`.
+**LOCAL (careful).** Start two fixture processes whose command lines reference
+sibling install roots, then dry-run refresh against one root. Only the exact
+root-bound process should be selected; a prefix sibling such as `ff-occam-old`
+must not match.
 
 ---
 
@@ -75,8 +88,11 @@ Install is destructive replacement with no rollback. Onboarding may write config
 
 ## Limitations
 
-- `occam refresh` is machine-wide collateral kill — not fleet management.
-- Uninstalling the install tree leaves `~/.occam`, host configs, skills, and Playwright cache — see [Chapter 21](21-state-and-footprint.md).
+- `occam refresh` is install-scoped process control, not fleet management.
+- Default uninstall deliberately preserves `~/.occam`, skills, response cache,
+  host-config backups, and the shared Playwright cache. Preview explicit cleanup
+  with `occam uninstall --dry-run --remove-cache --remove-state`; see
+  [Chapter 21](21-state-and-footprint.md).
 - Cosign bundle does not gate install trust.
 - npm is not a supported 1.0 channel.
 - Connect rollback gaps for some hosts.

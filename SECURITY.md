@@ -8,16 +8,17 @@
 | 0.9.x | Security fixes only until GA `1.0.0` |
 | < 0.9 | No — upgrade to the current RC or later |
 
-Only the current supported line receives security patches. There is no long-term backport program.
+Support is limited to the rows marked above. The temporary `0.9.x` backport
+window ends at GA `1.0.0`; there is no long-term backport program.
 
 ## Reporting a Vulnerability
 
 **Please do not open public issues for security vulnerabilities.**
 
-Instead, report privately:
-
-- **Email:** OWNER DECISION REQUIRED — no public security contact address is configured in this repository yet. Prefer GitHub private reporting until an address is published.
-- **GitHub:** use [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidelines-on-reporting-and-writing-information-about-vulnerabilities) on [ContextForgeAI/occam](https://github.com/ContextForgeAI/occam) when enabled for the repository.
+This repository does not currently expose GitHub private vulnerability
+reporting, and no public security email is published. Until one of those
+channels is enabled, open a public issue **without vulnerability details** and
+ask the maintainer to establish a private channel before sending the report.
 
 Include in your report:
 1. Affected version
@@ -25,7 +26,8 @@ Include in your report:
 3. Impact assessment
 4. Suggested fix (if any)
 
-We acknowledge reports within 72 hours and aim for a fix within 30 days.
+No response-time target is published until a monitored confidential reporting
+channel exists.
 
 ## Security Boundaries
 
@@ -38,20 +40,22 @@ Occam is a **local-first** MCP tool. Understanding its trust model:
 - Processes data locally — no cloud service required for core extract
 
 ### What Occam does NOT do
-- No cloud API or telemetry endpoint
-- No automatic updates or phone-home
-- No credential storage (session profiles are local files, user-managed)
-- No execution of fetched content (no eval, no script execution beyond Playwright)
+- Core extraction requires no Occam-hosted cloud service or remote telemetry endpoint
+- No automatic self-update; `occam status` and `occam update` query the GitHub Releases API, while normal MCP extraction does not
+- No managed credential vault; optional session profiles are credential-bearing local files controlled by the operator
+- The HTTP backend does not evaluate page scripts; the browser backend renders page code in Playwright Chromium
+
+Configured search, managed acquisition, translation, proxy, timestamp-authority, or remote transport integrations expand the network boundary. Review their endpoints before enabling them.
 
 ### Trust boundaries
 
 | Boundary | Trust level | Notes |
 |----------|-------------|-------|
 | Local filesystem | Full | Occam reads workers, playbooks, sessions from `OCCAM_HOME` |
-| Network (egress) | Untrusted | All fetched content is untrusted; never execute |
-| MCP client | Full | Your host process spawns Occam; stdio/WS is local |
+| Network (egress) | Untrusted | All fetched content is untrusted; the browser backend may execute page code while rendering |
+| MCP client | Trusted operator boundary | Stdio is local by default; any enabled remote transport expands the boundary |
 | Node.js workers | High | Spawned as child processes; output is JSON-parsed |
-| Playwright browser | Sandboxed | Chromium in separate process; `storageState` for sessions |
+| Playwright browser | Separate process; not privilege-isolated | Chromium inherits the Occam user's OS permissions; browser sandbox behavior depends on the host environment |
 | Session profiles | User-managed | Local JSON files; never commit to repos |
 
 ## Known Risks
@@ -59,18 +63,22 @@ Occam is a **local-first** MCP tool. Understanding its trust model:
 ### 1. Untrusted content extraction
 
 Web pages may contain malicious content. Occam:
-- Never executes fetched HTML/JS (except in Playwright for rendering)
-- Sanitizes output to Markdown (strips scripts/styles)
-- Returns typed failures instead of potentially dangerous content
+- Does not evaluate page scripts in the HTTP backend
+- Executes page code when the Playwright browser backend is used, including automatic fallback from HTTP extraction
+- Converts extracted content to Markdown and removes script/style elements from returned content
+- Returns typed failures when extraction cannot produce an accepted result
 
-**Operator advice:** Review `workers/` code if you process sensitive pages. The extraction pipeline is deterministic — no external model calls for core extract.
+**Operator advice:** Review `workers/` code if you process sensitive pages. Core
+extraction is model-free; it does not require an external LLM call. Live pages,
+network responses, and browser-rendered DOM can still change between calls.
 
 ### 2. Session profile leakage
 
-Session profiles stored under `OCCAM_SESSIONS_ROOT` (default `~/.occam/sessions/`) contain cookies and tokens. These are:
-- Local files only — never transmitted
-- Loaded into the extraction process memory
-- **Never logged or included in telemetry**
+Session profiles stored under `OCCAM_SESSIONS_ROOT` (default `~/.occam/sessions/`) contain cookies, headers, or tokens. These are:
+- Stored as local files under the operator's control
+- Loaded into extraction process memory when selected
+- Sent as applicable to the requested origin through the selected backend or configured proxy
+- Designed not to be logged or included in result telemetry
 
 **Operator advice:** Add `~/.occam/sessions/` to your `.gitignore`. Never commit session files.
 
@@ -94,10 +102,10 @@ For production deployments:
 
 ## Security Response Process
 
-1. Report received and acknowledged (< 72h)
-2. Investigation and impact assessment (< 7 days)
-3. Fix developed and tested (< 30 days)
-4. Security advisory published (GitHub + CHANGELOG)
-5. Patch release issued
+1. Establish a private channel without moving vulnerability details into a public issue
+2. Acknowledge receipt and begin impact assessment
+3. Agree on disclosure timing and a severity-based remediation plan
+4. Develop and verify the fix
+5. Publish a security advisory and patch release when required
 
 For critical vulnerabilities (RCE, credential leakage), we aim for an expedited timeline.

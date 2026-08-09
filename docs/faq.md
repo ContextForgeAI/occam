@@ -60,9 +60,9 @@ Use the **release tarball / bootstrap scripts** — see [Install](install.md).
 
 | Channel | Supported? |
 |---------|------------|
-| `get-ff-occam.sh` / `.ps1` bootstrap | **Yes** (GA) |
-| Manual tarball + SHA-256 manifest | **Yes** (GA) |
-| `npx @ff-occam/mcp` | **No** — not a GA 1.0 install channel |
+| `get-ff-occam.sh` / `.ps1` bootstrap | **Yes** — supported release channel |
+| Manual tarball + SHA-256 manifest | **No** — integrity inspection only; use the guarded bootstrap to install |
+| `npx @ff-occam/mcp` | **No** — not a supported release channel |
 | Cosign `.bundle` alone | **No** — not verified by shipped install paths |
 
 ---

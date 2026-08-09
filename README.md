@@ -12,12 +12,16 @@ agent can actually use.
 It is for developers and technical users building or running AI agents,
 especially in local and self-hosted environments.
 
-**[Get your first result](docs/quick-start.md)** ·
+Search helps an agent find pages; browser automation operates interfaces.
+Occam turns a URL you already have into compact context with its source — or an
+explicit failure when it cannot read the page.
+
+**[Get your first result](https://contextforgeai.github.io/occam/quick-start/)** ·
 [See the transformation](docs/examples/current-proof/README.md#representative-webpage-transformation) ·
 [Read the documentation](https://contextforgeai.github.io/occam/)
 
 > **Current status:** Occam Core `1.0.0-rc.2` is a release candidate. The MCP
-> host and supported connection paths are the stable product center.
+> host and documented connection paths are the supported product surface.
 > `occam chat` and other features listed as experimental are not stable 1.0
 > interfaces.
 
@@ -51,21 +55,33 @@ controlled typed failure.
 
 Requires Node.js 20+. The release install does not require the .NET SDK.
 
-**Linux / macOS**
+**Linux x64 / macOS Apple Silicon**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
 ```
 
-**Windows**
+**Windows x64**
 
 ```powershell
 irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
 ```
 
-The installer verifies the release archive, checks the local runtime, detects
-supported AI applications, and tells you whether a restart or another action is
-needed. Then open a new conversation in the connected application and type:
+The installer adds a user-scoped launcher, creates local Occam state, downloads
+browser dependencies when needed, and may update a detected host configuration
+after making a backup. Review [installation safety](docs/trust/installation-safety.md)
+before running it in a sensitive environment.
+
+The installer requires the manifest to match the requested version and
+platform, verifies the archive SHA-256, checks the complete bundled runtime
+before replacing an install, and does not fetch post-install helpers from the
+mutable repository branch. It then checks the local runtime,
+detects supported AI applications, and tells you whether a restart or another
+action is needed. Open a new conversation in the connected application and type:
+
+Public release binaries are currently published for `win-x64`, `linux-x64`, and
+`osx-arm64` only. Intel Macs, Linux ARM64, and Windows ARM64 fail before download
+instead of receiving an incompatible archive.
 
 > Use Occam to read https://example.com/ and summarize the page. Include the
 > source URL.
@@ -140,7 +156,8 @@ or remote transport providers can change the boundary. Receipts prove integrity
 relative to a key, not truth, identity, or authentic origin.
 
 [Trust & Safety](docs/trust-and-safety.md) ·
-[Installation safety](docs/trust/installation-safety.md)
+[Installation safety](docs/trust/installation-safety.md) ·
+[Security policy](SECURITY.md)
 
 ## Go deeper
 
@@ -150,7 +167,8 @@ relative to a key, not truth, identity, or authentic origin.
 - [`llms.txt`](llms.txt) — machine-readable documentation map for agents.
 - [Tool reference](docs/tools-reference.md) — current public tool contract.
 - [Troubleshooting](docs/troubleshooting.md) — diagnostics and recovery.
-- [Contributing guide](AGENTS.md) — repository rules and verification.
+- [Contributing](CONTRIBUTING.md) — development setup and contribution workflow.
+- [Repository automation rules](AGENTS.md) — scope, doc sync, and verification requirements.
 - [Review guide](REVIEW_GUIDE.md) — focused review workflow.
 
 Occam is licensed under

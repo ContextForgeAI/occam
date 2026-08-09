@@ -34,7 +34,11 @@ Install and connect are **destructive and persistent** in places:
 - **`~/.occam/onboard.json`** — written during onboarding **before** verification; merged into every later launcher invocation's environment.
 - **`~/.occam/keys/signing-key.pem`** — minted on first host start **regardless of `OCCAM_RECEIPTS`**.
 - **Host MCP config files** — connect mutates third-party configs; backup before connect; rollback may be incomplete for restart-required hosts.
-- **No rollback on reinstall** — Level A/B install replaces in place.
+- **Transactional release-tree replacement** — the bootstrap keeps the previous
+  Level B tree until doctor, self-check, launcher setup, and Connect finish. On a
+  post-swap failure it stops processes from the new tree and restores the old
+  tree (or removes a failed fresh tree). This does not promise rollback of every
+  external launcher, state, or host-config mutation.
 
 ### What not to use as GA install
 
@@ -42,7 +46,7 @@ Install and connect are **destructive and persistent** in places:
 |---------|--------|
 | **`npx @ff-occam/mcp`** | Not GA; not a supported 1.0 install path (OD-3) |
 | **Cosign bundle alone** | Release metadata; no shipped install path verifies it (OD-2) |
-| **Docker HEALTHCHECK `--version`** | Unsupported verb; do not treat as production health signal |
+| **Docker health alone** | `version-surface` proves the host starts; it does not prove browser, network, or extraction readiness |
 
 Use tarball + manifest **sha256** verification for release installs ([install.md](../install.md)).
 

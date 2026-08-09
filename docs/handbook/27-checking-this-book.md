@@ -57,7 +57,7 @@ A disagreement is **first a book bug** until re-reading the cited source decides
 
 **Tag `NETWORK`:** checks against live third-party sites decay — pair with LOCAL alternatives where listed.
 
-**Tag `SOURCE-PROVEN`:** some claims were code-proven but not runtime-reproduced in audit (e.g. WS pool kill, fragment cache collision, Docker health, certain tamper constructions). Treat as hypothesis until you reproduce locally.
+**Tag `SOURCE-PROVEN`:** some claims were code-proven but not runtime-reproduced in audit (e.g. WS pool kill, fragment cache collision, Docker health scope, certain tamper constructions). Treat as hypothesis until you reproduce locally.
 
 ### Running checks as one session
 

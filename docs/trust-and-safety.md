@@ -8,7 +8,7 @@ What Occam's trust layer actually does — and what it deliberately does **not**
 |----------|--------|
 | Where does processing run? | On your machine (local-first MCP host + workers) |
 | Is there a cloud middleman for normal extracts? | No |
-| Telemetry / phone-home endpoint? | No telemetry endpoint in the shipped product |
+| Telemetry / phone-home endpoint? | No remote telemetry endpoint. `occam status` and `occam update` query GitHub Releases; normal extracts do not check for updates |
 | Are pages cached on disk? | Default is live extract. Opt-in `cache_ttl_s` can replay a prior local materialization — not a CDN |
 | What if extract fails? | Typed `ok: false` + `failure.code` — content is unknown |
 | Can I check what was extracted? | Yes — optional signed Receipt v1 + [`occam_verify`](tools/occam_verify.md) (integrity vs a key you supply) |

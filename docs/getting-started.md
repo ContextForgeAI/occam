@@ -4,18 +4,25 @@
 
 If you still need install: [Quick Start](quick-start.md) · canonical reference [Install](install.md) · root [`INSTALL.md`](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md).
 
+Release installs validate the requested version, platform archive, and complete
+bundled runtime before replacing an existing install. No post-install helper is
+downloaded from the mutable repository branch.
+
 ---
 
-## Confirm the host sees Occam
+## Confirm the local Occam host is ready
 
-Add `$OCCAM_HOME/scripts` to `PATH` (default install: `~/.local/share/ff-occam`).
+A release install creates the user-scoped `occam` launcher and adds its directory
+to your user `PATH`. If the current terminal does not see it yet, open a new
+terminal. Source checkouts can use the contributor path described below.
 
 ```bash
 occam smoke
 # expect exit 0 and 15 occam_* tools
 ```
 
-Re-check AI host registration:
+This checks the local MCP host and a live probe. Re-check registration in your AI
+application separately:
 
 ```bash
 occam connect
@@ -58,11 +65,15 @@ Optional session budget (once per chat):
 
 ## Operator CLI
 
-After installation, add `$OCCAM_HOME/scripts` to `PATH`. Run `occam --help` for the live command list.
+After a release install, run `occam --help` for the live command list. From a
+source checkout, invoke the platform wrapper under `scripts/` or add that
+directory to `PATH`.
 
 | Command | Use it for |
 |---|---|
 | `occam connect` | Detect AI tools and register Occam with validated ones |
+| `occam disconnect` | Preview or remove only Occam-managed host registrations |
+| `occam uninstall` | Preview or remove a release install; preserve local state by default |
 | `occam doctor` | Validate workers, browser, and host binary |
 | `occam smoke` | stdio tools/list + probe |
 | `occam snippet` | Paste-ready MCP config (advanced) |

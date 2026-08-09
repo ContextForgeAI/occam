@@ -18,7 +18,7 @@ $env:OCCAM_HOME = (Get-Location).Path
 # 3. Run the fast smoke gate (~30s)
 .\scripts\run-l0-fast.ps1
 
-# 4. Run the full gate (L0–L7)
+# 4. Run the full gate (L0–L8)
 dotnet run --project benchmarks\l0-gate
 
 # 5. Launch MCP host (for manual testing)
@@ -35,7 +35,7 @@ node scripts\launch-mcp-host.mjs
 src/FFOccamMcp.Core/          ← Native AOT .NET 10 host (the MCP server)
   Program.cs                   ← CLI parse → transport start
   Transport/                   ← JSON-RPC framing (stdio / WebSocket)
-  Tools/                       ← 8 MCP tool handlers
+  Tools/                       ← MCP tool handlers; the registry defines the public surface
   Routing/                     ← Backend policy dispatch (http/browser/http_then_browser)
   PostProcessors/              ← Quality validation (thin, challenge, login)
   Compile/                     ← Token-aware markdown pruning (BM25)
@@ -46,7 +46,7 @@ src/FFOccamMcp.Core/          ← Native AOT .NET 10 host (the MCP server)
   Abstractions/                ← Interface contracts
 
 workers/                       ← npm workspace (Node.js)
-  http-extract/                ← HTTP-only extraction (domino + readability + turndown)
+  http-extract/                ← HTTP-only extraction (jsdom + readability + turndown)
   browser-extract/             ← Playwright Chromium extraction
   css-extract/                 ← CSS extraction worker
   shared/lib/                  ← Egress proxy, consent, cookies
@@ -58,7 +58,7 @@ docs/                          ← User documentation
 ```
 
 **Key design decisions:**
-- **Always live extract** — no file cache in Core by design
+- **Live extraction by default** — callers may explicitly opt into the local TTL-bound response cache with `cache_ttl_s`
 - **Honest compiler (K1)** — `ok: true` with markdown, or typed `failure.code`; never hallucinate
 - **Token contract (K2)** — opt-in `max_tokens`, `fit_markdown`, `focus_query`
 - **Native AOT** — single-file binary, no runtime dependency on target
@@ -70,8 +70,9 @@ docs/                          ← User documentation
 
 ### Reporting issues
 
-- Use GitHub Issues
-- Include: OS, .NET version (`dotnet --version`), Node version (`node --v`), Occam version
+- Use GitHub Issues for non-security bugs and feature requests
+- Do not publish vulnerability details; follow [SECURITY.md](SECURITY.md) to request a private channel
+- Include: OS, .NET version (`dotnet --version`), Node version (`node --version`), Occam version
 - For extraction failures: include the `failure.code`, `url`, and `backend_policy` used
 - For bugs: include the gate output or stderr logs
 
@@ -141,16 +142,16 @@ node scripts/check-git-attribution.selftest.mjs
 ### Code style
 
 - **C#:** Follow existing patterns. Use `sealed` classes where possible. Prefer `record` for immutable data. Use source-generated JSON (`JsonSerializerContext`) for AOT compatibility.
-- **No file cache** — if you're tempted to cache, you're probably solving the wrong problem
-- **Honest failures** — new failure codes go in `docs/failure_codes.md` AND `src/FFOccamMcp.Core/Routing/FailureCodeStrings.cs`
+- **Cache stays explicit and bounded** — do not add implicit caching or weaken the private/session eligibility rules
+- **Honest failures** — update `MCP_API_SPEC.md`, `docs/failure-codes.md`, `docs/troubleshooting.md`, and `src/FFOccamMcp.Core/Routing/FailureCodeStrings.cs`
 - **AOT-safe** — no reflection, no dynamic loading, no `System.Text.Json` without source generators
 - **Tests** — gate tests live in `benchmarks/l0-gate/`. Add a gate level for new features.
 
 ### What NOT to change without discussion
 
 - MCP tool names or parameter contracts (breaking change)
-- The "always live extract" principle
-- The 8-tool surface (no new tools without community consensus)
+- The live-by-default extraction principle
+- The core tool registry (no new tools without community consensus)
 - The honest compiler principle (K1)
 
 ---
@@ -171,6 +172,7 @@ The gate is a console application organized as "levels" — each level is a stat
 | L5 | Batch server |
 | L6 | Browser pool lifecycle |
 | L7 | Resource safety (concurrent extract, cleanup) |
+| L8 | Agent-first contracts (confidence, receipts, recovery, differential) |
 
 Run specific levels: `dotnet run --project benchmarks\l0-gate -- --smoke-only`
 
@@ -182,11 +184,11 @@ When changing code, update the doc matrix:
 
 | Change type | Files to update |
 |-------------|----------------|
-| New tool parameter | `MCP_API_SPEC.md`, `docs/tool_reference.md` |
-| New failure code | `docs/failure_codes.md`, `FailureCodeStrings.cs` |
-| New env var | `docs/configuration.md`, `MCP_API_SPEC.md` |
-| New gate level | `docs/roadmap.md` |
-| Architecture change | `CLAUDE.md`, `docs/agent_handbook.md` |
+| New tool parameter | `MCP_API_SPEC.md`, `docs/tools-reference.md` |
+| New failure code | `MCP_API_SPEC.md`, `docs/failure-codes.md`, `docs/troubleshooting.md`, `FailureCodeStrings.cs` |
+| New env var | `docs/configuration.md`, `MCP_API_SPEC.md`; `docs/getting-started.md` when MCP-related |
+| New gate level | `AGENTS.md`; `CHANGELOG.md` when release-worthy |
+| Architecture change | `AGENTS.md`, plus `docs/concepts.md` when user-visible |
 
 ---
 
