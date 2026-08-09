@@ -1,0 +1,4 @@
+* @ContextForgeAI
+
+# Keep security-sensitive repository automation assigned to the same owner.
+/.github/ @ContextForgeAI

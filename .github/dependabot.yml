@@ -1,0 +1,22 @@
+version: 2
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "nuget"
+    directory: "/src/FFOccamMcp.Core"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "npm"
+    directories:
+      - "/workers"
+      - "/packages/occam-agent-sdk"
+      - "/packages/occam-mcp"
+      - "/corpora/eval-harness"
+      - "/scripts/bench"
+    schedule:
+      interval: "weekly"
