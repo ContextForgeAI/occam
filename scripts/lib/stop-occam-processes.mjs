@@ -17,6 +17,41 @@ import { resolveRid } from "./resolve-rid.mjs";
 const HOST_BASE_NAMES = ["OccamMcp.Core", "FFOccamMcp.Core"];
 
 /**
+ * Path-boundary check used before any process can become a stop target.
+ * @param {string} root
+ * @param {string} candidate
+ * @param {NodeJS.Platform|string} [platformName]
+ */
+export function isPathSameOrInside(root, candidate, platformName = process.platform) {
+  if (!root || !candidate) return false;
+  const pathApi = platformName === "win32" ? path.win32 : path.posix;
+  const rootResolved = pathApi.resolve(root);
+  const candidateResolved = pathApi.resolve(candidate);
+  const rel = pathApi.relative(rootResolved, candidateResolved);
+  return rel === "" || (rel !== ".." && !rel.startsWith(`..${pathApi.sep}`) && !pathApi.isAbsolute(rel));
+}
+
+/**
+ * Match a root in a raw command line only at argument/path boundaries. A plain
+ * substring match would make `ff-occam` also match `ff-occam-old`.
+ * @param {string} commandLine
+ * @param {string} root
+ * @param {NodeJS.Platform|string} [platformName]
+ */
+export function commandLineReferencesRoot(commandLine, root, platformName = process.platform) {
+  if (!commandLine || !root) return false;
+  const pathApi = platformName === "win32" ? path.win32 : path.posix;
+  const resolvedRoot = pathApi.resolve(root).replace(/[\\/]+$/, "");
+  const escapedRoot = resolvedRoot.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const separator = platformName === "win32" ? "[\\\\/]" : "/";
+  const expression = new RegExp(
+    `(?:^|[\\s\"'=])${escapedRoot}(?:${separator}|$|[\\s\"'])`,
+    platformName === "win32" ? "i" : "",
+  );
+  return expression.test(commandLine);
+}
+
+/**
  * @param {string} baseName
  * @returns {string}
  */
@@ -98,25 +133,15 @@ export function isInstallHostLocked(root) {
 export function listOccamHostProcesses(root, opts = {}) {
   const includeDotnet = opts.includeDotnet === true;
   const rootResolved = path.resolve(root);
-  const rootForPs = rootResolved.replace(/'/g, "''");
 
   if (process.platform === "win32") {
-    // Path-scoped: never kill Occam hosts belonging to a different OCCAM_HOME.
+    // PowerShell finds only host-shaped candidates. Node applies the exact
+    // path-boundary check before any PID can become a stop target.
     const ps = `
 $ErrorActionPreference = 'SilentlyContinue'
-$root = [System.IO.Path]::GetFullPath('${rootForPs}')
-function Under-Root([string]$p) {
-  if (-not $p) { return $false }
-  try {
-    $full = [System.IO.Path]::GetFullPath($p)
-    return $full.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)
-  } catch { return $false }
-}
 Get-CimInstance Win32_Process | ForEach-Object {
   $path = $_.ExecutablePath
   $cmd = $_.CommandLine
-  $under = (Under-Root $path) -or ($cmd -and $cmd.IndexOf($root, [System.StringComparison]::OrdinalIgnoreCase) -ge 0)
-  if (-not $under) { return }
   $isHost = ($_.Name -eq 'OccamMcp.Core.exe') -or ($_.Name -eq 'FFOccamMcp.Core.exe')
   $isLauncher = $cmd -and ($cmd -match 'launch-mcp-host\\.mjs')
   $isDotnet = ${includeDotnet ? "$true" : "$false"} -and $cmd -and ($cmd -match 'FFOccamMcp\\.Core\\.csproj|OccamMcp\\.Core')
@@ -143,7 +168,12 @@ Get-CimInstance Win32_Process | ForEach-Object {
           name: String(r.name ?? ""),
           commandLine: String(r.commandLine ?? ""),
           executablePath: String(r.executablePath ?? ""),
-        }));
+        }))
+        .filter(
+          (r) =>
+            isPathSameOrInside(rootResolved, r.executablePath, "win32") ||
+            commandLineReferencesRoot(r.commandLine, rootResolved, "win32"),
+        );
     } catch {
       return [];
     }
@@ -159,7 +189,6 @@ Get-CimInstance Win32_Process | ForEach-Object {
       encoding: "utf8",
       maxBuffer: 8 * 1024 * 1024,
     });
-    const rootNorm = path.resolve(root);
     const seen = new Set();
     /** @type {OccamProcess[]} */
     const found = [];
@@ -168,11 +197,11 @@ Get-CimInstance Win32_Process | ForEach-Object {
       if (!trimmed || !new RegExp(grep).test(trimmed)) {
         continue;
       }
-      if (!trimmed.includes(rootNorm)) {
-        continue;
-      }
       const match = trimmed.match(/^(\d+)\s+(\S+)\s+(.*)$/);
       if (!match) {
+        continue;
+      }
+      if (!commandLineReferencesRoot(match[3], rootResolved, process.platform)) {
         continue;
       }
       const pid = Number(match[1]);

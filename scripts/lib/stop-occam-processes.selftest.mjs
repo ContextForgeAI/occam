@@ -8,7 +8,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { publishExePath } from "./stop-occam-processes.mjs";
+import {
+  commandLineReferencesRoot,
+  isPathSameOrInside,
+  publishExePath,
+} from "./stop-occam-processes.mjs";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "../..");
@@ -56,5 +60,64 @@ function testPublishExePathPrefersCurrentName() {
   }
 }
 
+function testInstallRootPathBoundaries() {
+  assert.equal(isPathSameOrInside("/srv/ff-occam", "/srv/ff-occam/OccamMcp.Core", "linux"), true);
+  assert.equal(isPathSameOrInside("/srv/ff-occam", "/srv/ff-occam-old/OccamMcp.Core", "linux"), false);
+  assert.equal(
+    commandLineReferencesRoot("node /srv/ff-occam/scripts/launch-mcp-host.mjs", "/srv/ff-occam", "linux"),
+    true,
+  );
+  assert.equal(
+    commandLineReferencesRoot("node /srv/ff-occam-old/scripts/launch-mcp-host.mjs", "/srv/ff-occam", "linux"),
+    false,
+  );
+
+  const windowsRoot = "C:\\Users\\dev\\ff-occam";
+  assert.equal(
+    isPathSameOrInside(windowsRoot, "c:\\users\\DEV\\ff-occam\\OccamMcp.Core.exe", "win32"),
+    true,
+  );
+  assert.equal(
+    isPathSameOrInside(windowsRoot, "C:\\Users\\dev\\ff-occam-old\\OccamMcp.Core.exe", "win32"),
+    false,
+  );
+  assert.equal(
+    commandLineReferencesRoot(
+      'node.exe "C:\\Users\\dev\\ff-occam\\scripts\\launch-mcp-host.mjs"',
+      windowsRoot,
+      "win32",
+    ),
+    true,
+  );
+  assert.equal(
+    commandLineReferencesRoot(
+      'node.exe "C:\\Users\\dev\\ff-occam-old\\scripts\\launch-mcp-host.mjs"',
+      windowsRoot,
+      "win32",
+    ),
+    false,
+  );
+  // Unrelated process whose args merely contain the install root as a substring prefix
+  // of a different directory must not match.
+  assert.equal(
+    commandLineReferencesRoot(
+      "node /srv/ff-occam-helper/worker.mjs --from /srv/ff-occam-notes",
+      "/srv/ff-occam",
+      "linux",
+    ),
+    false,
+  );
+  assert.equal(
+    commandLineReferencesRoot(
+      "C:\\Tools\\OccamExtra\\tool.exe --home C:\\Users\\dev\\ff-occam-notes",
+      windowsRoot,
+      "win32",
+    ),
+    false,
+  );
+  console.log("ok: process targeting requires an exact install-root path boundary");
+}
+
 testPublishExePathPrefersCurrentName();
+testInstallRootPathBoundaries();
 console.log("stop-occam-processes.selftest: OK");
