@@ -154,14 +154,17 @@ jobs:
       - name: Validate environment catalog against code
         run: node scripts/lib/operator/env-catalog.selftest.mjs
 
-      - name: Validate bootstrap OCCAM_SETUP contract
-        run: node scripts/lib/operator/bootstrap-setup.selftest.mjs
-
       - name: Validate install UX (quiet default / Ready semantics)
         run: node scripts/lib/operator/install-ux.selftest.mjs
 
-      - name: Validate user CLI launcher / PATH helpers
-        run: node scripts/lib/operator/install-user-cli.selftest.mjs
+      - name: Validate signer manifest/archive binding
+        run: node scripts/lib/verify-release-manifest.selftest.mjs
+
+      - name: Validate atomic release workflow policy
+        run: |
+          node scripts/lib/release-version.selftest.mjs
+          node scripts/lib/release-asset-policy.selftest.mjs
+          node scripts/lib/release-workflow.selftest.mjs
 
       - name: Validate first-run connect onboarding UX
         run: node scripts/lib/operator/connect-onboarding.selftest.mjs
@@ -169,25 +172,69 @@ jobs:
       - name: Validate controlling-TTY / curl pipe interactivity
         run: node scripts/lib/operator/tty.selftest.mjs
 
-      - name: Validate install-tree replace / lock helpers
-        run: node scripts/lib/prepare-install-replace.selftest.mjs
-
-      - name: Validate Occam process stop helpers
-        run: node scripts/lib/stop-occam-processes.selftest.mjs
-
-      - name: Validate PowerShell pipe bootstrap (irm | iex) semantics
-        run: node scripts/lib/bootstrap-ps1-pipe.selftest.mjs
-
       - name: Validate Cursor configured / no restart-loop state
         run: node scripts/lib/operator/cursor-state.selftest.mjs
 
       - name: Validate Playwright runtime recovery
         run: node workers/browser-extract/lib/ensure-chromium-usable.selftest.mjs
 
-      # Connect writes real MCP host configs, so its ownership, rollback and
-      # tier rules need a guard on every push.
-      - name: Validate MCP host connect platform
-        run: node scripts/lib/operator/connect.selftest.mjs
-
       - name: Validate friend first-use acceptance scenarios
         run: node scripts/lib/operator/friend-first-use.selftest.mjs
+
+  operator-safety:
+    name: Operator safety (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+
+      - name: Validate bootstrap setup contract
+        run: node scripts/lib/operator/bootstrap-setup.selftest.mjs
+
+      - name: Validate platform release bootstrap and manifest rejection
+        run: node scripts/lib/bootstrap-release-manifest.selftest.mjs
+
+      - name: Validate public release RID matrix
+        run: node scripts/lib/bootstrap-rid.selftest.mjs
+
+      - name: Validate post-swap install rollback
+        run: node scripts/lib/bootstrap-transaction.selftest.mjs
+
+      - name: Validate self-contained release runtime closure
+        run: node scripts/lib/operator/release-runtime-files.selftest.mjs
+
+      - name: Validate user CLI launcher and PATH helpers
+        run: node scripts/lib/operator/install-user-cli.selftest.mjs
+
+      - name: Validate MCP host connect ownership and rollback
+        run: node scripts/lib/operator/connect.selftest.mjs
+
+      - name: Validate reversible disconnect and uninstall boundaries
+        run: node scripts/lib/operator/uninstall.selftest.mjs
+
+      - name: Validate install-tree replace and lock helpers
+        run: node scripts/lib/prepare-install-replace.selftest.mjs
+
+      - name: Validate Occam process stop helpers
+        run: node scripts/lib/stop-occam-processes.selftest.mjs
+
+      - name: Validate release archive member preflight
+        run: node scripts/lib/archive-preflight.selftest.mjs
+
+      - name: Validate release authenticity policy contracts
+        run: node scripts/lib/verify-release-signature.selftest.mjs
+
+      # This is intentionally Windows-only and therefore cannot pass by taking
+      # the selftest's non-Windows SKIP branch.
+      - name: Validate real PowerShell irm | iex bootstrap semantics
+        if: runner.os == 'Windows'
+        run: node scripts/lib/bootstrap-ps1-pipe.selftest.mjs

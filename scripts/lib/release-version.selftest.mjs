@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { parseReleaseTagRef, parseSemanticVersion } from "./release-version.mjs";
+import {
+  assertReleaseAlignment,
+  parseLatestReleasedVersion,
+  parseReleaseTagRef,
+  parseSemanticVersion,
+  resolveWorkflowVersion,
+} from "./release-version.mjs";
 
 const stable = parseReleaseTagRef("refs/tags/v1.1.0");
 assert.equal(stable.version, "1.1.0");
@@ -43,5 +49,34 @@ for (const version of ["1.1.0+build.5", "1.1.0-rc.1+build.5"]) {
     `refs/tags/v${version} must be rejected`,
   );
 }
+
+const changelog = `# Changelog
+
+## [Unreleased]
+
+## [1.0.0-rc.2] - 2026-07-23
+`;
+assert.equal(parseLatestReleasedVersion(changelog).version, "1.0.0-rc.2");
+assert.equal(resolveWorkflowVersion("refs/heads/main", changelog).version, "1.0.0-rc.2");
+assert.equal(resolveWorkflowVersion("refs/pull/7/merge", changelog).version, "1.0.0-rc.2");
+assert.equal(resolveWorkflowVersion("refs/tags/v1.0.0-rc.3", changelog).version, "1.0.0-rc.3");
+assert.throws(() => parseLatestReleasedVersion("## [Unreleased]\n"), /no released version/);
+
+assert.equal(
+  assertReleaseAlignment("refs/tags/v1.0.0-rc.2", " 1.0.0-rc.2\n", changelog).version,
+  "1.0.0-rc.2",
+);
+assert.throws(
+  () => assertReleaseAlignment("refs/tags/v1.0.0-rc.3", "1.0.0-rc.2\n", changelog),
+  /tag\/version file mismatch/,
+);
+assert.throws(
+  () => assertReleaseAlignment("refs/tags/v1.0.0-rc.3", "1.0.0-rc.3\n", changelog),
+  /tag\/changelog mismatch/,
+);
+assert.throws(
+  () => assertReleaseAlignment("refs/tags/v1.0.0-rc.2", "1.0.0-rc.2\nextra", changelog),
+  /invalid semantic version/,
+);
 
 console.log("release-version.selftest: OK");
