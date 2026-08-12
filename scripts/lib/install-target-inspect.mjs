@@ -130,7 +130,11 @@ export function inspectInstallTarget(occamHome, opts = {}) {
   }
 
   try {
-    if (pathKey(realpathSync(target)) !== pathKey(target)) {
+    // Refuse Windows junctions / reparse roots where the leaf resolves elsewhere.
+    // Do NOT refuse macOS/Linux ancestor convenience symlinks (/var → /private/var,
+    // /tmp → /private/tmp): those change the absolute spelling without making the
+    // install root itself a symlink (already refused above via isSymbolicLink).
+    if (pathKey(realpathSync(target)) !== pathKey(target) && process.platform === "win32") {
       return {
         kind: "install",
         action: "refuse",
