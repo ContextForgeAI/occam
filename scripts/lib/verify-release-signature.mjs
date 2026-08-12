@@ -21,7 +21,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 export const SIGNATURE_POLICY_SHA256_ONLY = "sha256-only";
 export const SIGNATURE_POLICY_REQUIRED_COSIGN_V1 = "required-cosign-v1";
@@ -202,6 +202,15 @@ function main() {
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+function isCliMain() {
+  if (!process.argv[1]) return false;
+  try {
+    return fs.realpathSync(fileURLToPath(import.meta.url)) === fs.realpathSync(process.argv[1]);
+  } catch {
+    return path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);
+  }
+}
+
+if (isCliMain()) {
   main();
 }

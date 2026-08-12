@@ -179,24 +179,36 @@ function stageReleaseTree(version, rid, publishedBinary, stageExeName) {
   return { stageRoot, stageName, exeName: stageExeName };
 }
 
-function createTarball(stageRoot, stageName, tarballPath) {
+/**
+ * Environment for release `tar` creation.
+ * Always sets COPYFILE_DISABLE=1 so macOS bsdtar does not emit AppleDouble
+ * `._*` members (which fail archive-preflight). Merges into the caller env;
+ * does not replace process.env wholesale.
+ * @param {NodeJS.ProcessEnv} [baseEnv]
+ * @returns {NodeJS.ProcessEnv}
+ */
+export function releaseTarCreateEnv(baseEnv = process.env) {
+  return { ...baseEnv, COPYFILE_DISABLE: "1" };
+}
+
+/**
+ * Create a gzip compressed ustar release archive from a staged tree.
+ * @param {string} stageRoot absolute path to the stage directory
+ * @param {string} _stageName unused (kept for call-site compatibility)
+ * @param {string} tarballPath output .tar.gz path
+ */
+export function createTarball(stageRoot, _stageName, tarballPath) {
   fs.mkdirSync(path.dirname(tarballPath), { recursive: true });
   if (fs.existsSync(tarballPath)) {
     fs.unlinkSync(tarballPath);
   }
   const parent = path.dirname(stageRoot);
   const base = path.basename(stageRoot);
-  if (process.platform === "win32") {
-    execSync(`tar -czf "${tarballPath}" -C "${parent}" "${base}"`, {
-      stdio: "inherit",
-      cwd: repoRoot,
-    });
-  } else {
-    execSync(`tar -czf "${tarballPath}" -C "${parent}" "${base}"`, {
-      stdio: "inherit",
-      cwd: repoRoot,
-    });
-  }
+  execSync(`tar -czf "${tarballPath}" -C "${parent}" "${base}"`, {
+    stdio: "inherit",
+    cwd: repoRoot,
+    env: releaseTarCreateEnv(process.env),
+  });
 }
 
 function sha256File(filePath) {
@@ -284,4 +296,16 @@ function main() {
   console.log("build-release: OK");
 }
 
-main();
+function isCliMain() {
+  if (!process.argv[1]) return false;
+  try {
+    // Resolve real paths so /tmp vs /private/tmp (macOS) still matches.
+    return fs.realpathSync(fileURLToPath(import.meta.url)) === fs.realpathSync(process.argv[1]);
+  } catch {
+    return path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);
+  }
+}
+
+if (isCliMain()) {
+  main();
+}
