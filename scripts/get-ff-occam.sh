@@ -40,10 +40,14 @@ assert_published_rid() {
   esac
 }
 
-VERSION="${OCCAM_VERSION:-1.0.0-rc.3}"
+# Public default stays the published channel until a later cutover commit.
+# Project/build VERSION file may already be 1.0.0-rc.3 for tag alignment.
+VERSION="${OCCAM_VERSION:-1.0.0-rc.2}"
 RID="${OCCAM_RID:-$(detect_rid)}"
 assert_published_rid "$RID"
 INSTALL_DIR="${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}"
+# Set by install_release from manifest runtimeLayout (never from version string).
+INSTALL_CONTRACT=""
 # Legacy snippet hint only — never printed as a selected host before the user chooses.
 HOST_TARGET="${OCCAM_HOST:-}"
 ALLOW_HTTP="${OCCAM_RELEASE_ALLOW_HTTP:-0}"
@@ -129,6 +133,7 @@ prepare_install_replace() {
   [[ -e "$dir" ]] || return 0
 
   local helper=""
+  local helper_tmp=""
   if [[ -n "$staged" && -f "$staged/scripts/lib/prepare-install-replace.mjs" ]]; then
     # Prefer the helper from the archive whose SHA-256 was just verified.
     helper="$staged/scripts/lib/prepare-install-replace.mjs"
@@ -136,6 +141,20 @@ prepare_install_replace() {
     helper="$ROOT_DIR/scripts/lib/prepare-install-replace.mjs"
   elif [[ -f "$dir/scripts/lib/prepare-install-replace.mjs" ]]; then
     helper="$dir/scripts/lib/prepare-install-replace.mjs"
+  elif [[ "${INSTALL_CONTRACT:-}" == "legacy" ]]; then
+    local base="${OCCAM_OVERLAY_BASE_URL:-https://raw.githubusercontent.com/ContextForgeAI/occam/main}"
+    base="${base%/}"
+    helper_tmp="$(mktemp -d "${TMPDIR:-/tmp}/occam-prepare.XXXXXX")"
+    if ! curl -fsSL "$base/scripts/lib/prepare-install-replace.mjs" -o "$helper_tmp/prepare-install-replace.mjs" \
+      || ! curl -fsSL "$base/scripts/lib/install-target-inspect.mjs" -o "$helper_tmp/install-target-inspect.mjs" \
+      || ! curl -fsSL "$base/scripts/lib/stop-occam-processes.mjs" -o "$helper_tmp/stop-occam-processes.mjs" \
+      || ! curl -fsSL "$base/scripts/lib/resolve-rid.mjs" -o "$helper_tmp/resolve-rid.mjs"; then
+      rm -rf "$helper_tmp"
+      echo "error: could not download install replacement helpers for legacy Level B install" >&2
+      echo "No files were changed." >&2
+      return 1
+    fi
+    helper="$helper_tmp/prepare-install-replace.mjs"
   else
     echo "error: verified release archive is missing the install replacement helper" >&2
     echo "No files were changed." >&2
@@ -144,10 +163,12 @@ prepare_install_replace() {
 
   local json code
   if json="$(node "$helper" --dir "$dir" --rid "$RID" --json 2>&1)"; then
+    [[ -n "$helper_tmp" ]] && rm -rf "$helper_tmp"
     return 0
   else
     code=$?
   fi
+  [[ -n "$helper_tmp" ]] && rm -rf "$helper_tmp"
   node -e "try{const j=JSON.parse(process.argv[1]); if(j.message) console.error(j.message)}catch(e){process.exit(1)}" "$json" 2>/dev/null || cat >&2 <<'EOF'
 Occam is currently in use.
 
@@ -385,7 +406,7 @@ preflight_release_archive() {
     node "$ROOT_DIR/scripts/lib/archive-preflight.mjs" \
       --archive "$archive" \
       --expected-root "$expected_root"
-    return 0
+    return $?
   fi
   local listing="$BOOTSTRAP_TMP/tar-list.txt"
   if ! tar -tvzf "$archive" >"$listing"; then
@@ -475,7 +496,7 @@ install_release() {
   rid="$(json_field "$manifest_path" rid)"
   manifest_version="$(json_field "$manifest_path" version)"
   manifest_tarball="$(json_field "$manifest_path" tarball)"
-  runtime_layout="$(json_field "$manifest_path" runtimeLayout)"
+  runtime_layout="$(json_field_optional "$manifest_path" runtimeLayout)"
   expected_tarball="ff-occam-${VERSION}-${RID}.tar.gz"
   if [[ "$manifest_version" != "$VERSION" ]]; then
     echo "error: release manifest version mismatch (expected $VERSION, got $manifest_version)" >&2
@@ -485,12 +506,17 @@ install_release() {
     echo "error: release manifest RID mismatch (expected $RID, got $rid)" >&2
     exit 1
   fi
-  if [[ "$manifest_tarball" != "$expected_tarball" ]]; then
+  if [[ -n "$manifest_tarball" && "$manifest_tarball" != "$expected_tarball" ]]; then
     echo "error: release manifest tarball mismatch (expected $expected_tarball, got $manifest_tarball)" >&2
     exit 1
   fi
-  if [[ "$runtime_layout" != "self-contained-v1" ]]; then
-    echo "error: release manifest runtime layout mismatch (expected self-contained-v1, got $runtime_layout)" >&2
+  # Contract from manifest runtimeLayout — never from version string.
+  if [[ -z "$runtime_layout" ]]; then
+    INSTALL_CONTRACT=legacy
+  elif [[ "$runtime_layout" == "self-contained-v1" ]]; then
+    INSTALL_CONTRACT=self-contained-v1
+  else
+    echo "error: unsupported release runtimeLayout: $runtime_layout" >&2
     exit 1
   fi
   if [[ ! "$expected_sha" =~ ^[0-9a-f]{64}$ ]]; then
@@ -508,7 +534,7 @@ install_release() {
     exit 1
   fi
   v_echo "sha256: OK"
-  v_echo "release: version=$manifest_version rid=$rid"
+  v_echo "release: version=$manifest_version rid=$rid contract=$INSTALL_CONTRACT"
 
   local signature_policy
   signature_policy="$(json_field_optional "$manifest_path" signaturePolicy)"
@@ -549,8 +575,10 @@ install_release() {
       ;;
   esac
 
-  local expected_root="ff-occam-${VERSION}-${RID}"
-  preflight_release_archive "$tarball_path" "$expected_root"
+  if [[ "$INSTALL_CONTRACT" == "self-contained-v1" ]]; then
+    local expected_root="ff-occam-${VERSION}-${RID}"
+    preflight_release_archive "$tarball_path" "$expected_root"
+  fi
 
   local parent
   parent="$(dirname "$INSTALL_DIR")"
@@ -566,13 +594,16 @@ install_release() {
     staged="${entries[0]}"
   fi
 
-  local runtime_checker="$staged/scripts/lib/operator/install-user-cli.mjs"
-  if [[ ! -f "$runtime_checker" ]] \
-    || ! node "$runtime_checker" --check-release-root "$staged" \
-      --version "$VERSION" --rid "$RID" >/dev/null; then
-    echo "error: verified release archive is incomplete" >&2
-    echo "No files were changed." >&2
-    exit 1
+  if [[ "$INSTALL_CONTRACT" == "self-contained-v1" ]]; then
+    local runtime_checker="$staged/scripts/lib/operator/install-user-cli.mjs"
+    if [[ ! -f "$runtime_checker" ]] \
+      || ! node "$runtime_checker" --check-release-root "$staged" \
+        --version "$VERSION" --rid "$RID" >/dev/null; then
+      echo "error: verified release archive is incomplete" >&2
+      echo "No files were changed." >&2
+      echo "Self-contained install does not fall back to legacy overlay mode." >&2
+      exit 1
+    fi
   fi
 
   prepare_install_replace "$INSTALL_DIR" "$staged"
@@ -618,17 +649,40 @@ run_legacy_step() {
 # Install ~/.local/bin/occam from the verified release and prepend it to this shell's PATH.
 install_occam_user_command() {
   local home="$1"
-  local helper="$home/scripts/lib/operator/install-user-cli.mjs"
-  if [[ ! -f "$helper" || ! -f "$home/scripts/lib/resolve-node-runtime.mjs" ]]; then
-    echo "✗ Verified release archive is missing the occam command installer." >&2
-    exit 1
+  local helper=""
+  local helper_tmp=""
+  local overlay_args=()
+
+  if [[ "${INSTALL_CONTRACT:-}" == "legacy" ]]; then
+    # Legacy Level B: refresh operator CLI from mutable main overlay.
+    helper_tmp="$(mktemp -d "${TMPDIR:-/tmp}/occam-install-user-cli.XXXXXX")"
+    local base="${OCCAM_OVERLAY_BASE_URL:-https://raw.githubusercontent.com/ContextForgeAI/occam/main}"
+    base="${base%/}"
+    mkdir -p "$helper_tmp/scripts/lib/operator"
+    if ! curl -fsSL "$base/scripts/lib/operator/install-user-cli.mjs" -o "$helper_tmp/scripts/lib/operator/install-user-cli.mjs" \
+      || ! curl -fsSL "$base/scripts/lib/resolve-node-runtime.mjs" -o "$helper_tmp/scripts/lib/resolve-node-runtime.mjs"; then
+      echo "✗ Could not install the occam command (download failed)." >&2
+      rm -rf "$helper_tmp"
+      exit 1
+    fi
+    helper="$helper_tmp/scripts/lib/operator/install-user-cli.mjs"
+    overlay_args=(--base-url "$base")
+  else
+    # Self-contained: helpers must come from the verified archive — never overlay.
+    helper="$home/scripts/lib/operator/install-user-cli.mjs"
+    if [[ ! -f "$helper" || ! -f "$home/scripts/lib/resolve-node-runtime.mjs" ]]; then
+      echo "✗ Verified release archive is missing the occam command installer." >&2
+      exit 1
+    fi
+    overlay_args=(--no-overlay)
   fi
 
   local json
   set +e
-  json="$(node "$helper" --home "$home" --no-overlay --json 2>&1)"
+  json="$(node "$helper" --home "$home" "${overlay_args[@]}" --json 2>&1)"
   local code=$?
   set -e
+  [[ -n "$helper_tmp" ]] && rm -rf "$helper_tmp"
   if [[ "$code" -ne 0 ]]; then
     echo "✗ Could not install the occam command." >&2
     echo "Re-run with OCCAM_VERBOSE=1 for details." >&2

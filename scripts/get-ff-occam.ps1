@@ -51,12 +51,14 @@ function Resolve-PublishedRid([string]$Os = "Windows_NT", [string]$Architecture 
   throw "no public Occam release for $Os/$Architecture (published RIDs: win-x64, linux-x64, osx-arm64)"
 }
 
-$Version = if ($env:OCCAM_VERSION) { $env:OCCAM_VERSION } else { "1.0.0-rc.3" }
+$Version = if ($env:OCCAM_VERSION) { $env:OCCAM_VERSION } else { "1.0.0-rc.2" }
 $Rid = if ($env:OCCAM_RID) { $env:OCCAM_RID } else { Resolve-PublishedRid }
 Assert-PublishedRid $Rid
 $InstallDir = if ($env:OCCAM_INSTALL_DIR) { $env:OCCAM_INSTALL_DIR } else {
   Join-Path $env:USERPROFILE ".local\share\ff-occam"
 }
+# Set from manifest runtimeLayout during install (never from version string).
+$script:InstallContract = ""
 # Legacy fallback for connection snippet only — never printed as a selected host before connect.
 $HostTarget = if ($env:OCCAM_HOST) { $env:OCCAM_HOST } else { "" }
 $AllowHttp = if ($env:OCCAM_RELEASE_ALLOW_HTTP) { $env:OCCAM_RELEASE_ALLOW_HTTP } else { "0" }
@@ -260,17 +262,43 @@ download failed $($script:OccamEmDash) is the release tarball published?
 # Install ~/.local/bin/occam.cmd + occam.ps1 (+ User PATH) from the verified
 # release archive. Prepends bin onto the current-process PATH.
 function Install-OccamUserCommand([string]$OccamHome) {
-  $helper = Join-Path $OccamHome "scripts\lib\operator\install-user-cli.mjs"
-  $nodeResolver = Join-Path $OccamHome "scripts\lib\resolve-node-runtime.mjs"
-  if (-not (Test-Path -LiteralPath $helper) -or -not (Test-Path -LiteralPath $nodeResolver)) {
-    Write-Host ($script:OccamFail + " Verified release archive is missing the occam command installer.") -ForegroundColor Red
-    throw "verified release archive is missing the occam command installer"
+  $helper = $null
+  $helperTmp = $null
+  $cliArgs = @()
+
+  if ($script:InstallContract -eq "legacy") {
+    $helperTmp = Join-Path ([System.IO.Path]::GetTempPath()) ("occam-install-user-cli-" + [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Path (Join-Path $helperTmp "scripts\lib\operator") -Force | Out-Null
+    $overlayBase = if ($env:OCCAM_OVERLAY_BASE_URL) {
+      $env:OCCAM_OVERLAY_BASE_URL.TrimEnd("/").TrimEnd("\")
+    } else {
+      "https://raw.githubusercontent.com/ContextForgeAI/occam/main"
+    }
+    try {
+      Invoke-WebRequest -UseBasicParsing -Uri "$overlayBase/scripts/lib/operator/install-user-cli.mjs" `
+        -OutFile (Join-Path $helperTmp "scripts\lib\operator\install-user-cli.mjs")
+      Invoke-WebRequest -UseBasicParsing -Uri "$overlayBase/scripts/lib/resolve-node-runtime.mjs" `
+        -OutFile (Join-Path $helperTmp "scripts\lib\resolve-node-runtime.mjs")
+    } catch {
+      if ($helperTmp) { Remove-Item -LiteralPath $helperTmp -Recurse -Force -ErrorAction SilentlyContinue }
+      Write-Host ($script:OccamFail + " Could not install the occam command (download failed).") -ForegroundColor Red
+      throw
+    }
+    $helper = Join-Path $helperTmp "scripts\lib\operator\install-user-cli.mjs"
+    $cliArgs = @($helper, "--home", $OccamHome, "--base-url", $overlayBase, "--json")
+  } else {
+    $helper = Join-Path $OccamHome "scripts\lib\operator\install-user-cli.mjs"
+    $nodeResolver = Join-Path $OccamHome "scripts\lib\resolve-node-runtime.mjs"
+    if (-not (Test-Path -LiteralPath $helper) -or -not (Test-Path -LiteralPath $nodeResolver)) {
+      Write-Host ($script:OccamFail + " Verified release archive is missing the occam command installer.") -ForegroundColor Red
+      throw "verified release archive is missing the occam command installer"
+    }
+    $cliArgs = @($helper, "--home", $OccamHome, "--no-overlay", "--json")
   }
 
   $prevEap = $ErrorActionPreference
   $ErrorActionPreference = "Continue"
   try {
-    $cliArgs = @($helper, "--home", $OccamHome, "--no-overlay", "--json")
     $jsonOut = & node @cliArgs *>&1 | ForEach-Object { "$_" }
     if ($LASTEXITCODE -ne 0) {
       Write-Host ($script:OccamFail + " Could not install the occam command.") -ForegroundColor Red
@@ -283,6 +311,7 @@ function Install-OccamUserCommand([string]$OccamHome) {
     }
   } finally {
     $ErrorActionPreference = $prevEap
+    if ($helperTmp) { Remove-Item -LiteralPath $helperTmp -Recurse -Force -ErrorAction SilentlyContinue }
   }
 
   $binDir = $null
@@ -647,11 +676,22 @@ try {
   if ([string]$manifest.rid -cne $Rid) {
     throw "release manifest RID mismatch (expected $Rid, got $($manifest.rid))"
   }
-  if ([string]$manifest.tarball -cne $expectedTarball) {
-    throw "release manifest tarball mismatch (expected $expectedTarball, got $($manifest.tarball))"
+  $manifestTarball = if ($null -ne $manifest.PSObject.Properties["tarball"]) { [string]$manifest.tarball } else { "" }
+  if ($manifestTarball -and $manifestTarball -cne $expectedTarball) {
+    throw "release manifest tarball mismatch (expected $expectedTarball, got $manifestTarball)"
   }
-  if ([string]$manifest.runtimeLayout -cne "self-contained-v1") {
-    throw "release manifest runtime layout mismatch (expected self-contained-v1, got $($manifest.runtimeLayout))"
+  $runtimeLayout = if ($null -ne $manifest.PSObject.Properties["runtimeLayout"] -and
+    -not [string]::IsNullOrWhiteSpace([string]$manifest.runtimeLayout)) {
+    [string]$manifest.runtimeLayout
+  } else {
+    ""
+  }
+  if (-not $runtimeLayout) {
+    $script:InstallContract = "legacy"
+  } elseif ($runtimeLayout -ceq "self-contained-v1") {
+    $script:InstallContract = "self-contained-v1"
+  } else {
+    throw "unsupported release runtimeLayout: $runtimeLayout"
   }
   $expectedSha = [string]$manifest.sha256
   if ($expectedSha -notmatch '^[0-9A-Fa-f]{64}$') {
@@ -666,7 +706,7 @@ try {
   }
   if ($VerboseInstall) {
     Write-Host "sha256: OK"
-    Write-Host "release: version=$($manifest.version) rid=$($manifest.rid)"
+    Write-Host "release: version=$($manifest.version) rid=$($manifest.rid) contract=$($script:InstallContract)"
   }
 
   $signaturePolicy = if ($null -ne $manifest.PSObject.Properties["signaturePolicy"] -and
@@ -704,8 +744,10 @@ try {
     default { throw "unsupported release signaturePolicy: $signaturePolicy" }
   }
 
-  $expectedRoot = "ff-occam-$Version-$Rid"
-  Assert-ReleaseArchivePreflight -ArchivePath $tarballPath -ExpectedRoot $expectedRoot
+  if ($script:InstallContract -eq "self-contained-v1") {
+    $expectedRoot = "ff-occam-$Version-$Rid"
+    Assert-ReleaseArchivePreflight -ArchivePath $tarballPath -ExpectedRoot $expectedRoot
+  }
 
   $parent = Split-Path -Parent $InstallDir
   if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
@@ -720,13 +762,15 @@ try {
     $staged = $inner.FullName
   }
 
-  $runtimeChecker = Join-Path $staged "scripts\lib\operator\install-user-cli.mjs"
-  if (-not (Test-Path -LiteralPath $runtimeChecker)) {
-    throw "verified release archive is incomplete (missing runtime checker)"
-  }
-  & node $runtimeChecker --check-release-root $staged --version $Version --rid $Rid
-  if ($LASTEXITCODE -ne 0) {
-    throw "verified release archive is incomplete"
+  if ($script:InstallContract -eq "self-contained-v1") {
+    $runtimeChecker = Join-Path $staged "scripts\lib\operator\install-user-cli.mjs"
+    if (-not (Test-Path -LiteralPath $runtimeChecker)) {
+      throw "verified release archive is incomplete (missing runtime checker); self-contained does not fall back to legacy overlay"
+    }
+    & node $runtimeChecker --check-release-root $staged --version $Version --rid $Rid
+    if ($LASTEXITCODE -ne 0) {
+      throw "verified release archive is incomplete; self-contained does not fall back to legacy overlay"
+    }
   }
 
   # Download/stage first → stop install-scoped hosts → swap. Never delete before stage is ready.
