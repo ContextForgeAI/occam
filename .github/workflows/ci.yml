@@ -230,6 +230,12 @@ jobs:
       - name: Validate release archive member preflight
         run: node scripts/lib/archive-preflight.selftest.mjs
 
+      - name: Validate release tarball AppleDouble suppression
+        run: node scripts/lib/build-release-tarball.selftest.mjs
+
+      - name: Validate dual-contract bootstrap selection
+        run: node scripts/lib/bootstrap-release-contract.selftest.mjs
+
       - name: Validate release authenticity policy contracts
         run: node scripts/lib/verify-release-signature.selftest.mjs
 

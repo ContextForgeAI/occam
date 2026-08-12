@@ -161,7 +161,10 @@ function testSourceGuards() {
   );
   assert.match(ps1, /IsNullOrWhiteSpace\(\$PSScriptRoot\)/);
   assert.match(ps1, /Assert-SafeInstallPath/);
-  assert.doesNotMatch(ps1, /OCCAM_OVERLAY_BASE_URL/);
+  // Dual-contract: overlay is allowed only for legacy Level B (rc.2).
+  assert.match(ps1, /InstallContract -eq "legacy"/);
+  assert.match(ps1, /OCCAM_OVERLAY_BASE_URL/);
+  assert.match(ps1, /self-contained does not fall back to legacy overlay/);
   // Pipe-safe Unicode: no raw checkmark/ellipsis in executable strings.
   assert.doesNotMatch(ps1, /[✓✗•…]/);
   assert.match(ps1, /\[char\]0x2713/);

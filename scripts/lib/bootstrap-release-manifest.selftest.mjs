@@ -47,9 +47,9 @@ const cases = Object.freeze({
     manifest: { version, rid, tarball, sha256: "not-a-sha", runtimeLayout },
     expected: /release manifest sha256 must be 64 hexadecimal characters/,
   },
-  legacy: {
-    manifest: { version, rid, tarball, sha256 },
-    expected: /release manifest missing runtimeLayout|release manifest runtime layout mismatch/,
+  unknownLayout: {
+    manifest: { version, rid, tarball, sha256, runtimeLayout: "experimental-v9" },
+    expected: /unsupported release runtimeLayout/,
   },
 });
 
@@ -148,21 +148,24 @@ function testPowerShellSourceGuards() {
   const ps1 = readFileSync(join(repoRoot, "scripts", "get-ff-occam.ps1"), "utf8");
   const versionCheck = ps1.indexOf("[string]$manifest.version -cne $Version");
   const ridCheck = ps1.indexOf("[string]$manifest.rid -cne $Rid");
-  const tarballCheck = ps1.indexOf("[string]$manifest.tarball -cne $expectedTarball");
-  const layoutCheck = ps1.indexOf('[string]$manifest.runtimeLayout -cne "self-contained-v1"');
+  const layoutFailClosed = ps1.indexOf("unsupported release runtimeLayout");
+  const contractLegacy = ps1.indexOf('$script:InstallContract = "legacy"');
+  const contractSelf = ps1.indexOf('$script:InstallContract = "self-contained-v1"');
   const shaCheck = ps1.indexOf("$expectedSha -notmatch '^[0-9A-Fa-f]{64}$'");
   const archiveDownload = ps1.indexOf("Download-File $ReleaseUrl $tarballPath");
   assert.ok(archiveDownload >= 0, "PowerShell bootstrap archive download call not found");
   for (const [label, index] of [
     ["version", versionCheck],
     ["rid", ridCheck],
-    ["tarball", tarballCheck],
-    ["runtime layout", layoutCheck],
+    ["runtime layout fail-closed", layoutFailClosed],
+    ["legacy contract", contractLegacy],
+    ["self-contained contract", contractSelf],
     ["sha256", shaCheck],
   ]) {
     assert.ok(index >= 0, `PowerShell bootstrap is missing ${label} manifest validation`);
     assert.ok(index < archiveDownload, `PowerShell ${label} validation must precede archive download`);
   }
+  assert.match(ps1, /1\.0\.0-rc\.2/, "public default release must remain 1.0.0-rc.2");
   console.log("ok: PowerShell source guards cover identity/layout/sha before download");
 }
 

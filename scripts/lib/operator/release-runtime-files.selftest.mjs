@@ -69,14 +69,18 @@ function testRuntimeManifestCoversImportGraph() {
 function testBootstrapsUseBundledHelpers() {
   const sh = readFileSync(join(repoRoot, "scripts/get-ff-occam.sh"), "utf8");
   const ps1 = readFileSync(join(repoRoot, "scripts/get-ff-occam.ps1"), "utf8");
+  assert.match(sh, /INSTALL_CONTRACT=self-contained-v1/);
+  assert.match(sh, /INSTALL_CONTRACT=legacy/);
   assert.match(sh, /\$home\/scripts\/lib\/operator\/install-user-cli\.mjs/);
   assert.match(sh, /--no-overlay/);
-  assert.doesNotMatch(sh, /OCCAM_OVERLAY_BASE_URL/);
-  assert.doesNotMatch(sh, /curl[^\n]+install-user-cli\.mjs/);
+  assert.match(sh, /OCCAM_OVERLAY_BASE_URL/);
+  assert.match(sh, /Self-contained install does not fall back to legacy overlay mode/);
+  assert.match(ps1, /\$script:InstallContract = "self-contained-v1"/);
+  assert.match(ps1, /\$script:InstallContract = "legacy"/);
   assert.match(ps1, /Join-Path \$OccamHome "scripts\\lib\\operator\\install-user-cli\.mjs"/);
   assert.match(ps1, /"--no-overlay"/);
-  assert.doesNotMatch(ps1, /OCCAM_OVERLAY_BASE_URL/);
-  assert.doesNotMatch(ps1, /Invoke-WebRequest[^\n]+install-user-cli\.mjs/);
+  assert.match(ps1, /OCCAM_OVERLAY_BASE_URL/);
+  assert.match(ps1, /self-contained does not fall back to legacy overlay/);
   assert.match(sh, /prepare_install_replace "\$INSTALL_DIR" "\$staged"/);
   assert.match(ps1, /Invoke-PrepareInstallReplace \$TargetDir \$StagedDir/);
   assert.match(sh, /--dir "\$dir" --rid "\$RID" --json/);
@@ -99,7 +103,9 @@ function testBootstrapsUseBundledHelpers() {
   const psReplace = ps1.indexOf("Replace-OccamInstallTree -TargetDir $InstallDir -StagedDir $staged");
   assert.ok(shCheck >= 0 && shCheck < shReplace, "shell runtime check must precede install swap");
   assert.ok(psCheck >= 0 && psCheck < psReplace, "PowerShell runtime check must precede install swap");
-  console.log("ok: sh/ps1 use only helpers from the verified release tree");
+  assert.match(sh, /OCCAM_VERSION:-\s*1\.0\.0-rc\.2|OCCAM_VERSION:-1\.0\.0-rc\.2/);
+  assert.match(ps1, /1\.0\.0-rc\.2/);
+  console.log("ok: sh/ps1 dual-contract bootstrap (legacy overlay + self-contained no-overlay)");
 }
 
 function testReleaseRootValidation() {

@@ -312,8 +312,13 @@ function testNoPhantomHermesInManualDefault() {
   assert.match(sh, /resolve-node-runtime\.mjs/);
   assert.match(ps1, /"--no-overlay"/);
   assert.match(sh, /--no-overlay/);
-  assert.doesNotMatch(ps1, /OCCAM_OVERLAY_BASE_URL/);
-  assert.doesNotMatch(sh, /OCCAM_OVERLAY_BASE_URL/);
+  // Dual-contract: overlay env only on the legacy Level B path.
+  assert.match(ps1, /InstallContract -eq "legacy"/);
+  assert.match(sh, /INSTALL_CONTRACT.*=.*legacy|"\$INSTALL_CONTRACT" == "legacy"/);
+  assert.match(ps1, /OCCAM_OVERLAY_BASE_URL/);
+  assert.match(sh, /OCCAM_OVERLAY_BASE_URL/);
+  assert.match(ps1, /self-contained does not fall back to legacy overlay/);
+  assert.match(sh, /Self-contained install does not fall back to legacy overlay mode/);
   // First-run must show life during long steps and continue into connect.
   assert.match(ps1, /Installing runtime/);
   assert.match(sh, /Installing runtime/);
