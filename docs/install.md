@@ -49,10 +49,20 @@ emulation or cross-platform compatibility switch.
 
 ## What the installer does
 
+The bootstrap selects install behavior from the **release manifest contract**, not from a hard-coded RC number:
+
+| Manifest | Install contract |
+|----------|------------------|
+| no `runtimeLayout` (published `v1.0.0-rc.2`) | Legacy Level B: SHA-256; operator CLI may refresh from the repository overlay |
+| `runtimeLayout=self-contained-v1` (next RC candidate) | Self-contained: SHA-256 + archive preflight + complete runtime closure; **no** executable helper overlay; Cosign when `signaturePolicy=required-cosign-v1` |
+| unknown `runtimeLayout` / unknown `signaturePolicy` | Fail closed |
+
+**Public default** (no `OCCAM_VERSION`): still **`1.0.0-rc.2`** until a later cutover after `v1.0.0-rc.3` is published and verified. Explicit `OCCAM_VERSION=1.0.0-rc.3` (or local artifact URLs) exercises the self-contained path before publication.
+
 1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases
-2. Requires the manifest version, RID, and tarball name to match the request, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). Runs archive-member preflight **before** extract
-3. Extracts to staging and validates the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR`. An existing target must itself be a consistent Occam release for the current RID (inner `layout: level-b` markers); source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
-4. Uses only helpers inside that verified archive; no mutable post-install executable helper overlay is fetched (`1.0.0-rc.3` candidate: `runtimeLayout=self-contained-v1`). Bootstrap script delivery from the mutable `main` raw URL remains a separate concern until cutover
+2. Requires the manifest version and RID to match the request, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). For self-contained manifests, archive-member preflight runs **before** extract
+3. Extracts to staging. Self-contained installs validate the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR`. An existing target must itself be a consistent Occam release for the current RID (inner `layout: level-b` markers); source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
+4. **Self-contained:** uses only helpers inside that verified archive (no mutable post-install executable helper overlay). **Legacy Level B:** may refresh operator CLI helpers from the repository overlay. Bootstrap **script** delivery from the mutable `main` raw URL remains a separate T4 concern
 5. Runs **doctor** (`--skip-build`) — npm workers, Playwright Chromium, host binary check (quiet by default)
 6. Verifies the Occam host — expect **15** core `occam_*` tools
 7. Writes onboard defaults → `~/.occam/onboard.json` (known install path; no re-prompt)
