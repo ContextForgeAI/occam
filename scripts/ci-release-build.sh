@@ -13,7 +13,7 @@ set -euo pipefail
 RID="${1:-}"
 if [[ -z "$RID" ]]; then
   echo "usage: ci-release-build.sh <rid>" >&2
-  echo "  RIDs: win-x64 linux-x64 osx-arm64 osx-x64" >&2
+  echo "  RIDs: win-x64 linux-x64 osx-arm64" >&2
   exit 1
 fi
 

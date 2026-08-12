@@ -1,12 +1,4 @@
-# Level B release tarball — linux-x64 Native AOT, published to GitHub Releases on tag v*
-# so get-ff-occam.sh / npx can resolve assets.
-#
-# Primary CI target: GitHub Actions.
-# Short `actions/*@v4` refs are GitHub-native.
-#
-# Single job for build+publish on tag: publish reads tarballs from the same workspace
-# (no cross-job artifact hand-off required for the linux path).
-name: occam-release
+name: Occam Release
 
 on:
   push:
@@ -18,21 +10,27 @@ on:
 
 concurrency:
   group: occam-release-${{ github.ref }}
-  cancel-in-progress: true
+  # A cancelled tag run can strand a draft. Serialize instead of cancelling.
+  cancel-in-progress: false
 
 permissions:
   contents: read
 
-jobs:
-  release-linux:
-    name: release-linux
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      contents: write
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
 
+jobs:
+  build-linux:
+    name: Build linux-x64
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
@@ -42,55 +40,48 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Validate release version policy
-        run: node scripts/lib/release-version.selftest.mjs
-
-      - name: Resolve release tag metadata
+      - name: Resolve build version
         id: release-meta
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: node scripts/lib/release-version.mjs --ref "$GITHUB_REF" >> "$GITHUB_OUTPUT"
+        run: >-
+          node scripts/lib/release-version.mjs
+          --workflow-ref "$GITHUB_REF"
+          --changelog CHANGELOG.md >> "$GITHUB_OUTPUT"
 
-      - name: Build + verify tarball
+      - name: Build and verify linux-x64 archive
         env:
           OCCAM_RELEASE_VERSION: ${{ steps.release-meta.outputs.version }}
         run: bash ./scripts/ci-release-build.sh linux-x64
 
-      - name: Assert tag, package, and host versions match
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: >-
-          node scripts/lib/verify-release-artifact.mjs
-          --rid linux-x64
-          --version "${{ steps.release-meta.outputs.version }}"
+      - name: Require exact linux-x64 output
+        env:
+          VERSION: ${{ steps.release-meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          test "$(find artifacts/releases -maxdepth 1 -type f | wc -l)" -eq 2
+          test -f "artifacts/releases/ff-occam-${VERSION}-linux-x64.tar.gz"
+          test -f "artifacts/releases/ff-occam-${VERSION}-linux-x64-manifest.json"
 
-      - name: List built assets
-        run: ls -la artifacts/releases
-
-      # Publish only on a tag. softprops/action-gh-release creates/updates the GitHub
-      # Release and uploads assets from this workspace.
-      - name: Publish to GitHub Releases
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
+      - name: Upload linux-x64 workflow artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          prerelease: ${{ steps.release-meta.outputs.prerelease }}
-          files: |
-            artifacts/releases/ff-occam-*-linux-x64.tar.gz
-            artifacts/releases/ff-occam-*-linux-x64-manifest.json
-          fail_on_unmatched_files: true
+          name: release-linux-x64
+          path: |
+            artifacts/releases/ff-occam-${{ steps.release-meta.outputs.version }}-linux-x64.tar.gz
+            artifacts/releases/ff-occam-${{ steps.release-meta.outputs.version }}-linux-x64-manifest.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
 
-  # macOS (Apple Silicon) Native AOT. Native AOT cannot cross-compile — needs a real
-  # macos-latest runner. Runs on every SemVer release tag (v*).
-  release-macos:
-    name: release-macos
+  build-macos:
+    name: Build osx-arm64
     runs-on: macos-latest
-    timeout-minutes: 45
-    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    timeout-minutes: 50
     permissions:
-      contents: write
-
+      contents: read
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
@@ -100,49 +91,48 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Resolve release tag metadata
+      - name: Resolve build version
         id: release-meta
-        run: node scripts/lib/release-version.mjs --ref "$GITHUB_REF" >> "$GITHUB_OUTPUT"
+        run: >-
+          node scripts/lib/release-version.mjs
+          --workflow-ref "$GITHUB_REF"
+          --changelog CHANGELOG.md >> "$GITHUB_OUTPUT"
 
-      - name: Build + verify tarball
+      - name: Build and verify osx-arm64 archive
         env:
           OCCAM_RELEASE_VERSION: ${{ steps.release-meta.outputs.version }}
         run: bash ./scripts/ci-release-build.sh osx-arm64
 
-      - name: Assert tag, package, and host versions match
-        run: >-
-          node scripts/lib/verify-release-artifact.mjs
-          --rid osx-arm64
-          --version "${{ steps.release-meta.outputs.version }}"
+      - name: Require exact osx-arm64 output
+        env:
+          VERSION: ${{ steps.release-meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          test "$(find artifacts/releases -maxdepth 1 -type f | wc -l)" -eq 2
+          test -f "artifacts/releases/ff-occam-${VERSION}-osx-arm64.tar.gz"
+          test -f "artifacts/releases/ff-occam-${VERSION}-osx-arm64-manifest.json"
 
-      - name: List built assets
-        run: ls -la artifacts/releases
-
-      - name: Publish to GitHub Releases
-        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
+      - name: Upload osx-arm64 workflow artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          prerelease: ${{ steps.release-meta.outputs.prerelease }}
-          files: |
-            artifacts/releases/ff-occam-*-osx-arm64.tar.gz
-            artifacts/releases/ff-occam-*-osx-arm64-manifest.json
-          fail_on_unmatched_files: true
+          name: release-osx-arm64
+          path: |
+            artifacts/releases/ff-occam-${{ steps.release-meta.outputs.version }}-osx-arm64.tar.gz
+            artifacts/releases/ff-occam-${{ steps.release-meta.outputs.version }}-osx-arm64-manifest.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
 
-  # Windows x64 Native AOT — build + verify; on tags, upload to the same GitHub Release
-  # as linux/osx (softprops updates the existing release by tag). Waits for release-linux
-  # so the Release object already exists before Windows uploads.
-  release-windows:
-    name: release-windows
-    needs: release-linux
+  build-windows:
+    name: Build win-x64
     runs-on: windows-latest
-    timeout-minutes: 45
-    if: ${{ startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: 50
     permissions:
-      contents: write
-
+      contents: read
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
@@ -152,43 +142,273 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Validate release version policy
-        run: node scripts/lib/release-version.selftest.mjs
+      - name: Resolve build version
+        id: release-meta
+        shell: pwsh
+        run: |
+          $metadata = & node scripts/lib/release-version.mjs `
+            --workflow-ref $env:GITHUB_REF `
+            --changelog CHANGELOG.md
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $metadata | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Host-process stop helper selftest
         run: node scripts/lib/stop-occam-processes.selftest.mjs
 
-      - name: Resolve release tag metadata
-        id: release-meta
-        if: startsWith(github.ref, 'refs/tags/v')
-        shell: bash
-        run: node scripts/lib/release-version.mjs --ref "$GITHUB_REF" >> "$GITHUB_OUTPUT"
+      - name: Build and verify win-x64 archive
+        shell: pwsh
+        run: >-
+          .\scripts\ci-release-build.ps1
+          -Rid win-x64
+          -Version "${{ steps.release-meta.outputs.version }}"
 
-      - name: Build + verify tarball
+      - name: Require exact win-x64 output
         shell: pwsh
         env:
-          OCCAM_RELEASE_VERSION: ${{ steps.release-meta.outputs.version }}
+          VERSION: ${{ steps.release-meta.outputs.version }}
         run: |
-          if ($env:OCCAM_RELEASE_VERSION) {
-            .\scripts\ci-release-build.ps1 -Rid win-x64 -Version $env:OCCAM_RELEASE_VERSION
-          } else {
-            # workflow_dispatch / non-tag: use latest CHANGELOG released version
-            .\scripts\ci-release-build.ps1 -Rid win-x64
+          $files = @(Get-ChildItem -LiteralPath artifacts/releases -File)
+          if ($files.Count -ne 2) { throw "expected exactly two win-x64 files, got $($files.Count)" }
+          foreach ($name in @(
+            "ff-occam-$env:VERSION-win-x64.tar.gz",
+            "ff-occam-$env:VERSION-win-x64-manifest.json"
+          )) {
+            if (-not (Test-Path -LiteralPath (Join-Path artifacts/releases $name) -PathType Leaf)) {
+              throw "missing release output: $name"
+            }
           }
 
-      - name: List built assets
-        shell: pwsh
-        run: Get-ChildItem artifacts/releases | Format-Table Name, Length
-
-      # Tag only — same softprops path as linux/osx; targets release by tag_name (no new tag).
-      - name: Publish to GitHub Releases
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2.0.5
+      - name: Upload win-x64 workflow artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          prerelease: ${{ steps.release-meta.outputs.prerelease }}
-          files: |
-            artifacts/releases/ff-occam-*-win-x64.tar.gz
-            artifacts/releases/ff-occam-*-win-x64-manifest.json
-          fail_on_unmatched_files: true
+          name: release-win-x64
+          path: |
+            artifacts/releases/ff-occam-${{ steps.release-meta.outputs.version }}-win-x64.tar.gz
+            artifacts/releases/ff-occam-${{ steps.release-meta.outputs.version }}-win-x64-manifest.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  publish-release:
+    name: Sign and publish exact release
+    needs: [build-linux, build-macos, build-windows]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: github-release
+    permissions:
+      actions: read
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+
+      - name: Validate tag, source, and workflow identity
+        id: release-meta
+        run: |
+          set -euo pipefail
+          readonly workflow_path="ContextForgeAI/occam/.github/workflows/occam-release.yml"
+          if [[ "$GITHUB_REPOSITORY" != "ContextForgeAI/occam" ]]; then
+            echo "error: refusing to publish outside ContextForgeAI/occam: $GITHUB_REPOSITORY" >&2
+            exit 1
+          fi
+          if [[ "$GITHUB_WORKFLOW_REF" != "${workflow_path}@${GITHUB_REF}" ]]; then
+            echo "error: release workflow identity mismatch" >&2
+            echo "expected: ${workflow_path}@${GITHUB_REF}" >&2
+            echo "actual:   $GITHUB_WORKFLOW_REF" >&2
+            exit 1
+          fi
+
+          node scripts/lib/release-version.mjs --assert-alignment \
+            --ref "$GITHUB_REF" \
+            --version-file VERSION \
+            --changelog CHANGELOG.md >> "$GITHUB_OUTPUT"
+          tag="${GITHUB_REF#refs/tags/}"
+          expected_identity="https://github.com/${workflow_path}@${GITHUB_REF}"
+          {
+            printf 'tag=%s\n' "$tag"
+            printf 'expected_identity=%s\n' "$expected_identity"
+          } >> "$GITHUB_OUTPUT"
+
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          tag_commit="$(git rev-parse "${GITHUB_SHA}^{commit}")"
+          if ! git merge-base --is-ancestor "$tag_commit" refs/remotes/origin/main; then
+            echo "error: release tag commit is not contained in main: $tag_commit" >&2
+            exit 1
+          fi
+
+      - name: Download linux-x64 workflow artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-linux-x64
+          path: artifacts/release
+
+      - name: Download osx-arm64 workflow artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-osx-arm64
+          path: artifacts/release
+
+      - name: Download win-x64 workflow artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-win-x64
+          path: artifacts/release
+
+      - name: Revalidate exact unsigned artifact set
+        env:
+          VERSION: ${{ steps.release-meta.outputs.version }}
+        run: >-
+          node scripts/lib/release-asset-policy.mjs verify-directory
+          --directory artifacts/release
+          --version "$VERSION"
+          --signed false
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3.9.1
+
+      - name: Sign exactly three platform archives
+        env:
+          VERSION: ${{ steps.release-meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          archives=(
+            "artifacts/release/ff-occam-${VERSION}-linux-x64.tar.gz"
+            "artifacts/release/ff-occam-${VERSION}-osx-arm64.tar.gz"
+            "artifacts/release/ff-occam-${VERSION}-win-x64.tar.gz"
+          )
+          for archive in "${archives[@]}"; do
+            cosign sign-blob --yes --bundle "${archive}.bundle" "$archive"
+          done
+
+      - name: Verify signer identity and reject tampering
+        env:
+          EXPECTED_IDENTITY: ${{ steps.release-meta.outputs.expected_identity }}
+          EXPECTED_ISSUER: https://token.actions.githubusercontent.com
+          VERSION: ${{ steps.release-meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          archives=(
+            "artifacts/release/ff-occam-${VERSION}-linux-x64.tar.gz"
+            "artifacts/release/ff-occam-${VERSION}-osx-arm64.tar.gz"
+            "artifacts/release/ff-occam-${VERSION}-win-x64.tar.gz"
+          )
+          for archive in "${archives[@]}"; do
+            bundle="${archive}.bundle"
+            cosign verify-blob "$archive" \
+              --bundle "$bundle" \
+              --certificate-identity "$EXPECTED_IDENTITY" \
+              --certificate-oidc-issuer "$EXPECTED_ISSUER"
+
+            tampered="${archive}.tampered"
+            cp -- "$archive" "$tampered"
+            printf '\noccam-tamper-check\n' >> "$tampered"
+            if cosign verify-blob "$tampered" \
+              --bundle "$bundle" \
+              --certificate-identity "$EXPECTED_IDENTITY" \
+              --certificate-oidc-issuer "$EXPECTED_ISSUER" >/dev/null 2>&1; then
+              echo "error: Cosign accepted a tampered archive: $archive" >&2
+              rm -f -- "$tampered"
+              exit 1
+            fi
+            rm -f -- "$tampered"
+          done
+
+      - name: Require exact signed asset set
+        env:
+          VERSION: ${{ steps.release-meta.outputs.version }}
+        run: >-
+          node scripts/lib/release-asset-policy.mjs verify-directory
+          --directory artifacts/release
+          --version "$VERSION"
+          --signed true
+
+      - name: Fail closed if the release or draft already exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release-meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          gh api --paginate --slurp \
+            "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            > "$RUNNER_TEMP/releases-before.json"
+          node scripts/lib/release-asset-policy.mjs assert-tag-absent \
+            --file "$RUNNER_TEMP/releases-before.json" \
+            --tag "$TAG"
+
+      - name: Create one draft with all nine assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ steps.release-meta.outputs.prerelease }}
+          TAG: ${{ steps.release-meta.outputs.tag }}
+          VERSION: ${{ steps.release-meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          assets=(
+            "artifacts/release/ff-occam-${VERSION}-linux-x64.tar.gz"
+            "artifacts/release/ff-occam-${VERSION}-linux-x64-manifest.json"
+            "artifacts/release/ff-occam-${VERSION}-linux-x64.tar.gz.bundle"
+            "artifacts/release/ff-occam-${VERSION}-osx-arm64.tar.gz"
+            "artifacts/release/ff-occam-${VERSION}-osx-arm64-manifest.json"
+            "artifacts/release/ff-occam-${VERSION}-osx-arm64.tar.gz.bundle"
+            "artifacts/release/ff-occam-${VERSION}-win-x64.tar.gz"
+            "artifacts/release/ff-occam-${VERSION}-win-x64-manifest.json"
+            "artifacts/release/ff-occam-${VERSION}-win-x64.tar.gz.bundle"
+          )
+          args=(release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --title "$TAG" --draft --generate-notes)
+          if [[ "$PRERELEASE" == "true" ]]; then args+=(--prerelease); fi
+          args+=("${assets[@]}")
+          gh "${args[@]}"
+
+      - name: Verify the draft before publication
+        id: draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ steps.release-meta.outputs.prerelease }}
+          TAG: ${{ steps.release-meta.outputs.tag }}
+          VERSION: ${{ steps.release-meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          gh api --paginate --slurp \
+            "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            > "$RUNNER_TEMP/releases-draft.json"
+          node scripts/lib/release-asset-policy.mjs verify-release-list \
+            --file "$RUNNER_TEMP/releases-draft.json" \
+            --tag "$TAG" \
+            --version "$VERSION" \
+            --draft true \
+            --prerelease "$PRERELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Publish the verified draft once
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ steps.release-meta.outputs.prerelease }}
+          RELEASE_ID: ${{ steps.draft.outputs.release_id }}
+          TAG: ${{ steps.release-meta.outputs.tag }}
+          VERSION: ${{ steps.release-meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          if ! gh api --method PATCH \
+            "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" \
+            -F draft=false > "$RUNNER_TEMP/release-published.json"; then
+            echo "error: failed to publish draft release" >&2
+            echo "  tag: $TAG" >&2
+            echo "  draft_id: $RELEASE_ID" >&2
+            echo "  state: left as a private draft for forensic review; this workflow will not mutate it on retry" >&2
+            echo "  next: inspect the draft, delete it only after the failure is understood, then re-run" >&2
+            exit 1
+          fi
+          node scripts/lib/release-asset-policy.mjs verify-release-json \
+            --file "$RUNNER_TEMP/release-published.json" \
+            --tag "$TAG" \
+            --version "$VERSION" \
+            --draft false \
+            --prerelease "$PRERELEASE"

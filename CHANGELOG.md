@@ -2,9 +2,23 @@
 
 All notable changes to **FFOccamMCP** (L0 core) are documented here.
 
-Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1` was the first release candidate after L0 closed; `1.0.0-rc.2` is the current RC.
+Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1` was the first release candidate after L0 closed; `1.0.0-rc.2` is the last published RC; `1.0.0-rc.3` is the next candidate.
 
 ## [Unreleased]
+
+## [1.0.0-rc.3] — 2026-08-09
+
+### Security
+
+- **Release archive member preflight** — gzipped ustar members are inspected before
+  extract for path traversal, absolute/drive/UNC paths, symlink/hardlink members,
+  duplicate/conflicting entries, and unexpected roots. Bootstraps fail closed
+  before any install transaction.
+- **Versioned authenticity policy** — release manifests declare
+  `signaturePolicy` (`sha256-only` or `required-cosign-v1`). New self-contained
+  builds require Cosign blob verification with the exact Occam release workflow
+  OIDC identity. Legacy undeclared manifests stay SHA-256-only and cannot satisfy
+  the self-contained install contract.
 
 ### Fixed
 
@@ -27,6 +41,40 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Changed
 
+- **Atomic, immutable-compatible release publication** — pull requests, `main`,
+  and release tags now run the same three read-only platform builds
+  (`linux-x64`, `osx-arm64`, `win-x64`) and upload exact archive/manifest pairs
+  as workflow artifacts. A tag-only `github-release` environment job aggregates
+  and revalidates all six files, keyless-signs exactly three archives, verifies
+  the exact workflow identity plus tamper rejection, then creates one draft with
+  the complete nine-asset set. The draft is published only after an exact-set
+  check; an existing release or draft is never overwritten. The former signer
+  is now a read-only published-release verifier, so immutable Releases need no
+  post-publication asset mutation.
+  Publication also requires the SemVer tag, root `VERSION`, and first released
+  `CHANGELOG.md` heading to match exactly.
+
+- **Self-contained, fail-closed release install** — release archives now declare
+  and verify their complete runtime-helper set. Both bootstraps reject mismatched
+  manifest version/RID/tarball/SHA metadata and validate the extracted platform
+  host, `VERSION`, and inner manifest before replacing an install. Existing
+  targets must prove they are consistent, non-linked Level B Occam releases
+  before process preparation or file moves. User launchers replace only exact
+  current/previous Occam-generated content; unrelated name collisions fail
+  closed, and the Windows launcher pair rolls back transactionally. Launcher and
+  replacement helpers run from the verified archive; no mutable `main` overlay
+  is fetched after archive verification. The previous release tree now remains
+  available until doctor, smoke, launcher setup, and Connect finish; post-swap
+  failure stops new install processes and restores it (or removes a failed fresh
+  tree). The public binary channel is explicit and fail-closed: `win-x64`,
+  `linux-x64`, and `osx-arm64` only, rejected before network access otherwise.
+
+- **Repository trust and contributor accuracy** — the security policy now uses
+  honest reporting fallbacks and documents update checks, credential-bearing
+  sessions, optional integrations, and browser execution boundaries. Contributor
+  guidance now matches the runtime registry, L8 gate, current worker stack,
+  opt-in cache behavior, and canonical documentation paths.
+
 - **Pain-first public entry pages** — README and documentation homepage now
   lead with the context cost of webpage chrome and show a reproducible
   representative transformation before deeper product detail. The current
@@ -43,6 +91,22 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   non-interactive automation). Internals behind `OCCAM_VERBOSE=1`. See [INSTALL.md](INSTALL.md).
 
 ### Added
+
+- **Reversible disconnect and uninstall** — `occam disconnect` removes only
+  registrations recognized by the Connect ownership contract, while `occam
+  uninstall --dry-run` previews managed registrations, generated launchers, the
+  release install tree, response/Playwright cache locations, and optional local
+  state before any mutation. Default uninstall preserves source checkouts,
+  unmanaged entries, backups, skills, both caches, and `~/.occam/`; the narrow
+  Occam response cache requires `--remove-cache`, while deleting
+  keys/sessions/settings requires explicit `--remove-state`. The shared
+  Playwright cache is never auto-deleted. Broad, unresolved, symlinked, malformed, and
+  ambiguous targets fail closed. Selftest: `scripts/lib/operator/uninstall.selftest.mjs`.
+
+- **Security maintenance automation** — CODEOWNERS assigns repository and
+  workflow ownership, Dependabot covers GitHub Actions plus the shipping NuGet
+  and npm roots, and CodeQL analyzes C# and JavaScript/TypeScript on `main`, pull
+  requests, and a weekly schedule.
 
 - **Experimental `occam chat` (friend Ollama path)** — local-only bridge: detect Ollama at
   `http://127.0.0.1:11434`, pick a tool-capable model, expose a minimal Occam tool surface

@@ -9,8 +9,9 @@ import path from "node:path";
 import { execFileSync, execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { parseSemanticVersion } from "./release-version.mjs";
+import { validateReleaseRoot } from "./operator/install-user-cli.mjs";
+import { PUBLISHED_RELEASE_RIDS, isPublishedReleaseRid } from "./resolve-rid.mjs";
 
-const SUPPORTED_RIDS = new Set(["win-x64", "linux-x64", "osx-arm64", "osx-x64"]);
 const MIN_NODE_MAJOR = 20;
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
@@ -35,7 +36,7 @@ function parseArgs(argv) {
     } else if (arg === "-h" || arg === "--help") {
       console.log(`usage: node build-release.mjs --rid <rid> [--version VER] [--output-dir DIR]
 
-Supported RIDs: ${[...SUPPORTED_RIDS].join(", ")}`);
+Supported RIDs: ${PUBLISHED_RELEASE_RIDS.join(", ")}`);
       process.exit(0);
     } else {
       fail(`unknown argument: ${arg}`);
@@ -116,6 +117,8 @@ function stageReleaseTree(version, rid, publishedBinary, stageExeName) {
     "check-public-mcp-contract.mjs",
     // Advertised when connect platform is present (`occam connect`); skipped if absent.
     "occam-connect.mjs",
+    "occam-disconnect.mjs",
+    "occam-uninstall.mjs",
     "hermes-smoke.mjs",
     "occam-wrapper.sh",
     // Experimental local chat (occam chat) — friend Ollama path; not stable 1.0 API.
@@ -168,27 +171,44 @@ function stageReleaseTree(version, rid, publishedBinary, stageExeName) {
     "utf8",
   );
 
+  const releaseProblems = validateReleaseRoot(stageRoot, { version, rid });
+  if (releaseProblems.length > 0) {
+    fail(`release staging is incomplete:\n  ${releaseProblems.join("\n  ")}`);
+  }
+
   return { stageRoot, stageName, exeName: stageExeName };
 }
 
-function createTarball(stageRoot, stageName, tarballPath) {
+/**
+ * Environment for release `tar` creation.
+ * Always sets COPYFILE_DISABLE=1 so macOS bsdtar does not emit AppleDouble
+ * `._*` members (which fail archive-preflight). Merges into the caller env;
+ * does not replace process.env wholesale.
+ * @param {NodeJS.ProcessEnv} [baseEnv]
+ * @returns {NodeJS.ProcessEnv}
+ */
+export function releaseTarCreateEnv(baseEnv = process.env) {
+  return { ...baseEnv, COPYFILE_DISABLE: "1" };
+}
+
+/**
+ * Create a gzip compressed ustar release archive from a staged tree.
+ * @param {string} stageRoot absolute path to the stage directory
+ * @param {string} _stageName unused (kept for call-site compatibility)
+ * @param {string} tarballPath output .tar.gz path
+ */
+export function createTarball(stageRoot, _stageName, tarballPath) {
   fs.mkdirSync(path.dirname(tarballPath), { recursive: true });
   if (fs.existsSync(tarballPath)) {
     fs.unlinkSync(tarballPath);
   }
   const parent = path.dirname(stageRoot);
   const base = path.basename(stageRoot);
-  if (process.platform === "win32") {
-    execSync(`tar -czf "${tarballPath}" -C "${parent}" "${base}"`, {
-      stdio: "inherit",
-      cwd: repoRoot,
-    });
-  } else {
-    execSync(`tar -czf "${tarballPath}" -C "${parent}" "${base}"`, {
-      stdio: "inherit",
-      cwd: repoRoot,
-    });
-  }
+  execSync(`tar -czf "${tarballPath}" -C "${parent}" "${base}"`, {
+    stdio: "inherit",
+    cwd: repoRoot,
+    env: releaseTarCreateEnv(process.env),
+  });
 }
 
 function sha256File(filePath) {
@@ -203,8 +223,8 @@ function main() {
   if (!rid) {
     fail("--rid is required");
   }
-  if (!SUPPORTED_RIDS.has(rid)) {
-    fail(`unsupported RID: ${rid} (supported: ${[...SUPPORTED_RIDS].join(", ")})`);
+  if (!isPublishedReleaseRid(rid)) {
+    fail(`unsupported RID: ${rid} (supported: ${PUBLISHED_RELEASE_RIDS.join(", ")})`);
   }
 
   const version = args.version ?? readLatestReleasedVersion();
@@ -260,6 +280,8 @@ function main() {
     version,
     rid,
     sha256,
+    runtimeLayout: "self-contained-v1",
+    signaturePolicy: "required-cosign-v1",
     nodeMajorMin: MIN_NODE_MAJOR,
     tarball: tarballName,
     hostBinary: rid.startsWith("win-") ? "OccamMcp.Core.exe" : "OccamMcp.Core",
@@ -274,4 +296,16 @@ function main() {
   console.log("build-release: OK");
 }
 
-main();
+function isCliMain() {
+  if (!process.argv[1]) return false;
+  try {
+    // Resolve real paths so /tmp vs /private/tmp (macOS) still matches.
+    return fs.realpathSync(fileURLToPath(import.meta.url)) === fs.realpathSync(process.argv[1]);
+  } catch {
+    return path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);
+  }
+}
+
+if (isCliMain()) {
+  main();
+}

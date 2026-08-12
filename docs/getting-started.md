@@ -4,8 +4,13 @@
 
 If you still need install: [Quick Start](quick-start.md) · canonical reference [Install](install.md) · root [`INSTALL.md`](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md).
 
-Release installs verify the archive SHA-256 against the published manifest
-before extract. Review [installation safety](trust/installation-safety.md)
+Published `v1.0.0-rc.2` installs verify archive SHA-256 against the release
+manifest before extract. The `1.0.0-rc.3` candidate prepared in this tree (not
+published yet) adds self-contained runtime closure
+(`runtimeLayout=self-contained-v1`), archive-member preflight before extract,
+and Cosign verification when the manifest declares
+`signaturePolicy=required-cosign-v1` — without fetching executable helpers from
+a mutable repository overlay. Review [installation safety](trust/installation-safety.md)
 for what install mutates and how to remove it.
 
 ---

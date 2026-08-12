@@ -72,10 +72,17 @@ browser dependencies when needed, and may update a detected host configuration
 after making a backup. Review [installation safety](docs/trust/installation-safety.md)
 before running it in a sensitive environment.
 
-The installer requires the manifest to match the requested version and
-platform, verifies the archive SHA-256, then checks the local runtime,
-detects supported AI applications, and tells you whether a restart or another
-action is needed. Open a new conversation in the connected application and type:
+The currently published public release remains `v1.0.0-rc.2`. The next
+candidate (`1.0.0-rc.3`, not published yet) uses self-contained archives
+(`runtimeLayout=self-contained-v1`): the installer matches version/RID, verifies
+archive SHA-256, runs archive-member preflight before extract, verifies Cosign
+when the manifest declares `signaturePolicy=required-cosign-v1`, checks the
+complete bundled runtime before replacing an install, and does not fetch
+post-install helpers from the mutable repository branch. Bootstrap scripts may
+still be delivered from the mutable `main` raw URL (separate from release
+runtime content). It then checks the local runtime, detects supported AI
+applications, and tells you whether a restart or another action is needed.
+Open a new conversation in the connected application and type:
 
 Public release binaries are currently published for `win-x64`, `linux-x64`, and
 `osx-arm64` only. Intel Macs, Linux ARM64, and Windows ARM64 fail before download

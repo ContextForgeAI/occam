@@ -11,7 +11,7 @@ usage() {
   cat <<'EOF'
 Usage: build-release.sh --rid <rid> [--version VER] [--output-dir DIR]
 
-Supported RIDs: win-x64, linux-x64, osx-arm64, osx-x64
+Supported RIDs: win-x64, linux-x64, osx-arm64
 EOF
 }
 

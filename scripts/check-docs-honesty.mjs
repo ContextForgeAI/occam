@@ -40,12 +40,12 @@ export const DENY_RULES = /** @type {DenyRule[]} */ ([
   {
     id: "cosign-verified-install",
     pattern: /\bcosign-verified install\b/i,
-    hint: "Installers do not enforce Cosign (OD-2)",
+    hint: "Do not claim unqualified cosign-verified install; policy is signaturePolicy-gated",
   },
   {
     id: "signed-supply-chain",
     pattern: /\bsupply chain is signed\b/i,
-    hint: "SHA-256 manifest only; Cosign bundle unused by install",
+    hint: "Do not claim the whole supply chain is signed; SHA-256 always, Cosign only when required-cosign-v1",
   },
   {
     id: "cryptographic-provenance",

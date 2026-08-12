@@ -5,33 +5,43 @@ Canonical agent/operator install reference also lives at the repository root:
 This page is the documentation-site copy of the same happy path.
 
 **Requirements:** Node.js **20+**. No .NET SDK on the install machine.  
-**Current release:** `1.0.0-rc.2`
+**Published release:** `1.0.0-rc.2`  
+**Next candidate in this tree:** `1.0.0-rc.3` (not published yet)
 
 ---
 
-## Supported GA install path
+## Supported release channel
 
-**GA install = GitHub Release tarball + bootstrap scripts.** The bootstrap downloads `ff-occam-<ver>-<rid>.tar.gz`, verifies integrity, runs doctor, and connects your MCP host.
+The supported release channel is a GitHub Release tarball plus the bootstrap
+scripts. The bootstrap downloads `ff-occam-<ver>-<rid>.tar.gz`, verifies its
+manifest and SHA-256 (and Cosign when `signaturePolicy=required-cosign-v1`),
+runs doctor, and connects your MCP host.
 
-| Channel | GA? | Notes |
-|---------|-----|-------|
-| `get-ff-occam.sh` / `get-ff-occam.ps1` bootstrap | **Yes** | Recommended one-command path |
-| Manual tarball + manifest from GitHub Releases | **Yes** | Air-gap / mirror installs |
+| Channel | Supported? | Notes |
+|---------|------------|-------|
+| `get-ff-occam.sh` / `get-ff-occam.ps1` bootstrap | **Yes** | Recommended release path |
+| Manual tarball + manifest from GitHub Releases | **No** | Integrity inspection only; bypasses guarded install and onboarding |
 | `git clone` + doctor (contributors) | Build path | Requires .NET 10 SDK |
-| `npx @ff-occam/mcp` | **No** | Not a supported 1.0 install channel |
-| Cosign `.bundle` on Releases | **Not enforced** | May exist as release metadata; **no shipped install path verifies Cosign**. Integrity check is **SHA-256 vs the release manifest only**. |
+| `npx @ff-occam/mcp` | **No** | Not a supported release channel |
+| Cosign `.bundle` on Releases | **Policy-gated** | Always SHA-256 vs manifest. When the manifest declares `signaturePolicy=required-cosign-v1` (`1.0.0-rc.3` candidate), the installer verifies the Cosign bundle fail-closed. Undeclared / `sha256-only` (published `v1.0.0-rc.2`) stays SHA-256-only. Authenticity ≠ page-content truth. |
+
+Public binaries are published for exactly `win-x64`, `linux-x64`, and
+`osx-arm64`. Intel macOS, Linux ARM64, Windows ARM64, and other architectures are
+not release-install targets. The bootstrap rejects them before any network
+request. `OCCAM_RID` accepts only those three published values; it is not an
+emulation or cross-platform compatibility switch.
 
 ---
 
 ## One command
 
-=== "Linux / macOS"
+=== "Linux x64 / macOS Apple Silicon"
 
     ```bash
     curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
     ```
 
-=== "Windows"
+=== "Windows x64"
 
     ```powershell
     irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
@@ -39,14 +49,27 @@ This page is the documentation-site copy of the same happy path.
 
 ## What the installer does
 
-1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases  
-2. Verifies **SHA-256** of the archive against the manifest (**not** Cosign)  
-3. Extracts into `OCCAM_INSTALL_DIR` (default `~/.local/share/ff-occam`)  
-4. Runs **doctor** (`--skip-build`) — npm workers, Playwright Chromium, host binary check (quiet by default)  
-5. Verifies the Occam host — expect **15** core `occam_*` tools  
-6. Writes onboard defaults → `~/.occam/onboard.json` (known install path; no re-prompt)  
-7. Runs **`occam connect`** for live-validated AI/MCP hosts (one host auto; multiple confirm first)  
-8. Reports **Ready** only after host verification (or Installed / Almost ready / Action required)
+The bootstrap selects install behavior from the **release manifest contract**, not from a hard-coded RC number:
+
+| Manifest | Install contract |
+|----------|------------------|
+| no `runtimeLayout` (published `v1.0.0-rc.2`) | Legacy Level B: SHA-256; operator CLI may refresh from the repository overlay |
+| `runtimeLayout=self-contained-v1` (next RC candidate) | Self-contained: SHA-256 + archive preflight + complete runtime closure; **no** executable helper overlay; Cosign when `signaturePolicy=required-cosign-v1` |
+| unknown `runtimeLayout` / unknown `signaturePolicy` | Fail closed |
+
+**Public default** (no `OCCAM_VERSION`): still **`1.0.0-rc.2`** until a later cutover after `v1.0.0-rc.3` is published and verified. Explicit `OCCAM_VERSION=1.0.0-rc.3` (or local artifact URLs) exercises the self-contained path before publication.
+
+1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases
+2. Requires the manifest version and RID to match the request, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). For self-contained manifests, archive-member preflight runs **before** extract
+3. Extracts to staging. Self-contained installs validate the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR`. An existing target must itself be a consistent Occam release for the current RID (inner `layout: level-b` markers); source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
+4. **Self-contained:** uses only helpers inside that verified archive (no mutable post-install executable helper overlay). **Legacy Level B:** may refresh operator CLI helpers from the repository overlay. Bootstrap **script** delivery from the mutable `main` raw URL remains a separate T4 concern
+5. Runs **doctor** (`--skip-build`) — npm workers, Playwright Chromium, host binary check (quiet by default)
+6. Verifies the Occam host — expect **15** core `occam_*` tools
+7. Writes onboard defaults → `~/.occam/onboard.json` (known install path; no re-prompt)
+8. Installs the user launcher transactionally. It replaces only exact Occam-generated current or previous-release launchers and refuses unrelated `occam`, `occam.cmd`, or `occam.ps1` files
+9. Runs **`occam connect`** for live-validated AI/MCP hosts (one host auto; multiple confirm first)
+10. Reports **Ready** only after host verification (or Installed / Almost ready / Action required)
+11. Keeps the previous release tree through all post-install checks; failure stops processes from the new tree and restores the previous tree (or removes a failed fresh tree)
 
 `OCCAM_VERBOSE=1` shows doctor/smoke internals. Human walkthrough: [Quick Start](quick-start.md) · Hosts: [MCP hosts](mcp-hosts.md)
 
@@ -60,7 +83,7 @@ This page is the documentation-site copy of the same happy path.
 | Host MCP config files | `occam connect` registrations + `*.occam-bak` backups |
 | Playwright browser cache | Chromium downloaded by doctor when needed |
 
-**Uninstall honesty:** removing the install directory alone does **not** remove `~/.occam/`, host MCP configs, skill directories, or Playwright cache. See [Trust: installation safety](trust/installation-safety.md).
+**Uninstall honesty:** removing the install directory alone does **not** remove `~/.occam/`, host MCP configs, skill directories, or Playwright cache. Use `occam uninstall --dry-run` before the scoped removal flow below. See [Trust: installation safety](trust/installation-safety.md).
 
 ## Doctor
 
@@ -88,6 +111,35 @@ occam connect
 
 Details: [Connect](connect/index.md) · [MCP hosts](mcp-hosts.md)
 
+## Disconnect or uninstall
+
+Start with a read-only preview:
+
+```bash
+occam disconnect --dry-run
+occam uninstall --dry-run
+```
+
+`occam disconnect` removes only host registrations recognized as Occam-managed.
+`occam uninstall` disconnects those hosts, removes the generated launcher, and
+then removes a recognized release install tree. The preview also inventories the
+opt-in response cache and shared Playwright cache. Unmanaged entries, source
+checkouts, backups, skills, both caches, and `~/.occam/` state are preserved by
+default.
+
+```bash
+occam disconnect
+occam uninstall
+```
+
+Use `occam uninstall --remove-cache` to delete the narrow Occam response cache
+(`OCCAM_CACHE_DIR`, default `{TEMP}/occam-cache`). The shared Playwright browser
+cache is never removed automatically.
+
+Use `occam uninstall --remove-state` only when you also intend to delete signing
+keys, session profiles, and operator settings. See
+[Installation and connect safety](trust/installation-safety.md#disconnect-and-uninstall).
+
 ## Verify
 
 ```bash
@@ -104,16 +156,17 @@ Expect **exit 0** and **15** core `occam_*` tools.
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `OCCAM_SETUP` | `auto` | `auto` \| `manual` \| `ask` |
-| `OCCAM_HOST` | `hermes` | Legacy **fallback** snippet preference (`hermes` \| `cursor`) — does not replace connect |
+| `OCCAM_HOST` | (none) | Legacy **fallback** snippet preference (`hermes` \| `cursor`) — does not replace connect |
 | `OCCAM_INSTALL_DIR` | `~/.local/share/ff-occam` | Install root |
-| `OCCAM_VERSION` | `1.0.0-rc.2` | Release version |
+| `OCCAM_VERSION` | `1.0.0-rc.3` (candidate default; published channel remains `1.0.0-rc.2` until cut) | Release version |
+| `OCCAM_RID` | detected | Published RID override: `win-x64` \| `linux-x64` \| `osx-arm64` only |
 
 ## Do not
 
 | Wrong | Why |
 |-------|-----|
-| `npx @ff-occam/mcp` | **Not** a GA 1.0 install channel |
-| Trust Cosign bundle alone | Installers do **not** verify Cosign; use SHA-256 manifest |
+| `npx @ff-occam/mcp` | **Not** a supported release channel |
+| Trust Cosign without reading `signaturePolicy` | Always verify SHA-256. Cosign is required only when the manifest declares `required-cosign-v1`; it proves release authenticity/signer identity, not page-content truth |
 | Bare clone without .NET 10 | Source only — no AOT binary without doctor build |
 
 Contributor clone + build: see root [INSTALL.md](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md#advanced--contributors).

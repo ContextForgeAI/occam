@@ -1,6 +1,6 @@
 # Occam
 
-> Local MCP server: live URL → token-budgeted Markdown with typed failures. **ok:false = content unknown** — never substitute model memory. Receipts prove **integrity relative to a key**, not truth, origin, identity, or trusted time. **npm is not GA**; **Cosign is not enforced** on install; crosscheck is **not consensus proof**. Runtime `tools/list` is authoritative (profile + opt-in gates vary exposure).
+> Local MCP server: live URL → token-budgeted Markdown with typed failures. **ok:false = content unknown** — never substitute model memory. Receipts prove **integrity relative to a key**, not truth, origin, identity, or trusted time. **npm is not GA**; Cosign on install is **policy-gated** (`required-cosign-v1` on the `1.0.0-rc.3` candidate; published `v1.0.0-rc.2` remains SHA-256-only); crosscheck is **not consensus proof**. Runtime `tools/list` is authoritative (profile + opt-in gates vary exposure).
 
 Use this file as the **agent documentation map**. Do not load every linked page at once. Follow the routing steps below, then open only what the current task needs.
 
@@ -93,7 +93,7 @@ Enable deliberately. Each names its env gate in the same breath as the tool.
 Not agent task guides — first-class product system.
 
 - [Operators](docs/operators.md): Install channels, CLI wrapper, connect flow, runtime modes.
-- [INSTALL.md](INSTALL.md): Canonical bootstrap (tarball + SHA-256; **npm not GA**; **Cosign not enforced**).
+- [INSTALL.md](INSTALL.md): Canonical bootstrap (tarball + SHA-256; Cosign when `signaturePolicy=required-cosign-v1`; **npm not GA**).
 - [Connect](docs/connect/index.md) · [MCP hosts](docs/mcp-hosts.md): Host tiers and config safety (rollback limits apply).
 - [Getting started](docs/getting-started.md): First read + operator CLI pointers.
 - [Troubleshooting](docs/troubleshooting.md): Symptom → fix.
@@ -122,7 +122,7 @@ Separate route from task guides — mechanisms, mental models, limits.
 - **crosscheck** → multi-source comparison / source agreement; **not** consensus proof; verdict is unsigned.
 - **extract_knowledge `Receipt` field** → extraction telemetry only; **not** Receipt v1; not accepted by `occam_verify`.
 - **Playbook signatures** → integrity vs local key; v1 gate fields unsigned; v2 signs gate snapshot (still heuristic, not quality proof).
-- **npm** → not a GA 1.0 install channel. **Cosign `.bundle`** → release metadata; installers do not enforce it.
+- **npm** → not a GA 1.0 install channel. **Cosign `.bundle`** → required when the release manifest declares `signaturePolicy=required-cosign-v1` (rc.3 candidate); legacy undeclared/`sha256-only` stays SHA-256-only (published rc.2). Authenticity ≠ page-content truth.
 - **Do not document as features:** `canonical-knowledge-ir` (dead codecs); consensus/crosscheck as trust proof.
 
 ## Contract and reference

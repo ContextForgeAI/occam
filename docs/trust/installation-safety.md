@@ -4,18 +4,36 @@
 
 The canonical installer downloads a GitHub Release archive and verifies **SHA-256** against the published `*-manifest.json` before extract.
 
-The requested version, platform RID, and tarball name must match the manifest.
-Before replacing an existing install, the bootstrap validates release markers on
-the extracted tree where available (`VERSION`, inner release manifest, host
-binary). Replacement helpers may still be refreshed from the repository overlay
-used by the published Level B bootstrap.
+**Publication state:** the public channel on `main` remains published
+`v1.0.0-rc.2` (Level B / overlay-compatible). The `1.0.0-rc.3` candidate in this
+tree is **not published yet**.
+
+**`1.0.0-rc.3` candidate contract** (`runtimeLayout=self-contained-v1`):
+
+- The requested version, platform RID, and tarball name must match the manifest.
+- Archive-member preflight runs **before** extraction.
+- When the outer manifest declares `signaturePolicy=required-cosign-v1`, the
+  installer verifies the Cosign bundle against the expected release-workflow
+  identity and fails closed on missing, malformed, tampered, or wrong-signer
+  material. Manifests without that policy (or with `sha256-only`) stay on the
+  legacy SHA-256 integrity path — including published `v1.0.0-rc.2`.
+- Before replacing an existing install, the bootstrap validates the staged host
+  binary, `VERSION`, inner release manifest, and the complete bundled
+  runtime/helper set from that archive. Post-install steps use helpers from the
+  verified archive; they do **not** fetch executable runtime/helper overlays
+  from the mutable repository branch.
+- Bootstrap **script delivery** may still originate from
+  `raw.githubusercontent.com/.../main/...` (mutable bootstrap delivery). That is
+  separate from release **runtime content**, which for rc.3 is closed inside the
+  hashed (and, when required, Cosign-verified) archive.
 
 Replacement is ownership-gated in both directions. The staged tree must pass the
 release checks above, and an existing `OCCAM_INSTALL_DIR` must be a real,
-non-linked Level B release with a consistent `VERSION`, inner manifest, current
-RID host, and launcher markers. A source checkout, symlink/reparse point,
-malformed release, or arbitrary directory is refused before process preparation
-or any move. Legitimate older Level B releases remain updatable.
+non-linked Occam release with a consistent `VERSION`, inner manifest
+(`layout: level-b` markers), current RID host, and launcher markers. A source
+checkout, symlink/reparse point, malformed release, or arbitrary directory is
+refused before process preparation or any move. Legitimate older Level B
+releases remain updatable.
 
 The previous release tree stays beside the new tree until doctor, self-check,
 launcher setup, and Connect complete. If a post-swap step fails, the bootstrap
@@ -32,7 +50,13 @@ before any launcher is staged. Windows updates both launcher files as one
 temporary-file-and-rename transaction and restores the previous pair if either
 rename fails.
 
-**Cosign honesty:** a `.bundle` file may appear on Releases as metadata. **No shipped install or update path verifies Cosign.** Do not describe releases as cosign-verified. Integrity for operators is **SHA-256 manifest matching only**.
+**Authenticity honesty:** Cosign verification (when
+`signaturePolicy=required-cosign-v1`) proves **release archive authenticity /
+signer identity** relative to the expected GitHub Actions workflow — not that
+page content is true, that Occam authored upstream web pages, or that fetched
+web content is trustworthy. Do not describe every historical release as
+Cosign-enforced; published `v1.0.0-rc.2` remains on the SHA-256 path. Do not use
+unqualified “cosign-verified install” marketing.
 
 **npm honesty:** `npx @ff-occam/mcp` is **not** a GA 1.0 install channel. Use the release tarball / bootstrap scripts documented in [Install](../install.md).
 
@@ -80,7 +104,8 @@ ambiguous entry is preserved; unsafe ambiguity blocks the operation.
 1. Disconnect managed host registrations. If this fails, install files stay in place.
 2. Stop only Occam host processes whose command path is under this `OCCAM_HOME`.
 3. Remove generated `occam` launcher files that point at this `OCCAM_HOME`.
-4. Remove `OCCAM_HOME` only when it is a recognized Level B release tree.
+4. Remove `OCCAM_HOME` only when it is a recognized Occam release tree (inner
+   `layout: level-b` markers; rc.3 archives are self-contained).
 5. Remove the narrow response cache only when `--remove-cache` was explicit.
 6. Remove `~/.occam/` last, and only when `--remove-state` was explicit and every earlier step succeeded.
 

@@ -59,7 +59,7 @@ Brief definitions for exposure and documentation status labels used across the D
 - Dead-but-shipped types and unreachable code paths
 - Falsification protocol ([Chapter 27](27-checking-this-book.md))
 - Engineering audit artifacts under `docs-audit/`
-- Cosign release `.bundle` (metadata unused by install — honesty-only, OD-2)
+- Cosign release `.bundle` — required only when `signaturePolicy=required-cosign-v1` (rc.3 candidate); published rc.2 remains SHA-256-only; authenticity ≠ page truth
 - Gate markers, PB codenames, and maintainer runbooks
 
 **Rule:** May appear in handbook pessimism; do not headline in public task guides as product features.

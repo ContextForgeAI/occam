@@ -4,7 +4,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-RIDS=(linux-x64 win-x64 osx-arm64 osx-x64)
+RIDS=(linux-x64 win-x64 osx-arm64)
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
