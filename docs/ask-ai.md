@@ -18,7 +18,7 @@ Then:
 
 Runtime `tools/list` wins for tool availability and input schemas.
 
-**Honesty defaults:** `ok:false` means content is unknown. Receipts prove integrity relative to a key — not truth, origin, or trusted time. Crosscheck is multi-source comparison, not consensus proof. npm is not GA; Cosign is not enforced on install.
+**Honesty defaults:** `ok:false` means content is unknown. Receipts prove integrity relative to a key — not truth, origin, or trusted time. Crosscheck is multi-source comparison, not consensus proof. npm is not GA. Cosign on install is policy-gated (`required-cosign-v1` for the `1.0.0-rc.3` candidate; published `v1.0.0-rc.2` remains SHA-256-only) and proves release authenticity/signer identity, not page-content truth.
 
 ## For humans using an AI assistant
 

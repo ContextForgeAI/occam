@@ -49,7 +49,7 @@ Consumer verify     ← tamper-evidence only
 | Key distribution / identity / rotation | TOFU only; no PKI |
 | Key at rest | Unencrypted PKCS8; weak Windows hardening |
 | Multi-party attestation | Does not exist |
-| Host supply chain | Cosign unused by install; marketplace auto-merge risk; Docker health does not prove extract readiness |
+| Host supply chain | Mutable bootstrap delivery (T4); Cosign required only when `signaturePolicy=required-cosign-v1`; marketplace auto-merge risk; Docker health does not prove extract readiness |
 | Session bleed in pooled browser | Anonymous contexts not a security boundary |
 
 ### Surfaces: do not point at untrusted URLs yet

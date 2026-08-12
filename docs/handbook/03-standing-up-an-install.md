@@ -45,10 +45,10 @@ Install and connect are **destructive and persistent** in places:
 | Channel | Status |
 |---------|--------|
 | **`npx @ff-occam/mcp`** | Not GA; not a supported 1.0 install path (OD-3) |
-| **Cosign bundle alone** | Release metadata; no shipped install path verifies it (OD-2) |
+| **Cosign without reading `signaturePolicy`** | Always require SHA-256. Cosign is mandatory only when the manifest declares `required-cosign-v1` (rc.3 candidate); published rc.2 stays SHA-256-only. Authenticity ≠ page truth |
 | **Docker health alone** | `version-surface` proves the host starts; it does not prove browser, network, or extraction readiness |
 
-Use tarball + manifest **sha256** verification for release installs ([install.md](../install.md)).
+Use tarball + manifest **sha256** verification for every release install; add Cosign when the manifest requires it ([install.md](../install.md)).
 
 ### Task R step 0
 

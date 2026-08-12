@@ -14,7 +14,8 @@ This page is the documentation-site copy of the same happy path.
 
 The supported release channel is a GitHub Release tarball plus the bootstrap
 scripts. The bootstrap downloads `ff-occam-<ver>-<rid>.tar.gz`, verifies its
-manifest and SHA-256, runs doctor, and connects your MCP host.
+manifest and SHA-256 (and Cosign when `signaturePolicy=required-cosign-v1`),
+runs doctor, and connects your MCP host.
 
 | Channel | Supported? | Notes |
 |---------|------------|-------|
@@ -22,7 +23,7 @@ manifest and SHA-256, runs doctor, and connects your MCP host.
 | Manual tarball + manifest from GitHub Releases | **No** | Integrity inspection only; bypasses guarded install and onboarding |
 | `git clone` + doctor (contributors) | Build path | Requires .NET 10 SDK |
 | `npx @ff-occam/mcp` | **No** | Not a supported release channel |
-| Cosign `.bundle` on Releases | **Not enforced** | May exist as release metadata; **no shipped install path verifies Cosign**. Integrity check is **SHA-256 vs the release manifest only**. |
+| Cosign `.bundle` on Releases | **Policy-gated** | Always SHA-256 vs manifest. When the manifest declares `signaturePolicy=required-cosign-v1` (`1.0.0-rc.3` candidate), the installer verifies the Cosign bundle fail-closed. Undeclared / `sha256-only` (published `v1.0.0-rc.2`) stays SHA-256-only. Authenticity ≠ page-content truth. |
 
 Public binaries are published for exactly `win-x64`, `linux-x64`, and
 `osx-arm64`. Intel macOS, Linux ARM64, Windows ARM64, and other architectures are
@@ -49,9 +50,9 @@ emulation or cross-platform compatibility switch.
 ## What the installer does
 
 1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases
-2. Requires the manifest version, RID, and tarball name to match the request, then verifies the archive **SHA-256** (**not** Cosign)
-3. Extracts to staging and validates the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR`. An existing target must itself be a consistent Level B Occam release for the current RID; source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
-4. Uses only helpers inside that verified archive; no mutable post-install source overlay is fetched
+2. Requires the manifest version, RID, and tarball name to match the request, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). Runs archive-member preflight **before** extract
+3. Extracts to staging and validates the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR`. An existing target must itself be a consistent Occam release for the current RID (inner `layout: level-b` markers); source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
+4. Uses only helpers inside that verified archive; no mutable post-install executable helper overlay is fetched (`1.0.0-rc.3` candidate: `runtimeLayout=self-contained-v1`). Bootstrap script delivery from the mutable `main` raw URL remains a separate concern until cutover
 5. Runs **doctor** (`--skip-build`) — npm workers, Playwright Chromium, host binary check (quiet by default)
 6. Verifies the Occam host — expect **15** core `occam_*` tools
 7. Writes onboard defaults → `~/.occam/onboard.json` (known install path; no re-prompt)
@@ -155,7 +156,7 @@ Expect **exit 0** and **15** core `occam_*` tools.
 | Wrong | Why |
 |-------|-----|
 | `npx @ff-occam/mcp` | **Not** a supported release channel |
-| Trust Cosign bundle alone | Installers do **not** verify Cosign; use SHA-256 manifest |
+| Trust Cosign without reading `signaturePolicy` | Always verify SHA-256. Cosign is required only when the manifest declares `required-cosign-v1`; it proves release authenticity/signer identity, not page-content truth |
 | Bare clone without .NET 10 | Source only — no AOT binary without doctor build |
 
 Contributor clone + build: see root [INSTALL.md](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md#advanced--contributors).

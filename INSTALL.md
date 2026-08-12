@@ -40,7 +40,7 @@ scripts below. Manual extraction is not a supported install path.
 | Manual tarball + `*-manifest.json` | **No** | Integrity inspection only; bypasses guarded install and onboarding |
 | `git clone` + doctor | Build path | Requires .NET 10 SDK |
 | `npx @ff-occam/mcp` | **No** | Not a supported release channel |
-| Cosign `.bundle` on Releases | **Not enforced** | May exist as metadata; **no shipped path verifies Cosign** — integrity is SHA-256 vs manifest only |
+| Cosign `.bundle` on Releases | **Policy-gated** | Always SHA-256 vs manifest. When the manifest declares `signaturePolicy=required-cosign-v1` (rc.3 candidate), the installer verifies the Cosign bundle fail-closed. Undeclared / `sha256-only` (published `v1.0.0-rc.2`) stays SHA-256-only. Authenticity ≠ page-content truth. |
 
 Public binaries are published for exactly `win-x64`, `linux-x64`, and
 `osx-arm64`. Intel macOS, Linux ARM64, Windows ARM64, and other architectures are
@@ -51,9 +51,9 @@ emulation or cross-platform compatibility switch.
 ### What the bootstrap does
 
 1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases
-2. Requires the manifest version, RID, and tarball name to match the requested release, then verifies the archive **SHA-256** (**not** Cosign)
-3. Extracts to staging and checks the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR` (default `~/.local/share/ff-occam`). An existing target must itself be a consistent Level B Occam release for the current RID; source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
-4. Uses only helpers inside that verified archive — it does **not** fetch a mutable post-install source overlay
+2. Requires the manifest version, RID, and tarball name to match the requested release, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). Runs archive-member preflight **before** extract
+3. Extracts to staging and checks the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR` (default `~/.local/share/ff-occam`). An existing target must itself be a consistent Occam release for the current RID (inner `layout: level-b` markers); source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
+4. Uses only helpers inside that verified archive — it does **not** fetch a mutable post-install executable helper overlay (rc.3 `runtimeLayout=self-contained-v1`). Bootstrap **script** delivery may still come from the mutable `main` raw URL until cutover — that is separate from release runtime content
 5. Runs **doctor** (`--skip-build`) — npm workers + Playwright (quiet by default)
 6. Verifies the Occam host (`verify-install` + smoke) — expect **15** `occam_*` tools
 7. Writes operator defaults to `~/.occam/onboard.json` (no second `OCCAM_HOME` prompt)
@@ -202,7 +202,7 @@ Do **not** put LLM API keys in Occam's env.
 | Wrong | Why |
 |-------|-----|
 | `npx @ff-occam/mcp` | **Not** a GA 1.0 install channel |
-| Trust Cosign bundle alone | Installers do **not** verify Cosign; use SHA-256 manifest |
+| Trust Cosign without reading `signaturePolicy` | Always verify SHA-256. Cosign is required only when the manifest declares `required-cosign-v1`; it proves release authenticity/signer identity, not page-content truth |
 | `npm ci` / `npm run bootstrap` at repo root | Does not exist — doctor installs workers |
 | Bare `git clone` without .NET 10 SDK | Source only — no AOT binary |
 | `git clone` + `doctor --skip-build` without a release binary | Fails — no host binary |
