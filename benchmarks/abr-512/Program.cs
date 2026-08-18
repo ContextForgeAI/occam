@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using OccamMcp.Core.Access;
 using OccamMcp.Core.PostProcessors;
 using OccamMcp.Core.Routing;
@@ -274,6 +275,24 @@ internal static class Program
             Assert("B2 tooltip duplicate absent", !b2.Contains("Cancels in-flight work", StringComparison.Ordinal));
             Assert("B2 widget_timeout once", Count(b2, "widget_timeout") == 1);
             Assert("B2 AbortController once", Count(b2, "AbortController") == 1);
+        }
+
+        var b2b = ExtractMarkdown(RunHttpExtract(Path.Combine(fixtures, "code-tooltip-hosts.html")));
+        var b2bNorm = Regex.Replace(b2b, @"\s+", " ");
+        if (desired)
+        {
+            Assert("B2b tooltip-trigger host createServer", b2b.Contains("createServer", StringComparison.Ordinal));
+            Assert("B2b createServer once", Count(b2b, "createServer") == 1);
+            Assert("B2b role=tooltip prose absent", !b2b.Contains("More info about createServer", StringComparison.Ordinal));
+            Assert("B2b generic tooltip host AbortController", b2b.Contains("AbortController", StringComparison.Ordinal));
+            Assert("B2b AbortController once", Count(b2b, "AbortController") == 1);
+            Assert("B2b tooltiptext payload absent", !b2b.Contains("Cancels in-flight work", StringComparison.Ordinal));
+            Assert("B2b button payload parseConfig", b2b.Contains("parseConfig", StringComparison.Ordinal));
+            Assert("B2b parseConfig once", Count(b2b, "parseConfig") == 1);
+            Assert("B2b leaf tooltip prose absent", !b2b.Contains("Documentation about parseConfig", StringComparison.Ordinal));
+            Assert("B2b createServer adjacency", Regex.IsMatch(b2bNorm, @"createServer\s*\(\s*\)"));
+            Assert("B2b source order", IndexOfNth(b2b, "createServer", 0) < IndexOfNth(b2b, "AbortController", 0)
+                && IndexOfNth(b2b, "AbortController", 0) < IndexOfNth(b2b, "parseConfig", 0));
         }
 
         var b3 = ExtractMarkdown(RunHttpExtract(Path.Combine(fixtures, "code-toolbar-negative.html")));

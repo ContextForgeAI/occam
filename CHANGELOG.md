@@ -21,9 +21,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   Exhaustion is attempt history, not the winning `backend` string.
 
 - **Code identifiers inside `<button>`/`<span>`/`<a>` wrappers in `pre`/`code`** — Readability
-  no longer deletes visible source identifiers (twoslash/bare buttons). Tooltip prose is
-  stripped; page toolbars outside code are unchanged. Isolated regression:
-  `dotnet run --project benchmarks/abr-512`.
+  no longer deletes visible source identifiers (twoslash/bare buttons). Tooltip *payloads*
+  are stripped; tooltip *hosts/triggers* keep their label. Page toolbars outside code are
+  unchanged. Isolated regression: `dotnet run --project benchmarks/abr-512`.
 
 ## [1.0.0-rc.3] — 2026-08-09
 

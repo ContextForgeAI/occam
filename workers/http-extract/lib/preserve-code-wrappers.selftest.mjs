@@ -85,4 +85,45 @@ const htmlOnce = idemp.querySelector("pre").innerHTML;
 preserveCodeWrappers(idemp);
 assert.equal(idemp.querySelector("pre").innerHTML, htmlOnce);
 
+const t1 = parse(`<pre>const x =
+        <span class="tooltip-trigger">
+          createServer
+          <span role="tooltip">More info about createServer</span>
+        </span>;</pre>`);
+preserveCodeWrappers(t1);
+const t1Text = t1.querySelector("pre").textContent.replace(/\s+/g, " ").trim();
+assert.equal(t1Text.includes("createServer"), true);
+assert.equal(t1Text.includes("More info"), false);
+assert.equal([...t1Text.matchAll(/createServer/g)].length, 1);
+
+const t2 = parse(`<pre>const ac =
+        <span class="tooltip">
+          AbortController
+          <span class="tooltiptext">Cancels in-flight work</span>
+        </span>;</pre>`);
+preserveCodeWrappers(t2);
+const t2Text = t2.querySelector("pre").textContent.replace(/\s+/g, " ").trim();
+assert.equal(t2Text.includes("AbortController"), true);
+assert.equal(t2Text.includes("Cancels"), false);
+assert.equal([...t2Text.matchAll(/AbortController/g)].length, 1);
+
+const t3 = parse(`<pre><button>
+        parseConfig
+        <span class="tooltip">Documentation about parseConfig</span>
+      </button></pre>`);
+preserveCodeWrappers(t3);
+const t3Text = t3.querySelector("pre").textContent.replace(/\s+/g, " ").trim();
+assert.equal(t3Text.includes("parseConfig"), true);
+assert.equal(t3Text.includes("Documentation"), false);
+assert.equal([...t3Text.matchAll(/parseConfig/g)].length, 1);
+
+const ws = parse(`<pre>const x = <span class="tooltip-trigger">createServer
+        <span role="tooltip">docs</span>
+      </span>();</pre>`);
+preserveCodeWrappers(ws);
+const wsText = ws.querySelector("pre").textContent.replace(/\s+/g, " ").trim();
+assert.equal(wsText.includes("createServer();") || /createServer\s*\(\)/.test(wsText), true);
+assert.match(wsText, /const x =\s*createServer\s*\(\s*\)\s*;/);
+assert.equal(wsText.includes("docs"), false);
+
 console.log("preserve-code-wrappers: OK");
