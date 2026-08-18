@@ -41,6 +41,7 @@ internal static class Program
         CheckA4(troubleshooting, desired);
         CheckCascadeInvariant(shortLegit, errorShell, desired);
         CheckR1R2(desired);
+        CheckCodePreservation(fixtures, desired);
 
         if (_failed > 0)
         {
@@ -241,6 +242,118 @@ internal static class Program
             "403 outranks render_error",
             FailureRanking.Informativeness("http_403") > FailureRanking.Informativeness("render_error")
             && FailureRanking.Informativeness("http_404") > FailureRanking.Informativeness("render_error"));
+    }
+
+    private static void CheckCodePreservation(string fixtures, bool desired)
+    {
+        var repo = ResolveRepoRoot();
+        var browserExtract = File.ReadAllText(Path.Combine(repo, "workers", "browser-extract", "lib", "extract-html.mjs"));
+        var httpExtract = File.ReadAllText(Path.Combine(repo, "workers", "http-extract", "lib", "http-extract-run.mjs"));
+        Assert("HTTP worker imports preserveCodeWrappers", httpExtract.Contains("preserveCodeWrappers", StringComparison.Ordinal));
+        Assert("browser worker imports preserveCodeWrappers", browserExtract.Contains("preserveCodeWrappers", StringComparison.Ordinal));
+
+        var b1Html = File.ReadAllText(Path.Combine(fixtures, "code-twoslash.html"));
+        var b1 = RunHttpExtract(Path.Combine(fixtures, "code-twoslash.html"));
+        var b1Md = ExtractMarkdown(b1);
+        Console.WriteLine($"B1 rawHTML createServer={b1Html.Contains("createServer", StringComparison.Ordinal)} markdownCount={Count(b1Md, "createServer")}");
+        if (desired)
+        {
+            Assert("B1 raw HTML identifier present", b1Html.Contains("createServer", StringComparison.Ordinal));
+            Assert("B1 markdown has createServer", b1Md.Contains("createServer", StringComparison.Ordinal));
+            Assert("B1 both occurrences", Count(b1Md, "createServer") >= 2);
+            Assert("B1 semantic order", IndexOfNth(b1Md, "createServer", 0) < IndexOfNth(b1Md, "createServer", 1));
+        }
+
+        var b2 = ExtractMarkdown(RunHttpExtract(Path.Combine(fixtures, "code-inline-wrappers.html")));
+        if (desired)
+        {
+            Assert("B2 widget_timeout present", b2.Contains("widget_timeout", StringComparison.Ordinal));
+            Assert("B2 parseConfig present", b2.Contains("parseConfig", StringComparison.Ordinal));
+            Assert("B2 AbortController present", b2.Contains("AbortController", StringComparison.Ordinal));
+            Assert("B2 tooltip prose absent", !b2.Contains("Max wait before the widget fails", StringComparison.Ordinal));
+            Assert("B2 tooltip duplicate absent", !b2.Contains("Cancels in-flight work", StringComparison.Ordinal));
+            Assert("B2 widget_timeout once", Count(b2, "widget_timeout") == 1);
+            Assert("B2 AbortController once", Count(b2, "AbortController") == 1);
+        }
+
+        var b3 = ExtractMarkdown(RunHttpExtract(Path.Combine(fixtures, "code-toolbar-negative.html")));
+        var b3Fence = FirstFence(b3);
+        if (desired)
+        {
+            Assert("B3 source remains const x = 1", b3.Contains("const x = 1", StringComparison.Ordinal));
+            Assert("B3 toolbar Run not in fence", !b3Fence.Contains("Run", StringComparison.Ordinal));
+            Assert("B3 toolbar Copy not in fence", !b3Fence.Contains("Copy", StringComparison.Ordinal));
+        }
+
+        var b4Html = File.ReadAllText(Path.Combine(fixtures, "code-bare-button.html"));
+        var b4 = ExtractMarkdown(RunHttpExtract(Path.Combine(fixtures, "code-bare-button.html")));
+        if (desired)
+        {
+            Assert("B4 raw HTML has createServer", b4Html.Contains("<button>createServer</button>", StringComparison.Ordinal));
+            Assert("B4 bare button createServer survives", b4.Contains("createServer", StringComparison.Ordinal));
+            Assert("B4 generic client_max_body_size survives", b4.Contains("client_max_body_size", StringComparison.Ordinal));
+        }
+
+        if (desired)
+        {
+            Console.WriteLine("CODE_SEMANTIC_PRESERVATION = PASS");
+        }
+    }
+
+    private static string ExtractMarkdown(JsonElement? payload)
+    {
+        if (payload is null)
+        {
+            return "";
+        }
+
+        return payload.Value.TryGetProperty("markdown", out var md) ? md.GetString() ?? "" : "";
+    }
+
+    private static int Count(string haystack, string needle)
+    {
+        var n = 0;
+        var i = 0;
+        while ((i = haystack.IndexOf(needle, i, StringComparison.Ordinal)) >= 0)
+        {
+            n++;
+            i += needle.Length;
+        }
+
+        return n;
+    }
+
+    private static int IndexOfNth(string haystack, string needle, int n)
+    {
+        var i = -needle.Length;
+        for (var k = 0; k <= n; k++)
+        {
+            i = haystack.IndexOf(needle, i + needle.Length, StringComparison.Ordinal);
+            if (i < 0)
+            {
+                return -1;
+            }
+        }
+
+        return i;
+    }
+
+    private static string FirstFence(string markdown)
+    {
+        var start = markdown.IndexOf("```", StringComparison.Ordinal);
+        if (start < 0)
+        {
+            return markdown;
+        }
+
+        var from = markdown.IndexOf('\n', start);
+        if (from < 0)
+        {
+            return markdown;
+        }
+
+        var end = markdown.IndexOf("```", from + 1, StringComparison.Ordinal);
+        return end < 0 ? markdown[(from + 1)..] : markdown[(from + 1)..end];
     }
 
     private static void AssertStopNoBrowserRetry(string id, string json)
