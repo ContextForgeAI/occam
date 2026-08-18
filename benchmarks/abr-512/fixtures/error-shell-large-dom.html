@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>This page couldn’t load</title></head>
+<body>
+  <main>
+    <!--
+      Measured 2026-08-18 worker repro: RSC/JSON payload inside main so textContent >= 600
+      (access has_usable_content=true) while Readability extract stays the tiny error chrome
+      (~59 chars). Do not replace this with nav/list filler — those produced ~900-char extracts.
+    -->
+    <script type="application/json" id="__payload">
+{"chrome":"Site navigation, marketing copy, release notes, partner program, community forum, careers, press kit, legal, privacy, cookie preferences, product overview, getting started, reference manuals, tutorials, status page, incident history, newsletter signup, operator handbook, checksum archive, workshop notes, office hours, contribution guide, code of conduct, and enterprise support exist in the DOM payload so main textContent exceeds the six-hundred character usable-content floor while Readability ignores script nodes. Extra padding: runtime distribution checksums, migration notes, incident reviews, maintenance windows, and certification tracks."}
+    </script>
+    <h1>This page couldn’t load</h1>
+    <p>Reload to try again, or go back.</p>
+  </main>
+</body>
+</html>
