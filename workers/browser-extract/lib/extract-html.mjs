@@ -10,6 +10,7 @@ import { addTableRule } from "../../shared/lib/turndown-table-rule.mjs";
 import { collectPageMetadata } from "../../shared/lib/page-metadata.mjs";
 import { collectAccessEvidence } from "../../shared/lib/access-evidence.mjs";
 import { applyErrorShellAccess } from "../../shared/lib/error-shell.mjs";
+import { preserveCodeWrappers } from "../../shared/lib/preserve-code-wrappers.mjs";
 function pickMainContent(document, selectors = []) {
   for (const selector of selectors) {
     const el = document.querySelector(selector);
@@ -47,6 +48,7 @@ export function extractMarkdownFromHtml(html, url, options = {}) {
   if (stripChromeOption) {
     stripChrome(doc);
   }
+  preserveCodeWrappers(doc);
   const iframeBlocks = processIframes ? collectIframeMarkdownBlocks(doc, url) : [];
 
   const parseDoc = useClone ? doc.cloneNode(true) : doc;

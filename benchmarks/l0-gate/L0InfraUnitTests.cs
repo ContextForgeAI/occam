@@ -466,6 +466,8 @@ internal static class L0InfraUnitTests
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "shared", "lib", "generic-markdown-prune.selftest.mjs"), "generic markdown prune selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "shared", "lib", "plain-text-pass-through.selftest.mjs"), "plain text pass-through selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "http-extract", "lib", "access-evidence.selftest.mjs"), "access evidence selftest");
+        RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "shared", "lib", "error-shell.selftest.mjs"), "error shell selftest");
+        RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "http-extract", "lib", "preserve-code-wrappers.selftest.mjs"), "preserve code wrappers selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "shared", "lib", "playbook-seed.selftest.mjs"), "playbook seed selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "shared", "lib", "playbook-community-hygiene.selftest.mjs"), "playbook community hygiene selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "shared", "lib", "media-refs.selftest.mjs"), "media refs selftest");

@@ -33,6 +33,7 @@ import { shouldTryPdf, extractPdfMarkdown } from "../../shared/lib/pdf-extract.m
 import { collectPageMetadata } from "../../shared/lib/page-metadata.mjs";
 import { collectAccessEvidence } from "../../shared/lib/access-evidence.mjs";
 import { applyErrorShellAccess } from "../../shared/lib/error-shell.mjs";
+import { preserveCodeWrappers } from "../../shared/lib/preserve-code-wrappers.mjs";
 
 /** True when the given OCCAM feature is active for this run. */
 function featureActive(features, name) {
@@ -585,6 +586,7 @@ function extractHtmlToMarkdown(html, finalUrl, requestedUrl, wantBlocks = false,
 
   stripPromoBanners(doc);
   stripDomSelectors(doc, getDomStripSelectorsForUrl(finalUrl));
+  preserveCodeWrappers(doc);
 
   // Collect structured blocks/tables from the pristine (post-strip) DOM BEFORE Readability runs.
   // Readability.parse() mutates the passed document destructively, so running collection after it
