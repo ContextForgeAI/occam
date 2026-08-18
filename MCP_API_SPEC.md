@@ -122,7 +122,7 @@ Types: `OccamTranscodeSuccessResponse` in `OccamTranscodeModels.cs`.
 | `failure.code` | string | Machine branch key |
 | `failure.message` | string | Human-readable detail |
 | `failure.statusCode` | number? | HTTP status when `failure.code` is `http_*` |
-| `failure.retryable` | boolean? | Transient errors (`timeout`, `network_error`, `dns_error`, some `http_5xx`). `thin_extract` is retryable until the browser backend has been tried — once a browser render is still thin, `retryable` is omitted and the decision becomes `stop` |
+| `failure.retryable` | boolean? | Transient errors (`timeout`, `network_error`, `dns_error`, some `http_5xx`). `thin_extract` and `render_error` are retryable until the browser backend has been tried — once a browser render is still thin or still an error shell, `retryable` is omitted and the decision becomes `stop` |
 | `failure.reason` | string? | Human "why" for a browser-availability failure (`workers_unavailable` from a missing browser) |
 | `failure.fix` | object? | Actionable remedy: `{ kind, command, rootRequired }`. `command` is the exact thing to run (e.g. `occam install-browser` for a missing browser binary; `npx playwright install-deps chromium` for missing system libs); `rootRequired` marks the boundary occam can't cross for you (system libs need root) |
 | `agentMeta.decisions` | array? | Actionable next steps — same shape as probe `agentHints.decisions` |
@@ -807,6 +807,7 @@ way as a positive one (`occam_verify offline`).
 | `tls_error` | Certificate invalid/expired/untrusted (not retryable) |
 | `extraction_failed` | Worker error or empty markdown (non-HTTP) |
 | `thin_extract` | Quality gate — content too thin (or empty after compile) |
+| `render_error` | Extracted document was a browser/client render error shell, not usable page content. Access is unknown (not restricted). Retry browser only if it has not already been tried. Do not invent an answer from it |
 | `response_too_large` | HTTP body exceeded `OCCAM_MAX_RESPONSE_BYTES` during download |
 | `response_truncated` | Partial extract after oversize (`on_oversize: partial` or `OCCAM_HTTP_OVERSIZE_MODE=partial`) — `ok:false` with partial `markdown` |
 | `content_selectors_miss` | No selector matched any section |

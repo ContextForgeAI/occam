@@ -21,7 +21,8 @@
 | `http_410` | Gone | No | Remove URL |
 | `http_429` | Rate limited | Yes | Back off and retry |
 | `http_5xx` | Server error | Yes | Retry with backoff |
-| `thin_extract` | Bad extraction (chrome / shell / near-empty) — **not** a short quality page | Until browser tried | Retry with `backend_policy=browser`; once a full browser render is **still** thin, `retryable` is dropped and the action becomes stop (see note) |
+| `thin_extract` | Bad extraction (chrome / shell / near-empty) — **not** a short quality page | Until browser tried | Retry with `backend_policy=browser`; once a full browser render is **still** thin, `retryable` is dropped and the action becomes `stop` (see note) |
+| `render_error` | The returned document was a browser/client/render error shell rather than usable page content | Until browser tried | Retry with `backend_policy=browser` only if the browser has not already been exhausted; then `stop`. Access is **unknown**, not `restricted`. Do not invent an answer from it |
 | `extraction_failed` | Worker could not produce markdown | Sometimes | Read message; try browser |
 | `content_selectors_miss` | `content_selectors` matched nothing | No | Widen selectors or drop them |
 | `captcha_or_challenge` | Anti-bot / Cloudflare challenge page | No | Stop; no CAPTCHA solver |
@@ -64,6 +65,8 @@ only when `requires_login` is actually returned.
 **Thin after browser:** `thin_extract` normally suggests retrying with the browser. When the failing extract already came from the browser backend, retrying will not help — the page is genuinely near-empty. In that case `retryable` is omitted, `agentMeta.decisions` becomes `stop`, and no heal is offered. Report the little content that came back (or that the page is nearly empty); do not loop or invent content.
 
 **Thin ≠ short:** `thin_extract` means **bad extraction** (promo chrome, consent/nav shell, headings-only interstitial, near-empty). A short but complete page (glossary leaf, status page, `example.com`-class docs) is `ok: true` with `quality.verdict` of `short_quality` — do not escalate just because the body is small.
+
+**Render error shell:** `render_error` means the extract was a client/browser error document (for example “This page couldn’t load”, “Aw Snap”, `ERR_CONNECTION_…`) rather than the page the URL names. Access is **unknown**, not restricted. Retry browser only when HTTP was the only attempt; once the browser already produced the shell, stop. Do not invent an answer from it. A long troubleshooting article that merely quotes those phrases stays `ok: true`.
 
 ---
 

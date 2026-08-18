@@ -6,6 +6,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+### Added
+
+- **`render_error` failure code** — a browser/client render error shell is no longer
+  reported as a healthy `ok:true` / `access=open` / `short_quality` document. Access is
+  `unknown` (not restricted). HTTP-only shells may retry the browser once; a browser
+  shell stops. Isolated regression: `dotnet run --project benchmarks/abr-512`.
+
 ## [1.0.0-rc.3] — 2026-08-09
 
 ### Security

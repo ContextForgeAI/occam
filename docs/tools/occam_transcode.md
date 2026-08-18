@@ -76,7 +76,7 @@ provable walls (challenge/login/4xx). **`ok:false` = content unknown. Never gues
 
 Reachable codes: `invalid_arguments`, `workers_unavailable`, `timeout`, `network_error`,
 `dns_error`, `tls_error`, `http_401`/`http_403`/`http_404`/`http_410`/`http_429`/`http_<status>`,
-`thin_extract`, `content_selectors_miss`, `captcha_or_challenge`, `requires_login`,
+`thin_extract`, `render_error`, `content_selectors_miss`, `captcha_or_challenge`, `requires_login`,
 `session_profile_not_found`, `invalid_session_profile`, `private_url_blocked`, `robots_disallowed`,
 `response_too_large`, `response_truncated`, `extraction_failed`.
 See [failure codes](../failure-codes.md) for semantics and next steps.
@@ -88,6 +88,9 @@ Notes:
 - **Thin after browser:** when `thin_extract` already came through the browser backend,
   do not retry the same policy — the page is genuinely near-empty chrome/shell content.
   **Thin ≠ short:** a complete short page is `ok: true` with `quality.verdict=short_quality`.
+- **Render error shell:** `render_error` is a client/browser error document, not a login wall.
+  Retry `backend_policy=browser` only if the browser has not already been exhausted; then stop.
+  Do not invent page content from it.
 - **Login evidence:** `requires_login` is returned only for direct access-control evidence (HTTP 401 or
   authentication challenge, redirect to login, or blocking identity UI without usable public content).
   Authentication prose and login-like requested paths are non-decisive. Probe and transcode share this
