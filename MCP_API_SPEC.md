@@ -702,7 +702,7 @@ Converts one HTTP(S) URL to Markdown. **Always live extract.**
 
 | Field | Type | Meaning |
 |-------|------|---------|
-| `confidence` | number | AF-1: 0.0–1.0 extract fitness (ADR-0004 EQM `quality.score`, plus a small backend/truncation adjustment). On `ok:false` → `0`. **Not** focus correctness or completeness |
+| `confidence` | number | AF-1: 0.0–1.0 extract fitness (ADR-0004 EQM `quality.score`, plus a small backend/truncation adjustment) on **success** envelopes (omitted when 0). Failure envelopes omit top-level `confidence`; do not treat its absence as extract fitness. **Not** focus correctness or completeness |
 | `access` | object? | PR-F shared access dimension: `{ disposition: open\|restricted\|unknown, confidence, evidenceCodes[], recommendedAction }` |
 | `focus` | object? | PR-F focus dimension: `{ status: hit\|weak\|miss\|not_requested, confidence?, matchedAnchor? }` |
 | `completeness` | object? | PR-F answer completeness: `{ status: complete\|partial\|incomplete, incompleteReason?, suggestedMinTokens? }` |

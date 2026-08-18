@@ -13,6 +13,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   `unknown` (not restricted). HTTP-only shells may retry the browser once; a browser
   shell stops. Isolated regression: `dotnet run --project benchmarks/abr-512`.
 
+### Fixed
+
+- **Browser-exhausted `thin_extract` / `render_error` follows recovery history** — if HTTP
+  wins the fallback rank after a browser attempt (for example HTTP `render_error` over a
+  browser timeout), the agent is no longer told to retry `backend_policy=browser`.
+  Exhaustion is attempt history, not the winning `backend` string.
+
 ## [1.0.0-rc.3] — 2026-08-09
 
 ### Security

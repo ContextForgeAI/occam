@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { applyErrorShellAccess, looksLikeErrorShell } from "./error-shell.mjs";
+import { applyErrorShellAccess, looksLikeErrorShell, visibleContentChars } from "./error-shell.mjs";
 
 const tinyShell = "## This page couldn't load\n\nReload to try again, or go back.";
 assert.equal(looksLikeErrorShell(tinyShell), true);
@@ -20,6 +20,16 @@ assert.equal(looksLikeErrorShell("err_custom_debug"), false);
 const longArticle = `${"When a tab shows This page couldn’t load, operators quote Reload to try again. ".repeat(20)}`;
 assert.ok(longArticle.length >= 800);
 assert.equal(looksLikeErrorShell(longArticle), false);
+
+const midBand = [
+  "Operators diagnosing a tab that shows This page couldn't load should collect a HAR, disable extensions,",
+  "and confirm DNS plus TLS complete before blaming the document. Substantial visible prose keeps this",
+  "in the legitimate troubleshooting band rather than a tiny error shell. Additional notes cover cache,",
+  "captive portals, and intercepting proxies so the quoted chrome cannot dominate the extract.",
+].join(" ");
+assert.ok(midBand.length >= 300 && midBand.length < 500);
+assert.ok(visibleContentChars(midBand) >= 280);
+assert.equal(looksLikeErrorShell(midBand), false);
 
 const access = applyErrorShellAccess({ has_usable_content: true }, tinyShell);
 assert.equal(access.has_usable_content, false);

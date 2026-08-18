@@ -1,5 +1,7 @@
+using System.Text.Json;
 using OccamMcp.Core.Agent;
 using OccamMcp.Core.Routing;
+using OccamMcp.Core.Tools;
 using OccamMcp.Core.Workers;
 
 namespace OccamMcp.L0Gate;
@@ -93,6 +95,7 @@ internal static class L1FailureTaxonomyUnitTests
                 .Contains("error shell", StringComparison.OrdinalIgnoreCase));
 
         RunRenderErrorCascade(assert);
+        RunBrowserExhaustionEnvelope(assert);
 
         var oversize = TranscodeAgentDecisions.ForFailure("response_too_large");
         assert("failure response too large stop", oversize.Any(d => d.Action == "stop"));
@@ -140,5 +143,143 @@ internal static class L1FailureTaxonomyUnitTests
         var browserTimeout = new ExtractRunResult(false, null, "browser", "timeout", 30, "https://example.test/docs", true, 0);
         var shellVsTimeout = OccamRouter.ChooseRawFallbackForTests(httpErrorShell, browserTimeout);
         assert("cascade render_error outranks timeout", shellVsTimeout.Backend == "http");
+    }
+
+    private static void RunBrowserExhaustionEnvelope(Action<string, bool> assert)
+    {
+        const string url = "https://example.test/docs";
+        var recovery = new[]
+        {
+            new OccamTranscodeRecoveryInfo("http", true, 12, TransportOk: true, Usable: false, FailureCode: "render_error"),
+            new OccamTranscodeRecoveryInfo("browser", false, 30, TransportOk: false, Usable: false, FailureCode: "timeout", EscalationReason: "render_error"),
+        };
+        var httpRenderError = new TranscodeOutcome(
+            false,
+            "## This page couldn’t load\n\nReload to try again, or go back.",
+            url,
+            "http",
+            "render_error",
+            "error shell",
+            StatusCode: 200,
+            Recovery:
+            [
+                new TranscodeAttempt("http", true, 12, true, false, "render_error"),
+                new TranscodeAttempt("browser", false, 30, false, false, "timeout", "render_error"),
+            ]);
+        AssertExhaustedEnvelope(
+            assert,
+            "R1",
+            OccamTranscodeTool.SerializePipelineFailureForTests(url, httpRenderError, recovery));
+
+        var thinRecovery = new[]
+        {
+            new OccamTranscodeRecoveryInfo("http", true, 10, TransportOk: true, Usable: false, FailureCode: "thin_extract"),
+            new OccamTranscodeRecoveryInfo("browser", false, 25, TransportOk: false, Usable: false, FailureCode: "timeout", EscalationReason: "thin_extract"),
+        };
+        var httpThin = new TranscodeOutcome(
+            false,
+            "Short.",
+            url,
+            "http",
+            "thin_extract",
+            "thin",
+            StatusCode: 200,
+            Recovery:
+            [
+                new TranscodeAttempt("http", true, 10, true, false, "thin_extract"),
+                new TranscodeAttempt("browser", false, 25, false, false, "timeout", "thin_extract"),
+            ]);
+        AssertExhaustedEnvelope(
+            assert,
+            "R2",
+            OccamTranscodeTool.SerializePipelineFailureForTests(url, httpThin, thinRecovery));
+
+        var httpOnly = new TranscodeOutcome(false, null, url, "http", "render_error", "error shell", StatusCode: 200);
+        var httpOnlyJson = OccamTranscodeTool.SerializePipelineFailureForTests(url, httpOnly);
+        using (var httpOnlyDoc = JsonDocument.Parse(httpOnlyJson))
+        {
+            assert("HTTP-only render_error retryable", FailureRetryable(httpOnlyDoc.RootElement) == true);
+            assert(
+                "HTTP-only render_error retries browser",
+                HasDecision(httpOnlyDoc.RootElement, "retry_transcode", "browser"));
+            assert("HTTP-only render_error does not stop", !HasDecision(httpOnlyDoc.RootElement, "stop"));
+        }
+
+        var directBrowser = new TranscodeOutcome(false, null, url, "browser", "render_error", "error shell", StatusCode: 200);
+        AssertExhaustedEnvelope(
+            assert,
+            "direct-browser-render_error",
+            OccamTranscodeTool.SerializePipelineFailureForTests(url, directBrowser));
+
+        var forbidden = new TranscodeOutcome(
+            false, null, url, "http", "http_403", "forbidden", StatusCode: 403,
+            Recovery: [new TranscodeAttempt("http", false, 8, false, false, "http_403")]);
+        var forbiddenJson = OccamTranscodeTool.SerializePipelineFailureForTests(
+            url,
+            forbidden,
+            [new OccamTranscodeRecoveryInfo("http", false, 8, false, false, "http_403")]);
+        using var forbiddenDoc = JsonDocument.Parse(forbiddenJson);
+        assert("403 stays http_403", FailureCode(forbiddenDoc.RootElement) == "http_403");
+        assert("403 not retryable true", FailureRetryable(forbiddenDoc.RootElement) != true);
+        assert("403 does not retry browser", !HasDecision(forbiddenDoc.RootElement, "retry_transcode", "browser"));
+    }
+
+    private static void AssertExhaustedEnvelope(Action<string, bool> assert, string id, string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        assert($"{id} retryable is not true", FailureRetryable(root) != true);
+        assert($"{id} stop", HasDecision(root, "stop"));
+        assert($"{id} no retry_transcode browser", !HasDecision(root, "retry_transcode", "browser"));
+    }
+
+    private static string? FailureCode(JsonElement root) =>
+        root.TryGetProperty("failure", out var failure)
+        && failure.TryGetProperty("code", out var code)
+            ? code.GetString()
+            : null;
+
+    private static bool? FailureRetryable(JsonElement root)
+    {
+        if (!root.TryGetProperty("failure", out var failure)
+            || !failure.TryGetProperty("retryable", out var retryable)
+            || retryable.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+        {
+            return null;
+        }
+
+        return retryable.ValueKind == JsonValueKind.True;
+    }
+
+    private static bool HasDecision(JsonElement root, string action, string? parameterNeedle = null)
+    {
+        if (!root.TryGetProperty("agentMeta", out var meta)
+            || !meta.TryGetProperty("decisions", out var decisions)
+            || decisions.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        foreach (var decision in decisions.EnumerateArray())
+        {
+            if (!decision.TryGetProperty("action", out var actionEl)
+                || actionEl.GetString() != action)
+            {
+                continue;
+            }
+
+            if (parameterNeedle is null)
+            {
+                return true;
+            }
+
+            if (decision.TryGetProperty("parameter", out var parameter)
+                && parameter.GetString()?.Contains(parameterNeedle, StringComparison.Ordinal) == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

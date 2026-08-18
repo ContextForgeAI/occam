@@ -85,11 +85,13 @@ Notes:
 
 - **Terminal HTTP short-circuit:** a definitive `http_404`/`http_410` from the HTTP leg is returned
   as-is under `http_then_browser` — a render cannot resurrect a missing page.
-- **Thin after browser:** when `thin_extract` already came through the browser backend,
+- **Thin after browser:** when `thin_extract` already came through the browser backend
+  (winning backend **or** a `recovery[]` browser attempt),
   do not retry the same policy — the page is genuinely near-empty chrome/shell content.
   **Thin ≠ short:** a complete short page is `ok: true` with `quality.verdict=short_quality`.
 - **Render error shell:** `render_error` is a client/browser error document, not a login wall.
-  Retry `backend_policy=browser` only if the browser has not already been exhausted; then stop.
+  Retry `backend_policy=browser` only if the browser has not already been attempted
+  (including when HTTP wins fallback over a later browser timeout); then stop.
   Do not invent page content from it.
 - **Login evidence:** `requires_login` is returned only for direct access-control evidence (HTTP 401 or
   authentication challenge, redirect to login, or blocking identity UI without usable public content).

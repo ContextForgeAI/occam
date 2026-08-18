@@ -62,11 +62,11 @@ without usable public content. Authentication prose, password documentation, and
 path are not enough on their own. Inconclusive evidence remains non-terminal; add a `session_profile`
 only when `requires_login` is actually returned.
 
-**Thin after browser:** `thin_extract` normally suggests retrying with the browser. When the failing extract already came from the browser backend, retrying will not help — the page is genuinely near-empty. In that case `retryable` is omitted, `agentMeta.decisions` becomes `stop`, and no heal is offered. Report the little content that came back (or that the page is nearly empty); do not loop or invent content.
+**Thin after browser:** `thin_extract` normally suggests retrying with the browser. When the failing extract already came from the browser backend, **or `recovery[]` shows a browser attempt even if HTTP won fallback**, retrying will not help — the page is genuinely near-empty. In that case `retryable` is omitted, `agentMeta.decisions` becomes `stop`, and no heal is offered. Report the little content that came back (or that the page is nearly empty); do not loop or invent content.
 
 **Thin ≠ short:** `thin_extract` means **bad extraction** (promo chrome, consent/nav shell, headings-only interstitial, near-empty). A short but complete page (glossary leaf, status page, `example.com`-class docs) is `ok: true` with `quality.verdict` of `short_quality` — do not escalate just because the body is small.
 
-**Render error shell:** `render_error` means the extract was a client/browser error document (for example “This page couldn’t load”, “Aw Snap”, `ERR_CONNECTION_…`) rather than the page the URL names. Access is **unknown**, not restricted. Retry browser only when HTTP was the only attempt; once the browser already produced the shell, stop. Do not invent an answer from it. A long troubleshooting article that merely quotes those phrases stays `ok: true`.
+**Render error shell:** `render_error` means the extract was a client/browser error document (for example “This page couldn’t load”, “Aw Snap”, `ERR_CONNECTION_…`) rather than the page the URL names. Access is **unknown**, not restricted. Retry browser only when HTTP was the only attempt; once `recovery[]` or the winning backend shows the browser already ran, stop. Do not invent an answer from it. A long troubleshooting article that merely quotes those phrases stays `ok: true`.
 
 ---
 

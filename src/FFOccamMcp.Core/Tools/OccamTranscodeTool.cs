@@ -564,21 +564,20 @@ public sealed class OccamTranscodeTool(
         var message = !string.IsNullOrWhiteSpace(result.Message)
             ? result.Message
             : FailureCodeStrings.FormatTranscodeMessage(code, statusCode);
-        // thin_extract / render_error that already came through the browser backend is not worth
-        // retrying — retrying loops a compliant agent. Downgrade retryable + swap the retry hint
-        // for a clean stop. Do not reuse thin_extract for a recognized render-error shell.
-        var browserExhausted = result.Backend?.Contains("browser", StringComparison.OrdinalIgnoreCase) == true
-            || result.Backend?.Contains("playwright", StringComparison.OrdinalIgnoreCase) == true;
-        var browserExhaustedThin = code == "thin_extract" && browserExhausted;
-        var browserExhaustedRenderError = code == "render_error" && browserExhausted;
-        var browserExhaustedRetry = browserExhaustedThin || browserExhaustedRenderError;
+        // thin_extract / render_error after the browser was already attempted is not worth
+        // retrying — retrying loops a compliant agent. Exhaustion is attempt-history, not the
+        // winning fallback's Backend (HTTP render_error can outrank a browser timeout).
+        var browserWasAttempted = TranscodeAttemptHistory.BrowserWasAttempted(
+            result.Backend,
+            EnumerateRecoveryBackends(result.Recovery, recovery));
+        var browserExhaustedRetry = TranscodeAttemptHistory.SuppressExtractRetry(code, browserWasAttempted);
         var retryable = FailureCodeStrings.IsRetryable(code) && !browserExhaustedRetry ? true : (bool?)null;
         var fix = result.Fix is null
             ? null
             : new OccamTranscodeFixInfo(result.Fix.Kind, result.Fix.Command, result.Fix.RootRequired);
-        var decisions = browserExhaustedThin
+        var decisions = browserExhaustedRetry && code == "thin_extract"
             ? TranscodeAgentDecisions.ThinExtractBrowserExhausted()
-            : browserExhaustedRenderError
+            : browserExhaustedRetry && code == "render_error"
                 ? TranscodeAgentDecisions.RenderErrorBrowserExhausted()
                 : TranscodeAgentDecisions.ForFailure(code);
         OccamTranscodeAgentMetaInfo? agentMeta = decisions.Length > 0
@@ -638,4 +637,31 @@ public sealed class OccamTranscodeTool(
                 null),
             OccamTranscodeJsonContext.Default.OccamTranscodeFailureResponse);
     }
+
+    private static IEnumerable<string?> EnumerateRecoveryBackends(
+        IReadOnlyList<TranscodeAttempt>? attempts,
+        OccamTranscodeRecoveryInfo[]? recovery)
+    {
+        if (attempts is not null)
+        {
+            foreach (var attempt in attempts)
+            {
+                yield return attempt.Backend;
+            }
+        }
+
+        if (recovery is not null)
+        {
+            foreach (var entry in recovery)
+            {
+                yield return entry.Backend;
+            }
+        }
+    }
+
+    internal static string SerializePipelineFailureForTests(
+        string url,
+        TranscodeOutcome result,
+        OccamTranscodeRecoveryInfo[]? recovery = null) =>
+        SerializePipelineFailure(url, result, sessionProfile: null, signer: null, recovery);
 }
