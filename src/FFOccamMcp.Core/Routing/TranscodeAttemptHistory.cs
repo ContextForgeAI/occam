@@ -4,7 +4,7 @@ namespace OccamMcp.Core.Routing;
 /// Browser exhaustion is a property of attempt history, not of the winning fallback backend.
 /// A later timeout must not revive a retry-browser hint after the browser already ran.
 /// </summary>
-public static class TranscodeAttemptHistory
+internal static class TranscodeAttemptHistory
 {
     public static bool IsBrowserBackend(string? backend) =>
         backend?.Contains("browser", StringComparison.OrdinalIgnoreCase) == true
