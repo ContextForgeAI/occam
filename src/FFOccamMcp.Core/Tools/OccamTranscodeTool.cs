@@ -564,24 +564,29 @@ public sealed class OccamTranscodeTool(
         var message = !string.IsNullOrWhiteSpace(result.Message)
             ? result.Message
             : FailureCodeStrings.FormatTranscodeMessage(code, statusCode);
-        // thin_extract that already came through the browser backend is not worth retrying — retrying
-        // loops a compliant agent. Downgrade retryable + swap the retry hint for a clean stop.
-        var browserExhaustedThin = code == "thin_extract"
-            && (result.Backend?.Contains("browser", StringComparison.OrdinalIgnoreCase) == true
-                || result.Backend?.Contains("playwright", StringComparison.OrdinalIgnoreCase) == true);
-        var retryable = FailureCodeStrings.IsRetryable(code) && !browserExhaustedThin ? true : (bool?)null;
+        // thin_extract / render_error that already came through the browser backend is not worth
+        // retrying — retrying loops a compliant agent. Downgrade retryable + swap the retry hint
+        // for a clean stop. Do not reuse thin_extract for a recognized render-error shell.
+        var browserExhausted = result.Backend?.Contains("browser", StringComparison.OrdinalIgnoreCase) == true
+            || result.Backend?.Contains("playwright", StringComparison.OrdinalIgnoreCase) == true;
+        var browserExhaustedThin = code == "thin_extract" && browserExhausted;
+        var browserExhaustedRenderError = code == "render_error" && browserExhausted;
+        var browserExhaustedRetry = browserExhaustedThin || browserExhaustedRenderError;
+        var retryable = FailureCodeStrings.IsRetryable(code) && !browserExhaustedRetry ? true : (bool?)null;
         var fix = result.Fix is null
             ? null
             : new OccamTranscodeFixInfo(result.Fix.Kind, result.Fix.Command, result.Fix.RootRequired);
         var decisions = browserExhaustedThin
             ? TranscodeAgentDecisions.ThinExtractBrowserExhausted()
-            : TranscodeAgentDecisions.ForFailure(code);
+            : browserExhaustedRenderError
+                ? TranscodeAgentDecisions.RenderErrorBrowserExhausted()
+                : TranscodeAgentDecisions.ForFailure(code);
         OccamTranscodeAgentMetaInfo? agentMeta = decisions.Length > 0
             ? new OccamTranscodeAgentMetaInfo(decisions)
             : null;
 
         var sessionApplied = !string.IsNullOrWhiteSpace(sessionProfile);
-        OccamTranscodeAgentHintsInfo? agentHints = !browserExhaustedThin
+        OccamTranscodeAgentHintsInfo? agentHints = !browserExhaustedRetry
             && PlaybookHealPolicy.ShouldOfferHeal(
                 code,
                 sessionProfileApplied: sessionApplied,

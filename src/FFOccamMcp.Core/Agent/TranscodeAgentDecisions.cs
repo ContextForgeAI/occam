@@ -12,6 +12,13 @@ public static class TranscodeAgentDecisions
             "Content is still thin after a full browser render — the page is genuinely near-empty. Report the little content that came back (or that the page has almost none); do not retry further and do not invent content."),
     ];
 
+    public static ProbeDecision[] RenderErrorBrowserExhausted() =>
+    [
+        new ProbeDecision(
+            "stop",
+            "The returned document was a browser/client render error shell rather than usable page content. Access is unknown, not a login wall. Do not invent an answer from it and do not retry the same browser policy."),
+    ];
+
     public static ProbeDecision[] ForFailure(string failureCode)
     {
         if (failureCode.StartsWith("http_404", StringComparison.Ordinal) || failureCode == "http_410")
@@ -166,6 +173,18 @@ public static class TranscodeAgentDecisions
                 new ProbeDecision(
                     "retry_transcode",
                     "Content too thin over HTTP — retry with backend_policy=browser or http_then_browser.",
+                    Tool: "occam_transcode",
+                    Parameter: "backend_policy=browser"),
+            ];
+        }
+
+        if (failureCode == "render_error")
+        {
+            return
+            [
+                new ProbeDecision(
+                    "retry_transcode",
+                    "HTTP extract was a browser/client render error shell — retry once with backend_policy=browser if the browser has not already been tried.",
                     Tool: "occam_transcode",
                     Parameter: "backend_policy=browser"),
             ];

@@ -99,6 +99,9 @@ public sealed class WorkerAccessEvidenceInfo
     [JsonPropertyName("has_usable_content")]
     public bool HasUsableContent { get; init; }
 
+    [JsonPropertyName("error_shell")]
+    public bool ErrorShell { get; init; }
+
     [JsonPropertyName("authentication_terminology")]
     public bool AuthenticationTerminology { get; init; }
 }

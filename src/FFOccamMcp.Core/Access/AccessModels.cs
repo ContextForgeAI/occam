@@ -26,6 +26,7 @@ public sealed record AccessEvidence(
     bool LoginHeading = false,
     bool BlockingOverlay = false,
     bool HasUsableContent = false,
+    bool ErrorShell = false,
     bool AuthenticationTerminology = false,
     AccessEvidenceStage Stage = AccessEvidenceStage.Combined)
 {

@@ -32,6 +32,7 @@ import { collectFeedItems, collectJsonFeed, looksLikeFeed, looksLikeJsonFeed } f
 import { shouldTryPdf, extractPdfMarkdown } from "../../shared/lib/pdf-extract.mjs";
 import { collectPageMetadata } from "../../shared/lib/page-metadata.mjs";
 import { collectAccessEvidence } from "../../shared/lib/access-evidence.mjs";
+import { applyErrorShellAccess } from "../../shared/lib/error-shell.mjs";
 
 /** True when the given OCCAM feature is active for this run. */
 function featureActive(features, name) {
@@ -659,7 +660,7 @@ function extractHtmlToMarkdown(html, finalUrl, requestedUrl, wantBlocks = false,
       blocks,
       tables,
       meta,
-      access,
+      access: applyErrorShellAccess(access, markdown),
     },
   };
 }

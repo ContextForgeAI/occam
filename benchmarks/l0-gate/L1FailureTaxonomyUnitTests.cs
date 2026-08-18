@@ -1,5 +1,6 @@
 using OccamMcp.Core.Agent;
 using OccamMcp.Core.Routing;
+using OccamMcp.Core.Workers;
 
 namespace OccamMcp.L0Gate;
 
@@ -37,6 +38,8 @@ internal static class L1FailureTaxonomyUnitTests
         assert("failure resolve err_ssl alert tls", FailureCodeStrings.ResolveTranscodeFailure("ERR_SSL_TLSV1_ALERT_INTERNAL_ERROR", 0) == "tls_error");
         assert("failure resolve und_err_socket network", FailureCodeStrings.ResolveTranscodeFailure("UND_ERR_SOCKET", 0) == "network_error");
         assert("failure retryable dns", FailureCodeStrings.IsRetryable("dns_error"));
+        assert("failure retryable thin_extract", FailureCodeStrings.IsRetryable("thin_extract"));
+        assert("failure retryable render_error", FailureCodeStrings.IsRetryable("render_error"));
         assert("failure not retryable tls", !FailureCodeStrings.IsRetryable("tls_error"));
         assert(
             "failure dns message mentions dns",
@@ -73,6 +76,24 @@ internal static class L1FailureTaxonomyUnitTests
         var thin = TranscodeAgentDecisions.ForFailure("thin_extract");
         assert("failure thin retry browser", thin.Any(d => d.Action == "retry_transcode" && d.Parameter?.Contains("browser") == true));
 
+        var renderError = TranscodeAgentDecisions.ForFailure("render_error");
+        assert("failure render_error retry browser", renderError.Any(d => d.Action == "retry_transcode" && d.Parameter?.Contains("browser") == true));
+        var renderStop = TranscodeAgentDecisions.RenderErrorBrowserExhausted();
+        assert("failure render_error browser exhausted stop", renderStop.Any(d => d.Action == "stop"));
+
+        assert(
+            "failure ranking extraction < thin < render_error < http_4xx",
+            FailureRanking.Informativeness("extraction_failed") < FailureRanking.Informativeness("thin_extract")
+            && FailureRanking.Informativeness("thin_extract") < FailureRanking.Informativeness("render_error")
+            && FailureRanking.Informativeness("render_error") < FailureRanking.Informativeness("http_404")
+            && FailureRanking.Informativeness("render_error") < FailureRanking.Informativeness("http_403"));
+        assert(
+            "failure render_error message names error shell",
+            FailureCodeStrings.FormatTranscodeMessage("render_error", 0)
+                .Contains("error shell", StringComparison.OrdinalIgnoreCase));
+
+        RunRenderErrorCascade(assert);
+
         var oversize = TranscodeAgentDecisions.ForFailure("response_too_large");
         assert("failure response too large stop", oversize.Any(d => d.Action == "stop"));
 
@@ -93,5 +114,31 @@ internal static class L1FailureTaxonomyUnitTests
 
         var probeLogin = ProbeAgentHints.ForFailure("http_403");
         assert("probe failure 403 hints", probeLogin.Decisions.Any(d => d.Action == "configure_session_profile"));
+    }
+
+    private static void RunRenderErrorCascade(Action<string, bool> assert)
+    {
+        const string usable = """
+            # Runtime documentation
+
+            This page describes how to start the HTTP server, bind a port, and keep the process alive.
+            It includes several paragraphs of operator guidance so the extract is clearly usable public content
+            rather than a client error shell. Additional notes cover TLS certificates, health checks, and logs.
+            """;
+        const string errorShell = "## This page couldn’t load\n\nReload to try again, or go back.";
+
+        var httpUsable = new ExtractRunResult(true, usable, "http", null, 12, "https://example.test/docs", false, 200);
+        var browserError = new ExtractRunResult(true, errorShell, "browser", null, 40, "https://example.test/docs", false, 200);
+        assert("cascade usable HTTP is successful", OccamRouter.IsSuccessfulExtractForTests(httpUsable));
+        assert("cascade browser error shell is not successful", !OccamRouter.IsSuccessfulExtractForTests(browserError));
+
+        var httpForbidden = new ExtractRunResult(false, null, "http", "http_403", 8, "https://example.test/docs", false, 403);
+        var fallback = OccamRouter.ChooseRawFallbackForTests(httpForbidden, browserError);
+        assert("cascade 403 outranks browser render_error", fallback.StatusCode == 403);
+
+        var httpErrorShell = new ExtractRunResult(true, errorShell, "http", null, 10, "https://example.test/docs", false, 200);
+        var browserTimeout = new ExtractRunResult(false, null, "browser", "timeout", 30, "https://example.test/docs", true, 0);
+        var shellVsTimeout = OccamRouter.ChooseRawFallbackForTests(httpErrorShell, browserTimeout);
+        assert("cascade render_error outranks timeout", shellVsTimeout.Backend == "http");
     }
 }

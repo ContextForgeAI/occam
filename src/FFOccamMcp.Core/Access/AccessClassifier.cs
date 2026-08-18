@@ -34,6 +34,17 @@ public static class AccessClassifier
                 "use_session");
         }
 
+        if (evidence.ErrorShell)
+        {
+            codes.Add("error_shell");
+            return new AccessAssessment(
+                AccessDisposition.Unknown,
+                0.0,
+                evidence.Stage,
+                codes,
+                "retry_or_inspect");
+        }
+
         if (evidence.HasUsableContent)
         {
             codes.Add("usable_public_content");

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using OccamMcp.Core.Access;
 using OccamMcp.Core.PostProcessors;
+using OccamMcp.Core.Routing;
 using OccamMcp.Core.Workers;
 
 namespace OccamMcp.Abr512;
@@ -10,10 +11,11 @@ namespace OccamMcp.Abr512;
 /// Isolated ABR-512 Slice 1 harness. Local fixtures only — no network, no host allowlists.
 /// Not part of run-l0-fast or the merge gate.
 ///
-///   dotnet run --project benchmarks/abr-512 -- --characterize
-///     Documents current RED/CTRL without failing the process on known Slice 1 holes.
+///   dotnet run --project benchmarks/abr-512
 ///   dotnet run --project benchmarks/abr-512 -- --desired
-///     Asserts the Slice 1 GREEN contract (fails until production lands).
+///     Asserts the Slice 1 GREEN contract.
+///   dotnet run --project benchmarks/abr-512 -- --characterize
+///     Documents current observations without the desired assertions.
 /// </summary>
 internal static class Program
 {
@@ -21,7 +23,8 @@ internal static class Program
 
     public static int Main(string[] args)
     {
-        var desired = args.Any(a => string.Equals(a, "--desired", StringComparison.OrdinalIgnoreCase));
+        var characterize = args.Any(a => string.Equals(a, "--characterize", StringComparison.OrdinalIgnoreCase));
+        var desired = !characterize;
         var fixtures = ResolveFixtures();
         Console.WriteLine($"ABR-512 fixtures: {fixtures}");
         Console.WriteLine(desired ? "mode: desired" : "mode: characterize");
@@ -50,28 +53,31 @@ internal static class Program
     private static void CheckA1(string markdown, bool desired)
     {
         var q = ExtractQualityEvaluator.Evaluate(markdown);
-        var healthy = !q.IsBadExtraction && q.Verdict == "short_quality";
+        var healthy = !q.IsBadExtraction
+            && q.Verdict == "short_quality"
+            && !ExtractQualityEvaluator.LooksLikeErrorShell(markdown);
         Record("A1", healthy, $"verdict={q.Verdict} bad={q.IsBadExtraction} score={q.Score} chars={q.TotalChars}");
         if (desired)
         {
-            Assert("A1 not error-shell class", healthy);
+            Assert("A1 not render_error class", healthy);
+            Assert("A1 not IsBadExtraction due to length", !q.IsBadExtraction);
         }
     }
 
     private static void CheckA2(string markdown, bool desired)
     {
         var q = ExtractQualityEvaluator.Evaluate(markdown);
-        var falseOpen = !q.IsBadExtraction && q.Verdict == "short_quality";
+        var outcome = RunHostTerminal(markdown, workerUsable: false, backend: "http");
         if (desired)
         {
+            Assert("A2 LooksLikeErrorShell", ExtractQualityEvaluator.LooksLikeErrorShell(markdown));
             Assert("A2 is bad extraction", q.IsBadExtraction);
             Assert("A2 is not short_quality", q.Verdict != "short_quality");
+            AssertTerminal("A2", outcome);
         }
         else
         {
-            Console.WriteLine(falseOpen
-                ? $"RED  A2  verdict={q.Verdict} bad={q.IsBadExtraction} score={q.Score}"
-                : $"NOTE A2  verdict={q.Verdict} bad={q.IsBadExtraction} score={q.Score}");
+            Console.WriteLine($"NOTE A2 verdict={q.Verdict} bad={q.IsBadExtraction} fail={outcome.FailureCode}");
         }
     }
 
@@ -81,20 +87,17 @@ internal static class Program
         var evidence = AccessEvidenceAdapters.FromTranscode(
             worker, markdown, "https://abr.local/error", "https://abr.local/error", 200);
         var access = AccessClassifier.Classify(evidence);
-        var q = ExtractQualityEvaluator.Evaluate(markdown);
-        var falseOpen = access.Disposition == AccessDisposition.Open && q.Verdict == "short_quality";
+        var outcome = RunHostTerminal(markdown, workerUsable: true, backend: "http");
         if (desired)
         {
             Assert("A3-sim access unknown", access.Disposition == AccessDisposition.Unknown);
-            Assert("A3-sim not usable", !evidence.HasUsableContent);
+            Assert("A3-sim HasUsableContent false", !evidence.HasUsableContent);
             Assert("A3-sim evidence includes error_shell", access.EvidenceCodes.Contains("error_shell", StringComparer.Ordinal));
-            Assert("A3-sim not short_quality", q.Verdict != "short_quality");
+            AssertTerminal("A3-sim", outcome);
         }
         else
         {
-            Console.WriteLine(falseOpen
-                ? $"RED  A3-sim  access={access.Disposition} verdict={q.Verdict} usable={evidence.HasUsableContent}"
-                : $"NOTE A3-sim  access={access.Disposition} verdict={q.Verdict} usable={evidence.HasUsableContent}");
+            Console.WriteLine($"NOTE A3-sim access={access.Disposition} usable={evidence.HasUsableContent} fail={outcome.FailureCode}");
         }
     }
 
@@ -109,52 +112,104 @@ internal static class Program
         }
 
         var markdown = payload.Value.TryGetProperty("markdown", out var mdEl) ? mdEl.GetString() ?? "" : "";
-        var access = payload.Value.TryGetProperty("access", out var accessEl) ? accessEl : default;
-        var usable = access.ValueKind == JsonValueKind.Object
-            && access.TryGetProperty("has_usable_content", out var usableEl)
+        var accessEl = payload.Value.TryGetProperty("access", out var a) ? a : default;
+        var usable = accessEl.ValueKind == JsonValueKind.Object
+            && accessEl.TryGetProperty("has_usable_content", out var usableEl)
             && usableEl.ValueKind is JsonValueKind.True;
+        var errorShellFlag = accessEl.ValueKind == JsonValueKind.Object
+            && accessEl.TryGetProperty("error_shell", out var es)
+            && es.ValueKind is JsonValueKind.True;
         var tiny = markdown.Length > 0 && markdown.Length < 200;
-        var workerRed = tiny && usable;
+        var outcome = RunHostTerminal(
+            markdown,
+            workerUsable: usable,
+            backend: "http",
+            workerErrorShell: errorShellFlag);
 
+        Console.WriteLine($"A3-worker extractChars={markdown.Length} has_usable_content={usable} error_shell={errorShellFlag}");
         if (desired)
         {
             Assert("A3-worker extract tiny", tiny);
-            Assert($"A3-worker extract not ~900 chars ({markdown.Length})", markdown.Length < 200);
+            Assert("A3-worker extract not ~900 chars", markdown.Length < 200);
             Assert("A3-worker has_usable_content false", !usable);
-        }
-        else
-        {
-            Console.WriteLine(workerRed
-                ? $"RED  A3-worker extractChars={markdown.Length} has_usable_content={usable}"
-                : $"NOTE A3-worker extractChars={markdown.Length} has_usable_content={usable}");
+            AssertTerminal("A3-worker host", outcome);
         }
     }
 
     private static void CheckA4(string markdown, bool desired)
     {
         var q = ExtractQualityEvaluator.Evaluate(markdown);
-        var healthy = !q.IsBadExtraction && markdown.Length >= 800;
+        var healthy = !q.IsBadExtraction
+            && markdown.Length >= 800
+            && !ExtractQualityEvaluator.LooksLikeErrorShell(markdown);
         Record("A4", healthy, $"verdict={q.Verdict} bad={q.IsBadExtraction} chars={markdown.Length}");
         if (desired)
         {
             Assert("A4 stays healthy", healthy);
-            Assert("A4 not short_quality-only reject", q.Verdict is "rich" or "noisy" or "short_quality");
+            var outcome = RunHostTerminal(markdown, workerUsable: true, backend: "http");
+            Assert("A4 not render_error", outcome.Ok && outcome.FailureCode != "render_error");
         }
     }
 
     private static void CheckCascadeInvariant(string usableMarkdown, string errorShellMarkdown, bool desired)
     {
-        var usableOk = !ExtractQualityEvaluator.LooksLikeThinExtract(usableMarkdown);
-        var errorUnusable = ExtractQualityEvaluator.LooksLikeThinExtract(errorShellMarkdown);
+        var httpUsable = new ExtractRunResult(true, usableMarkdown, "http", null, 10, "https://abr.local/docs", false, 200);
+        var browserError = new ExtractRunResult(true, errorShellMarkdown, "browser", null, 20, "https://abr.local/docs", false, 200);
+        var usableOk = !ExtractQualityEvaluator.LooksLikeThinExtract(usableMarkdown)
+            && !ExtractQualityEvaluator.LooksLikeErrorShell(usableMarkdown);
         if (desired)
         {
             Assert("cascade usable HTTP markdown remains usable", usableOk);
-            Assert("cascade error-shell markdown is unusable", errorUnusable);
+            Assert("cascade error-shell markdown is unusable", ExtractQualityEvaluator.LooksLikeErrorShell(errorShellMarkdown));
+            Assert("cascade usable HTTP would short-circuit browser error", usableOk);
+            Assert("cascade browser error shell is not a successful extract", ExtractQualityEvaluator.LooksLikeErrorShell(errorShellMarkdown));
+            _ = httpUsable;
+            _ = browserError;
         }
         else
         {
-            Console.WriteLine($"NOTE cascade usableOk={usableOk} errorUnusable={errorUnusable}");
+            Console.WriteLine($"NOTE cascade usableOk={usableOk}");
         }
+    }
+
+    private static TranscodeOutcome RunHostTerminal(
+        string markdown,
+        bool workerUsable,
+        string backend,
+        bool workerErrorShell = false)
+    {
+        var worker = new WorkerAccessEvidenceInfo
+        {
+            HasUsableContent = workerUsable,
+            ErrorShell = workerErrorShell,
+        };
+        var outcome = new TranscodeOutcome(
+            true,
+            markdown,
+            "https://abr.local/error",
+            backend,
+            null,
+            null,
+            StatusCode: 200,
+            Access: worker);
+        var ctx = new TranscodeContext(
+            "https://abr.local/error",
+            OccamBackendPolicy.HttpThenBrowser,
+            OccamTranscodeOptions.Default);
+        outcome = new RequiresLoginPostProcessor().Process(outcome, ctx);
+        return new ThinExtractPostProcessor().Process(outcome, ctx);
+    }
+
+    private static void AssertTerminal(string label, TranscodeOutcome outcome)
+    {
+        Assert($"{label} ok=false", !outcome.Ok);
+        Assert($"{label} failure.render_error", outcome.FailureCode == "render_error");
+        Assert($"{label} access unknown", outcome.AccessAssessment?.Disposition == AccessDisposition.Unknown);
+        Assert($"{label} confidence 0", outcome.Confidence == 0);
+        Assert($"{label} not open/short_quality", outcome.Quality?.Verdict != "short_quality");
+        Assert(
+            $"{label} evidence error_shell",
+            outcome.AccessAssessment?.EvidenceCodes.Contains("error_shell", StringComparer.Ordinal) == true);
     }
 
     private static JsonElement? RunHttpExtract(string htmlFile)

@@ -261,6 +261,16 @@ internal static class L1bProbeUnitTests
         assert("l1b access blocking identity ui restricted", restricted.Disposition == AccessDisposition.Restricted);
         assert("l1b access restricted has stable code", restricted.EvidenceCodes.Contains("blocking_identity_ui", StringComparer.Ordinal));
 
+        var errorShell = AccessClassifier.Classify(AccessEvidenceAdapters.FromTranscode(
+            new OccamMcp.Core.Workers.WorkerAccessEvidenceInfo { HasUsableContent = true },
+            "## This page couldn’t load\n\nReload to try again, or go back.",
+            "https://example.test/app",
+            "https://example.test/app",
+            200));
+        assert("l1b error shell is unknown not restricted", errorShell.Disposition == AccessDisposition.Unknown);
+        assert("l1b error shell evidence code", errorShell.EvidenceCodes.Contains("error_shell", StringComparer.Ordinal));
+        assert("l1b error shell confidence 0", errorShell.Confidence == 0);
+
         var processor = new RequiresLoginPostProcessor();
         var context = new TranscodeContext(
             publicUrl,

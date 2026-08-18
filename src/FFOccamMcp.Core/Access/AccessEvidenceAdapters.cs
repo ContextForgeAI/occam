@@ -1,3 +1,4 @@
+using OccamMcp.Core.PostProcessors;
 using OccamMcp.Core.Probe;
 using OccamMcp.Core.Routing;
 using OccamMcp.Core.Text;
@@ -46,6 +47,8 @@ public static class AccessEvidenceAdapters
     {
         if (workerEvidence is not null)
         {
+            var errorShell = workerEvidence.ErrorShell
+                || ExtractQualityEvaluator.LooksLikeErrorShell(markdown);
             return new AccessEvidence(
                 StatusCode: statusCode,
                 HasAuthenticationChallenge: workerEvidence.HasAuthenticationChallenge,
@@ -56,7 +59,8 @@ public static class AccessEvidenceAdapters
                 LoginFormAction: workerEvidence.LoginFormAction,
                 LoginHeading: workerEvidence.LoginHeading,
                 BlockingOverlay: workerEvidence.BlockingOverlay,
-                HasUsableContent: workerEvidence.HasUsableContent,
+                HasUsableContent: workerEvidence.HasUsableContent && !errorShell,
+                ErrorShell: errorShell,
                 AuthenticationTerminology: workerEvidence.AuthenticationTerminology,
                 Stage: AccessEvidenceStage.Combined);
         }
@@ -82,6 +86,7 @@ public static class AccessEvidenceAdapters
             or "log in"
             or "sign in");
 
+        var errorShell = ExtractQualityEvaluator.LooksLikeErrorShell(markdown);
         return new AccessEvidence(
             StatusCode: statusCode,
             RedirectedToLogin: IsLoginRedirect(requestedUrl, finalUrl, redirectChain: null),
@@ -89,7 +94,8 @@ public static class AccessEvidenceAdapters
             IdentityField: identityLabel,
             LoginFormAction: loginAction,
             LoginHeading: loginHeading,
-            HasUsableContent: text.Length >= UsableVisibleTextCharacters,
+            HasUsableContent: text.Length >= UsableVisibleTextCharacters && !errorShell,
+            ErrorShell: errorShell,
             AuthenticationTerminology: ContainsAuthenticationTerminology(lower),
             Stage: AccessEvidenceStage.Extracted);
     }

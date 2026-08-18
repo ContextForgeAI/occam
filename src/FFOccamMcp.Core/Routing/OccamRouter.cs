@@ -194,6 +194,7 @@ public sealed class OccamRouter
     private static bool IsSuccessfulExtract(ExtractRunResult result) =>
         result.Ok
         && !string.IsNullOrWhiteSpace(result.Markdown)
+        && !ExtractQualityEvaluator.LooksLikeErrorShell(result.Markdown)
         && !ExtractQualityEvaluator.LooksLikeThinExtract(result.Markdown)
         && (result.Markdown!.Length > ChallengeContentThreshold
             || !ChallengePageDetector.LooksLikeChallengePage(result.Markdown));
@@ -206,11 +207,21 @@ public sealed class OccamRouter
     private static ExtractRunResult ChooseRawFallback(ExtractRunResult http, ExtractRunResult browser) =>
         RawRank(browser) >= RawRank(http) ? browser : http;
 
-    private static int RawRank(ExtractRunResult result) =>
-        result.Ok && !string.IsNullOrWhiteSpace(result.Markdown)
-            ? FailureRanking.Informativeness("thin_extract")
-            : FailureRanking.Informativeness(
-                FailureCodeStrings.ResolveTranscodeFailure(result.Failure, result.StatusCode));
+    private static int RawRank(ExtractRunResult result)
+    {
+        if (result.Ok && !string.IsNullOrWhiteSpace(result.Markdown))
+        {
+            if (ExtractQualityEvaluator.LooksLikeErrorShell(result.Markdown))
+            {
+                return FailureRanking.Informativeness("render_error");
+            }
+
+            return FailureRanking.Informativeness("thin_extract");
+        }
+
+        return FailureRanking.Informativeness(
+            FailureCodeStrings.ResolveTranscodeFailure(result.Failure, result.StatusCode));
+    }
 
     // http_then_browser should not escalate a definitive "resource gone" status to the browser.
     private static bool IsTerminalHttpFailure(ExtractRunResult result) =>
@@ -221,6 +232,11 @@ public sealed class OccamRouter
     {
         if (result.Ok && !string.IsNullOrWhiteSpace(result.Markdown))
         {
+            if (ExtractQualityEvaluator.LooksLikeErrorShell(result.Markdown))
+            {
+                return "render_error";
+            }
+
             if (ExtractQualityEvaluator.LooksLikeThinExtract(result.Markdown))
             {
                 return "thin_extract";
@@ -240,4 +256,12 @@ public sealed class OccamRouter
 
     private static string EscalationReasonFor(ExtractRunResult prior) =>
         ResolveAttemptFailure(prior);
+
+#if OCCAM_GATE
+    internal static bool IsSuccessfulExtractForTests(ExtractRunResult result) =>
+        IsSuccessfulExtract(result);
+
+    internal static ExtractRunResult ChooseRawFallbackForTests(ExtractRunResult http, ExtractRunResult browser) =>
+        ChooseRawFallback(http, browser);
+#endif
 }

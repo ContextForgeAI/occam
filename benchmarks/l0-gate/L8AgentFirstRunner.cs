@@ -50,6 +50,18 @@ internal static class L8AgentFirstRunner
         var thinConfidence = ExtractQualityEvaluator.ComputeConfidence(thinOutcome);
         assert("af1 confidence thin content < 0.3", thinConfidence < 0.3);
 
+        var renderErrorOutcome = new TranscodeOutcome(
+            false,
+            "## This page couldn’t load\n\nReload to try again, or go back.",
+            "https://example.com",
+            "browser",
+            "render_error",
+            "error shell",
+            50,
+            StatusCode: 200,
+            Confidence: 0.0);
+        assert("af1 confidence render_error is 0", ExtractQualityEvaluator.ComputeConfidence(renderErrorOutcome) == 0.0);
+
         // Browser backend scores higher than http for same content
         var browserOutcome = new TranscodeOutcome(true, richMd, "https://example.com", "browser", null, null, 100, 500, false, null, null, StatusCode: 200, Confidence: 0.0);
         var browserConfidence = ExtractQualityEvaluator.ComputeConfidence(browserOutcome);

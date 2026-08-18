@@ -66,13 +66,14 @@ public static partial class ExtractQualityEvaluator
             + 0.25 * semanticRichness
             + 0.15 * lengthPrior);
 
-        var isBad = DecideBadExtraction(
-            visibleProse,
-            qualityScore,
-            noiseScore,
-            contentDensity,
-            semanticRichness,
-            headingShell);
+        var isBad = LooksLikeErrorShell(md)
+            || DecideBadExtraction(
+                visibleProse,
+                qualityScore,
+                noiseScore,
+                contentDensity,
+                semanticRichness,
+                headingShell);
 
         var verdict = ResolveVerdict(isBad, qualityScore, noiseScore, totalChars, visibleProse);
 
@@ -93,6 +94,28 @@ public static partial class ExtractQualityEvaluator
     /// </summary>
     public static bool LooksLikeThinExtract(string? markdown) =>
         Evaluate(markdown).IsBadExtraction;
+
+    /// <summary>
+    /// Tight browser/client render-error shell: closed phrase/code families AND the existing
+    /// tiny-extract band. Long articles that merely quote those phrases are not error shells.
+    /// </summary>
+    public static bool LooksLikeErrorShell(string? markdown)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+        {
+            return false;
+        }
+
+        var md = markdown.Trim();
+        var totalChars = md.Length;
+        var visibleProse = VisibleContentChars(md);
+        if (!IsTinyExtractBand(totalChars, visibleProse))
+        {
+            return false;
+        }
+
+        return ContainsTightErrorShellSignal(md);
+    }
 
     /// <summary>
     /// AF-1 confidence: EQM qualityScore after a successful extract, with a small backend factor
@@ -166,6 +189,32 @@ public static partial class ExtractQualityEvaluator
         }
 
         return qualityScore < 0.40;
+    }
+
+    /// <summary>Reuse the short_quality tiny-extract band rather than inventing a second floor.</summary>
+    private static bool IsTinyExtractBand(int totalChars, int visibleProse) =>
+        totalChars < 500 && visibleProse < 280;
+
+    private static bool ContainsTightErrorShellSignal(string markdown)
+    {
+        var normalized = markdown
+            .Replace('\u2018', '\'')
+            .Replace('\u2019', '\'');
+
+        if (ContainsAny(normalized,
+                "this page couldn't load",
+                "this page could not load",
+                "this page isn't working",
+                "this page is not working",
+                "reload to try again",
+                "aw snap"))
+        {
+            return true;
+        }
+
+        return ErrorInternetDisconnected().IsMatch(normalized)
+            || ErrorNameNotResolved().IsMatch(normalized)
+            || ErrorConnectionFamily().IsMatch(normalized);
     }
 
     private static string ResolveVerdict(
@@ -445,4 +494,13 @@ public static partial class ExtractQualityEvaluator
 
     [GeneratedRegex(@"[\p{L}\p{N}]{3,}", RegexOptions.CultureInvariant)]
     private static partial Regex WordToken();
+
+    [GeneratedRegex(@"\berr_internet_disconnected\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex ErrorInternetDisconnected();
+
+    [GeneratedRegex(@"\berr_name_not_resolved\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex ErrorNameNotResolved();
+
+    [GeneratedRegex(@"\berr_connection_[a-z0-9_]+\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex ErrorConnectionFamily();
 }

@@ -14,6 +14,7 @@ internal static class FailureRanking
         "tls_error" => 85,
         _ when code is not null && code.StartsWith("http_4", StringComparison.Ordinal) => 80,
         _ when code is not null && code.StartsWith("http_5", StringComparison.Ordinal) => 70,
+        "render_error" => 65,
         "thin_extract" => 60,
         "timeout" or "network_error" or "dns_error" => 50,
         "content_selectors_miss" => 40,

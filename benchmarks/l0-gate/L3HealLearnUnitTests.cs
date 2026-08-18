@@ -13,6 +13,7 @@ internal static class L3HealLearnUnitTests
         assert("heal policy terminal timeout", PlaybookHealPolicy.IsTerminalFailure("timeout"));
 
         assert("heal policy offers thin_extract", PlaybookHealPolicy.ShouldOfferHeal("thin_extract"));
+        assert("heal policy rejects render_error", !PlaybookHealPolicy.ShouldOfferHeal("render_error"));
         assert("heal policy offers extraction_failed", PlaybookHealPolicy.ShouldOfferHeal("extraction_failed"));
         assert("heal policy offers content_selectors_miss", PlaybookHealPolicy.ShouldOfferHeal("content_selectors_miss"));
         assert("heal policy rejects captcha", !PlaybookHealPolicy.ShouldOfferHeal("captcha_or_challenge"));

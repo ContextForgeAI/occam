@@ -417,6 +417,30 @@ internal static class L0InfraUnitTests
         assert("EQM example.com verdict is short_quality", exampleReport.Verdict == "short_quality");
         assert("EQM example.com qualityScore >= 0.55", exampleReport.Score >= 0.55);
         assert("EQM example.com LooksLikeThinExtract false", !ExtractQualityEvaluator.LooksLikeThinExtract(exampleComMd));
+        assert("EQM example.com not error shell", !ExtractQualityEvaluator.LooksLikeErrorShell(exampleComMd));
+
+        const string errorShellMd = "## This page couldn’t load\n\nReload to try again, or go back.";
+        var errorShellReport = ExtractQualityEvaluator.Evaluate(errorShellMd);
+        assert("EQM error shell is bad extraction", errorShellReport.IsBadExtraction);
+        assert("EQM error shell is not short_quality", errorShellReport.Verdict != "short_quality");
+        assert("EQM error shell LooksLikeErrorShell", ExtractQualityEvaluator.LooksLikeErrorShell(errorShellMd));
+        assert("EQM broad try-again is not error shell", !ExtractQualityEvaluator.LooksLikeErrorShell("Please try again later."));
+        assert("EQM something went wrong is not error shell", !ExtractQualityEvaluator.LooksLikeErrorShell("Something went wrong while saving."));
+        const string troubleshootingMd = """
+            # Browser troubleshooting
+
+            When a tab shows **This page couldn’t load**, the usual advice is to reload, check the network, or try again after a few minutes.
+
+            This article explains how operators diagnose client render failures. It quotes the error chrome on purpose: “Reload to try again, or go back.” Those phrases appear inside a long, useful document and must not be treated as an error-shell extract.
+
+            Additional guidance covers cache busting, extension conflicts, TLS interception, and captive portals. The page is intentionally longer than a short_quality shell so length and quoting can be distinguished from a genuine render failure.
+
+            If the extract of this file is classified as `render_error`, the lexicon is too broad.
+
+            Operators also compare HAR traces, disable extensions one at a time, and confirm that DNS and TLS handshakes complete before blaming the document. A troubleshooting article that merely quotes browser chrome remains a healthy page.
+            """;
+        assert("EQM troubleshooting quote is not error shell", !ExtractQualityEvaluator.LooksLikeErrorShell(troubleshootingMd));
+        assert("EQM troubleshooting quote is not bad extraction", !ExtractQualityEvaluator.Evaluate(troubleshootingMd).IsBadExtraction);
 
         // Promo / consent fixtures still BE via EQM.
         var nginxReport = ExtractQualityEvaluator.Evaluate(nginxBannerMd);

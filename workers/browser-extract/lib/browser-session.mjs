@@ -11,6 +11,7 @@ import { applySessionCookies, resolveBrowserContextOptions } from "./session-hea
 import { resolvePlaywrightProxy } from "../../shared/lib/egress-proxy.mjs";
 import { genericMarkdownPrune } from "../../shared/lib/generic-markdown-prune.mjs";
 import { applySeedPostMarkdown, getContentSelectorsForUrl, getDomStripSelectorsForUrl, isStrictPlaybookOverlay } from "../../shared/lib/playbook-seed.mjs";
+import { applyErrorShellAccess } from "../../shared/lib/error-shell.mjs";
 import { resolveBrowserLaunchOptions, STEALTH_INIT_SCRIPT, classifyBrowserLaunchError, usesSystemBrowser } from "./browser-launch-options.mjs";
 import { provisionChromium, autoInstallEnabled } from "./browser-provision.mjs";
 import { isUrlAllowed, shouldSkipPrivateIpCheck, resolveAndValidateHost, SsrfBlockedError } from "../../shared/lib/private-ip.mjs";
@@ -654,6 +655,7 @@ export async function renderAndExtract(context, url, options = {}) {
       extracted.markdown = genericMarkdownPrune(extracted.markdown);
       extracted.markdown = applySeedPostMarkdown(extracted.markdown, finalUrl);
       extracted.text_length = extracted.markdown.length;
+      extracted.access = applyErrorShellAccess(extracted.access, extracted.markdown);
     }
 
     let screenshotBase64 = null;
