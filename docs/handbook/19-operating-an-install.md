@@ -44,8 +44,8 @@ The operator wrapper exits with "unknown command" for `verify`, `keys`, and `ins
 
 ### Install paths
 
-- **Level A / Level B tarball (published `v1.0.0-rc.2`):** Primary public install today. Integrity check is **sha256 manifest**; Cosign is not required on that channel.
-- **`1.0.0-rc.3` candidate (not published yet):** self-contained archives (`runtimeLayout=self-contained-v1`) with SHA-256 plus Cosign when `signaturePolicy=required-cosign-v1`. Executable helper overlays from mutable `main` are not part of that runtime contract.
+- **Level A / Level B tarball (published `v1.0.0-rc.2`):** Legacy public install. Integrity check is **sha256 manifest**; Cosign is not required on that channel.
+- **`1.0.0-rc.3` (published; public default):** self-contained archives (`runtimeLayout=self-contained-v1`) with SHA-256 plus Cosign when `signaturePolicy=required-cosign-v1` (requires the `cosign` CLI). Executable helper overlays from mutable `main` are not part of that runtime contract.
 - **npm `@ff-occam/mcp`:** NOT GA — do not document as public install path.
 - **Docker:** HEALTHCHECK uses the non-blocking `version-surface` verb. It proves
   process startup, not browser, network, or extraction readiness.

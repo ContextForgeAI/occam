@@ -2,9 +2,70 @@
 
 All notable changes to **FFOccamMCP** (L0 core) are documented here.
 
-Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1` was the first release candidate after L0 closed; `1.0.0-rc.2` is the last published RC; `1.0.0-rc.3` is the next candidate.
+Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1` was the first release candidate after L0 closed; `1.0.0-rc.2` and `1.0.0-rc.3` are published RCs; `1.0.0-rc.4` is the next foundation candidate.
 
 ## [Unreleased]
+
+(empty — foundation cut lives under `[1.0.0-rc.4]` below until that RC is published)
+
+## [1.0.0-rc.4] — foundation (unpublished)
+
+Foundation candidate on `public/main`. Not production-ready; full live L3–L9 soak still required
+before calling this RC shipped.
+
+### Changed
+
+- **Tree version `1.0.0-rc.4`** — `VERSION` + npm manifests + `server.json` bumped for the
+  foundation cut. **Public bootstrap default stays published `1.0.0-rc.3`** until a GitHub
+  Release for rc.4 exists (do not point `curl|bash` at an unpublished tag).
+- **MCP C# SDK `1.2.0` → `2.2.0`** — host builds against ModelContextProtocol 2.2.0
+  + ModelContextProtocol.AspNetCore 2.2.0. Legacy `initialize` clients continue to work;
+  modern clients use `server/discover` with per-request `_meta`. Dual-era regression:
+  `OCCAM_FORCE_DOTNET_RUN=1 node scripts/lib/mcp-dual-era.selftest.mjs`.
+- **Streamable HTTP `/mcp`** — `--mcp-http` / `--streamable-http` on loopback (default port
+  5055). Custom WSS `--remote` remains legacy/advanced. **No OAuth on Streamable HTTP in rc.4**
+  (loopback-first); authenticated remotes use `--remote` + JWT/OIDC.
+- **MCP wire enrichments** — tool results duplicate JSON envelopes into `structuredContent`;
+  `tools/list` advertises permissive `outputSchema` + read-only/open-world annotations.
+  Typed `ok:false` envelopes now also set MCP **`isError:true`** (rc.4 dual signal; JSON body
+  preserved). Initialize capabilities advertise `tools.listChanged=false` and do **not** claim
+  logging support Occam does not implement.
+- **npm `ff-occam`** — primary CLI package (`ff-occam` + `occam` bin aliases) delegating to
+  `@ff-occam/mcp` at the same version pin. Selftest: `node scripts/lib/ff-occam-package.selftest.mjs`.
+- **`occam_browser_interact` (opt-in)** — `OCCAM_BROWSER_ACTIONS_MCP=1` exposes a declarative
+  browser action plan (wait/click/type/press/scroll/hover, max 16 steps) then materializes
+  Markdown + Receipt v1. Typed text is redacted from traces; raw page JS is not exposed; results
+  are never cached. Worker selftest: `node workers/browser-extract/lib/browser-actions.selftest.mjs`.
+- **Transcode `toc` / `section` / `must_contain` / `deadline_ms`** — optional focus/TOC/needle probe
+  and per-call deadline. `mustContain.verdict` is `MATCH` or `NO_MATCH` with up to three excerpts.
+  Cache/materialization keys include these flags.
+- **Default `OCCAM_PROFILE=reader`** — day-to-day surface is 8 tools; set `full` for heal/save and the
+  complete fifteen-tool catalog.
+- **`server.json`** — MCP registry metadata at repo root (stdio packages `ff-occam` / `@ff-occam/mcp`).
+- **`OCCAM_FORCE_DOTNET_RUN=1` honors override** — when set, `launch-mcp-host.mjs`
+  uses `dotnet run` even if a published AOT binary is present (dev/test only).
+- **Public install default → published `1.0.0-rc.3`** — bootstrap (`get-ff-occam.sh` /
+  `.ps1`), `PUBLIC_DEFAULT_RELEASE_VERSION`, and install docs no longer point at
+  stale `1.0.0-rc.2` or claim that rc.3 is unpublished.
+- **Version single source of truth** — host `Version` / `InformationalVersion`
+  read from repo-root `VERSION` via `Directory.Build.props`; npm package
+  manifests aligned to `1.0.0-rc.4` (bootstrap public default remains published `1.0.0-rc.3`).
+- **Piped bootstrap archive preflight** — `curl | bash` / `irm | iex` resolve
+  `archive-preflight.mjs` from checkout, `OCCAM_ARCHIVE_PREFLIGHT_PATH`, or the
+  pinned release-tag raw URL (same gzipped-ustar inspector as checkout installs).
+  GNU/BSD `tar -tvzf` listing fallback no longer assumes BSD-only field layout.
+- **Cosign prerequisite documented** — `signaturePolicy=required-cosign-v1`
+  (published rc.3) requires the `cosign` CLI on PATH; bootstrap errors link to
+  Sigstore install docs. Authenticity ≠ page-content truth.
+
+### Security
+
+- **Browser subresource SSRF** — Playwright route guards validate every `http(s)`
+  request host (XHR/fetch/subresource), not only navigations
+  (`browser-session.mjs`, `dom-skeleton-capture.mjs`).
+- **Transcode cache / materialization identity** — `rank_blocks`, `tag_trust`, and
+  `emit_capsule` fold into `TranscodeCacheKey` and `MaterializationKey` so option
+  flips cannot collide onto a cached or hashed envelope (EF-001).
 
 ### Added
 

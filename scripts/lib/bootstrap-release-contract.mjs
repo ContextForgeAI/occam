@@ -14,8 +14,8 @@ export const RUNTIME_LAYOUT_SELF_CONTAINED_V1 = "self-contained-v1";
 export const INSTALL_CONTRACT_LEGACY = "legacy";
 export const INSTALL_CONTRACT_SELF_CONTAINED_V1 = "self-contained-v1";
 
-/** Canonical public install default while rc.3 is unpublished. */
-export const PUBLIC_DEFAULT_RELEASE_VERSION = "1.0.0-rc.2";
+/** Canonical public install default (must match the published GitHub Release). */
+export const PUBLIC_DEFAULT_RELEASE_VERSION = "1.0.0-rc.3";
 
 /**
  * @param {unknown} manifest

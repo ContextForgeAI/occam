@@ -1,6 +1,6 @@
 # Occam
 
-> Local MCP server: live URL → token-budgeted Markdown with typed failures. **ok:false = content unknown** — never substitute model memory. Receipts prove **integrity relative to a key**, not truth, origin, identity, or trusted time. **npm is not GA**; Cosign on install is **policy-gated** (`required-cosign-v1` on the `1.0.0-rc.3` candidate; published `v1.0.0-rc.2` remains SHA-256-only); crosscheck is **not consensus proof**. Runtime `tools/list` is authoritative (profile + opt-in gates vary exposure).
+> Local MCP server: live URL → token-budgeted Markdown with typed failures. **ok:false = content unknown** — never substitute model memory. Receipts prove **integrity relative to a key**, not truth, origin, identity, or trusted time. **npm is not GA**; Cosign on install is **policy-gated** (`required-cosign-v1` on published `1.0.0-rc.3`; published `v1.0.0-rc.2` remains SHA-256-only); crosscheck is **not consensus proof**. Runtime `tools/list` is authoritative (`OCCAM_PROFILE` default **`reader`**; opt-in gates vary exposure). Primary npm package name is **`ff-occam`** (alias of `@ff-occam/mcp`) — still not GA.
 
 Use this file as the **agent documentation map**. Do not load every linked page at once. Follow the routing steps below, then open only what the current task needs.
 
@@ -83,8 +83,10 @@ Enable deliberately. Each names its env gate in the same breath as the tool.
 | Change monitoring | `OCCAM_WATCH_MCP=1` | [`occam_watch`](docs/tools/occam_watch.md) · [Experimental](docs/experimental.md) |
 | Multi-source comparison | `OCCAM_CONSENSUS_MCP=1` | [`occam_crosscheck`](docs/tools/occam_crosscheck.md) · [Experimental](docs/experimental.md) |
 | Failure atlas | `OCCAM_ATLAS_MCP=1` | [`occam_failure_atlas`](docs/tools/occam_failure_atlas.md) · [Experimental](docs/experimental.md) |
+| Browser interact | `OCCAM_BROWSER_ACTIONS_MCP=1` | [`occam_browser_interact`](docs/tools/occam_browser_interact.md) · [Experimental](docs/experimental.md) |
 | Managed acquisition | Operator provider config | [Experimental](docs/experimental.md) · [Acquisition](docs/acquisition.md) |
 | Response cache | `cache_ttl_s > 0` on transcode | [Materialization](docs/materialization.md) |
+| Streamable HTTP | `--mcp-http` / `--streamable-http` | [Transports](docs/transports.md) |
 
 **Forbidden readings:** crosscheck agreement is **not** consensus proof; watch `history_verified` needs every entry signed; batch has no Receipt v1 on the job envelope.
 

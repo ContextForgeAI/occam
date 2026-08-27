@@ -1,6 +1,5 @@
-using System.Text;
-using System.Threading.Tasks;
 using OccamMcp.Core.Abstractions;
+using OccamMcp.Core.BrowserActions;
 
 namespace OccamMcp.Core.Workers;
 
@@ -26,6 +25,16 @@ public interface IBrowserDaemonClient
         int maxNodes,
         int timeoutMs,
         string? headersFile,
+        CancellationToken cancellationToken,
+        int port = 0);
+
+    Task<BrowserInteractWorkerResult?> TryInteractAsync(
+        string url,
+        string actionsJson,
+        int deadlineMs,
+        int timeoutMs,
+        string? headersFile,
+        string? storageStateFile,
         CancellationToken cancellationToken,
         int port = 0);
 }

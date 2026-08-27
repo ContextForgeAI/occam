@@ -105,6 +105,11 @@ internal static class L2TransportUnitTests
         assert("transport cli default port", ws.Port == OccamMcpCli.DefaultWebSocketPort);
         assert("transport cli default bind", ws.BindAddress == OccamMcpCli.DefaultBindAddress);
 
+        var http = OccamMcpCli.Parse(["--mcp-http"]);
+        assert("transport cli mcp-http", http.Mode == OccamMcpTransportMode.StreamableHttp && http.IsValid);
+        assert("transport cli mcp-http default port", http.Port == OccamMcpCli.DefaultStreamableHttpPort);
+        assert("transport cli mcp-http alias", OccamMcpCli.Parse(["--streamable-http"]).Mode == OccamMcpTransportMode.StreamableHttp);
+
         var customPort = OccamMcpCli.Parse(["--mcp-server", "--port", "5051"]);
         assert("transport cli custom port", customPort.Port == 5051 && customPort.IsValid);
 

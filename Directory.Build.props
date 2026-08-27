@@ -1,5 +1,11 @@
 <Project>
   <PropertyGroup>
+    <!-- Single source of truth: repo-root VERSION (trimmed). -->
+    <_OccamVersionFile>$(MSBuildThisFileDirectory)VERSION</_OccamVersionFile>
+    <Version Condition="Exists('$(_OccamVersionFile)')">$([System.IO.File]::ReadAllText('$(_OccamVersionFile)').Trim())</Version>
+    <InformationalVersion Condition="'$(Version)' != ''">$(Version)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+
     <!-- Deterministic builds -->
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     <Deterministic>true</Deterministic>

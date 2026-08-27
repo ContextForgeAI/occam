@@ -1,7 +1,7 @@
 # Operators
 
 Use this page to keep an Occam release install connected, healthy, current, and
-removable. Occam Core `1.0.0-rc.2` is a release candidate, not GA.
+removable. Occam Core `1.0.0-rc.3` is a release candidate, not GA.
 
 ## What you run
 
@@ -19,7 +19,7 @@ removable. Occam Core `1.0.0-rc.2` is a release candidate, not GA.
 |---------|--------|
 | GitHub Release tarball + bootstrap scripts | Recommended release channel |
 | Source / `dotnet` contributor builds | Contributor path; requires .NET 10 SDK |
-| npm `@ff-occam/mcp` | Experimental; not the supported release install |
+| npm `ff-occam` / `@ff-occam/mcp` | Experimental; not the supported release install (`ff-occam` is the primary package name) |
 | Docker image | No documented public release channel |
 | Cosign `.bundle` | Release metadata; shipped installers do not verify it |
 

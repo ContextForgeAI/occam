@@ -2,9 +2,12 @@
 
 **Occam MCP** — local .NET host that turns a URL into token-budgeted Markdown with typed failures and optional integrity receipts (integrity relative to a key — not truth/origin proof).
 
-> **Package status:** npm is **NOT a GA 1.0 install channel** (OD-3). `@ff-occam/mcp` is **not** part of the supported `1.0.0-rc.2` install path.  
-> Use GitHub Release archives + bootstrap scripts — see root `INSTALL.md` / `docs/install.md`.  
-> Registry / `npx` commands below are for future/experimental use only after an end-to-end npm contract passes. Core MCP tool count is registry-defined and varies by profile/opt-in — do not treat a fixed “14/15” as a health check.
+> **Package status:** npm is **NOT a GA 1.0 install channel** (OD-3). Prefer the primary package
+> name **`ff-occam`** (this package is `@ff-occam/mcp`). Neither is a supported published install
+> path until an end-to-end npm contract passes — use GitHub Release archives + bootstrap
+> (`INSTALL.md` / `docs/install.md`). Published install default remains **`1.0.0-rc.3`**; tree
+> foundation is **`1.0.0-rc.4`**. Registry / `npx` commands below are experimental. Core MCP tool
+> count is registry-defined and varies by profile/opt-in — do not treat a fixed “14/15” as a health check.
 
 - **Local-first** — default extraction runs on your machine.
 - **Honest failures** — typed `failure.code` on `ok:false`; never invent page content from memory.
@@ -27,7 +30,7 @@ npx @ff-occam/mcp --mcp-server --port 5051
 # One-liner from GitHub Releases (no git, no .NET SDK — Node 20+ only)
 curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
 
-# Or via npm (not part of 1.0.0-rc.2 — requires a published registry package)
+# Or via npm (not GA — requires a published registry package; prefer `ff-occam`)
 npm install -g @ff-occam/mcp
 occam-mcp
 ```

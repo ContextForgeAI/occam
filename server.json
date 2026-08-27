@@ -1,0 +1,50 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.ContextForgeAI/occam",
+  "title": "FF Occam",
+  "description": "Fetch live URLs into compact Markdown with typed failures and signed Receipt v1 materialization.",
+  "websiteUrl": "https://github.com/ContextForgeAI/occam",
+  "repository": {
+    "url": "https://github.com/ContextForgeAI/occam",
+    "source": "github"
+  },
+  "version": "1.0.0-rc.4",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "ff-occam",
+      "version": "1.0.0-rc.4",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "OCCAM_HOME",
+          "description": "Install root (checkout or release extract). Skips GitHub download when set.",
+          "isRequired": false
+        },
+        {
+          "name": "OCCAM_PROFILE",
+          "description": "Tool surface: reader (default) | researcher | auditor | full",
+          "isRequired": false,
+          "valueHint": "reader"
+        },
+        {
+          "name": "OCCAM_BROWSER_ACTIONS_MCP",
+          "description": "Set to 1 to expose occam_browser_interact",
+          "isRequired": false
+        }
+      ]
+    },
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@ff-occam/mcp",
+      "version": "1.0.0-rc.4",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

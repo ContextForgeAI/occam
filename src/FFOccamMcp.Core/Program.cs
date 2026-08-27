@@ -51,6 +51,7 @@ IMcpTransport transport = cli.Mode switch
 {
     OccamMcpTransportMode.WebSocket => new WebSocketMcpTransport(cli),
     OccamMcpTransportMode.Remote => new RemoteMcpTransport(cli),
+    OccamMcpTransportMode.StreamableHttp => new StreamableHttpMcpTransport(cli),
     _ => new StdioMcpTransport(),
 };
 

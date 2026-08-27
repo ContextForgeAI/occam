@@ -57,8 +57,8 @@ internal static class McpArgumentBindingGuardUnitTests
 
         var result = McpArgumentBindingGuard.ToTypedInvalidArgumentsResult(missingUrl, "occam_claim_check");
         assert(
-            "binding guard: MCP isError is not true (handled typed result, not invoke failure)",
-            result.IsError is not true);
+            "binding guard: MCP isError is true with typed ok:false body",
+            result.IsError is true);
         assert("binding guard: result has one text content block", result.Content is { Count: 1 });
         var text = (result.Content![0] as ModelContextProtocol.Protocol.TextContentBlock)?.Text;
         assert("binding guard: payload is JSON object", text?.TrimStart().StartsWith('{') == true);

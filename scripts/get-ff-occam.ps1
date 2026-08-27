@@ -51,7 +51,7 @@ function Resolve-PublishedRid([string]$Os = "Windows_NT", [string]$Architecture 
   throw "no public Occam release for $Os/$Architecture (published RIDs: win-x64, linux-x64, osx-arm64)"
 }
 
-$Version = if ($env:OCCAM_VERSION) { $env:OCCAM_VERSION } else { "1.0.0-rc.2" }
+$Version = if ($env:OCCAM_VERSION) { $env:OCCAM_VERSION } else { "1.0.0-rc.3" }
 $Rid = if ($env:OCCAM_RID) { $env:OCCAM_RID } else { Resolve-PublishedRid }
 Assert-PublishedRid $Rid
 $InstallDir = if ($env:OCCAM_INSTALL_DIR) { $env:OCCAM_INSTALL_DIR } else {
@@ -115,42 +115,76 @@ function Assert-ReleaseArchivePreflight {
     [Parameter(Mandatory = $true)][string]$ArchivePath,
     [Parameter(Mandatory = $true)][string]$ExpectedRoot
   )
+
   $modulePath = $null
-  if ($PSScriptRoot) {
+  if ($env:OCCAM_ARCHIVE_PREFLIGHT_PATH -and (Test-Path -LiteralPath $env:OCCAM_ARCHIVE_PREFLIGHT_PATH)) {
+    $modulePath = $env:OCCAM_ARCHIVE_PREFLIGHT_PATH
+  } elseif ($PSScriptRoot) {
     $candidate = Join-Path $PSScriptRoot "lib\archive-preflight.mjs"
     if (Test-Path -LiteralPath $candidate) { $modulePath = $candidate }
+  }
+  if (-not $modulePath -and $script:BootstrapTmpDir) {
+    $dest = Join-Path $script:BootstrapTmpDir "archive-preflight.mjs"
+    if (Test-Path -LiteralPath $dest) {
+      $modulePath = $dest
+    } else {
+      $url = if ($env:OCCAM_ARCHIVE_PREFLIGHT_URL) {
+        $env:OCCAM_ARCHIVE_PREFLIGHT_URL
+      } else {
+        "https://raw.githubusercontent.com/ContextForgeAI/occam/v$Version/scripts/lib/archive-preflight.mjs"
+      }
+      try {
+        Download-File $url $dest
+        $modulePath = $dest
+      } catch {
+        Remove-Item -LiteralPath $dest -Force -ErrorAction SilentlyContinue
+      }
+    }
   }
   if ($modulePath) {
     & node $modulePath --archive $ArchivePath --expected-root $ExpectedRoot
     if ($LASTEXITCODE -ne 0) { throw "archive preflight failed" }
     return
   }
+
+  Write-Warning "archive-preflight.mjs unavailable; using tar listing fallback"
   $listing = Join-Path ([System.IO.Path]::GetTempPath()) ("ff-occam-tarlist-" + [guid]::NewGuid().ToString("N") + ".txt")
   try {
     $tarOut = & tar.exe -tvzf $ArchivePath 2>&1
     if ($LASTEXITCODE -ne 0) { throw "unable to list archive members before extract" }
     Set-Content -LiteralPath $listing -Value ($tarOut | Out-String) -Encoding utf8
+
+    if ($PSScriptRoot) {
+      $listingModule = Join-Path $PSScriptRoot "lib\archive-preflight-listing.mjs"
+      if (Test-Path -LiteralPath $listingModule) {
+        & node $listingModule $listing $ExpectedRoot
+        if ($LASTEXITCODE -ne 0) { throw "archive preflight failed" }
+        return
+      }
+    }
+
     $nodeScript = @'
 const fs = require("fs");
 const [listingPath, expectedRoot] = process.argv.slice(2);
 const lines = fs.readFileSync(listingPath, "utf8").split(/\r?\n/).filter(Boolean);
-const names = [];
-for (const line of lines) {
-  const type = line[0];
-  let name = "";
+function nameStartIndex(parts) {
+  if (parts.length >= 6 && String(parts[1] || "").includes("/")) return 5;
+  if (parts.length >= 9 && /^\d+$/.test(String(parts[1] || ""))) return 8;
+  if (parts.length >= 6) return 5;
+  return -1;
+}
+function parseLine(line) {
+  const type = line[0] || "";
   const arrow = line.indexOf(" -> ");
   if (arrow !== -1 && (type === "l" || type === "h")) {
-    name = line.slice(0, arrow).trim().split(/\s+/).slice(8).join(" ");
-    console.error(`error: ${type === "l" ? "symlink" : "hardlink"} archive members are not allowed: ${name || line}`);
-    process.exit(1);
+    const left = line.slice(0, arrow).trim().split(/\s+/);
+    const start = nameStartIndex(left);
+    return { type, name: start >= 0 ? left.slice(start).join(" ") : "" };
   }
   const parts = line.trim().split(/\s+/);
-  name = parts.slice(8).join(" ");
-  if (!name) {
-    console.error("error: unable to parse archive member listing line");
-    process.exit(1);
-  }
-  names.push(name.replace(/\\/g, "/"));
+  const start = nameStartIndex(parts);
+  if (start < 0) return null;
+  return { type, name: parts.slice(start).join(" ") };
 }
 function unsafePath(p) {
   const n = String(p || "").replace(/\\/g, "/");
@@ -160,6 +194,19 @@ function unsafePath(p) {
   if (n.startsWith("//")) return `unc archive member path: ${p}`;
   if (n.split("/").includes("..")) return `path traversal in archive member: ${p}`;
   return null;
+}
+const names = [];
+for (const line of lines) {
+  const parsed = parseLine(line);
+  if (!parsed || !parsed.name) {
+    console.error(`error: unable to parse archive member listing line: ${line}`);
+    process.exit(1);
+  }
+  if (parsed.type === "l" || parsed.type === "h") {
+    console.error(`error: ${parsed.type === "l" ? "symlink" : "hardlink"} archive members are not allowed: ${parsed.name}`);
+    process.exit(1);
+  }
+  names.push(parsed.name.replace(/\\/g, "/"));
 }
 const roots = new Set();
 for (const name of names) {
@@ -662,6 +709,7 @@ if ($VerboseInstall) {
 }
 
 $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("ff-occam-get-" + [guid]::NewGuid().ToString("N"))
+$script:BootstrapTmpDir = $tmp
 New-Item -ItemType Directory -Path $tmp -Force | Out-Null
 try {
   $manifestPath = Join-Path $tmp "manifest.json"
@@ -731,7 +779,15 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "release signature verification failed" }
       } else {
         if (-not (Get-Command cosign -ErrorAction SilentlyContinue)) {
-          throw "signaturePolicy=required-cosign-v1 requires the cosign CLI on PATH"
+          throw @"
+signaturePolicy=required-cosign-v1 requires the cosign CLI on PATH.
+
+Install Cosign, then re-run the Occam bootstrap:
+  https://docs.sigstore.dev/cosign/system_config/installation/
+
+Authenticity checks prove release signer identity — not page-content truth.
+See INSTALL.md (Cosign / signaturePolicy).
+"@
         }
         $expectedIdentity = "https://github.com/ContextForgeAI/occam/.github/workflows/occam-release.yml@refs/tags/v$Version"
         & cosign verify-blob $tarballPath `

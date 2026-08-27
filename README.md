@@ -20,9 +20,9 @@ explicit failure when it cannot read the page.
 [See the transformation](docs/examples/current-proof/README.md#representative-webpage-transformation) ·
 [Read the documentation](https://contextforgeai.github.io/occam/)
 
-> **Current status:** Occam Core `1.0.0-rc.2` is a release candidate. The MCP
-> host and documented connection paths are the supported product surface.
-> `occam chat` and other features listed as experimental are not stable 1.0
+> **Current status:** Tree foundation is `1.0.0-rc.4` (unpublished). The **published** install
+> channel remains `1.0.0-rc.3`. The MCP host and documented connection paths are the supported
+> product surface. `occam chat` and other features listed as experimental are not stable 1.0
 > interfaces.
 
 ## See the webpage noise disappear
@@ -72,16 +72,16 @@ browser dependencies when needed, and may update a detected host configuration
 after making a backup. Review [installation safety](docs/trust/installation-safety.md)
 before running it in a sensitive environment.
 
-The currently published public release remains `v1.0.0-rc.2`. The next
-candidate (`1.0.0-rc.3`, not published yet) uses self-contained archives
-(`runtimeLayout=self-contained-v1`): the installer matches version/RID, verifies
-archive SHA-256, runs archive-member preflight before extract, verifies Cosign
-when the manifest declares `signaturePolicy=required-cosign-v1`, checks the
-complete bundled runtime before replacing an install, and does not fetch
-post-install helpers from the mutable repository branch. Bootstrap scripts may
-still be delivered from the mutable `main` raw URL (separate from release
-runtime content). It then checks the local runtime, detects supported AI
-applications, and tells you whether a restart or another action is needed.
+The currently published public release is `v1.0.0-rc.3`. It uses self-contained
+archives (`runtimeLayout=self-contained-v1`): the installer matches version/RID,
+verifies archive SHA-256, runs archive-member preflight before extract, verifies
+Cosign when the manifest declares `signaturePolicy=required-cosign-v1` (**requires
+the `cosign` CLI** — see [INSTALL.md](INSTALL.md)), checks the complete bundled
+runtime before replacing an install, and does not fetch post-install helpers from
+the mutable repository branch. Bootstrap scripts may still be delivered from the
+mutable `main` raw URL (separate from release runtime content). It then checks
+the local runtime, detects supported AI applications, and tells you whether a
+restart or another action is needed.
 Open a new conversation in the connected application and type:
 
 Public release binaries are currently published for `win-x64`, `linux-x64`, and

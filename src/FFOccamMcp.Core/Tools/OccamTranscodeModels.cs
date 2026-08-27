@@ -281,7 +281,18 @@ public sealed record OccamTranscodeSuccessResponse(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Semantics.SemanticCompletenessInfo? Completeness = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? Verdict = null);
+    string? Verdict = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    OccamTranscodeTocEntry[]? Toc = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    OccamTranscodeMustContainInfo? MustContain = null);
+
+public sealed record OccamTranscodeTocEntry(int Level, string Heading, string? Anchor, int Ordinal);
+
+public sealed record OccamTranscodeMustContainInfo(
+    string Verdict,
+    string[] Excerpts,
+    int HitCount);
 
 /// <summary>diff-codec: block-level delta vs a prior set of block hashes.</summary>
 public sealed record OccamTranscodeDiffInfo(
@@ -496,6 +507,9 @@ internal static class OccamTranscodeResponseBuilder
 [JsonSerializable(typeof(OccamTranscodeBrowserProvisionedInfo))]
 [JsonSerializable(typeof(OccamTranscodeFailureResponse))]
 [JsonSerializable(typeof(OccamTranscodeSuccessResponse))]
+[JsonSerializable(typeof(OccamTranscodeTocEntry))]
+[JsonSerializable(typeof(OccamTranscodeTocEntry[]))]
+[JsonSerializable(typeof(OccamTranscodeMustContainInfo))]
 [JsonSerializable(typeof(OccamTranscodeCompileInfo))]
 [JsonSerializable(typeof(OccamTranscodeOmittedInfo))]
 [JsonSerializable(typeof(OccamTranscodeBudgetInfo))]

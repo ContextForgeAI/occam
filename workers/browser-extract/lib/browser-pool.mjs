@@ -206,6 +206,8 @@ export class BrowserPool {
         consentAggressive: options.consentAggressive === true,
         extractVariant,
         browserPlan,
+        mcpActions: options.mcpActions ?? null,
+        actionDeadlineMs: options.actionDeadlineMs ?? null,
         sessionHeaders: session.sessionHeaders,
         features: options.features ?? null,
       });

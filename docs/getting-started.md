@@ -4,14 +4,16 @@
 
 If you still need install: [Quick Start](quick-start.md) · canonical reference [Install](install.md) · root [`INSTALL.md`](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md).
 
-Published `v1.0.0-rc.2` installs verify archive SHA-256 against the release
-manifest before extract. The `1.0.0-rc.3` candidate prepared in this tree (not
-published yet) adds self-contained runtime closure
-(`runtimeLayout=self-contained-v1`), archive-member preflight before extract,
-and Cosign verification when the manifest declares
-`signaturePolicy=required-cosign-v1` — without fetching executable helpers from
-a mutable repository overlay. Review [installation safety](trust/installation-safety.md)
+Published `v1.0.0-rc.3` installs verify archive SHA-256 against the release
+manifest, run archive-member preflight before extract, and verify Cosign when
+the manifest declares `signaturePolicy=required-cosign-v1` (requires the
+`cosign` CLI on PATH). Self-contained runtime closure
+(`runtimeLayout=self-contained-v1`) does not fetch executable helpers from a
+mutable repository overlay. Review [installation safety](trust/installation-safety.md)
 for what install mutates and how to remove it.
+
+**Tool surface:** product default is `OCCAM_PROFILE=reader` (8 tools). Set `OCCAM_PROFILE=full`
+for heal/save and the complete fifteen-tool catalog. See [Configuration — profiles](configuration.md).
 
 ---
 
@@ -23,7 +25,7 @@ terminal. Source checkouts can use the contributor path described below.
 
 ```bash
 occam smoke
-# expect exit 0 and 15 occam_* tools
+# expect exit 0; tool count depends on OCCAM_PROFILE (default reader=8; full=15)
 ```
 
 This checks the local MCP host and a live probe. Re-check registration in your AI

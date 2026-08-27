@@ -10,6 +10,7 @@ Features that ship but are **not** default product promises. Experimental ≠ in
 | **Crosscheck** | `OCCAM_CONSENSUS_MCP=1` | Multi-source / multi-vantage **comparison** (source agreement) | Verdict is computed, not a “consensus proof”; same-process/egress limits | Expensive (2+ extracts); easy to overread |
 | **Batch** | `OCCAM_BATCH_MCP=1` | Queue many URLs | No Receipt v1 on the batch envelope; store races; retention limits | Operator/server mode; not a casual agent default |
 | **Failure atlas** | `OCCAM_ATLAS_MCP=1` | Session-local failure telemetry | Not proof a host is a “dead end” | Diagnostic, not a trust layer |
+| **Browser interact** | `OCCAM_BROWSER_ACTIONS_MCP=1` | Declarative click/type/scroll then materialize | Max 16 steps; typed text redacted; no raw page JS; never cached | Automation surface; keep off unless needed |
 | **Managed acquisition** | Operator-configured providers | Third-party fetch after local failure | Privacy (URL leaves the machine); not a `backend_policy` value; failure never surfaces as the result | Opt-in cost/privacy; local-first default |
 
 ## Forbidden readings

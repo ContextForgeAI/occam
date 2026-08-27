@@ -49,6 +49,8 @@ jobs:
       - name: Agent MVP gate (doctor + hermes + popular-hosts)
         env:
           OCCAM_HOME: ${{ github.workspace }}
+          # Product default is reader (8 tools); MVP/hermes assert the full core catalog.
+          OCCAM_PROFILE: full
         run: bash ./scripts/ci-agent-mvp-gate.sh
 
       - name: Upload gate artifacts on failure

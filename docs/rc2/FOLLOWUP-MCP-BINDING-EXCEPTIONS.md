@@ -68,17 +68,15 @@ never reaches `ToolCallError` / Event Log unhandled logging.
 |---|---|
 | JSON-RPC / MCP protocol error | Transport/framing failure; rare |
 | `CallToolResult.isError=true` + opaque text | Unexpected invoke failure (SDK `ToolCallError` path) |
-| Tool content `{ok:false, failureCode}` with isError unset/false | **Expected typed domain/input failure** — public contract |
+| Tool content `{ok:false, failureCode}` **and** `isError:true` | **Expected typed domain/input failure** — dual signal (rc.4+) |
 
-Live host comparison (RC.2 AOT, 2026-07-23): digest empty/mixed urls, transcode bad policy,
-claim_check empty url, verify invalid capsule, and transcode `http_404` all return **isError
-absent** with **ok:false** and a typed code. Binding rejection must match that shape so clients
-keep reading the Occam envelope rather than treating the call as an opaque MCP tool crash.
+**RC.2** shipped typed `ok:false` with `isError` unset/false so agents always read the JSON
+envelope. **RC.4** keeps that typed body (`content[].text` + `structuredContent`) and **also**
+sets `isError:true` so MCP-aware clients treat the call as a tool-level failure without losing
+taxonomy. Binding rejection must match that dual-signal shape.
 
-The MCP SDK *allows* `isError=true` while still carrying `Content`, but Occam’s established
-public contract intentionally routes expected validation failures through the JSON envelope
-instead. Changing binding rejection to `isError=true` would introduce a second incompatible
-contract for the same `invalid_arguments` class.
+Live host comparison (RC.2 AOT, 2026-07-23) documented the older unset/`false` shape; do not use
+that as the post-rc.4 contract.
 
 ## Why unrelated exceptions are not masked
 

@@ -56,11 +56,9 @@ public static class McpArgumentBindingGuard
 
         return new CallToolResult
         {
-            // Established Occam public contract: expected typed failures are normal tool *results*
-            // (JSON string with ok:false + failureCode), not MCP CallToolResult.IsError=true.
-            // Live digest/transcode/claim_check invalid_arguments omit isError entirely; leave
-            // IsError unset so the wire shape matches those tools. Unexpected faults still use the
-            // SDK ToolCallError path (opaque isError=true) outside this filter.
+            // Typed Occam failures are still JSON results (ok:false + failureCode) AND MCP
+            // tool-level errors (IsError=true) so modern clients see both signals.
+            IsError = true,
             Content = [new TextContentBlock { Text = payload }],
         };
     }

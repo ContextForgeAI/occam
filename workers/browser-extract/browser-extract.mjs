@@ -10,6 +10,8 @@ const args = process.argv.slice(2);
 const consentAggressive = args.includes("--consent-aggressive");
 const leanAssets = args.includes("--lean-assets");
 const planFileArg = args.find((a) => a.startsWith("--browser-plan-file="));
+const mcpActionsFileArg = args.find((a) => a.startsWith("--mcp-actions-file="));
+const deadlineArg = args.find((a) => a.startsWith("--action-deadline-ms="));
 const headersFileArg = args.find((a) => a.startsWith("--headers-file="));
 const storageStateFileArg = args.find((a) => a.startsWith("--storage-state-file="));
 const headersFile = headersFileArg?.slice("--headers-file=".length).replace(/^"|"$/g, "") ?? null;
@@ -62,6 +64,10 @@ try {
     headersFile,
     storageStateFile,
     browserPlanFile: planFileArg?.split("=")[1] ?? null,
+    mcpActionsFile: mcpActionsFileArg?.slice("--mcp-actions-file=".length) ?? null,
+    actionDeadlineMs: deadlineArg
+      ? Number(deadlineArg.slice("--action-deadline-ms=".length))
+      : null,
     extractVariant: variantArg?.split("=")[1],
     cookieInject: args.includes("--cookie-inject"),
     features: process.env.OCCAM_FEATURES || null,

@@ -115,10 +115,10 @@ Tool: [`occam_verify`](tools/occam_verify.md) `mode=history` · Opt-in: [`occam_
 ## Installation and connect safety
 
 Release archives are always verified with SHA-256 against the release manifest.
-Published `v1.0.0-rc.2` stays on that SHA-256 path. The `1.0.0-rc.3` candidate
-(not published yet) additionally verifies Cosign when the manifest declares
-`signaturePolicy=required-cosign-v1` (fail-closed). That proves release
-authenticity/signer identity, not page-content truth.
+Published `v1.0.0-rc.3` additionally verifies Cosign when the manifest declares
+`signaturePolicy=required-cosign-v1` (fail-closed; requires the `cosign` CLI).
+That proves release authenticity/signer identity, not page-content truth.
+Published `v1.0.0-rc.2` remains on the SHA-256-only path.
 
 Connect backs up before write, writes atomically, protects unmanaged `ff-occam` entries, supports per-host rollback, and skips desktop mutation in CI unless forced.
 

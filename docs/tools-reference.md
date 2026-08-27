@@ -57,6 +57,10 @@ Read one web page → clean, compact LLM-ready Markdown (live extract, not model
 | `rank_blocks` | bool | `false` | Per-block `salience` (needs `json_blocks` + `focus_query`) |
 | `tag_trust` | bool | `false` | Per-block `trust` channel (needs `json_blocks`) |
 | `delta_only` | bool | `false` | Return only `diff` + empty markdown (needs `diff_against` + `json_blocks`); omits heavy sidecars |
+| `toc` | bool | `false` | Emit heading TOC (`toc[]`) from SectionIndex |
+| `section` | string | — | Focus a heading/section (fit + content selector) |
+| `must_contain` | string | — | Probe needle → `mustContain.verdict` `MATCH`/`NO_MATCH` + up to 3 excerpts |
+| `deadline_ms` | int | — | Overall call deadline (1s–300s); cancels in-flight extract |
 
 ### Success response (key fields)
 
@@ -375,6 +379,14 @@ Verdicts: `consensus`, `divergent`, `access_divergent`, `inconclusive`
 **`occam_failure_atlas`** — per-host failure summary for current host process.
 
 Parameter: `only_walled` (default `false`)
+
+### Browser interact (`OCCAM_BROWSER_ACTIONS_MCP=1`)
+
+**`occam_browser_interact`** — run a short declarative browser action plan, then materialize Markdown + Receipt v1.
+
+Parameters: `url`, `actions` (JSON array, max 16), `session_profile`, `focus_query`, `max_tokens`, `deadline_ms`
+
+Allowed `do`: `wait`, `wait_selector`, `wait_text`, `click`, `hover`, `type`, `press`, `scroll`. First failure stops remaining steps (`action_failed`). Typed text is redacted from `actionTrace`. Never cached. Raw page JS (`js_before_wait` / `wait_for.js`) is not exposed.
 
 ---
 

@@ -65,9 +65,22 @@ public sealed class OccamTranscodeTool(
         [Description("[structured] Annotate each json_blocks block with a 0–1 `salience` (BM25 relevance to focus_query, normalized to the top block) — an explicit per-span attention signal so you know which blocks to weight/cite without re-reading everything. Requires json_blocks=true and focus_query; no fit_markdown needed.")] bool rank_blocks = false,
         [Description("[structured] Tag each json_blocks block with a `trust` channel: `suspicious` (text reads like an instruction to the reader/model — possible prompt-injection) or `boilerplate` (non-content region). Normal content is untagged. A machine-checkable signal so a harness can hard-isolate untrusted spans. Heuristic, not a guarantee. Requires json_blocks=true.")] bool tag_trust = false,
         [Description("[watch] delta-as-primary: when you already hold the prior extract, return ONLY the block-level delta and an EMPTY markdown (deltaOnly:true) instead of the full page — a re-read costs delta-size tokens, not full-page tokens. Reconstruct current = prior blocks, drop removedHashes, apply addedBlocks in blockHashes order; verify against the returned contentHash (hash of the full current markdown). Requires diff_against + json_blocks; ignored (full markdown returned, with a warning) otherwise.")] bool delta_only = false,
+        [Description("[tokens] Emit a compact table of contents from Markdown headings (SectionIndex). Opt-in; off by default.")] bool toc = false,
+        [Description("[tokens] Structural section / heading to focus (e.g. \"Installation\"). Maps to focus fragment + content selector; enables fit when needed.")] string? section = null,
+        [Description("[structured] Require this substring in the materialized markdown. Returns mustContain:{verdict:MATCH|NO_MATCH,excerpts[],hitCount} — does not invent page content on miss.")] string? must_contain = null,
+        [Description("[advanced] Overall deadline for this call in milliseconds (clamped 1000–300000). Cancels the in-flight extract when exceeded.")] int? deadline_ms = null,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        using var deadlineCts = deadline_ms is > 0
+            ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken)
+            : null;
+        if (deadlineCts is not null)
+        {
+            deadlineCts.CancelAfter(TimeSpan.FromMilliseconds(Math.Clamp(deadline_ms!.Value, 1_000, 300_000)));
+            cancellationToken = deadlineCts.Token;
+        }
 
         if (!OccamBackendPolicyParser.TryParse(backend_policy, out var policy))
         {
@@ -105,6 +118,35 @@ public sealed class OccamTranscodeTool(
             options = options with { DiffAgainst = diffPriorHashes };
         }
 
+        if (!string.IsNullOrWhiteSpace(section))
+        {
+            var sectionTrim = section.Trim();
+            var selectors = options.ContentSelectors;
+            if (selectors.Length == 0)
+            {
+                selectors = [sectionTrim.StartsWith('#') ? sectionTrim : $"# {sectionTrim}"];
+            }
+
+            options = options with
+            {
+                Section = sectionTrim,
+                FocusFragment = options.FocusFragment ?? sectionTrim,
+                FocusQuery = options.FocusQuery ?? sectionTrim,
+                FitMarkdown = true,
+                ContentSelectors = selectors,
+            };
+        }
+
+        if (toc)
+        {
+            options = options with { EmitToc = true };
+        }
+
+        if (!string.IsNullOrWhiteSpace(must_contain))
+        {
+            options = options with { MustContain = must_contain.Trim() };
+        }
+
         if (!workerPaths.IsConfigured)
         {
             var home = Environment.GetEnvironmentVariable("OCCAM_HOME");
@@ -122,7 +164,13 @@ public sealed class OccamTranscodeTool(
         string? cacheKey = null;
         if (cacheable)
         {
-            cacheKey = TranscodeCacheKey.Compute(url, backend_policy, options);
+            cacheKey = TranscodeCacheKey.Compute(
+                url,
+                backend_policy,
+                options,
+                rankBlocks: rank_blocks,
+                tagTrust: tag_trust,
+                emitCapsule: emit_capsule);
             if (responseCache.TryGet(cacheKey, cache_ttl_s!.Value, out var cachedJson, out var ageSeconds)
                 && TrySerializeCachedHit(cachedJson, ageSeconds, out var hitJson))
             {
@@ -278,7 +326,8 @@ public sealed class OccamTranscodeTool(
             result.PlaybookId,
             result.PlaybookVersion,
             rankBlocks: rank_blocks,
-            tagTrust: tag_trust);
+            tagTrust: tag_trust,
+            emitCapsule: emit_capsule);
 
         // Whole-response conditional / delta economy: omit large sidecars when the body is intentionally
         // empty. unchanged:true is a minimal envelope; delta_only keeps only diff + verification metadata.
@@ -357,7 +406,14 @@ public sealed class OccamTranscodeTool(
                 Access: accessInfo,
                 Focus: focusInfo,
                 Completeness: completenessInfo,
-                Verdict: Semantics.SemanticVerdict.NotEvaluated),
+                Verdict: Semantics.SemanticVerdict.NotEvaluated,
+                Toc: omitHeavySidecars || !options.EmitToc
+                    ? null
+                    : [.. Compile.TocBuilder.Build(result.Markdown ?? string.Empty)
+                        .Select(e => new OccamTranscodeTocEntry(e.Level, e.Heading, e.Anchor, e.Ordinal))],
+                MustContain: omitHeavySidecars || options.MustContain is null
+                    ? null
+                    : MapMustContain(Compile.MustContainMatcher.Evaluate(result.Markdown ?? string.Empty, options.MustContain))),
             OccamTranscodeJsonContext.Default.OccamTranscodeSuccessResponse);
 
         // Only cache real successes; never an unchanged (AF-6) body — cacheable already
@@ -421,6 +477,9 @@ public sealed class OccamTranscodeTool(
 
         return mapped;
     }
+
+    private static OccamTranscodeMustContainInfo MapMustContain(Compile.MustContainMatcher.Result result) =>
+        new(result.Verdict, [.. result.Excerpts], result.HitCount);
 
     private static OccamTranscodeAgentHintsInfo? AugmentHintsFromSemantics(
         OccamTranscodeAgentHintsInfo? existing,

@@ -94,9 +94,7 @@ function runChild(command, args) {
   });
 }
 
-if (hostBinary) {
-  runChild(hostBinary, []);
-} else if (process.env.OCCAM_FORCE_DOTNET_RUN === "1" && existsSync(project)) {
+if (process.env.OCCAM_FORCE_DOTNET_RUN === "1" && existsSync(project)) {
   const major = dotnetSdkMajor();
   if (major < 10) {
     console.error(
@@ -107,6 +105,8 @@ if (hostBinary) {
   }
   console.error("[ff-occam] OCCAM_FORCE_DOTNET_RUN=1 — using dotnet run (dev only).");
   runChild("dotnet", ["run", "--project", project, "-c", "Release", "--no-launch-profile"]);
+} else if (hostBinary) {
+  runChild(hostBinary, []);
 } else if (existsSync(project)) {
   exitInstallBlocked(root);
 } else {

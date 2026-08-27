@@ -7,6 +7,7 @@ import { injectRecipeCookies } from "./cookie-inject.mjs";
 import { runVirtualScroll, normalizeVirtualScrollConfig } from "./virtual-scroll.mjs";
 import { flattenOpenShadowRoots } from "./shadow-dom-flatten.mjs";
 import { runBrowserPlan } from "./interaction-steps.mjs";
+import { runMcpActions, validateMcpActions } from "./browser-actions.mjs";
 import { applySessionCookies, resolveBrowserContextOptions } from "./session-headers.mjs";
 import { resolvePlaywrightProxy } from "../../shared/lib/egress-proxy.mjs";
 import { genericMarkdownPrune } from "../../shared/lib/generic-markdown-prune.mjs";
@@ -171,14 +172,17 @@ export async function createBrowserSession(options = {}) {
         // ignore malformed tracker URL
       }
     }
-    // SSRF: Chromium resolves and follows redirects itself, so the pre-navigation host check and
-    // the literal framenavigated check can't stop a redirect/JS navigation to an internal host via
-    // a DNS-resolving name. Validate the host of EVERY navigation request (initial, 3xx, meta
-    // refresh, JS location, iframe) with a real DNS resolve here and abort private targets before
-    // the request leaves — the network-layer guard the http worker gets from resolveAndValidateHost.
-    if (!shouldSkipPrivateIpCheck() && req.isNavigationRequest()) {
+    // SSRF: Chromium resolves DNS and follows redirects itself. Validate EVERY
+    // http(s) request host (navigation, XHR/fetch, subresource, iframe) with a
+    // real DNS resolve and abort private targets before the request leaves —
+    // same network-layer guard the http worker gets from resolveAndValidateHost.
+    // data:/blob:/about: and other non-network schemes are not host-resolved here.
+    if (!shouldSkipPrivateIpCheck()) {
       try {
-        await resolveAndValidateHost(new URL(req.url()).hostname);
+        const u = new URL(req.url());
+        if (u.protocol === "http:" || u.protocol === "https:") {
+          await resolveAndValidateHost(u.hostname);
+        }
       } catch {
         return route.abort("blockedbyclient");
       }
@@ -424,6 +428,8 @@ export async function renderAndExtract(context, url, options = {}) {
     consentAggressive: optionConsentAggressive = false,
     extractVariant = "css-hide",
     browserPlan = null,
+    mcpActions = null,
+    actionDeadlineMs = null,
   } = options;
   const variant = parseExtractVariant(extractVariant);
   const activeFeatureList = (options.features ?? process.env.OCCAM_FEATURES ?? "")
@@ -586,7 +592,44 @@ export async function renderAndExtract(context, url, options = {}) {
       await page.waitForTimeout(consentAggressive ? 1000 : 800);
     }
 
-    interactionInfo = await runBrowserPlan(page, browserPlan);
+    // MCP browser_interact: declarative actions only (no playbook js_before_wait / wait_for.js).
+    let mcpActionResult = null;
+    if (Array.isArray(mcpActions) && mcpActions.length > 0) {
+      const validated = validateMcpActions(mcpActions);
+      if (!validated.ok) {
+        return {
+          ok: false,
+          backend: "browser_playwright",
+          failure: validated.failure,
+          message: validated.message,
+          extract_variant: variant,
+          url: { requested: url, final: page.url() },
+          latency_ms: Math.round(performance.now() - started),
+        };
+      }
+      mcpActionResult = await runMcpActions(page, validated.actions, {
+        deadlineMs: actionDeadlineMs ?? undefined,
+      });
+      interactionInfo = { steps_run: mcpActionResult.steps_run ?? 0 };
+      if (!mcpActionResult.ok) {
+        return {
+          ok: false,
+          backend: "browser_playwright",
+          failure: mcpActionResult.failure ?? "action_failed",
+          message: mcpActionResult.outcomes?.[mcpActionResult.failed_index ?? 0]?.message
+            ?? "browser action failed",
+          extract_variant: variant,
+          url: { requested: url, final: page.url() },
+          action_plan_hash: mcpActionResult.action_plan_hash,
+          action_trace: mcpActionResult.action_trace,
+          failed_index: mcpActionResult.failed_index,
+          steps_run: mcpActionResult.steps_run,
+          latency_ms: Math.round(performance.now() - started),
+        };
+      }
+    } else {
+      interactionInfo = await runBrowserPlan(page, browserPlan);
+    }
 
     await waitForRecipeSelectors(page, recipe);
     await waitForArticleContent(page, recipe);
@@ -695,6 +738,8 @@ export async function renderAndExtract(context, url, options = {}) {
       consent_clicked: consentClicked,
       consent_reextract: consentReextract,
       interaction_steps_run: interactionInfo?.steps_run ?? 0,
+      action_plan_hash: mcpActionResult?.action_plan_hash ?? undefined,
+      action_trace: mcpActionResult?.action_trace ?? undefined,
       virtual_scroll_rounds: scrollInfo.rounds,
       virtual_scroll_mode: scrollInfo.mode,
       virtual_scroll_chunks_merged: scrollInfo.chunks_merged ?? 0,

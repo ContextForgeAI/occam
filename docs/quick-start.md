@@ -78,16 +78,15 @@ Requires Node.js 20+. The release install does not require the .NET SDK.
     irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
     ```
 
-The currently published channel remains `v1.0.0-rc.2`. For the `1.0.0-rc.3`
-candidate (not published yet), the installer verifies the release archive
-against its SHA-256 manifest, verifies Cosign when
-`signaturePolicy=required-cosign-v1` is declared, runs archive-member preflight
-before extract, and checks the complete bundled runtime from that archive
-before replacing an install — without fetching post-install helpers from the
-mutable repository branch. It then checks the local runtime, detects supported
-applications, and explains the next action. If it detects one supported
-application, it can connect it. If it finds several, it asks which one to
-configure.
+The currently published channel is `v1.0.0-rc.3`. The installer verifies the
+release archive against its SHA-256 manifest, verifies Cosign when
+`signaturePolicy=required-cosign-v1` is declared (**requires the `cosign` CLI**),
+runs archive-member preflight before extract, and checks the complete bundled
+runtime from that archive before replacing an install — without fetching
+post-install helpers from the mutable repository branch. It then checks the
+local runtime, detects supported applications, and explains the next action. If
+it detects one supported application, it can connect it. If it finds several, it
+asks which one to configure.
 
 Release binaries exist for Windows x64, Linux x64, and Apple Silicon macOS. An
 unsupported CPU/OS combination is rejected before download.

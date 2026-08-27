@@ -19,6 +19,12 @@ public sealed record OccamTranscodeOptions
     public string? TranslateTo { get; init; }
     /// <summary>Prior block hashes for the diff-codec; set when `diff_against` is supplied.</summary>
     public IReadOnlyList<string>? DiffAgainst { get; init; }
+    /// <summary>Emit a compact TOC from headings (SectionIndex).</summary>
+    public bool EmitToc { get; init; }
+    /// <summary>Structural section / heading focus (maps to FocusFragment + content selector).</summary>
+    public string? Section { get; init; }
+    /// <summary>Require this substring in the materialized markdown (MATCH / NO_MATCH).</summary>
+    public string? MustContain { get; init; }
 
     public static OccamTranscodeOptions Default { get; } = new();
 }

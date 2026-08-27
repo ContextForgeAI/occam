@@ -329,11 +329,12 @@ EXAMPLES:
   npx @ff-occam/mcp --mcp-server       # WebSocket mode
   npx @ff-occam/mcp --mcp-server --port 5051
 
-MCP TOOLS (14):
-  occam_transcode, occam_probe, occam_digest, occam_map, occam_search,
-  occam_playbook_resolve, occam_playbook_heal, occam_playbook_save,
+MCP TOOLS (15 core under OCCAM_PROFILE=full; default profile is reader=8):
+  occam_client_capabilities, occam_transcode, occam_probe, occam_digest, occam_map,
+  occam_search, occam_playbook_resolve, occam_playbook_heal, occam_playbook_save,
   occam_extract_knowledge, occam_verify, occam_claim_check, occam_attest,
   occam_playbook_lint, occam_dataset_export
+  Opt-in: batch/watch/crosscheck/atlas/browser_interact via OCCAM_*_MCP=1 flags
 
 DOCS: https://github.com/ContextForgeAI/occam/tree/main/docs
 `);

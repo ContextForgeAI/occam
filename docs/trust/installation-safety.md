@@ -4,11 +4,11 @@
 
 The canonical installer downloads a GitHub Release archive and verifies **SHA-256** against the published `*-manifest.json` before extract.
 
-**Publication state:** the public channel on `main` remains published
-`v1.0.0-rc.2` (Level B / overlay-compatible). The `1.0.0-rc.3` candidate in this
-tree is **not published yet**.
+**Publication state:** the public channel default is published `v1.0.0-rc.3`
+(`runtimeLayout=self-contained-v1`). Legacy `v1.0.0-rc.2` (Level B /
+overlay-compatible) remains available via explicit `OCCAM_VERSION=1.0.0-rc.2`.
 
-**`1.0.0-rc.3` candidate contract** (`runtimeLayout=self-contained-v1`):
+**`1.0.0-rc.3` contract** (`runtimeLayout=self-contained-v1`):
 
 - The requested version, platform RID, and tarball name must match the manifest.
 - Archive-member preflight runs **before** extraction.
