@@ -60,6 +60,10 @@ Legacy **`initialize`** clients continue to work on stdio and WebSocket.
 a logging capability it does not push on the default path. Clients must not wait for
 `notifications/tools/list_changed` after profile/env changes — restart the host instead.
 
+**Auth (rc.4):** Streamable HTTP is **loopback-first and unauthenticated**. There is **no OAuth**
+on `/mcp` in this release. For authenticated remote agents use **Remote MCP** (`--remote` + JWT /
+OIDC) below — not Streamable HTTP.
+
 Smoke (dual-era + Streamable HTTP):
 
 ```bash

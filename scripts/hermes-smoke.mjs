@@ -110,6 +110,8 @@ async function main() {
     env: {
       ...process.env,
       OCCAM_HOME: root,
+      // Hermes smoke asserts the full fifteen-tool catalog (not product default reader=8).
+      OCCAM_PROFILE: process.env.OCCAM_PROFILE?.trim() || "full",
       Logging__LogLevel__Default: "None",
       WT_OCCAM_BANNER: "0",
     },

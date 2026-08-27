@@ -23,7 +23,8 @@ before calling this RC shipped.
   modern clients use `server/discover` with per-request `_meta`. Dual-era regression:
   `OCCAM_FORCE_DOTNET_RUN=1 node scripts/lib/mcp-dual-era.selftest.mjs`.
 - **Streamable HTTP `/mcp`** — `--mcp-http` / `--streamable-http` on loopback (default port
-  5055). Custom WSS `--remote` remains legacy/advanced.
+  5055). Custom WSS `--remote` remains legacy/advanced. **No OAuth on Streamable HTTP in rc.4**
+  (loopback-first); authenticated remotes use `--remote` + JWT/OIDC.
 - **MCP wire enrichments** — tool results duplicate JSON envelopes into `structuredContent`;
   `tools/list` advertises permissive `outputSchema` + read-only/open-world annotations.
   Typed `ok:false` envelopes now also set MCP **`isError:true`** (rc.4 dual signal; JSON body
