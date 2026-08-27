@@ -41,7 +41,7 @@ assert_published_rid() {
 }
 
 # Public default tracks the published GitHub Release (see PUBLIC_DEFAULT_RELEASE_VERSION).
-VERSION="${OCCAM_VERSION:-1.0.0-rc.3}"
+VERSION="${OCCAM_VERSION:-1.0.0-rc.4}"
 RID="${OCCAM_RID:-$(detect_rid)}"
 assert_published_rid "$RID"
 INSTALL_DIR="${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}"

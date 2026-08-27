@@ -5,9 +5,9 @@ Canonical agent/operator install reference also lives at the repository root:
 This page is the documentation-site copy of the same happy path.
 
 **Requirements:** Node.js **20+**. No .NET SDK on the install machine.  
-**Cosign:** required for published `v1.0.0-rc.3` (`signaturePolicy=required-cosign-v1`). See [Sigstore install](https://docs.sigstore.dev/cosign/system_config/installation/).  
-**Published release:** `1.0.0-rc.3`  
-**Public install default:** `1.0.0-rc.3`
+**Cosign:** required for published `v1.0.0-rc.3`+ (`signaturePolicy=required-cosign-v1`). See [Sigstore install](https://docs.sigstore.dev/cosign/system_config/installation/).
+**Published release:** `1.0.0-rc.4`
+**Public install default:** `1.0.0-rc.4`
 
 ---
 
@@ -24,7 +24,7 @@ runs doctor, and connects your MCP host.
 | Manual tarball + manifest from GitHub Releases | **No** | Integrity inspection only; bypasses guarded install and onboarding |
 | `git clone` + doctor (contributors) | Build path | Requires .NET 10 SDK |
 | `npx @ff-occam/mcp` | **No** | Not a supported release channel |
-| Cosign `.bundle` on Releases | **Policy-gated** | Always SHA-256 vs manifest. When the manifest declares `signaturePolicy=required-cosign-v1` (published `v1.0.0-rc.3`), the installer verifies the Cosign bundle fail-closed and requires the `cosign` CLI. Undeclared / `sha256-only` (published `v1.0.0-rc.2`) stays SHA-256-only. Authenticity ≠ page-content truth. |
+| Cosign `.bundle` on Releases | **Policy-gated** | Always SHA-256 vs manifest. When the manifest declares `signaturePolicy=required-cosign-v1` (published `v1.0.0-rc.3`+), the installer verifies the Cosign bundle fail-closed and requires the `cosign` CLI. Undeclared / `sha256-only` (published `v1.0.0-rc.2`) stays SHA-256-only. Authenticity ≠ page-content truth. |
 
 Public binaries are published for exactly `win-x64`, `linux-x64`, and
 `osx-arm64`. Intel macOS, Linux ARM64, Windows ARM64, and other architectures are
@@ -55,10 +55,10 @@ The bootstrap selects install behavior from the **release manifest contract**, n
 | Manifest | Install contract |
 |----------|------------------|
 | no `runtimeLayout` (published `v1.0.0-rc.2`) | Legacy Level B: SHA-256; operator CLI may refresh from the repository overlay |
-| `runtimeLayout=self-contained-v1` (published `v1.0.0-rc.3`) | Self-contained: SHA-256 + archive preflight + complete runtime closure; **no** executable helper overlay; Cosign when `signaturePolicy=required-cosign-v1` |
+| `runtimeLayout=self-contained-v1` (published `v1.0.0-rc.3`+) | Self-contained: SHA-256 + archive preflight + complete runtime closure; **no** executable helper overlay; Cosign when `signaturePolicy=required-cosign-v1` |
 | unknown `runtimeLayout` / unknown `signaturePolicy` | Fail closed |
 
-**Public default** (no `OCCAM_VERSION`): **`1.0.0-rc.3`**. Set `OCCAM_VERSION=1.0.0-rc.2` only for the legacy Level B channel.
+**Public default** (no `OCCAM_VERSION`): **`1.0.0-rc.4`**. Set `OCCAM_VERSION=1.0.0-rc.3` or `1.0.0-rc.2` only for an older channel.
 
 1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases
 2. Requires the manifest version and RID to match the request, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). For self-contained manifests, archive-member preflight runs **before** extract
@@ -159,7 +159,7 @@ Expect **exit 0** and **15** core `occam_*` tools.
 | `OCCAM_SETUP` | `auto` | `auto` \| `manual` \| `ask` |
 | `OCCAM_HOST` | (none) | Legacy **fallback** snippet preference (`hermes` \| `cursor`) — does not replace connect |
 | `OCCAM_INSTALL_DIR` | `~/.local/share/ff-occam` | Install root |
-| `OCCAM_VERSION` | `1.0.0-rc.3` (public default) | Release version; set `1.0.0-rc.2` only for the legacy channel |
+| `OCCAM_VERSION` | `1.0.0-rc.4` (public default) | Release version; set an older tag only for a legacy channel |
 | `OCCAM_RID` | detected | Published RID override: `win-x64` \| `linux-x64` \| `osx-arm64` only |
 
 ## Do not

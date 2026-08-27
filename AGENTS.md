@@ -21,7 +21,7 @@ You are working in **FFOccamMCP**, the L0 core of **FF-Occam MCP**. **Read this 
 | `scripts/occam-doctor.ps1` | 12-tool public wiki |
 | Gate `benchmarks/l0-gate` → `L0_GATE_OK` / `L0_GATE_FAST_OK` / `L1A_TOKEN_OK` / `L1B_PROBE_OK` / `L1_FAILURE_TAXONOMY_OK` / `L2_DIGEST_OK` / `L2_MAP_OK` / **`L2_SESSION_OK`** / **`L2_TRANSPORT_OK`** / **`L2_EGRESS_OK`** / **`L2_MEDIA_REFS_OK`** / **`L3_HEAL_LEARN_OK`** / **`L4_GENOME_OK`** / **`L5_BATCH_OK`** / **`L6_BROWSER_POOL_OK`** / **`L7_RESOURCE_SAFETY_OK`** / **`L8_AGENT_FIRST_OK`** (L9 golden set folds into `L0_GATE_OK`) | Wide Validation, wave2-eval |
 
-**Live by default** — every call fetches the page unless the caller explicitly opts into the local TTL-bound response cache with `cache_ttl_s > 0`; private/session-bound requests are never cached (**v1.0.0-rc.3** published — fifteen core tools + Receipt v1 verifiable layer + opt-in batch/watch/consensus/atlas; Agent-First AF-1..AF-6; PB2 community + PB3 heal/save + PB4a/b shipped; tier-3 baseline 2026-06-17, L0 core CLOSED).
+**Live by default** — every call fetches the page unless the caller explicitly opts into the local TTL-bound response cache with `cache_ttl_s > 0`; private/session-bound requests are never cached (**v1.0.0-rc.4** published — fifteen core tools + Receipt v1 verifiable layer + opt-in batch/watch/consensus/atlas; Agent-First AF-1..AF-6; PB2 community + PB3 heal/save + PB4a/b shipped; tier-3 baseline 2026-06-17, L0 core CLOSED).
 
 **PB3 heal-learn (shipped v0.8.4-pb3-heal-learn):** `occam_playbook_heal` + `occam_playbook_save`; gate `L3_HEAL_LEARN_OK` — see `MCP_API_SPEC.md` + `corpora/l3-heal-learn.jsonl`.
 
@@ -346,7 +346,7 @@ Report drafts: `artifacts/quality-audit/YYYY-MM-DD-….md` (gitignored). Public 
 
 ## 10. Session start checklist
 
-**Current product track:** **v1.0.0-rc.3** published on GitHub Releases (public install default). Tree **`VERSION=1.0.0-rc.4`** foundation (MCP 2.2, Streamable HTTP, wire enrichments, `ff-occam`, browser interact, profiles). Next: publish rc.4 + soak full live L3–L9 before GA `1.0.0`. Public release identity: `https://github.com/ContextForgeAI/occam`.
+**Current product track:** **v1.0.0-rc.4** published on GitHub Releases (public install default). Foundation includes MCP 2.2, Streamable HTTP, wire enrichments, `ff-occam`, browser interact, profiles. Next: soak full live L3–L9 before GA `1.0.0`. Public release identity: `https://github.com/ContextForgeAI/occam`.
 
 1. Read **this file** and [docs/index.md](docs/index.md) for current priorities.
 2. Confirm **Cursor rules** active: [.cursor/rules/README.md](.cursor/rules/README.md) (6 `.mdc` files).

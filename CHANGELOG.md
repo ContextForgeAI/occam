@@ -2,22 +2,24 @@
 
 All notable changes to **FFOccamMCP** (L0 core) are documented here.
 
-Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1` was the first release candidate after L0 closed; `1.0.0-rc.2` and `1.0.0-rc.3` are published RCs; `1.0.0-rc.4` is the next foundation candidate.
+Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1` was the first release candidate after L0 closed; `1.0.0-rc.2`, `1.0.0-rc.3`, and `1.0.0-rc.4` are published RCs.
 
 ## [Unreleased]
 
-(empty — foundation cut lives under `[1.0.0-rc.4]` below until that RC is published)
+(empty)
 
-## [1.0.0-rc.4] — foundation (unpublished)
+## [1.0.0-rc.4] — 2026-08-27
 
-Foundation candidate on `public/main`. Not production-ready; full live L3–L9 soak still required
-before calling this RC shipped.
+Published on GitHub Releases with Cosign-signed Level B archives. Not GA; full live
+L3–L9 soak still recommended before production claims.
 
 ### Changed
 
 - **Tree version `1.0.0-rc.4`** — `VERSION` + npm manifests + `server.json` bumped for the
-  foundation cut. **Public bootstrap default stays published `1.0.0-rc.3`** until a GitHub
-  Release for rc.4 exists (do not point `curl|bash` at an unpublished tag).
+  foundation cut.
+- **Public install default → published `1.0.0-rc.4`** — bootstrap (`get-ff-occam.sh` /
+  `.ps1`), `PUBLIC_DEFAULT_RELEASE_VERSION`, and install docs track GitHub Release
+  `v1.0.0-rc.4` (Cosign `required-cosign-v1`).
 - **MCP C# SDK `1.2.0` → `2.2.0`** — host builds against ModelContextProtocol 2.2.0
   + ModelContextProtocol.AspNetCore 2.2.0. Legacy `initialize` clients continue to work;
   modern clients use `server/discover` with per-request `_meta`. Dual-era regression:
@@ -44,18 +46,15 @@ before calling this RC shipped.
 - **`server.json`** — MCP registry metadata at repo root (stdio packages `ff-occam` / `@ff-occam/mcp`).
 - **`OCCAM_FORCE_DOTNET_RUN=1` honors override** — when set, `launch-mcp-host.mjs`
   uses `dotnet run` even if a published AOT binary is present (dev/test only).
-- **Public install default → published `1.0.0-rc.3`** — bootstrap (`get-ff-occam.sh` /
-  `.ps1`), `PUBLIC_DEFAULT_RELEASE_VERSION`, and install docs no longer point at
-  stale `1.0.0-rc.2` or claim that rc.3 is unpublished.
 - **Version single source of truth** — host `Version` / `InformationalVersion`
   read from repo-root `VERSION` via `Directory.Build.props`; npm package
-  manifests aligned to `1.0.0-rc.4` (bootstrap public default remains published `1.0.0-rc.3`).
+  manifests aligned to `1.0.0-rc.4`.
 - **Piped bootstrap archive preflight** — `curl | bash` / `irm | iex` resolve
   `archive-preflight.mjs` from checkout, `OCCAM_ARCHIVE_PREFLIGHT_PATH`, or the
   pinned release-tag raw URL (same gzipped-ustar inspector as checkout installs).
   GNU/BSD `tar -tvzf` listing fallback no longer assumes BSD-only field layout.
 - **Cosign prerequisite documented** — `signaturePolicy=required-cosign-v1`
-  (published rc.3) requires the `cosign` CLI on PATH; bootstrap errors link to
+  (published rc.3+) requires the `cosign` CLI on PATH; bootstrap errors link to
   Sigstore install docs. Authenticity ≠ page-content truth.
 
 ### Security

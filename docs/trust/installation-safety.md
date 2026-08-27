@@ -4,11 +4,12 @@
 
 The canonical installer downloads a GitHub Release archive and verifies **SHA-256** against the published `*-manifest.json` before extract.
 
-**Publication state:** the public channel default is published `v1.0.0-rc.3`
-(`runtimeLayout=self-contained-v1`). Legacy `v1.0.0-rc.2` (Level B /
-overlay-compatible) remains available via explicit `OCCAM_VERSION=1.0.0-rc.2`.
+**Publication state:** the public channel default is published `v1.0.0-rc.4`
+(`runtimeLayout=self-contained-v1`). Older channels remain available via
+explicit `OCCAM_VERSION` (for example `1.0.0-rc.3` or legacy Level B
+`1.0.0-rc.2`).
 
-**`1.0.0-rc.3` contract** (`runtimeLayout=self-contained-v1`):
+**`1.0.0-rc.3`+ contract** (`runtimeLayout=self-contained-v1`):
 
 - The requested version, platform RID, and tarball name must match the manifest.
 - Archive-member preflight runs **before** extraction.
@@ -24,7 +25,7 @@ overlay-compatible) remains available via explicit `OCCAM_VERSION=1.0.0-rc.2`.
   from the mutable repository branch.
 - Bootstrap **script delivery** may still originate from
   `raw.githubusercontent.com/.../main/...` (mutable bootstrap delivery). That is
-  separate from release **runtime content**, which for rc.3 is closed inside the
+  separate from release **runtime content**, which for rc.3+ is closed inside the
   hashed (and, when required, Cosign-verified) archive.
 
 Replacement is ownership-gated in both directions. The staged tree must pass the

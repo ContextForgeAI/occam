@@ -20,8 +20,7 @@ explicit failure when it cannot read the page.
 [See the transformation](docs/examples/current-proof/README.md#representative-webpage-transformation) ·
 [Read the documentation](https://contextforgeai.github.io/occam/)
 
-> **Current status:** Tree foundation is `1.0.0-rc.4` (unpublished). The **published** install
-> channel remains `1.0.0-rc.3`. The MCP host and documented connection paths are the supported
+> **Current status:** Published install channel is **`1.0.0-rc.4`**. The MCP host and documented connection paths are the supported
 > product surface. `occam chat` and other features listed as experimental are not stable 1.0
 > interfaces.
 
@@ -72,7 +71,7 @@ browser dependencies when needed, and may update a detected host configuration
 after making a backup. Review [installation safety](docs/trust/installation-safety.md)
 before running it in a sensitive environment.
 
-The currently published public release is `v1.0.0-rc.3`. It uses self-contained
+The currently published public release is `v1.0.0-rc.4`. It uses self-contained
 archives (`runtimeLayout=self-contained-v1`): the installer matches version/RID,
 verifies archive SHA-256, runs archive-member preflight before extract, verifies
 Cosign when the manifest declares `signaturePolicy=required-cosign-v1` (**requires

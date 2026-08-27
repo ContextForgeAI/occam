@@ -1,6 +1,6 @@
 # Roadmap — shipped log and direction
 
-> **Product version:** 1.0.0-rc.4 foundation (published channel `1.0.0-rc.3`) · **L0 core:** CLOSED (fifteen core MCP tools; default profile `reader`).
+> **Product version:** 1.0.0-rc.4 (published) · **L0 core:** CLOSED (fifteen core MCP tools; default profile `reader`).
 > **North star:** [VISION.md](https://github.com/ContextForgeAI/occam/blob/main/VISION.md) · **Contract:** [MCP API](reference/mcp-api.md) · **Release notes:** [CHANGELOG.md](https://github.com/ContextForgeAI/occam/blob/main/CHANGELOG.md).
 
 This page is the **public shipped log**. Detailed engineering backlog lives in local `docs-internal/` (not committed).

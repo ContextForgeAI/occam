@@ -1,7 +1,7 @@
 # Operators
 
 Use this page to keep an Occam release install connected, healthy, current, and
-removable. Occam Core `1.0.0-rc.3` is a release candidate, not GA.
+removable. Occam Core `1.0.0-rc.4` is a release candidate, not GA.
 
 ## What you run
 

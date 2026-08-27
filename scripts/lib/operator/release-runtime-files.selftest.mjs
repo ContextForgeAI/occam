@@ -103,8 +103,8 @@ function testBootstrapsUseBundledHelpers() {
   const psReplace = ps1.indexOf("Replace-OccamInstallTree -TargetDir $InstallDir -StagedDir $staged");
   assert.ok(shCheck >= 0 && shCheck < shReplace, "shell runtime check must precede install swap");
   assert.ok(psCheck >= 0 && psCheck < psReplace, "PowerShell runtime check must precede install swap");
-  assert.match(sh, /OCCAM_VERSION:-\s*1\.0\.0-rc\.3|OCCAM_VERSION:-1\.0\.0-rc\.3/);
-  assert.match(ps1, /1\.0\.0-rc\.3/);
+  assert.match(sh, /OCCAM_VERSION:-\s*1\.0\.0-rc\.4|OCCAM_VERSION:-1\.0\.0-rc\.4/);
+  assert.match(ps1, /1\.0\.0-rc\.4/);
   console.log("ok: sh/ps1 dual-contract bootstrap (legacy overlay + self-contained no-overlay)");
 }
 
