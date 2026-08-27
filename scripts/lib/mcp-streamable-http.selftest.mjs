@@ -2,29 +2,65 @@
 /**
  * Streamable HTTP smoke: POST /mcp initialize + GET /health.
  *
+ * Prefers published AOT host when present (CI gate-fast places OccamMcp.Core at OCCAM_HOME).
+ * Falls back to `dotnet run` when OCCAM_FORCE_DOTNET_RUN=1 or no binary is found.
+ *
  * Usage:
  *   OCCAM_HOME=$PWD OCCAM_FORCE_DOTNET_RUN=1 node scripts/lib/mcp-streamable-http.selftest.mjs
  */
 import { spawn } from "node:child_process";
+import { createServer } from "node:net";
 import { setTimeout as delay } from "node:timers/promises";
+import { resolveHostBinary } from "./resolve-host-binary.mjs";
 
 const occamHome = process.env.OCCAM_HOME || process.cwd();
-const port = Number(process.env.OCCAM_HTTP_PORT || 5055);
-const baseUrl = `http://127.0.0.1:${port}`;
 
-function spawnHttpHost() {
+async function freePort() {
+  const preferred = Number(process.env.OCCAM_HTTP_PORT || 0);
+  if (preferred > 0) {
+    return preferred;
+  }
+  return await new Promise((resolve, reject) => {
+    const srv = createServer();
+    srv.listen(0, "127.0.0.1", () => {
+      const addr = srv.address();
+      const port = typeof addr === "object" && addr ? addr.port : 0;
+      srv.close((err) => (err ? reject(err) : resolve(port)));
+    });
+    srv.on("error", reject);
+  });
+}
+
+function spawnHttpHost(port) {
+  const forceDotnet =
+    process.env.OCCAM_FORCE_DOTNET_RUN === "1" ||
+    process.env.OCCAM_FORCE_DOTNET_RUN === "true";
   const env = {
     ...process.env,
     OCCAM_HOME: occamHome,
     OCCAM_BANNER: process.env.OCCAM_BANNER ?? "0",
-    OCCAM_FORCE_DOTNET_RUN: process.env.OCCAM_FORCE_DOTNET_RUN ?? "1",
+    OCCAM_PROFILE: process.env.OCCAM_PROFILE ?? "full",
   };
+  const hostArgs = ["--mcp-http", "--port", String(port)];
+
+  if (!forceDotnet) {
+    const binary = resolveHostBinary(occamHome);
+    if (binary) {
+      return spawn(binary, hostArgs, {
+        cwd: occamHome,
+        env,
+        stdio: ["ignore", "pipe", "pipe"],
+        windowsHide: true,
+      });
+    }
+  }
+
   return spawn(
     "dotnet",
-    ["run", "--project", "src/FFOccamMcp.Core", "--", "--mcp-http", "--port", String(port)],
+    ["run", "--project", "src/FFOccamMcp.Core", "--no-launch-profile", "--", ...hostArgs],
     {
       cwd: occamHome,
-      env,
+      env: { ...env, OCCAM_FORCE_DOTNET_RUN: "1" },
       stdio: ["ignore", "pipe", "pipe"],
       windowsHide: true,
     },
@@ -32,35 +68,52 @@ function spawnHttpHost() {
 }
 
 /**
+ * @param {string} baseUrl
  * @param {string} path
  * @param {RequestInit} init
  */
-async function fetchJson(path, init = {}) {
+async function fetchJson(baseUrl, path, init = {}) {
   const res = await fetch(`${baseUrl}${path}`, init);
   const text = await res.text();
   return { status: res.status, text, headers: res.headers };
 }
 
+async function waitForHealth(baseUrl, proc, stderrBag, timeoutMs = 90_000) {
+  const started = Date.now();
+  let lastErr = "not started";
+  while (Date.now() - started < timeoutMs) {
+    if (proc.exitCode !== null) {
+      throw new Error(`host exited early code=${proc.exitCode}\n${stderrBag()}`);
+    }
+    try {
+      const health = await fetchJson(baseUrl, "/health");
+      if (health.status === 200 && health.text.includes('"ok":true')) {
+        return health;
+      }
+      lastErr = `status=${health.status} body=${health.text.slice(0, 200)}`;
+    } catch (err) {
+      lastErr = err instanceof Error ? err.message : String(err);
+    }
+    await delay(1000);
+  }
+  throw new Error(`health timeout after ${timeoutMs}ms (${lastErr})\n${stderrBag()}`);
+}
+
 async function main() {
-  const proc = spawnHttpHost();
+  const port = await freePort();
+  const baseUrl = `http://127.0.0.1:${port}`;
+  const proc = spawnHttpHost(port);
   let stderr = "";
   proc.stderr.on("data", (chunk) => {
     stderr += chunk.toString();
   });
+  proc.stdout?.on("data", () => {});
 
   try {
-    await delay(8000);
-    if (proc.exitCode !== null) {
-      throw new Error(`host exited early code=${proc.exitCode}\n${stderr}`);
-    }
-
-    const health = await fetchJson("/health");
-    if (health.status !== 200 || !health.text.includes('"ok":true')) {
-      throw new Error(`health failed status=${health.status} body=${health.text.slice(0, 200)}`);
-    }
+    await waitForHealth(baseUrl, proc, () => stderr);
     console.log("ok: GET /health");
 
-    const initRes = await fetchJson("/mcp", {
+    const initRes = await fetchJson(baseUrl, "/mcp", {
       method: "POST",
       headers: {
         Accept: "application/json, text/event-stream",
@@ -79,7 +132,9 @@ async function main() {
     });
 
     if (initRes.status !== 200) {
-      throw new Error(`initialize failed status=${initRes.status} body=${initRes.text.slice(0, 400)}`);
+      throw new Error(
+        `initialize failed status=${initRes.status} body=${initRes.text.slice(0, 400)}\n${stderr}`,
+      );
     }
 
     const body = initRes.text;
@@ -93,7 +148,7 @@ async function main() {
   } finally {
     proc.kill("SIGTERM");
     await delay(500);
-    if (!proc.killed) {
+    if (proc.exitCode === null) {
       proc.kill("SIGKILL");
     }
   }
