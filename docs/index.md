@@ -295,7 +295,7 @@ finish with a real page read.
 <a class="oc-btn oc-btn--secondary" href="examples/current-proof/">Inspect the proof</a>
 </p>
 
-<p class="oc-meta-line"><strong>Version:</strong> 1.0.0-rc.2 · <strong>Status:</strong> release candidate · <strong>License:</strong> AGPL-3.0-or-later</p>
+<p class="oc-meta-line"><strong>Version:</strong> 1.0.0-rc.4 (foundation; published install channel <code>1.0.0-rc.3</code>) · <strong>Status:</strong> release candidate · <strong>License:</strong> AGPL-3.0-or-later</p>
 
 ## Explore deeper
 

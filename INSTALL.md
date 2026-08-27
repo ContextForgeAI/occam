@@ -8,10 +8,11 @@
 **Repo:** [https://github.com/ContextForgeAI/occam](https://github.com/ContextForgeAI/occam)  
 **Docs site:** [https://contextforgeai.github.io/occam/](https://contextforgeai.github.io/occam/)
 
-**Requirements:** Node.js **20+** (installer also checks Homebrew locations `/opt/homebrew/bin` and `/usr/local/bin` when `node` is not already on `PATH`). No .NET SDK on the install machine.
+**Requirements:** Node.js **20+** (installer also checks Homebrew locations `/opt/homebrew/bin` and `/usr/local/bin` when `node` is not already on `PATH`). No .NET SDK on the install machine.  
+**Cosign:** required when the release manifest declares `signaturePolicy=required-cosign-v1` (published `v1.0.0-rc.3`). Install from [Sigstore Cosign docs](https://docs.sigstore.dev/cosign/system_config/installation/) before bootstrap if Cosign is not already on `PATH`. Authenticity ≠ page-content truth.
 
-**Published release:** `1.0.0-rc.2` (GitHub Release tag `v1.0.0-rc.2`).  
-**Next candidate in this tree:** `1.0.0-rc.3` (not published yet — do not point public `main` install defaults at it until the release assets exist).
+**Published release:** `1.0.0-rc.3` (GitHub Release tag `v1.0.0-rc.3`).  
+**Public install default** (unset `OCCAM_VERSION`): **`1.0.0-rc.3`**.
 
 ---
 
@@ -40,7 +41,7 @@ scripts below. Manual extraction is not a supported install path.
 | Manual tarball + `*-manifest.json` | **No** | Integrity inspection only; bypasses guarded install and onboarding |
 | `git clone` + doctor | Build path | Requires .NET 10 SDK |
 | `npx @ff-occam/mcp` | **No** | Not a supported release channel |
-| Cosign `.bundle` on Releases | **Policy-gated** | Always SHA-256 vs manifest. When the manifest declares `signaturePolicy=required-cosign-v1` (rc.3 candidate), the installer verifies the Cosign bundle fail-closed. Undeclared / `sha256-only` (published `v1.0.0-rc.2`) stays SHA-256-only. Authenticity ≠ page-content truth. |
+| Cosign `.bundle` on Releases | **Policy-gated** | Always SHA-256 vs manifest. When the manifest declares `signaturePolicy=required-cosign-v1` (published `v1.0.0-rc.3`), the installer verifies the Cosign bundle fail-closed and **requires the `cosign` CLI on PATH**. Undeclared / `sha256-only` (published `v1.0.0-rc.2`) stays SHA-256-only. Authenticity ≠ page-content truth. |
 
 Public binaries are published for exactly `win-x64`, `linux-x64`, and
 `osx-arm64`. Intel macOS, Linux ARM64, Windows ARM64, and other architectures are
@@ -55,10 +56,10 @@ Install behavior follows the **release manifest contract** (not the version stri
 | Manifest | Contract |
 |----------|----------|
 | no `runtimeLayout` (published `v1.0.0-rc.2`) | Legacy Level B — SHA-256; operator CLI may refresh from the repository overlay |
-| `runtimeLayout=self-contained-v1` (rc.3 candidate) | Self-contained — SHA-256 + archive preflight + runtime closure; **no** executable helper overlay; Cosign when `signaturePolicy=required-cosign-v1` |
+| `runtimeLayout=self-contained-v1` (published `v1.0.0-rc.3`) | Self-contained — SHA-256 + archive preflight + runtime closure; **no** executable helper overlay; Cosign when `signaturePolicy=required-cosign-v1` |
 | unknown `runtimeLayout` / unknown `signaturePolicy` | Fail closed |
 
-**Public default** (unset `OCCAM_VERSION`): **`1.0.0-rc.2`**. Explicit `OCCAM_VERSION` / local artifact URLs exercise a candidate without changing the public default.
+**Public default** (unset `OCCAM_VERSION`): **`1.0.0-rc.3`**. Set `OCCAM_VERSION=1.0.0-rc.2` only when you intentionally need the legacy Level B channel.
 
 1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases (or `OCCAM_RELEASE_BASE`)
 2. Requires the manifest version, RID, and tarball name to match the requested release, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). For self-contained manifests, archive-member preflight runs **before** extract
@@ -88,7 +89,7 @@ Optional env (compatibility — same on all platforms):
 | `OCCAM_VERBOSE` | unset | `1` — show doctor/smoke/connect internals during install |
 | `OCCAM_HOST` | (none) | Legacy preference for the **fallback** connection snippet only (`hermes` or `cursor`) — not a phantom pre-selected host |
 | `OCCAM_INSTALL_DIR` | `~/.local/share/ff-occam` | Install root |
-| `OCCAM_VERSION` | `1.0.0-rc.2` (public default until after published rc.3 cutover) | Release version; set explicitly for candidate installs |
+| `OCCAM_VERSION` | `1.0.0-rc.3` (public default; published GitHub Release) | Release version; set `1.0.0-rc.2` only for the legacy channel |
 | `OCCAM_RID` | detected | Published RID override: `win-x64` \| `linux-x64` \| `osx-arm64` only |
 
 `OCCAM_HOST` does **not** replace `occam connect`. Prefer letting connect detect and configure validated hosts.

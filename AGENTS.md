@@ -12,8 +12,8 @@ You are working in **FFOccamMCP**, the L0 core of **FF-Occam MCP**. **Read this 
 
 | Ships | Does not ship |
 |-------|---------------|
-| MCP stdio host `src/FFOccamMcp.Core` (.NET 10, Native AOT) | 11 legacy `web_*` tools from FFWebMCP |
-| **Always-on core MCP tools** (registry: `OccamMcpServerRegistration.OccamToolNames` — do not hand-count): client_capabilities, transcode, probe, digest, playbook_resolve, map, playbook_heal, playbook_save, extract_knowledge, search (`OCCAM_SEARCH_PROVIDER`), verify, claim_check, attest, playbook_lint, dataset_export. **Opt-in** (env-gated, not in the core set): `occam_batch_*` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`) | `web_probe`, adaptive digest, bundle, publish playbook MCP |
+| MCP stdio host `src/FFOccamMcp.Core` (.NET 10, Native AOT); Streamable HTTP `--mcp-http` | 11 legacy `web_*` tools from FFWebMCP |
+| **Always-on core MCP tools** (registry: `OccamMcpServerRegistration.OccamToolNames` — do not hand-count): client_capabilities, transcode, probe, digest, playbook_resolve, map, playbook_heal, playbook_save, extract_knowledge, search (`OCCAM_SEARCH_PROVIDER`), verify, claim_check, attest, playbook_lint, dataset_export. Default **`OCCAM_PROFILE=reader`** exposes 8 of these; `full` exposes all 15. **Opt-in** (env-gated, not in the core set): `occam_batch_*` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`), `occam_browser_interact` (`OCCAM_BROWSER_ACTIONS_MCP=1`) | `web_probe`, adaptive digest, bundle, publish playbook MCP |
 | Params: on `occam_transcode` **only `url` is required** — every other is an off-by-default opt-in (~19, grouped by `[core]`/`[tokens]`/`[structured]`/`[fetch]`/`[watch]`/`[advanced]`); full param tables are code-generated → **canonical in `MCP_API_SPEC.md` + `docs/tools-reference.md`** (don't hand-count here) | `revisit_diff`, legacy `web_map` |
 | L1b: probe, domain tiers, agentHints | federation cache, legacy `web_*` |
 | Workers: `workers/http-extract/extract.mjs`, `workers/browser-extract/browser-extract.mjs`, **`workers/css-extract/css-extract.mjs`** | gate-unit monolith |
@@ -21,7 +21,7 @@ You are working in **FFOccamMCP**, the L0 core of **FF-Occam MCP**. **Read this 
 | `scripts/occam-doctor.ps1` | 12-tool public wiki |
 | Gate `benchmarks/l0-gate` → `L0_GATE_OK` / `L0_GATE_FAST_OK` / `L1A_TOKEN_OK` / `L1B_PROBE_OK` / `L1_FAILURE_TAXONOMY_OK` / `L2_DIGEST_OK` / `L2_MAP_OK` / **`L2_SESSION_OK`** / **`L2_TRANSPORT_OK`** / **`L2_EGRESS_OK`** / **`L2_MEDIA_REFS_OK`** / **`L3_HEAL_LEARN_OK`** / **`L4_GENOME_OK`** / **`L5_BATCH_OK`** / **`L6_BROWSER_POOL_OK`** / **`L7_RESOURCE_SAFETY_OK`** / **`L8_AGENT_FIRST_OK`** (L9 golden set folds into `L0_GATE_OK`) | Wide Validation, wave2-eval |
 
-**Live by default** — every call fetches the page unless the caller explicitly opts into the local TTL-bound response cache with `cache_ttl_s > 0`; private/session-bound requests are never cached (**v1.0.0-rc.2** — fifteen core tools + Receipt v1 verifiable layer + opt-in batch/watch/consensus/atlas; Agent-First AF-1..AF-6; PB2 community + PB3 heal/save + PB4a/b shipped; tier-3 baseline 2026-06-17, L0 core CLOSED).
+**Live by default** — every call fetches the page unless the caller explicitly opts into the local TTL-bound response cache with `cache_ttl_s > 0`; private/session-bound requests are never cached (**v1.0.0-rc.3** published — fifteen core tools + Receipt v1 verifiable layer + opt-in batch/watch/consensus/atlas; Agent-First AF-1..AF-6; PB2 community + PB3 heal/save + PB4a/b shipped; tier-3 baseline 2026-06-17, L0 core CLOSED).
 
 **PB3 heal-learn (shipped v0.8.4-pb3-heal-learn):** `occam_playbook_heal` + `occam_playbook_save`; gate `L3_HEAL_LEARN_OK` — see `MCP_API_SPEC.md` + `corpora/l3-heal-learn.jsonl`.
 
@@ -346,7 +346,7 @@ Report drafts: `artifacts/quality-audit/YYYY-MM-DD-….md` (gitignored). Public 
 
 ## 10. Session start checklist
 
-**Current product track:** **v1.0.0-rc.2** — Occam Core 1.0 release candidate (RC1 corpus green 2026-07-20). Next: soak + full live L3–L9 before GA `1.0.0`. Public release identity: `https://github.com/ContextForgeAI/occam`.
+**Current product track:** **v1.0.0-rc.3** published on GitHub Releases (public install default). Tree **`VERSION=1.0.0-rc.4`** foundation (MCP 2.2, Streamable HTTP, wire enrichments, `ff-occam`, browser interact, profiles). Next: publish rc.4 + soak full live L3–L9 before GA `1.0.0`. Public release identity: `https://github.com/ContextForgeAI/occam`.
 
 1. Read **this file** and [docs/index.md](docs/index.md) for current priorities.
 2. Confirm **Cursor rules** active: [.cursor/rules/README.md](.cursor/rules/README.md) (6 `.mdc` files).

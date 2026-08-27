@@ -10,23 +10,21 @@ MCP clients spawn the host as a child process. JSON-RPC frames on **stdin/stdout
 
 ```bash
 node scripts/launch-mcp-host.mjs
-# Future / private registry only (not part of 1.0.0-rc.2):
-# npx @ff-occam/mcp
+# Experimental npm (not GA): npx ff-occam   or   npx @ff-occam/mcp
 ```
 
 **Rule:** stdout = MCP JSON only. Banners and logs go to stderr (`OCCAM_BANNER`, `OCCAM_LOG`).
 
 ---
 
-## WebSocket
+## WebSocket (legacy / advanced)
 
-For clients that connect to a long-lived server:
+For clients that connect to a long-lived server over raw WebSocket JSON-RPC:
 
 ```bash
 OccamMcp.Core --mcp-server
 OccamMcp.Core --mcp-server --port 5050
-# Future / private registry only (not part of 1.0.0-rc.2):
-# npx @ff-occam/mcp --mcp-server
+# Experimental npm (not GA): npx ff-occam --mcp-server
 ```
 
 | Setting | Default |
@@ -35,6 +33,41 @@ OccamMcp.Core --mcp-server --port 5050
 | Port | `5050` |
 
 .NET host equivalent: `OccamMcp.Core --mcp-server [--port N]`
+
+---
+
+## Streamable HTTP (MCP 2026-07-28)
+
+Standard **Streamable HTTP** transport at **`POST /mcp`** (ModelContextProtocol.AspNetCore 2.2).
+Local-first: loopback bind only unless you explicitly change `--bind`.
+
+```bash
+OccamMcp.Core --mcp-http
+OccamMcp.Core --streamable-http --port 5055
+```
+
+| Setting | Default |
+|---------|---------|
+| Bind | `127.0.0.1` |
+| Port | `5055` |
+| MCP endpoint | `http://127.0.0.1:5055/mcp` |
+| Health | `GET /health` → `{"ok":true,"mode":"streamable-http","endpoint":"/mcp"}` |
+
+Modern clients use **`server/discover`** with per-request `_meta` (protocol `2026-07-28`).
+Legacy **`initialize`** clients continue to work on stdio and WebSocket.
+
+**Capability honesty:** the host advertises tools with `listChanged: false` and does not claim
+a logging capability it does not push on the default path. Clients must not wait for
+`notifications/tools/list_changed` after profile/env changes — restart the host instead.
+
+Smoke (dual-era + Streamable HTTP):
+
+```bash
+OCCAM_HOME=$PWD OCCAM_FORCE_DOTNET_RUN=1 node scripts/lib/mcp-dual-era.selftest.mjs
+OCCAM_HOME=$PWD OCCAM_FORCE_DOTNET_RUN=1 node scripts/lib/mcp-streamable-http.selftest.mjs
+```
+
+Authenticated remote WSS (`--remote`) is a **separate** advanced path — not Streamable HTTP.
 
 ---
 
@@ -130,6 +163,7 @@ Details: [Receipts](receipts.md).
 | Need | Use |
 |------|-----|
 | Cursor, Claude Desktop, most IDEs | stdio |
-| Separate process / LAN client with WS support | WebSocket |
-| Authenticated remote host | Remote |
+| MCP 2026 Streamable HTTP on loopback | `--mcp-http` / `--streamable-http` |
+| Separate process / LAN client with WS support | WebSocket (`--mcp-server`) |
+| Authenticated remote host | Remote (`--remote`) |
 | High-volume async URL lists without MCP | Batch HTTP or `OCCAM_BATCH_MCP=1` tools |

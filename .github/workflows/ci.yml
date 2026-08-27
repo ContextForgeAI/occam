@@ -126,6 +126,20 @@ jobs:
         run: dotnet run --project benchmarks/l0-gate -- --fast
         timeout-minutes: 5
 
+      - name: MCP dual-era handshake
+        env:
+          OCCAM_FORCE_DOTNET_RUN: "0"
+          OCCAM_PROFILE: full
+        run: node scripts/lib/mcp-dual-era.selftest.mjs
+        timeout-minutes: 3
+
+      - name: MCP Streamable HTTP
+        env:
+          OCCAM_FORCE_DOTNET_RUN: "0"
+          OCCAM_PROFILE: full
+        run: node scripts/lib/mcp-streamable-http.selftest.mjs
+        timeout-minutes: 3
+
   docs-check:
     runs-on: ubuntu-latest
     steps:
@@ -196,6 +210,15 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
+
+      - name: Validate archive preflight listing fallback
+        run: node scripts/lib/archive-preflight-listing.selftest.mjs
+
+      - name: Validate browser-actions worker selftest
+        run: node workers/browser-extract/lib/browser-actions.selftest.mjs
+
+      - name: Validate ff-occam package + clean-install from packed tarballs
+        run: node scripts/lib/ff-occam-package.selftest.mjs
 
       - name: Validate bootstrap setup contract
         run: node scripts/lib/operator/bootstrap-setup.selftest.mjs

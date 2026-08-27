@@ -1,0 +1,46 @@
+{
+  "name": "ff-occam",
+  "version": "1.0.0-rc.4",
+  "type": "module",
+  "description": "FF Occam — verifiable web materialization MCP host (primary npm entry). Installs the Native AOT .NET host + Node workers.",
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ContextForgeAI/occam.git",
+    "directory": "packages/ff-occam"
+  },
+  "bugs": {
+    "url": "https://github.com/ContextForgeAI/occam/issues"
+  },
+  "homepage": "https://github.com/ContextForgeAI/occam",
+  "keywords": [
+    "mcp",
+    "ff-occam",
+    "web-extraction",
+    "materialization",
+    "llm",
+    "rag"
+  ],
+  "bin": {
+    "ff-occam": "bin/ff-occam.js",
+    "occam": "bin/ff-occam.js"
+  },
+  "files": [
+    "bin/",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "prepublishOnly": "npm test"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@ff-occam/mcp": "file:../occam-mcp"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

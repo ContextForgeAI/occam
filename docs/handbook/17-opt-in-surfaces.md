@@ -12,7 +12,7 @@
 
 ## Explanation
 
-Default `tools/list` under `OCCAM_PROFILE=full` exposes **15 core tools**. Four env flags add **6 more MCP tools**. Opt-in tools are **not** profile-filtered — `OCCAM_PROFILE=reader` with `OCCAM_CONSENSUS_MCP=1` still exposes `occam_crosscheck`.
+Default product `tools/list` uses **`OCCAM_PROFILE=reader`** (8 tools). Set `OCCAM_PROFILE=full` for all **15 core tools**. Four additional env flags add **6 more MCP tools** (opt-in are **not** profile-filtered — `OCCAM_PROFILE=reader` with `OCCAM_CONSENSUS_MCP=1` still exposes `occam_crosscheck`). A fifth flag adds browser interact.
 
 | Env gate | Tool(s) | Class |
 |----------|---------|-------|
@@ -20,6 +20,7 @@ Default `tools/list` under `OCCAM_PROFILE=full` exposes **15 core tools**. Four 
 | `OCCAM_BATCH_MCP=1` | `occam_batch_submit`, `occam_batch_status`, `occam_batch_results` | EXPERIMENTAL |
 | `OCCAM_CONSENSUS_MCP=1` | `occam_crosscheck` | EXPERIMENTAL — multi-source comparison only |
 | `OCCAM_ATLAS_MCP=1` | `occam_failure_atlas` | EXPERIMENTAL |
+| `OCCAM_BROWSER_ACTIONS_MCP=1` | `occam_browser_interact` | EXPERIMENTAL — declarative browser actions + materialize |
 
 ### `occam_watch` (change monitoring)
 

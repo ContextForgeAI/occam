@@ -135,7 +135,6 @@ internal static class McpBoundaryCharacterization
                 && root.TryGetProperty("result", out var result)
                 && result.TryGetProperty("isError", out var err)
                 && err.ValueKind == JsonValueKind.True;
-            var isErrorAbsentOrFalse = !isErrorTrue;
             var typed = text?.TrimStart().StartsWith('{') == true
                 && text.Contains("\"ok\":false", StringComparison.Ordinal)
                 && text.Contains("invalid_arguments", StringComparison.Ordinal)
@@ -143,15 +142,13 @@ internal static class McpBoundaryCharacterization
             test.Check(
                 "D12",
                 $"{input.Name} returns typed invalid_arguments (not opaque invoke error)",
-                typed && isErrorAbsentOrFalse,
-                $"isErrorTrue={isErrorTrue}; toolText={(text is null ? "missing" : text[..Math.Min(160, text.Length)])}",
-                intentionallyRed: true);
+                typed,
+                $"isErrorTrue={isErrorTrue}; toolText={(text is null ? "missing" : text[..Math.Min(160, text.Length)])}");
             test.Check(
                 "D12",
-                $"{input.Name} keeps MCP isError unset/false with ok=false envelope",
-                typed && isErrorAbsentOrFalse,
-                $"isErrorTrue={isErrorTrue}; hasOkFalse={text?.Contains("\"ok\":false", StringComparison.Ordinal) == true}",
-                intentionallyRed: true);
+                $"{input.Name} sets MCP isError:true with ok=false envelope (rc.4 dual signal)",
+                typed && isErrorTrue,
+                $"isErrorTrue={isErrorTrue}; hasOkFalse={text?.Contains("\"ok\":false", StringComparison.Ordinal) == true}");
         }
 
         // Host continuity: after bad calls, tools/list and a valid probe still succeed.

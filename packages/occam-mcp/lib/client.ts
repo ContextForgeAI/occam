@@ -190,7 +190,7 @@ export class OccamMcpClient {
         {
           protocolVersion: MCP_PROTOCOL_VERSION,
           capabilities: {},
-          clientInfo: { name: "@ff-occam/mcp", version: "1.0.0-rc.2" },
+          clientInfo: { name: "@ff-occam/mcp", version: "1.0.0-rc.4" },
         },
         this.handshakeTimeoutMs,
       )) as McpInitializeResult;

@@ -4,7 +4,7 @@
 
 **Authority:** This handbook follows the canonical model in `docs-audit/` (product definition, trust model, owner decisions, honesty schema). Where older pages under `docs/` disagree, **this handbook and the code win**.
 
-**Version baseline:** 1.0.0-rc.2 · core MCP tools from the registry (runtime `tools/list` varies by profile/opt-in) · live extract by default (opt-in `cache_ttl_s` for local replay)
+**Version baseline:** 1.0.0-rc.4 foundation (published install channel `1.0.0-rc.3`) · core MCP tools from the registry (runtime `tools/list` varies by profile/opt-in; product default `OCCAM_PROFILE=reader`) · live extract by default (opt-in `cache_ttl_s` for local replay)
 
 ---
 
@@ -16,7 +16,7 @@ Occam is built around a contract that is easy to ignore and impossible for the p
 2. **A receipt proves integrity relative to a key, not truth.** It means *this install's key asserted these exact compiled bytes*. It does not prove the origin served them, who the signer is, or that the content is accurate.
 3. **Compiled markdown is the object.** Occam returns a budgeted reading of a page, not the raw HTTP response body. Hashes and receipts cover that compiled form.
 4. **Names that overclaim are corrected here.** `claim_check` retrieves and cites; it does not prove claims. `attest` is a heuristic citation assessment, not cryptographic attestation. `crosscheck` compares sources; it is not consensus proof. The `Receipt` field on `occam_extract_knowledge` is extraction telemetry, not Receipt v1.
-5. **Distribution honesty.** npm is not a GA install channel. Release cosign bundles are not verified by any shipped install path. The community marketplace is operational machinery, not a trusted auto-merge supply chain.
+5. **Distribution honesty.** npm is not a GA install channel. Cosign on install is **policy-gated** (`required-cosign-v1` for published `1.0.0-rc.3`; legacy `1.0.0-rc.2` stays SHA-256-only). Authenticity ≠ page-content truth. The community marketplace is operational machinery, not a trusted auto-merge supply chain.
 6. **Every chapter is falsifiable.** Each includes a **CHECK** you can run. When observation and text disagree, executable code wins.
 
 If you read nothing else before calling tools, read [Chapter 2](02-honesty-contract.md) and [Chapter 14](14-what-a-receipt-proves.md).

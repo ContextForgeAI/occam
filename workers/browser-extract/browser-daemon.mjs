@@ -94,6 +94,40 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === "POST" && req.url === "/interact") {
+      const body = await readJson(req);
+      const url = body.url;
+      if (!url || typeof url !== "string") {
+        sendJson(res, 400, { ok: false, failure: "missing_url" });
+        return;
+      }
+      if (!Array.isArray(body.actions)) {
+        sendJson(res, 400, { ok: false, failure: "invalid_arguments", message: "actions must be an array" });
+        return;
+      }
+
+      const headersFile =
+        body.headers_file
+        ?? process.env.OCCAM_REQUEST_HEADERS_FILE
+        ?? null;
+      const storageStateFile = body.storage_state_file ?? null;
+
+      const result = await pool.extract(url, {
+        leanAssets: body.lean_assets !== false,
+        consentAggressive: body.consent_aggressive === true,
+        headersFile,
+        storageStateFile,
+        mcpActions: body.actions,
+        actionDeadlineMs: typeof body.deadline_ms === "number" ? body.deadline_ms : null,
+        forceRecycle: body.force_recycle === true,
+        features: body.features ?? null,
+        timeoutMs: body.timeout_ms,
+      });
+
+      sendJson(res, 200, result);
+      return;
+    }
+
     if (req.method === "POST" && req.url === "/skeleton") {
       const body = await readJson(req);
       const url = body.url;

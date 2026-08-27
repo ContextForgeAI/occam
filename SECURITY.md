@@ -4,7 +4,8 @@
 
 | Version | Supported |
 |---------|-----------|
-| 1.0.0-rc.2 (current RC) | Yes |
+| 1.0.0-rc.3 (current RC) | Yes |
+| 1.0.0-rc.2 | Yes (legacy Level B channel) |
 | 0.9.x | Security fixes only until GA `1.0.0` |
 | < 0.9 | No — upgrade to the current RC or later |
 

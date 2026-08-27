@@ -5,6 +5,7 @@ using OccamMcp.Core.Telemetry;
 using OccamMcp.Core.Tools;
 using OccamMcp.Core.Workers;
 using Microsoft.Extensions.DependencyInjection;
+using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
 namespace OccamMcp.Core.Transport;
@@ -58,24 +59,56 @@ public static class OccamMcpServerRegistration
         var builder = services
             // Surface the capability + decision guide to the consuming model on initialize, so the
             // off-by-default power features are discoverable instead of invisible behind 20 params.
-            .AddMcpServer(options => options.ServerInstructions = instructions)
+            .AddMcpServer(options =>
+            {
+                options.ServerInstructions = instructions;
+                options.ServerInfo = new Implementation
+                {
+                    Name = "ff-occam",
+                    Version = OccamHostVersion.Current,
+                };
+                // Preferred advertise shape (SDK may overwrite listChanged when ToolCollection
+                // is present — see WithMessageFilters honesty rewrite below).
+                options.Capabilities = new ServerCapabilities
+                {
+                    Tools = new ToolsCapability { ListChanged = false },
+                };
+            })
+            .WithMessageFilters(messageFilters =>
+            {
+                messageFilters.AddOutgoingFilter(next => async (context, cancellationToken) =>
+                {
+                    OccamCapabilityHonesty.RewriteOutgoingMessage(context.JsonRpcMessage);
+                    await next(context, cancellationToken).ConfigureAwait(false);
+                });
+            })
             // Map MEAI required-parameter / declared-type binding failures to typed invalid_arguments
             // before McpServerImpl.ToolCallError logs them as unhandled exceptions (EventId 1433779783).
-            .WithRequestFilters(filters => filters.AddCallToolFilter(next => async (request, cancellationToken) =>
+            .WithRequestFilters(filters =>
             {
-                try
+                filters.AddCallToolFilter(next => async (request, cancellationToken) =>
                 {
-                    return await next(request, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex) when (McpArgumentBindingGuard.IsClientInputBindingFailure(ex))
+                    try
+                    {
+                        var result = await next(request, cancellationToken).ConfigureAwait(false);
+                        return OccamMcpToolWireEnricher.EnrichCallToolResult(result);
+                    }
+                    catch (Exception ex) when (McpArgumentBindingGuard.IsClientInputBindingFailure(ex))
+                    {
+                        var toolName = request.Params?.Name;
+                        McpArgumentBindingGuard.LogBindingRejection(toolName, ex);
+                        return OccamMcpToolWireEnricher.EnrichCallToolResult(
+                            McpArgumentBindingGuard.ToTypedInvalidArgumentsResult(ex, toolName));
+                    }
+                });
+                filters.AddListToolsFilter(next => async (request, cancellationToken) =>
                 {
-                    var toolName = request.Params?.Name;
-                    McpArgumentBindingGuard.LogBindingRejection(toolName, ex);
-                    return McpArgumentBindingGuard.ToTypedInvalidArgumentsResult(ex, toolName);
-                }
-            }));
+                    var result = await next(request, cancellationToken).ConfigureAwait(false);
+                    return OccamMcpToolWireEnricher.EnrichListToolsResult(result);
+                });
+            });
 
-        // Role-scoped core tools (OCCAM_PROFILE). Default full = entire OccamToolNames catalog.
+        // Role-scoped core tools (OCCAM_PROFILE). Default reader; full = entire OccamToolNames catalog.
         if (OccamToolProfile.IsExposed("occam_client_capabilities", profile))
             builder = builder.WithTools<OccamClientCapabilitiesTool>();
         if (OccamToolProfile.IsExposed("occam_transcode", profile))
@@ -154,6 +187,13 @@ public static class OccamMcpServerRegistration
                     new Telemetry.OccamLoggerTelemetrySink(),
                     sp.GetRequiredService<Telemetry.FailureAtlasStore>()));
             builder.WithTools<OccamFailureAtlasTool>();
+        }
+
+        // Opt-in browser actions (click/type/scroll then materialize). Off by default.
+        // Enable with OCCAM_BROWSER_ACTIONS_MCP=1. Subresource SSRF must stay enabled.
+        if (OccamMcp.Core.Configuration.OccamEnvironment.GetFlag("OCCAM_BROWSER_ACTIONS_MCP", defaultValue: false))
+        {
+            builder.WithTools<OccamBrowserInteractTool>();
         }
 
         return builder;

@@ -32,6 +32,8 @@ obj/
 # The blanket `bin/` rule above would otherwise drop the npx wrapper from git.
 !packages/occam-mcp/bin/
 !packages/occam-mcp/bin/occam-mcp.js
+!packages/ff-occam/bin/
+!packages/ff-occam/bin/ff-occam.js
 !packages/occam-skill/bin/
 !packages/occam-skill/bin/install.mjs
 
@@ -41,6 +43,7 @@ packages/occam-mcp/lib/*.js.map
 packages/occam-mcp/lib/*.d.ts
 packages/occam-mcp/lib/*.d.ts.map
 packages/occam-mcp/package-lock.json
+packages/ff-occam/package-lock.json
 
 # Node workers / packages
 node_modules/

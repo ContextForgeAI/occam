@@ -15,6 +15,8 @@ var assert = new L0GateAssert();
 // Proxy pool env must not affect gate singleton — l2-egress uses static OCCAM_HTTP_PROXY mocks.
 Environment.SetEnvironmentVariable(ProxyRotationSettings.ProxyListVar, null);
 Environment.SetEnvironmentVariable(ProxyRotationSettings.ProxyListFileVar, null);
+// Gate / contract tests assert the full core catalog; product default profile is reader.
+Environment.SetEnvironmentVariable("OCCAM_PROFILE", Environment.GetEnvironmentVariable("OCCAM_PROFILE") ?? "full");
 
 var (paths, pipeline, probe, digest, map) = OccamServiceCollectionExtensions.BuildOccamCore();
 Console.WriteLine($"OCCAM_HOME: {WorkerPaths.ResolveOccamHome() ?? "(not found)"}");
@@ -111,6 +113,9 @@ if (options.UnitOnly)
         L2DigestUnitTests.Run(assert.Record);
         PublicMcpContractUnitTests.Run(assert.Record);
         McpArgumentBindingGuardUnitTests.Run(assert.Record);
+        OccamMcpToolWireEnricherUnitTests.Run(assert.Record);
+        BrowserActionPlanUnitTests.Run(assert.Record);
+        MustContainAndTocUnitTests.Run(assert.Record);
         PublicMcpToolsListLiveTests.Run(assert.Record);
         L2MapUnitTests.Run(assert.Record);
         DiscoveryFocusUnitTests.Run(assert.Record);
@@ -231,6 +236,9 @@ if (!options.SmokeOnly)
     L2DigestUnitTests.Run(assert.Record);
     PublicMcpContractUnitTests.Run(assert.Record);
     McpArgumentBindingGuardUnitTests.Run(assert.Record);
+    OccamMcpToolWireEnricherUnitTests.Run(assert.Record);
+    BrowserActionPlanUnitTests.Run(assert.Record);
+    MustContainAndTocUnitTests.Run(assert.Record);
     PublicMcpToolsListLiveTests.Run(assert.Record);
     L2MapUnitTests.Run(assert.Record);
     DiscoveryFocusUnitTests.Run(assert.Record);

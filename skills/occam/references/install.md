@@ -19,7 +19,7 @@ Host-neutral steps for the public GitHub release tree (`https://github.com/Conte
 | MCP `env: {}` without `OCCAM_HOME` | Workers won't resolve — `workers_unavailable` |
 | `OPENROUTER_API_KEY` in Occam MCP `env` | Hermes LLM key — not the MCP host |
 
-Stack: **.NET 10 AOT host** + **Node 20+** workers. Expect **15** `occam_*` tools after smoke.
+Stack: **.NET 10 AOT host** + **Node 20+** workers. Expect **8** tools under default `OCCAM_PROFILE=reader`, or **15** under `OCCAM_PROFILE=full`, after smoke.
 
 ---
 

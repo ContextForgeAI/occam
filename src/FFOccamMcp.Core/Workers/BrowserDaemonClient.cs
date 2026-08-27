@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using OccamMcp.Core.Abstractions;
+using OccamMcp.Core.BrowserActions;
 using OccamMcp.Core.Configuration;
 
 namespace OccamMcp.Core.Workers;
@@ -35,6 +36,19 @@ internal sealed record BrowserDaemonSkeletonRequest
     public string? HeadersFile { get; init; }
 }
 
+/// <summary>Request payload for browser daemon interact endpoint.</summary>
+internal sealed record BrowserDaemonInteractRequest
+{
+    public required string Url { get; init; }
+    public required JsonElement Actions { get; init; }
+    public bool LeanAssets { get; init; } = true;
+    public bool ForceRecycle { get; init; }
+    public string? HeadersFile { get; init; }
+    public string? StorageStateFile { get; init; }
+    public int TimeoutMs { get; init; }
+    public int? DeadlineMs { get; init; }
+}
+
 /// <summary>JSON serialization context for browser daemon requests.</summary>
 // The browser daemon (browser-daemon.mjs) reads snake_case keys (url, lean_assets,
 // force_recycle, headers_file, storage_state_file, max_nodes). Without this policy the
@@ -43,6 +57,7 @@ internal sealed record BrowserDaemonSkeletonRequest
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower)]
 [JsonSerializable(typeof(BrowserDaemonExtractRequest))]
 [JsonSerializable(typeof(BrowserDaemonSkeletonRequest))]
+[JsonSerializable(typeof(BrowserDaemonInteractRequest))]
 internal partial class BrowserDaemonJsonContext : JsonSerializerContext
 {
 }
@@ -173,6 +188,60 @@ public sealed class BrowserDaemonClient : IBrowserDaemonClient
 
             MarkPortActivity(port);
             return await response.Content.ReadAsStringAsync(cts.Token).ConfigureAwait(false);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<BrowserInteractWorkerResult?> TryInteractAsync(
+        string url,
+        string actionsJson,
+        int deadlineMs,
+        int timeoutMs,
+        string? headersFile,
+        string? storageStateFile,
+        CancellationToken cancellationToken,
+        int port = 0)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        port = port > 0 ? port : BrowserDaemonHost.Port;
+        if (!await IsHealthyAsync(port, cancellationToken).ConfigureAwait(false))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(timeoutMs);
+
+            using var actionsDoc = JsonDocument.Parse(actionsJson);
+            var request = new BrowserDaemonInteractRequest
+            {
+                Url = url,
+                Actions = actionsDoc.RootElement.Clone(),
+                LeanAssets = true,
+                ForceRecycle = false,
+                HeadersFile = headersFile,
+                StorageStateFile = storageStateFile,
+                TimeoutMs = timeoutMs,
+                DeadlineMs = deadlineMs,
+            };
+
+            var json = JsonSerializer.Serialize(request, BrowserDaemonJsonContext.Default.BrowserDaemonInteractRequest);
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
+            using var response = await _httpClient.PostAsync($"http://127.0.0.1:{port}/interact", content, cts.Token).ConfigureAwait(false);
+            var body = await response.Content.ReadAsStringAsync(cts.Token).ConfigureAwait(false);
+            MarkPortActivity(port);
+            return BrowserInteractWorkerResult.FromJson(body);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return new BrowserInteractWorkerResult(
+                false, null, null, "timeout", "browser interact timed out", null, timeoutMs, 0, null);
         }
         catch
         {

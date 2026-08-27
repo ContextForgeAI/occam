@@ -181,21 +181,24 @@ When a proxy pool is active, HTTP and browser daemons are disabled (rotation req
 | `OCCAM_WATCH_MCP=1` | `occam_watch` |
 | `OCCAM_CONSENSUS_MCP=1` | `occam_crosscheck` |
 | `OCCAM_ATLAS_MCP=1` | `occam_failure_atlas` + per-host telemetry |
+| `OCCAM_BROWSER_ACTIONS_MCP=1` | `occam_browser_interact` (declarative click/type/scroll then materialize; never cached) |
 
 ---
 
 ## Tool surface profile (`OCCAM_PROFILE`)
 
-Narrows which **core** tools appear in `tools/list` (and in server instructions). Default **`full`** keeps all fifteen. Opt-in tools above are independent — still require their own flags.
+Narrows which **core** tools appear in `tools/list` (and in server instructions). Default **`reader`**
+keeps the day-to-day read surface (8 tools). Set `OCCAM_PROFILE=full` for all fifteen (including
+playbook heal/save). Opt-in tools above are independent — still require their own flags.
 
 | Value | Core tools exposed |
 |-------|--------------------|
-| `full` (default) | All fifteen |
-| `reader` | `occam_client_capabilities`, `occam_transcode`, `occam_probe`, `occam_digest`, `occam_map`, `occam_search`, `occam_extract_knowledge` |
-| `researcher` | reader + `occam_claim_check`, `occam_verify` |
+| `reader` (default) | `occam_client_capabilities`, `occam_transcode`, `occam_probe`, `occam_digest`, `occam_map`, `occam_search`, `occam_extract_knowledge`, `occam_verify` |
+| `researcher` | reader + `occam_claim_check` |
 | `auditor` | researcher + `occam_attest`, `occam_dataset_export`, `occam_playbook_lint` |
+| `full` | All fifteen (includes playbook resolve/heal/save) |
 
-Invalid values fall back to `full` with a one-line `[occam.config]` warning on stderr. Use `researcher` (or `reader`) for agent hosts where a large tool set causes heal/save drift.
+Invalid values fall back to `reader` with a one-line `[occam.config]` warning on stderr.
 
 ---
 

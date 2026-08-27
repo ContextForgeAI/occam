@@ -3,9 +3,9 @@ using OccamMcp.Core.Configuration;
 namespace OccamMcp.Core.Transport;
 
 /// <summary>
-/// Role-scoped MCP tool surface via <c>OCCAM_PROFILE</c>. Default <see cref="Full"/> keeps all
-/// fifteen core tools. Narrower profiles hide playbook-authoring (and other) tools so agents
-/// do not drift into heal/save on a simple read.
+/// Role-scoped MCP tool surface via <c>OCCAM_PROFILE</c>. Default <see cref="Reader"/> exposes
+/// eight day-to-day tools; <see cref="Full"/> keeps all fifteen core tools. Narrower profiles
+/// hide playbook-authoring (and other) tools so agents do not drift into heal/save on a simple read.
 /// </summary>
 public static class OccamToolProfile
 {
@@ -44,7 +44,8 @@ public static class OccamToolProfile
         var raw = OccamEnvironment.Get("OCCAM_PROFILE");
         if (string.IsNullOrWhiteSpace(raw))
         {
-            return Full;
+            // Default surface is reader (not all 15 core tools) — playbook authoring stays opt-in via full.
+            return Reader;
         }
 
         var normalized = raw.Trim().ToLowerInvariant();
@@ -54,8 +55,8 @@ public static class OccamToolProfile
         }
 
         Console.Error.WriteLine(
-            $"[occam.config] OCCAM_PROFILE='{raw}' is not full|reader|researcher|auditor — using default full.");
-        return Full;
+            $"[occam.config] OCCAM_PROFILE='{raw}' is not full|reader|researcher|auditor — using default reader.");
+        return Reader;
     }
 
     /// <summary>Core tool names exposed for the active (or given) profile.</summary>

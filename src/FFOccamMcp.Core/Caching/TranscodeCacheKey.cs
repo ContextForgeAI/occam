@@ -22,7 +22,10 @@ public static class TranscodeCacheKey
     public static string Compute(
         string url,
         string backendPolicy,
-        OccamTranscodeOptions options)
+        OccamTranscodeOptions options,
+        bool rankBlocks = false,
+        bool tagTrust = false,
+        bool emitCapsule = false)
     {
         var focusFragment = FocusIntent.FromUrl(url).Fragment
             ?? options.FocusFragment;
@@ -46,7 +49,14 @@ public static class TranscodeCacheKey
         canonical.Append("json_blocks=").Append(options.JsonBlocks ? '1' : '0').Append('\n');
         canonical.Append("json_tables=").Append(options.JsonTables ? '1' : '0').Append('\n');
         canonical.Append("json_feed=").Append(options.JsonFeed ? '1' : '0').Append('\n');
-        canonical.Append("translate_to=").Append(options.TranslateTo ?? string.Empty);
+        canonical.Append("translate_to=").Append(options.TranslateTo ?? string.Empty).Append('\n');
+        // Output-affecting post-options must split identity (EF-001 / cache collision).
+        canonical.Append("rank_blocks=").Append(rankBlocks ? '1' : '0').Append('\n');
+        canonical.Append("tag_trust=").Append(tagTrust ? '1' : '0').Append('\n');
+        canonical.Append("emit_capsule=").Append(emitCapsule ? '1' : '0').Append('\n');
+        canonical.Append("toc=").Append(options.EmitToc ? '1' : '0').Append('\n');
+        canonical.Append("section=").Append(options.Section ?? string.Empty).Append('\n');
+        canonical.Append("must_contain=").Append(options.MustContain ?? string.Empty);
 
         var bytes = Encoding.UTF8.GetBytes(canonical.ToString());
         var hash = SHA256.HashData(bytes);

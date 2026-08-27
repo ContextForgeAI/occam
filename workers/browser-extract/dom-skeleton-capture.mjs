@@ -42,10 +42,9 @@ try {
   // lean-A: mask navigator.webdriver.
   await context.addInitScript(STEALTH_INIT_SCRIPT);
 
-  // SSRF parity with the browser-session guard (Q-031): Chromium resolves DNS and follows redirects
-  // itself, so a pre-navigation host check can't stop a redirect / JS navigation to a private host
-  // via a DNS-resolving name. Validate the host of every navigation request before it leaves.
-  // Drop image/font/media like the browser-session guard: the DOM skeleton is structural, so these
+  // SSRF parity with the browser-session guard: validate EVERY http(s) request
+  // host (navigation + XHR/fetch/subresource), not only navigations.
+  // Drop image/font/media like before: the DOM skeleton is structural, so these
   // don't affect capture, and routing every heavy subresource of a big page (e.g. MDN) through the
   // JS route handler otherwise slows the load enough to thin the captured skeleton.
   const SKELETON_BLOCKED_TYPES = new Set(["image", "font", "media"]);
@@ -54,9 +53,12 @@ try {
     if (SKELETON_BLOCKED_TYPES.has(req.resourceType())) {
       return route.abort();
     }
-    if (!shouldSkipPrivateIpCheck() && req.isNavigationRequest()) {
+    if (!shouldSkipPrivateIpCheck()) {
       try {
-        await resolveAndValidateHost(new URL(req.url()).hostname);
+        const u = new URL(req.url());
+        if (u.protocol === "http:" || u.protocol === "https:") {
+          await resolveAndValidateHost(u.hostname);
+        }
       } catch {
         return route.abort("blockedbyclient");
       }

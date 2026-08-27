@@ -8,6 +8,7 @@ public enum OccamMcpTransportMode
     WebSocket,
     Remote,
     BatchServer,
+    StreamableHttp,
 }
 
 public sealed class OccamMcpCli
@@ -15,6 +16,7 @@ public sealed class OccamMcpCli
     public const int DefaultWebSocketPort = 5050;
     public const int DefaultBatchServerPort = 5051;
     public const int DefaultRemotePort = 8443;
+    public const int DefaultStreamableHttpPort = 5055;
     public const string DefaultBindAddress = "127.0.0.1";
 
     public OccamMcpTransportMode Mode { get; init; } = OccamMcpTransportMode.Stdio;
@@ -70,6 +72,13 @@ public sealed class OccamMcpCli
             {
                 mode = OccamMcpTransportMode.Remote;
                 port = DefaultRemotePort;
+                continue;
+            }
+
+            if (arg is "--mcp-http" or "--streamable-http")
+            {
+                mode = OccamMcpTransportMode.StreamableHttp;
+                port = DefaultStreamableHttpPort;
                 continue;
             }
 
@@ -159,13 +168,15 @@ public sealed class OccamMcpCli
             }
         }
 
-        if (failure is null && mode is OccamMcpTransportMode.WebSocket or OccamMcpTransportMode.BatchServer or OccamMcpTransportMode.Remote)
+        if (failure is null && mode is OccamMcpTransportMode.WebSocket or OccamMcpTransportMode.BatchServer
+            or OccamMcpTransportMode.Remote or OccamMcpTransportMode.StreamableHttp)
         {
             if (port is < 1 or > 65535)
             {
                 failure = "invalid_arguments";
             }
             else if (mode is OccamMcpTransportMode.WebSocket or OccamMcpTransportMode.BatchServer
+                or OccamMcpTransportMode.StreamableHttp
                 && !string.Equals(bind, DefaultBindAddress, StringComparison.Ordinal))
             {
                 failure = "invalid_arguments";
@@ -228,8 +239,10 @@ public sealed class OccamMcpCli
         writer.WriteLine();
         writer.WriteLine("Usage:");
         writer.WriteLine("  OccamMcp.Core                    MCP over stdio (default)");
-        writer.WriteLine("  OccamMcp.Core --mcp-server       WebSocket on 127.0.0.1:5050");
+        writer.WriteLine("  OccamMcp.Core --mcp-server       WebSocket on 127.0.0.1:5050 (legacy/advanced)");
         writer.WriteLine("  OccamMcp.Core --mcp-server --port N");
+        writer.WriteLine("  OccamMcp.Core --mcp-http         Streamable HTTP /mcp on 127.0.0.1:5055");
+        writer.WriteLine("  OccamMcp.Core --mcp-http --port N");
         writer.WriteLine("  OccamMcp.Core --remote --tls-cert PATH --jwt-metadata-uri URI");
         writer.WriteLine("  OccamMcp.Core --remote --port N");
         writer.WriteLine("  OccamMcp.Core --batch-server     Batch HTTP on 127.0.0.1:5051");
@@ -249,10 +262,12 @@ public sealed class OccamMcpCli
         writer.WriteLine();
         writer.WriteLine("Options:");
         writer.WriteLine("  -h, --help              Show this help (stderr, exit 0)");
-        writer.WriteLine("  --mcp-server            Listen for MCP JSON-RPC over WebSocket");
-        writer.WriteLine("  --remote                Listen for MCP over WSS (TLS + JWT auth)");
+        writer.WriteLine("  --mcp-server            Listen for MCP JSON-RPC over WebSocket (legacy/advanced)");
+        writer.WriteLine("  --mcp-http              Listen for MCP Streamable HTTP at /mcp (standard remote)");
+        writer.WriteLine("  --streamable-http       Alias for --mcp-http");
+        writer.WriteLine("  --remote                Listen for MCP over WSS (custom TLS + JWT; advanced)");
         writer.WriteLine("  --batch-server          Listen for batch submit API (experimental)");
-        writer.WriteLine("  --port N                Port override (WS 5050, remote 8443, batch 5051)");
+        writer.WriteLine("  --port N                Port override (WS 5050, HTTP 5055, remote 8443, batch 5051)");
         writer.WriteLine("  --bind ADDR             Local modes: 127.0.0.1 only; remote: numeric IP (for example 0.0.0.0)");
         writer.WriteLine("  --tls-cert PATH         Path to TLS certificate (PFX or PEM)");
         writer.WriteLine("  --tls-password PASS     PFX password (omit for PEM)");

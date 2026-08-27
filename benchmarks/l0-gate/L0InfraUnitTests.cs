@@ -350,7 +350,7 @@ internal static class L0InfraUnitTests
         try
         {
             Environment.SetEnvironmentVariable("OCCAM_PROFILE", null);
-            assert("default profile is full", OccamMcp.Core.Transport.OccamToolProfile.Resolve() == "full");
+            assert("default profile is reader", OccamMcp.Core.Transport.OccamToolProfile.Resolve() == "reader");
             assert(
                 "full exposes catalog tools",
                 OccamMcp.Core.Transport.OccamToolProfile.GetExposedToolNames("full").Length
@@ -376,7 +376,7 @@ internal static class L0InfraUnitTests
             assert("auditor hides heal", System.Array.IndexOf(auditor, "occam_playbook_heal") < 0);
 
             Environment.SetEnvironmentVariable("OCCAM_PROFILE", "not-a-profile");
-            assert("invalid profile falls back to full", OccamMcp.Core.Transport.OccamToolProfile.Resolve() == "full");
+            assert("invalid profile falls back to reader", OccamMcp.Core.Transport.OccamToolProfile.Resolve() == "reader");
         }
         finally
         {
@@ -1067,6 +1067,16 @@ internal static class L0InfraUnitTests
             string? headersFile,
             CancellationToken cancellationToken,
             int port = 0) => Task.FromResult<string?>(null);
+
+        public Task<OccamMcp.Core.BrowserActions.BrowserInteractWorkerResult?> TryInteractAsync(
+            string url,
+            string actionsJson,
+            int deadlineMs,
+            int timeoutMs,
+            string? headersFile,
+            string? storageStateFile,
+            CancellationToken cancellationToken,
+            int port = 0) => Task.FromResult<OccamMcp.Core.BrowserActions.BrowserInteractWorkerResult?>(null);
     }
 
     private static void RunProxyRotationInfra(Action<string, bool> assert)
@@ -3600,6 +3610,17 @@ internal static class L0InfraUnitTests
             "http_then_browser",
             baseOptions with { MaxTokens = 500 });
         assert("transcode cache key max_tokens differs", keyA != keyTokens);
+        var keyRank = TranscodeCacheKey.Compute(
+            "https://example.com/Docs", "http_then_browser", baseOptions, rankBlocks: true);
+        var keyTrust = TranscodeCacheKey.Compute(
+            "https://example.com/Docs", "http_then_browser", baseOptions, tagTrust: true);
+        var keyCapsule = TranscodeCacheKey.Compute(
+            "https://example.com/Docs", "http_then_browser", baseOptions, emitCapsule: true);
+        assert("transcode cache key rank_blocks differs", keyA != keyRank);
+        assert("transcode cache key tag_trust differs", keyA != keyTrust);
+        assert("transcode cache key emit_capsule differs", keyA != keyCapsule);
+        assert("transcode cache key rank/trust/capsule pairwise distinct",
+            keyRank != keyTrust && keyTrust != keyCapsule && keyRank != keyCapsule);
 
         // Eligibility / privacy guard.
         assert("transcode cache eligible public", TranscodeCacheEligibility.IsCacheable("https://example.com/", null, null, 60));

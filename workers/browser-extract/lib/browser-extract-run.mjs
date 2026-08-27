@@ -24,6 +24,16 @@ export async function runBrowserExtract(url, options = {}) {
   const leanAssets = options.leanAssets !== false;
   const blockStylesheets = leanAssets || hasRecipe(url);
   const browserPlan = readBrowserPlanFile(options.browserPlanFile ?? null);
+  /** @type {unknown[] | null} */
+  let mcpActions = options.mcpActions ?? null;
+  if (!mcpActions && options.mcpActionsFile) {
+    try {
+      const raw = JSON.parse(await import("node:fs/promises").then((fs) => fs.readFile(options.mcpActionsFile, "utf8")));
+      mcpActions = Array.isArray(raw) ? raw : raw?.actions;
+    } catch {
+      mcpActions = null;
+    }
+  }
   const recipe = await getRecipe(url);
   const extractVariant = parseExtractVariant(
     options.extractVariant ?? recipe?.extractVariant ?? process.env.WT_BROWSER_EXTRACT_VARIANT,
@@ -40,6 +50,8 @@ export async function runBrowserExtract(url, options = {}) {
       consentAggressive: options.consentAggressive === true,
       extractVariant,
       browserPlan,
+      mcpActions,
+      actionDeadlineMs: options.actionDeadlineMs ?? null,
       sessionHeaders: session.sessionHeaders,
       features: options.features,
     });

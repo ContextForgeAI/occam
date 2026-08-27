@@ -65,6 +65,19 @@ internal static class ConditionalEconomyUnitTests
             "http",
             new OccamTranscodeOptions { PlaybookPolicy = "off" });
         assert("mat key: URL fragment changes key", fragA != fragB);
+
+        var capsuleOn = MaterializationKey.Compute(
+            "https://docs.python.org/3/library/asyncio.html",
+            "http_then_browser",
+            baseOpts,
+            emitCapsule: true);
+        assert("mat key: emit_capsule changes key", capsuleOn != k1);
+        var rankOn = MaterializationKey.Compute(
+            "https://docs.python.org/3/library/asyncio.html",
+            "http_then_browser",
+            baseOpts,
+            rankBlocks: true);
+        assert("mat key: rank_blocks changes key", rankOn != k1);
     }
 
     private static void RunUnchangedEnvelope(Action<string, bool> assert)

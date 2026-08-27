@@ -40,9 +40,8 @@ assert_published_rid() {
   esac
 }
 
-# Public default stays the published channel until a later cutover commit.
-# Project/build VERSION file may already be 1.0.0-rc.3 for tag alignment.
-VERSION="${OCCAM_VERSION:-1.0.0-rc.2}"
+# Public default tracks the published GitHub Release (see PUBLIC_DEFAULT_RELEASE_VERSION).
+VERSION="${OCCAM_VERSION:-1.0.0-rc.3}"
 RID="${OCCAM_RID:-$(detect_rid)}"
 assert_published_rid "$RID"
 INSTALL_DIR="${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}"
@@ -397,45 +396,83 @@ json_field_optional() {
   " "$1" "$2"
 }
 
-# Fail closed before any extract. Uses repo archive-preflight.mjs when available,
-# otherwise tar member listing + the same path/symlink rules via Node builtins.
+# Resolve archive-preflight.mjs: checkout → OCCAM_ARCHIVE_PREFLIGHT_PATH →
+# pinned raw URL for the release tag being installed → fail (listing fallback).
+resolve_archive_preflight_module() {
+  if [[ -n "${OCCAM_ARCHIVE_PREFLIGHT_PATH:-}" && -f "$OCCAM_ARCHIVE_PREFLIGHT_PATH" ]]; then
+    printf '%s\n' "$OCCAM_ARCHIVE_PREFLIGHT_PATH"
+    return 0
+  fi
+  if [[ -n "$ROOT_DIR" && -f "$ROOT_DIR/scripts/lib/archive-preflight.mjs" ]]; then
+    printf '%s\n' "$ROOT_DIR/scripts/lib/archive-preflight.mjs"
+    return 0
+  fi
+  if [[ -z "${BOOTSTRAP_TMP:-}" ]]; then
+    return 1
+  fi
+  local dest="$BOOTSTRAP_TMP/archive-preflight.mjs"
+  if [[ -f "$dest" ]]; then
+    printf '%s\n' "$dest"
+    return 0
+  fi
+  local url="${OCCAM_ARCHIVE_PREFLIGHT_URL:-https://raw.githubusercontent.com/ContextForgeAI/occam/v${VERSION}/scripts/lib/archive-preflight.mjs}"
+  if curl -fsSL "$url" -o "$dest"; then
+    printf '%s\n' "$dest"
+    return 0
+  fi
+  rm -f "$dest"
+  return 1
+}
+
+# Fail closed before any extract. Prefer Node gzipped-ustar preflight
+# (archive-preflight.mjs). Listing-text fallback is last resort only.
 preflight_release_archive() {
   local archive="$1"
   local expected_root="$2"
-  if [[ -n "$ROOT_DIR" && -f "$ROOT_DIR/scripts/lib/archive-preflight.mjs" ]]; then
-    node "$ROOT_DIR/scripts/lib/archive-preflight.mjs" \
-      --archive "$archive" \
-      --expected-root "$expected_root"
+  local module=""
+  if module="$(resolve_archive_preflight_module)"; then
+    node "$module" --archive "$archive" --expected-root "$expected_root"
     return $?
   fi
+
+  echo "warn: archive-preflight.mjs unavailable; using tar listing fallback" >&2
   local listing="$BOOTSTRAP_TMP/tar-list.txt"
   if ! tar -tvzf "$archive" >"$listing"; then
     echo "error: unable to list archive members before extract" >&2
     exit 1
   fi
+
+  if [[ -n "$ROOT_DIR" && -f "$ROOT_DIR/scripts/lib/archive-preflight-listing.mjs" ]]; then
+    node "$ROOT_DIR/scripts/lib/archive-preflight-listing.mjs" "$listing" "$expected_root"
+    return $?
+  fi
+
   node - "$listing" "$expected_root" <<'NODE'
 const fs = require("fs");
 const [listingPath, expectedRoot] = process.argv.slice(2);
 const lines = fs.readFileSync(listingPath, "utf8").split(/\r?\n/).filter(Boolean);
-const names = [];
-for (const line of lines) {
-  const type = line[0];
-  let name = "";
+
+function nameStartIndex(parts) {
+  if (parts.length >= 6 && String(parts[1] || "").includes("/")) return 5;
+  if (parts.length >= 9 && /^\d+$/.test(String(parts[1] || ""))) return 8;
+  if (parts.length >= 6) return 5;
+  return -1;
+}
+
+function parseLine(line) {
+  const type = line[0] || "";
   const arrow = line.indexOf(" -> ");
   if (arrow !== -1 && (type === "l" || type === "h")) {
-    name = line.slice(0, arrow).trim().split(/\s+/).slice(8).join(" ");
-    console.error(`error: ${type === "l" ? "symlink" : "hardlink"} archive members are not allowed: ${name || line}`);
-    process.exit(1);
+    const left = line.slice(0, arrow).trim().split(/\s+/);
+    const start = nameStartIndex(left);
+    return { type, name: start >= 0 ? left.slice(start).join(" ") : "" };
   }
-  // bsdtar/GNU: permissions ... name  OR  name at end after size/date fields
   const parts = line.trim().split(/\s+/);
-  name = parts.slice(8).join(" ");
-  if (!name) {
-    console.error("error: unable to parse archive member listing line");
-    process.exit(1);
-  }
-  names.push(name.replace(/\\/g, "/"));
+  const start = nameStartIndex(parts);
+  if (start < 0) return null;
+  return { type, name: parts.slice(start).join(" ") };
 }
+
 function unsafePath(p) {
   const n = String(p || "").replace(/\\/g, "/");
   if (!n) return "empty archive member path";
@@ -444,6 +481,20 @@ function unsafePath(p) {
   if (n.startsWith("//")) return `unc archive member path: ${p}`;
   if (n.split("/").includes("..")) return `path traversal in archive member: ${p}`;
   return null;
+}
+
+const names = [];
+for (const line of lines) {
+  const parsed = parseLine(line);
+  if (!parsed || !parsed.name) {
+    console.error(`error: unable to parse archive member listing line: ${line}`);
+    process.exit(1);
+  }
+  if (parsed.type === "l" || parsed.type === "h") {
+    console.error(`error: ${parsed.type === "l" ? "symlink" : "hardlink"} archive members are not allowed: ${parsed.name}`);
+    process.exit(1);
+  }
+  names.push(parsed.name.replace(/\\/g, "/"));
 }
 const roots = new Set();
 for (const name of names) {
@@ -466,6 +517,31 @@ for (const root of roots) {
   }
 }
 NODE
+}
+
+# Cosign is required when the release manifest declares signaturePolicy=required-cosign-v1
+# (published v1.0.0-rc.3+). Prefer an operator-installed CLI; do not silently skip.
+ensure_cosign_cli() {
+  if command -v cosign >/dev/null 2>&1; then
+    return 0
+  fi
+  local d
+  for d in /opt/homebrew/bin /usr/local/bin "${HOME}/.local/bin"; do
+    if [[ -x "${d}/cosign" ]]; then
+      export PATH="${d}:${PATH}"
+      return 0
+    fi
+  done
+  cat >&2 <<'EOF'
+error: signaturePolicy=required-cosign-v1 requires the cosign CLI on PATH
+
+Install Cosign, then re-run the Occam bootstrap:
+  https://docs.sigstore.dev/cosign/system_config/installation/
+
+Authenticity checks prove release signer identity — not page-content truth.
+See INSTALL.md (Cosign / signaturePolicy).
+EOF
+  exit 1
 }
 
 download() {
@@ -550,17 +626,31 @@ install_release() {
         bundle_url="$OCCAM_RELEASE_BUNDLE_URL"
       fi
       download "$bundle_url" "$bundle_path"
-      if [[ -n "$ROOT_DIR" && -f "$ROOT_DIR/scripts/lib/verify-release-signature.mjs" ]]; then
-        node "$ROOT_DIR/scripts/lib/verify-release-signature.mjs" \
+      local verify_mod=""
+      if [[ -n "${OCCAM_VERIFY_RELEASE_SIGNATURE_PATH:-}" && -f "$OCCAM_VERIFY_RELEASE_SIGNATURE_PATH" ]]; then
+        verify_mod="$OCCAM_VERIFY_RELEASE_SIGNATURE_PATH"
+      elif [[ -n "$ROOT_DIR" && -f "$ROOT_DIR/scripts/lib/verify-release-signature.mjs" ]]; then
+        verify_mod="$ROOT_DIR/scripts/lib/verify-release-signature.mjs"
+      elif [[ -n "${BOOTSTRAP_TMP:-}" ]]; then
+        verify_mod="$BOOTSTRAP_TMP/verify-release-signature.mjs"
+        if [[ ! -f "$verify_mod" ]]; then
+          local verify_url="${OCCAM_VERIFY_RELEASE_SIGNATURE_URL:-https://raw.githubusercontent.com/ContextForgeAI/occam/v${VERSION}/scripts/lib/verify-release-signature.mjs}"
+          if ! curl -fsSL "$verify_url" -o "$verify_mod"; then
+            rm -f "$verify_mod"
+            verify_mod=""
+          fi
+        fi
+      fi
+      if [[ -n "$verify_mod" && -f "$verify_mod" ]]; then
+        # verify-release-signature.mjs still needs cosign on PATH.
+        ensure_cosign_cli
+        node "$verify_mod" \
           --manifest "$manifest_path" \
           --archive "$tarball_path" \
           --bundle "$bundle_path" \
           --version "$VERSION"
       else
-        if ! command -v cosign >/dev/null 2>&1; then
-          echo "error: signaturePolicy=required-cosign-v1 requires the cosign CLI on PATH" >&2
-          exit 1
-        fi
+        ensure_cosign_cli
         local expected_identity
         expected_identity="https://github.com/ContextForgeAI/occam/.github/workflows/occam-release.yml@refs/tags/v${VERSION}"
         cosign verify-blob "$tarball_path" \

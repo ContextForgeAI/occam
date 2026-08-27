@@ -25,7 +25,8 @@ public static class MaterializationKey
         string? playbookId = null,
         string? playbookVersion = null,
         bool rankBlocks = false,
-        bool tagTrust = false)
+        bool tagTrust = false,
+        bool emitCapsule = false)
     {
         // Fragment drives local focus (same as TranscodeCacheKey) — must split identity (EF-045).
         var focusFragment = FocusIntent.FromUrl(url).Fragment
@@ -55,8 +56,12 @@ public static class MaterializationKey
         canonical.Append("translate_to=").Append(options.TranslateTo ?? string.Empty).Append('\n');
         canonical.Append("rank_blocks=").Append(rankBlocks ? '1' : '0').Append('\n');
         canonical.Append("tag_trust=").Append(tagTrust ? '1' : '0').Append('\n');
+        canonical.Append("emit_capsule=").Append(emitCapsule ? '1' : '0').Append('\n');
         // capture_screenshot affects sidecar presence, not markdown hash — still part of the envelope.
-        canonical.Append("capture_screenshot=").Append(options.CaptureScreenshot ? '1' : '0');
+        canonical.Append("capture_screenshot=").Append(options.CaptureScreenshot ? '1' : '0').Append('\n');
+        canonical.Append("toc=").Append(options.EmitToc ? '1' : '0').Append('\n');
+        canonical.Append("section=").Append(options.Section ?? string.Empty).Append('\n');
+        canonical.Append("must_contain=").Append(options.MustContain ?? string.Empty);
 
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString()));
         return "sha256:" + Convert.ToHexString(hash).ToLowerInvariant();

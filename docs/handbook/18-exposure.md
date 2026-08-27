@@ -1,4 +1,4 @@
-# Chapter 18 — Exposure: 51 entrypoints, 15 default tools
+# Chapter 18 — Exposure: 51 entrypoints, profile-scoped tools
 
 **Status:** STABLE · **Prerequisites:** [Chapter 3](03-standing-up-an-install.md)
 
@@ -6,7 +6,9 @@
 
 ## Mental model
 
-**Product capability ≠ MCP tool count.** "15 tools" is the default stdio `tools/list` under `OCCAM_PROFILE=full` with the four opt-in flags off — one exposure slice of **51 named entrypoints**, not the whole product.
+**Product capability ≠ MCP tool count.** Product default is `OCCAM_PROFILE=reader` (8 tools).
+"15 tools" is the `OCCAM_PROFILE=full` stdio `tools/list` with opt-in flags off — one exposure
+slice of **51 named entrypoints**, not the whole product.
 
 ---
 
@@ -34,17 +36,17 @@ Connect's ~15 host adapters are **mechanisms under** `occam connect`, not separa
 
 Registered in `OccamMcpServerRegistration.OccamToolNames`: client_capabilities, transcode, probe, digest, playbook_resolve, map, playbook_heal, playbook_save, extract_knowledge, search, verify, claim_check, attest, playbook_lint, dataset_export.
 
-An agent with only the default 15 can read pages, probe/map/search, extract knowledge, author playbooks, and run core trust flows — but **cannot** watch/batch/crosscheck/atlas, install/connect hosts, or reach WS/Remote/BatchServer via the canonical launcher.
+An agent on `full` can read pages, probe/map/search, extract knowledge, author playbooks, and run core trust flows — but **cannot** watch/batch/crosscheck/atlas/browser_interact, install/connect hosts, or reach WS/Remote/BatchServer via the canonical launcher without extra flags/modes. The product default `reader` omits heal/save and several trust/authoring tools.
 
 ### Profiles change exposure, not semantics
 
 | Profile | Tools exposed |
 |---------|--------------:|
-| `full` (default) | 15 |
-| `reader` | 8 |
+| `reader` (**default**) | 8 |
 | `researcher` | 9 |
 | `auditor` | 12 |
-| invalid value | → `full` + stderr warning |
+| `full` | 15 |
+| invalid value | → `reader` + stderr warning |
 
 Profiles filter **tools/list**, not handler behavior. A `reader` deployment still mints a key, still signs eligible successes, still applies playbook overlays, and may still use a managed provider. Opt-in tools ignore profiles entirely.
 
@@ -58,8 +60,9 @@ Profiles filter **tools/list**, not handler behavior. A `reader` deployment stil
 | WebSocket | `--mcp-server` | No — not via launcher |
 | Remote WSS+JWT | `--remote` | No |
 | BatchServer HTTP | `--batch-server` | No |
+| Streamable HTTP | `--mcp-http` / `--streamable-http` (port 5055) | No |
 
-Local WS has no session semaphore; each socket builds a DI container that may kill the shared browser pool. BatchServer has no auth (loopback only). Banner may claim stdio while running WS or Remote.
+Local WS has no session semaphore; each socket builds a DI container that may kill the shared browser pool. BatchServer has no auth (loopback only). Streamable HTTP is loopback-first. Banner may claim stdio while running WS or Remote.
 
 ### Operator surface is first-class
 
@@ -67,13 +70,13 @@ Install, doctor, connect, session, refresh, and host-binary offline verbs (`keys
 
 ### npm is not GA
 
-`@ff-occam/mcp` is **not** a supported 1.0 install channel (INTERNAL / NOT PUBLIC INSTALL PATH until an end-to-end contract passes). Do not advertise `npx @ff-occam/mcp` as GA.
+`ff-occam` / `@ff-occam/mcp` are **not** a supported GA 1.0 install channel (INTERNAL / NOT PUBLIC INSTALL PATH until an end-to-end contract passes). Do not advertise `npx ff-occam` / `npx @ff-occam/mcp` as GA. Canonical install remains GitHub Release tarballs + bootstrap.
 
 ---
 
 ## CHECK
 
-**LOCAL.** Start the host four times, once per valid `OCCAM_PROFILE` value (`full`, `reader`, `researcher`, `auditor`). Record `tools/list` each time. Start with an invalid profile and observe fallback to `full` plus stderr warning.
+**LOCAL.** Start the host four times, once per valid `OCCAM_PROFILE` value (`full`, `reader`, `researcher`, `auditor`). Record `tools/list` each time. Start with an invalid profile and observe fallback to `reader` plus stderr warning.
 
 ---
 
