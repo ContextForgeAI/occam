@@ -97,8 +97,27 @@ jobs:
         working-directory: packages/ff-occam
         run: |
           set -euo pipefail
+          # Before first registry publish (and in dry-run), resolve sibling via file:.
+          # package.json keeps the registry pin for the published tarball.
+          node <<'NODE'
+          const fs = require("fs");
+          const path = "package.json";
+          const pkg = JSON.parse(fs.readFileSync(path, "utf8"));
+          const pin = pkg.dependencies["@ff-occam/mcp"];
+          fs.writeFileSync("/tmp/ff-occam-mcp-dep.txt", pin);
+          pkg.dependencies["@ff-occam/mcp"] = "file:../occam-mcp";
+          fs.writeFileSync(path, `${JSON.stringify(pkg, null, 2)}\n`);
+          NODE
           npm install --no-fund --no-audit
           npm test
+          node <<'NODE'
+          const fs = require("fs");
+          const path = "package.json";
+          const pkg = JSON.parse(fs.readFileSync(path, "utf8"));
+          pkg.dependencies["@ff-occam/mcp"] = fs.readFileSync("/tmp/ff-occam-mcp-dep.txt", "utf8").trim();
+          fs.writeFileSync(path, `${JSON.stringify(pkg, null, 2)}\n`);
+          console.log(`restored @ff-occam/mcp -> ${pkg.dependencies["@ff-occam/mcp"]}`);
+          NODE
 
       - name: Publish ff-occam
         working-directory: packages/ff-occam
