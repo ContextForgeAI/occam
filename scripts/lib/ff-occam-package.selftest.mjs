@@ -22,6 +22,7 @@ import { fileURLToPath } from "node:url";
 const repoRoot = process.env.OCCAM_HOME || join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const pkgDir = join(repoRoot, "packages", "ff-occam");
 const mcpDir = join(repoRoot, "packages", "occam-mcp");
+const pkgJsonPath = join(pkgDir, "package.json");
 
 function run(cmd, args, opts = {}) {
   const r = spawnSync(cmd, args, {
@@ -46,15 +47,31 @@ if (!existsSync(join(mcpDir, "package.json"))) {
   process.exit(1);
 }
 
-// Workspace install + unit tests (file: dependency).
-run("npm", ["install", "--no-audit", "--no-fund"], { cwd: pkgDir });
-run("npm", ["test"], { cwd: pkgDir });
+const pkgJson = JSON.parse(readFileSync(pkgJsonPath, "utf8"));
+const registryDep = pkgJson.dependencies["@ff-occam/mcp"];
+if (!registryDep || registryDep.startsWith("file:")) {
+  console.error(
+    `ff-occam must pin @ff-occam/mcp to a registry version for publish (got ${registryDep})`,
+  );
+  process.exit(1);
+}
+
+// Local monorepo install: temporarily point at sibling for tests without registry.
+pkgJson.dependencies["@ff-occam/mcp"] = "file:../occam-mcp";
+writeFileSync(pkgJsonPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
+try {
+  run("npm", ["install", "--no-audit", "--no-fund"], { cwd: pkgDir });
+  run("npm", ["test"], { cwd: pkgDir });
+} finally {
+  pkgJson.dependencies["@ff-occam/mcp"] = registryDep;
+  writeFileSync(pkgJsonPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
+}
 
 // Clean install from packed tarballs (mimics published consumers).
 const stage = mkdtempSync(join(tmpdir(), "ff-occam-clean-"));
 try {
-  run("npm", ["pack", "--pack-destination", stage], { cwd: mcpDir });
-  run("npm", ["pack", "--pack-destination", stage], { cwd: pkgDir });
+  run("npm", ["pack", "--pack-destination", stage, "--ignore-scripts"], { cwd: mcpDir });
+  run("npm", ["pack", "--pack-destination", stage, "--ignore-scripts"], { cwd: pkgDir });
 
   const tarballs = readdirSync(stage).filter((f) => f.endsWith(".tgz"));
   // npm pack names: @ff-occam/mcp → ff-occam-mcp-*.tgz ; ff-occam → ff-occam-*.tgz
@@ -62,6 +79,20 @@ try {
   const ffPack = tarballs.find((f) => /^ff-occam-(?!mcp-).*\.tgz$/.test(f));
   if (!mcpPack || !ffPack) {
     console.error(`missing packed tarballs in ${stage}: ${tarballs.join(", ")}`);
+    process.exit(1);
+  }
+
+  const packedFf = JSON.parse(
+    readFileSync(
+      // Verify packed metadata carries registry dep, not file:
+      join(pkgDir, "package.json"),
+      "utf8",
+    ),
+  );
+  if (packedFf.dependencies["@ff-occam/mcp"] !== registryDep) {
+    console.error(
+      `pack-time dependency drift: expected ${registryDep}, got ${packedFf.dependencies["@ff-occam/mcp"]}`,
+    );
     process.exit(1);
   }
 

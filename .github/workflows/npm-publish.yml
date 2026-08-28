@@ -1,0 +1,125 @@
+# Publish experimental npm packages (not GA install channel).
+# Requires repository secret NPM_TOKEN with publish rights on @ff-occam/* and ff-occam.
+name: npm publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Pack and verify only (no npm publish)"
+        type: boolean
+        default: false
+      npm_tag:
+        description: "npm dist-tag (rc for prereleases)"
+        type: string
+        default: "rc"
+
+concurrency:
+  group: npm-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish @ff-occam/mcp + ff-occam
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.repository == 'ContextForgeAI/occam'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Align package versions with VERSION
+        id: ver
+        run: |
+          set -euo pipefail
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          node -e '
+            const fs = require("fs");
+            const v = fs.readFileSync("VERSION", "utf8").trim();
+            for (const rel of ["packages/occam-mcp/package.json", "packages/ff-occam/package.json"]) {
+              const pkg = JSON.parse(fs.readFileSync(rel, "utf8"));
+              if (pkg.version !== v) {
+                console.error(`${rel} version ${pkg.version} != VERSION ${v}`);
+                process.exit(1);
+              }
+            }
+            const ff = JSON.parse(fs.readFileSync("packages/ff-occam/package.json", "utf8"));
+            const dep = ff.dependencies["@ff-occam/mcp"];
+            if (dep !== v && dep !== `^${v}` && !dep.startsWith(v)) {
+              console.error(`ff-occam must depend on @ff-occam/mcp@${v}, got ${dep}`);
+              process.exit(1);
+            }
+            console.log(`ok: packages aligned to ${v}`);
+          '
+
+      - name: Install + build @ff-occam/mcp
+        working-directory: packages/occam-mcp
+        run: |
+          set -euo pipefail
+          npm ci --no-fund --no-audit
+          npm run build
+          # Unit tests only — live public-mcp-contract needs a host binary (covered by CI gate).
+          node --test test/client.test.js test/discover-repo.test.js test/resolve-host-binary.test.js
+
+      - name: Publish @ff-occam/mcp
+        working-directory: packages/occam-mcp
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          NPM_TAG: ${{ inputs.npm_tag }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "error: NPM_TOKEN secret is empty" >&2
+            exit 1
+          fi
+          if [ "$DRY_RUN" = "true" ]; then
+            npm pack
+            ls -la ff-occam-mcp-*.tgz
+            echo "dry-run: skipped npm publish @ff-occam/mcp"
+          else
+            npm publish --access public --tag "$NPM_TAG" --ignore-scripts
+            npm view "@ff-occam/mcp@${{ steps.ver.outputs.version }}" version
+          fi
+
+      - name: Install + test ff-occam
+        working-directory: packages/ff-occam
+        run: |
+          set -euo pipefail
+          npm install --no-fund --no-audit
+          npm test
+
+      - name: Publish ff-occam
+        working-directory: packages/ff-occam
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          NPM_TAG: ${{ inputs.npm_tag }}
+        run: |
+          set -euo pipefail
+          if [ "$DRY_RUN" = "true" ]; then
+            npm pack
+            ls -la ff-occam-*.tgz
+            echo "dry-run: skipped npm publish ff-occam"
+          else
+            npm publish --access public --tag "$NPM_TAG" --ignore-scripts
+            npm view "ff-occam@${{ steps.ver.outputs.version }}" version
+            npm view "ff-occam@${{ steps.ver.outputs.version }}" dependencies
+          fi
+
+      - name: Summary
+        run: |
+          echo "version=${{ steps.ver.outputs.version }}"
+          echo "dry_run=${{ inputs.dry_run }}"
+          echo "npm_tag=${{ inputs.npm_tag }}"
+          echo "note: npm is experimental — not the GA install channel (GitHub Release + bootstrap)"

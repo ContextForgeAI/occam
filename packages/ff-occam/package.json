@@ -37,7 +37,7 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "@ff-occam/mcp": "file:../occam-mcp"
+    "@ff-occam/mcp": "1.0.0-rc.4"
   },
   "publishConfig": {
     "access": "public",

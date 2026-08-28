@@ -6,7 +6,11 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
-(empty)
+- **npm publish via GitHub Actions** — workflow `npm-publish` (`workflow_dispatch`) publishes
+  experimental `@ff-occam/mcp` then `ff-occam` with dist-tag `rc`. Requires secret `NPM_TOKEN`.
+  npm remains **not** a GA install channel.
+- **`ff-occam` depends on `@ff-occam/mcp@1.0.0-rc.4`** — registry pin (replaces `file:` sibling)
+  so published tarballs resolve on npm.
 
 ## [1.0.0-rc.4] — 2026-08-27
 
