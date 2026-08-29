@@ -9,14 +9,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 - **Connect verifier follows the rc.4 profile contract** — `tools/list` health
   now checks the eight required reader tool identities instead of requiring a
   historical 15-tool count. Default `OCCAM_PROFILE=reader` therefore verifies
-  successfully, expanded profiles remain valid, and spawn failures return a
-  typed verification result instead of escaping the connect flow.
+  successfully, expanded profiles remain valid, spawn failures return a typed
+  verification result, and the OpenClaw host probe uses the same reader
+  baseline (identity list when names are present; count ≥ 8 otherwise).
 - **Public docs and npm identity sync** — the primary npm name is `ff-occam`;
   install/smoke prose now distinguishes default `reader` (8) from `full` (15),
   the portable skill metadata is rc.4, networking no longer claims Chromium
-  socket pinning, and the current proof identifies rc.4. The homepage now uses
-  the selected proof visual with bounded pointer depth, a one-time entrance,
-  and a reduced-motion-safe fallback.
+  socket pinning, and the current proof identifies rc.4. The documentation
+  homepage now uses a responsive semantic layout (live processing stream,
+  copyable install command, Install → Connect → Read) whose sample Markdown
+  matches the representative proof fixture; the old raster corridor asset is
+  retired.
 - **npm publish via GitHub Actions** — workflow `npm-publish` (`workflow_dispatch`) publishes
   experimental `@ff-occam/mcp` then `ff-occam` with dist-tag `rc`. Requires secret `NPM_TOKEN`.
   npm remains **not** a GA install channel.

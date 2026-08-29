@@ -62,7 +62,7 @@ extra_css:
   - stylesheets/extra.css
 
 extra_javascript:
-  - javascripts/hero-motion.js
+  - javascripts/hero-interactions.js
 
 extra:
   social:

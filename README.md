@@ -2,8 +2,6 @@
 
 *Local-first web context for AI agents.*
 
-![Occam turns webpage noise into compact, source-linked Markdown](docs/assets/occam-signal-corridor-rc4-fixture.png)
-
 ## Stop wasting your agent's context on webpage noise
 
 Most pages wrap the useful part in navigation, scripts, repeated interface

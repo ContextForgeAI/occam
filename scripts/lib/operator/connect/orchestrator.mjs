@@ -163,7 +163,7 @@ export async function runConnect(opts) {
   }
 
   const occamVerify = opts.skipOccamVerify
-    ? { ok: true, level: VERIFICATION_LEVELS.TOOLS_LIST_OK, toolCount: 15, skipped: true }
+    ? { ok: true, level: VERIFICATION_LEVELS.TOOLS_LIST_OK, toolCount: 8, skipped: true }
     : await (async () => {
         progress({ phase: "verify-start", name: "Occam" });
         const v = await verifyOccamMcp(occamHome);

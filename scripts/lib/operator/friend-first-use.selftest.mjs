@@ -48,7 +48,7 @@ function testScenarioB_hermesRollbackSummary() {
   const report = {
     status: "Action required",
     ready: false,
-    occamVerify: { ok: true, toolCount: 15 },
+    occamVerify: { ok: true, toolCount: 8 },
     runtimes: [],
     connections: [
       {

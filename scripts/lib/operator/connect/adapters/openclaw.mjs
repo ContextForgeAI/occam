@@ -28,6 +28,10 @@ import {
   runCapture,
   which,
 } from "../process.mjs";
+import {
+  evaluateOccamToolList,
+  REQUIRED_BASELINE_TOOLS,
+} from "../occam-verify.mjs";
 import { VERIFICATION_LEVELS } from "../verification.mjs";
 
 export const OPENCLAW_ADAPTER_ID = "openclaw";
@@ -319,23 +323,47 @@ export function createOpenClawAdapter(ctx) {
       const probeOut = `${probe.stdout}\n${probe.stderr}`;
       let toolCount = 0;
       let parsed = null;
+      let ok = false;
       try {
         const jsonStart = probe.stdout.indexOf("{");
         if (jsonStart >= 0) {
           parsed = JSON.parse(probe.stdout.slice(jsonStart));
           const server = parsed?.servers?.[serverName];
-          toolCount = Number(server?.tools ?? 0);
-          if (!toolCount && Array.isArray(parsed?.tools)) {
-            toolCount = parsed.tools.filter((t) =>
-              String(t).startsWith(`${serverName}__`),
-            ).length;
+          const prefix = `${serverName}__`;
+          const namedFrom = (entries) =>
+            entries
+              .map((entry) => {
+                if (typeof entry === "string") {
+                  return entry.startsWith(prefix)
+                    ? entry.slice(prefix.length)
+                    : entry;
+                }
+                if (entry && typeof entry === "object" && typeof entry.name === "string") {
+                  const name = entry.name;
+                  return name.startsWith(prefix) ? name.slice(prefix.length) : name;
+                }
+                return null;
+              })
+              .filter((name) => typeof name === "string" && name.length > 0)
+              .map((name) => ({ name }));
+
+          if (Array.isArray(server?.tools)) {
+            const evaluated = evaluateOccamToolList(namedFrom(server.tools));
+            toolCount = evaluated.toolCount;
+            ok = evaluated.ok;
+          } else if (typeof server?.tools === "number") {
+            toolCount = server.tools;
+            ok = toolCount >= REQUIRED_BASELINE_TOOLS.length;
+          } else if (Array.isArray(parsed?.tools)) {
+            const evaluated = evaluateOccamToolList(namedFrom(parsed.tools));
+            toolCount = evaluated.toolCount;
+            ok = evaluated.ok;
           }
         }
       } catch {
         /* fall through */
       }
 
-      const ok = toolCount >= 15;
       return {
         ok,
         level: ok
@@ -347,7 +375,7 @@ export function createOpenClawAdapter(ctx) {
         requiresRestart: false,
         message: ok
           ? "OpenClaw probe lists Occam tools"
-          : "OpenClaw probe did not confirm tools",
+          : "OpenClaw probe did not confirm required Occam tools",
         statusOut: statusOut.slice(0, 500),
         probeOut: probeOut.slice(0, 1000),
         parsed,

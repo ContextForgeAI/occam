@@ -4,25 +4,80 @@ hide:
   - toc
 ---
 
-# Less webpage. More usable context. { #less-webpage-more-usable-context .oc-visually-hidden }
+# Less webpage. More usable context.
 
-<div class="oc-signal-hero" markdown="0">
-  <figure class="oc-signal-asset" data-oc-motion="signal" aria-labelledby="oc-signal-caption">
-    <img
-      src="assets/occam-signal-corridor-rc4-fixture.png"
-      width="1487"
-      height="1058"
-      alt="Occam turns webpage noise into compact source-linked Markdown, then guides the user through Install, Connect, and Read."
-    >
-    <figcaption id="oc-signal-caption">
-      The 5,297 → 1,736 byte comparison is one controlled fixture. Bytes, not tokens; not a universal benchmark.
-    </figcaption>
-  </figure>
+<p class="oc-signal-lead">
+Strip navigation, scripts, consent UI, and repeated chrome before they reach
+your agent. Keep the useful structure, the source, and honest failure states.
+</p>
+
+<section class="oc-signal-hero" aria-label="Occam transformation overview">
+  <div class="oc-signal-stage">
+    <section class="oc-signal-panel oc-signal-noise" aria-labelledby="oc-noise-title">
+      <h2 id="oc-noise-title" class="oc-signal-panel__title">Webpage noise</h2>
+      <div class="oc-noise-tags" aria-label="Examples of webpage chrome removed by Occam">
+        <span>navigation</span><span>search</span><span>scripts</span>
+        <span>cookie notice</span><span>newsletter form</span><span>consent UI</span>
+        <span>footer</span><span>ads</span><span>related links</span>
+        <span>social widgets</span><span>layout CSS</span><span>analytics</span>
+      </div>
+      <pre class="oc-noise-code" aria-label="Example webpage markup"><code>&lt;header&gt;…&lt;/header&gt;
+&lt;nav class="site-nav"&gt;…&lt;/nav&gt;
+&lt;script src="bundle.js"&gt;&lt;/script&gt;
+&lt;aside class="sidebar"&gt;…&lt;/aside&gt;
+&lt;footer&gt;…&lt;/footer&gt;</code></pre>
+    </section>
+
+    <div class="oc-signal-stream" role="img" aria-label="Occam filters webpage noise into compact context">
+      <span class="oc-signal-stream__lane oc-signal-stream__lane--1" aria-hidden="true"></span>
+      <span class="oc-signal-stream__lane oc-signal-stream__lane--2" aria-hidden="true"></span>
+      <span class="oc-signal-stream__lane oc-signal-stream__lane--3" aria-hidden="true"></span>
+      <span class="oc-signal-stream__lane oc-signal-stream__lane--4" aria-hidden="true"></span>
+      <span class="oc-signal-stream__lane oc-signal-stream__lane--5" aria-hidden="true"></span>
+      <span class="oc-signal-stream__lane oc-signal-stream__lane--6" aria-hidden="true"></span>
+      <span class="oc-signal-stream__lane oc-signal-stream__lane--7" aria-hidden="true"></span>
+      <span class="oc-signal-stream__core"><strong>OCCAM</strong><small>filter · fit · cite</small></span>
+    </div>
+
+    <section class="oc-signal-panel oc-signal-output" aria-labelledby="oc-output-title">
+      <h2 id="oc-output-title" class="oc-signal-panel__title">Source-linked Markdown</h2>
+      <pre class="oc-signal-output__code"><code>1  # Web context without the chrome
+2
+3  Agent infrastructure · 8 minute read
+4
+5  AI agents rarely need the whole
+6  interface of a webpage. They need
+7  the useful text, its structure, and
+8  enough source information to explain
+9  where the material came from.
+10
+11 ## The hidden cost of a page read</code></pre>
+      <p class="oc-signal-output__source">source: representative-input.html</p>
+    </section>
+
+    <dl class="oc-signal-metrics" aria-label="Controlled fixture measurement">
+      <div>
+        <dt>Webpage noise</dt>
+        <dd>5,297 <span>B</span></dd>
+      </div>
+      <div>
+        <dt>Source-linked Markdown</dt>
+        <dd>1,736 <span>B</span></dd>
+      </div>
+    </dl>
+  </div>
+
+  <p class="oc-signal-caption">
+    One controlled fixture. UTF-8 bytes, not tokens; not a universal benchmark.
+  </p>
 
   <div class="oc-signal-cta">
     <div class="oc-signal-command">
       <span class="oc-signal-command__label">npm RC · primary package</span>
-      <pre class="oc-signal-command__code"><code>npm install -g ff-occam@1.0.0-rc.4</code></pre>
+      <div class="oc-signal-command__row">
+        <code data-oc-install-command>npm install -g ff-occam@1.0.0-rc.4</code>
+        <button type="button" class="oc-signal-copy" data-oc-copy-command aria-label="Copy npm install command" aria-live="polite">Copy</button>
+      </div>
       <span class="oc-signal-command__note">For the guarded release install, use the <a href="install/">signed bootstrap</a>.</span>
     </div>
     <p class="oc-hero-actions">
@@ -31,8 +86,14 @@ hide:
     </p>
   </div>
 
+  <ol class="oc-signal-steps" aria-label="Install, connect, and read">
+    <li><a href="install/"><span>01</span><strong>Install</strong><small>One command. No accounts.</small></a></li>
+    <li><a href="connect/after-install/"><span>02</span><strong>Connect</strong><small>Add to any MCP client.</small></a></li>
+    <li><a href="quick-start/"><span>03</span><strong>Read</strong><small>Get compact context or an explicit failure.</small></a></li>
+  </ol>
+
   <p class="oc-signal-meta">Local-first · MCP · explicit failures · 1.0.0-rc.4</p>
-</div>
+</section>
 
 ## Measured before and after
 
