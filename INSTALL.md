@@ -66,7 +66,7 @@ Install behavior follows the **release manifest contract** (not the version stri
 3. Extracts to staging. Self-contained installs check the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR` (default `~/.local/share/ff-occam`). An existing target must itself be a consistent Occam release for the current RID (inner `layout: level-b` markers); source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
 4. **Self-contained:** uses only helpers inside that verified archive (no mutable post-install executable helper overlay). **Legacy Level B:** may refresh operator CLI helpers from the repository overlay. Bootstrap **script** delivery from the mutable `main` raw URL remains a separate T4 concern
 5. Runs **doctor** (`--skip-build`) — npm workers + Playwright (quiet by default)
-6. Verifies the Occam host (`verify-install` + smoke) — expect **15** `occam_*` tools
+6. Verifies the Occam host (`verify-install` + smoke) — expect the profile's required tool identities (default `reader` = **8**; `full` = **15**)
 7. Writes operator defaults to `~/.occam/onboard.json` (no second `OCCAM_HOME` prompt)
 8. Installs a user-scoped **`occam`** launcher (`~/.local/bin`; Windows: `occam.cmd` + `occam.ps1`) and prepends that directory to the **User** PATH (and the current shell PATH) so `occam` resolves immediately after install. Existing launchers are replaced only when they exactly match an Occam-generated current or previous-release launcher; unrelated same-named files stop the install, and multi-file launcher updates roll back as one transaction
 9. Runs **`occam connect`** — detects AI/MCP hosts; one host auto-connects; multiple hosts confirm first (or `OCCAM_CONNECT_ALL=1` for automation)
@@ -111,7 +111,7 @@ occam smoke
 occam smoke
 ```
 
-Expect **exit 0** and **15** `occam_*` tools.
+Expect **exit 0**. Tool count follows `OCCAM_PROFILE` (default `reader` = **8**; `full` = **15**).
 
 Re-run host connection any time:
 

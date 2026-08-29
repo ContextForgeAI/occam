@@ -65,7 +65,7 @@ The bootstrap selects install behavior from the **release manifest contract**, n
 3. Extracts to staging. Self-contained installs validate the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR`. An existing target must itself be a consistent Occam release for the current RID (inner `layout: level-b` markers); source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
 4. **Self-contained:** uses only helpers inside that verified archive (no mutable post-install executable helper overlay). **Legacy Level B:** may refresh operator CLI helpers from the repository overlay. Bootstrap **script** delivery from the mutable `main` raw URL remains a separate T4 concern
 5. Runs **doctor** (`--skip-build`) — npm workers, Playwright Chromium, host binary check (quiet by default)
-6. Verifies the Occam host — expect **15** core `occam_*` tools
+6. Verifies the Occam host by required tool identity — default `reader` exposes **8** core tools; `full` exposes **15**
 7. Writes onboard defaults → `~/.occam/onboard.json` (known install path; no re-prompt)
 8. Installs the user launcher transactionally. It replaces only exact Occam-generated current or previous-release launchers and refuses unrelated `occam`, `occam.cmd`, or `occam.ps1` files
 9. Runs **`occam connect`** for live-validated AI/MCP hosts (one host auto; multiple confirm first)
@@ -150,7 +150,7 @@ occam smoke
 occam connect
 ```
 
-Expect **exit 0** and **15** core `occam_*` tools.
+Expect **exit 0**. Tool count follows `OCCAM_PROFILE` (default `reader` = **8**; `full` = **15**).
 
 ## Optional environment
 

@@ -26,7 +26,7 @@ On browser extracts, Occam may **silently dismiss common cookie-consent overlays
 
 ## SSRF / private IP
 
-- HTTP and browser acquisition preflight and worker DNS-pinning reject private / link-local targets unless explicitly allowed by operator policy.  
+- HTTP acquisition resolves both address families, rejects private / link-local answers, and pins the socket to validated addresses. Browser acquisition validates the initial host and every HTTP(S) request host before Chromium continues it, but Chromium performs its own DNS resolution, so the browser path **cannot socket-pin the checked address**. This narrows DNS-rebinding exposure; it is not the same guarantee as the HTTP path.
 - CSS extract was brought to parity for private-IP rejection and response body caps.  
 - Some auxiliary Core HTTP clients and managed/search paths do **not** share one universal guard — do not claim “every outbound call is SSRF-safe identically.”
 

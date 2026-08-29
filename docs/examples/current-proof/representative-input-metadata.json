@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-08-01T10:53:26.089Z",
-  "runtimeSourceSha": "669e8dcae1afa7ddcf1ca5cf9388c4615e3a3603",
+  "capturedAt": "2026-08-28T18:47:26.217Z",
+  "runtimeSourceSha": "b3c212c6d9e193619b6e8663148bd53932a0acc0",
   "input": {
-    "localReproductionUrl": "http://127.0.0.1:65280/representative-input.html",
+    "localReproductionUrl": "http://127.0.0.1:62042/representative-input.html",
     "publishedUrl": "https://contextforgeai.github.io/occam/examples/current-proof/representative-input.html",
     "contentType": "text/html; charset=utf-8",
     "bodyBytesAfterHttpDecoding": 5297,

@@ -241,6 +241,9 @@ jobs:
       - name: Validate MCP host connect ownership and rollback
         run: node scripts/lib/operator/connect.selftest.mjs
 
+      - name: Validate profile-aware Occam tools/list verification
+        run: node scripts/lib/operator/connect/occam-verify.selftest.mjs
+
       - name: Validate reversible disconnect and uninstall boundaries
         run: node scripts/lib/operator/uninstall.selftest.mjs
 

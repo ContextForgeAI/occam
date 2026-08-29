@@ -4,7 +4,7 @@ Durable architecture decisions extracted from the RC.2 engineering set. The
 RC.2 working diaries and PR-by-PR reports are **not** part of the public
 documentation set.
 
-**Status:** accepted for the `1.0.0-rc.2` line. Where this page and the code
+**Status:** accepted for the `1.0.0-rc.4` line. Where this page and the code
 disagree, the code wins. Normative API shapes remain in [MCP_API_SPEC.md](https://github.com/ContextForgeAI/occam/blob/main/MCP_API_SPEC.md).
 
 ---
@@ -82,5 +82,6 @@ when it fits.
   `captcha_or_challenge`) — not silently “solved”.
 - Live L3 heal pilots can flake on third-party SPA drift; re-run before treating as a
   regression.
-- npm / NuGet / VSIX distribution is **not** part of the `1.0.0-rc.2` archive RC
-  (GitHub release tarballs only). See [roadmap.md](../roadmap.md).
+- npm remains an experimental RC channel, not the guarded GA install path;
+  canonical installation uses GitHub Release archives plus the bootstrap. See
+  [roadmap.md](../roadmap.md).

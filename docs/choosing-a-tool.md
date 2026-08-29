@@ -122,7 +122,7 @@ If you drive occam from a small local model — or any agent that drifts into pl
 | `reader` | `occam_client_capabilities`, `occam_transcode`, `occam_probe`, `occam_map`, `occam_digest`, `occam_extract_knowledge`, `occam_search`, `occam_verify` | playbook authoring, attest/dataset |
 | `researcher` (recommended for coding agents) | reader + `occam_claim_check` | heal/save/resolve/lint/attest/dataset |
 | `auditor` | researcher + `occam_attest`, `occam_dataset_export`, `occam_playbook_lint` | heal/save/resolve |
-| `full` (default) | all fifteen | — |
+| `full` | all fifteen | — |
 
 Set in the MCP host env block, e.g. `"OCCAM_PROFILE": "researcher"`. Details: [configuration.md](configuration.md#tool-surface-profile-occam_profile).
 

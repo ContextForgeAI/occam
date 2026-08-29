@@ -4,7 +4,7 @@ A successful install usually looks like this:
 
 1. Release archive downloaded and hash-verified  
 2. Doctor installed worker dependencies / browser bits  
-3. Smoke showed **15** core tools  
+3. Smoke found the required tools for the active profile (default `reader` = **8**; `full` = **15**)
 4. `occam connect` detected hosts and configured live-validated ones  
 5. You were told to **restart** or complete an **action** on a named app  
 

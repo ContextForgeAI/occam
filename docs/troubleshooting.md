@@ -42,7 +42,7 @@
 | Tools hang | Browser pool saturated | Lower concurrency; check `OCCAM_BROWSER_MAX_PARALLEL` |
 | Stale results after config change | Client cached old server | Reload MCP servers |
 | WebSocket connection refused | Host not in WS mode | Start with `--mcp-server` |
-| ChatGPT / tunnel schema lags RC1 (`urls` still required; missing `rank_blocks` / `emit_capsule`…) while receipts say `1.0.0-rc.2` | Old `OccamMcp.Core.exe` still mapped by a long-lived tunnel child, or connector cached `tools/list` | Stop tunnel + host → republish/copy binary → start a **fresh** tunnel → reconnect the connector. Verify with `node scripts/check-public-mcp-contract.mjs` |
+| Client schema lags the current release (`urls` still required; missing `rank_blocks` / `emit_capsule`…) or receipts report an older host version | Old `OccamMcp.Core.exe` still mapped by a long-lived client/tunnel child, or the client cached `tools/list` | Stop tunnel + host → republish/copy binary → start a **fresh** tunnel → reconnect the client. Verify with `node scripts/check-public-mcp-contract.mjs` |
 
 ---
 

@@ -1,6 +1,6 @@
 # Occam
 
-> Local MCP server: live URL → token-budgeted Markdown with typed failures. **ok:false = content unknown** — never substitute model memory. Receipts prove **integrity relative to a key**, not truth, origin, identity, or trusted time. **npm is not GA**; Cosign on install is **policy-gated** (`required-cosign-v1` on published `1.0.0-rc.3`+; published `v1.0.0-rc.2` remains SHA-256-only); crosscheck is **not consensus proof**. Runtime `tools/list` is authoritative (`OCCAM_PROFILE` default **`reader`**; opt-in gates vary exposure). Primary npm package name is **`ff-occam`** (alias of `@ff-occam/mcp`) — still not GA.
+> Local MCP server: live URL → token-budgeted Markdown with typed failures. **ok:false = content unknown** — never substitute model memory. Receipts prove **integrity relative to a key**, not truth, origin, identity, or trusted time. **npm is not GA**; Cosign on install is **policy-gated** (`required-cosign-v1` on published `1.0.0-rc.3`+; published `v1.0.0-rc.2` remains SHA-256-only); crosscheck is **not consensus proof**. Runtime `tools/list` is authoritative (`OCCAM_PROFILE` default **`reader`**; opt-in gates vary exposure). Primary npm package name is **`ff-occam`**; it wraps the lower-level `@ff-occam/mcp` package at the same version — still not GA.
 
 Use this file as the **agent documentation map**. Do not load every linked page at once. Follow the routing steps below, then open only what the current task needs.
 
@@ -111,7 +111,7 @@ Separate route from task guides — mechanisms, mental models, limits.
 - [Ch.7 Token contract](docs/handbook/07-materialization-token-contract.md): Budget semantics.
 - [Ch.15 Verifying](docs/handbook/15-verifying.md): MCP vs CLI verify asymmetry.
 - [Ch.17 Opt-in surfaces](docs/handbook/17-opt-in-surfaces.md): Watch/batch/crosscheck/atlas gates.
-- [Ch.18 Exposure](docs/handbook/18-exposure.md): Profiles, 51 entrypoints vs 15 default tools.
+- [Ch.18 Exposure](docs/handbook/18-exposure.md): Profiles, 51 named entrypoints, 8 default reader tools, and 15 full-profile core tools.
 - [Ch.20 Automatic behaviors](docs/handbook/20-automatic-behaviors.md): Silent routing, signing, cache, connect, browser mutations.
 - [Ch.21 State and footprint](docs/handbook/21-state-and-footprint.md): `~/.occam/` keys, sessions, watch/batch, cache, host configs.
 

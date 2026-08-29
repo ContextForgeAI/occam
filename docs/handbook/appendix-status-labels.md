@@ -43,7 +43,7 @@ Brief definitions for exposure and documentation status labels used across the D
 - `OCCAM_ATLAS_MCP` / `occam_failure_atlas`
 - `cache_ttl_s` response cache
 - Managed provider backends when enabled
-- npm `@ff-occam/mcp` (NOT GA — treat as experimental / non-public install path per OD-3)
+- npm `ff-occam` with lower-level `@ff-occam/mcp` runtime (public experimental RC; not the guarded GA path)
 
 **Rule:** State the env gate and honesty limits in the **same paragraph** as the tool or feature name.
 

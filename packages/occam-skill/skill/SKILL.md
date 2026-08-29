@@ -7,9 +7,9 @@ description: >-
   unknown — never substitute model memory.
 license: AGPL-3.0-or-later
 metadata:
-  version: "0.9.1"
-  homepage: https://www.npmjs.com/package/@ff-occam/mcp
-  mcp_package: "@ff-occam/mcp"
+  version: "1.0.0-rc.4"
+  homepage: https://www.npmjs.com/package/ff-occam
+  mcp_package: "ff-occam"
 ---
 
 # FF-Occam skill
@@ -40,7 +40,7 @@ Activate this skill when the user or task involves:
 
 1. **MCP host installed** — Hermes/prod without .NET 10: `get-ff-occam.sh` tarball; dev with SDK: `occam doctor`. Never edit csproj to net8.0; never run in-repo `occam-mcp.js` on a git clone.
 2. **MCP wired** — stdio server with **`OCCAM_HOME`** set (non-empty `env`). Hermes: `scripts/occam-wrapper.sh` + reload MCP.
-3. **Smoke check** — `occam smoke`, `tools/list`, or `node scripts/hermes-smoke.mjs` → **14** `occam_*` tools, exit 0.
+3. **Smoke check** — `occam smoke`, `tools/list`, or `node scripts/hermes-smoke.mjs` → registry core `occam_*` tools present (count varies by `OCCAM_PROFILE` + opt-in env); exit 0. Do not hard-require a fixed “14/15”.
 4. **Call discipline** — use your harness MCP tool interface (`CallMcpTool`, native tool calling, Hermes MCP bridge, etc.). Tool names are always `occam_<verb>`.
 
 If MCP is unavailable, stop and tell the user to follow [references/install.md](references/install.md). Do not guess page content.

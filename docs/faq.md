@@ -40,7 +40,12 @@ The product is **agent-first**: tool descriptions and [Choosing a tool](choosing
 
 ## How many tools ship by default?
 
-**15 core MCP tools** (always on). Four optional env-gated tools add batch submit/status/results, page watch, cross-check, and failure atlas — see [Tools reference — opt-in tools](tools-reference.md#opt-in-tools).
+The product default is `OCCAM_PROFILE=reader`, which exposes **8** day-to-day
+tools. `OCCAM_PROFILE=full` exposes the complete **15-tool** core catalog.
+Environment-gated batch, watch, cross-check, failure-atlas, and browser-action
+tools can add more — runtime `tools/list` is authoritative. See
+[Configuration — profiles](configuration.md#tool-surface-profile-occam_profile)
+and [Tools reference — opt-in tools](tools-reference.md#opt-in-tools).
 
 ---
 
@@ -62,14 +67,20 @@ Use the **release tarball / bootstrap scripts** — see [Install](install.md).
 |---------|------------|
 | `get-ff-occam.sh` / `.ps1` bootstrap | **Yes** — supported release channel |
 | Manual tarball + SHA-256 manifest | **No** — integrity inspection only; use the guarded bootstrap to install |
-| `npx @ff-occam/mcp` | **No** — not a supported release channel |
-| Cosign `.bundle` alone | **No** — not verified by shipped install paths |
+| `npx ff-occam@1.0.0-rc.4` | Experimental npm RC — primary package name; not the guarded GA install path |
+| `npx @ff-occam/mcp` | Low-level npm entry — not the primary public package name |
+| Cosign `.bundle` alone | **No** — the bootstrap must verify it under the manifest policy |
 
 ---
 
 ## Are releases cosign-verified?
 
-**No.** A Cosign bundle may exist on GitHub Releases as metadata. **Installers verify SHA-256 against the release manifest only.** Do not treat Cosign as part of the shipped trust bar.
+Published `v1.0.0-rc.3` and later declare
+`signaturePolicy=required-cosign-v1`. The bootstrap always verifies SHA-256 and,
+when that policy is declared, also verifies the Cosign bundle fail-closed
+(requiring the `cosign` CLI). Legacy `v1.0.0-rc.2` remains SHA-256-only.
+Cosign proves release authenticity relative to the configured workflow identity,
+not page-content truth.
 
 ---
 

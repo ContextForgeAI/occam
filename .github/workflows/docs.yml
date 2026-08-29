@@ -44,7 +44,9 @@ jobs:
           node scripts/check-git-attribution.mjs
 
       - name: Connect docs claims (selftest)
-        run: node scripts/lib/operator/connect.selftest.mjs
+        run: |
+          node scripts/lib/operator/connect.selftest.mjs
+          node scripts/lib/operator/connect/occam-verify.selftest.mjs
 
       - name: MkDocs strict build
         run: mkdocs build --strict

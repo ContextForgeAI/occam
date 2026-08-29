@@ -9,7 +9,7 @@
  *   node scripts/check-docs-brand.mjs
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { dirname, extname, join, relative, resolve, sep } from "node:path";
+import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkDiscoverability } from "./check-docs-discoverability.mjs";
 import { checkHonesty } from "./check-docs-honesty.mjs";
@@ -19,6 +19,48 @@ const docsRoot = join(repoRoot, "docs");
 const errors = [];
 let linksChecked = 0;
 let anchorsChecked = 0;
+
+function mkdocsExcludedPatterns() {
+  const lines = readFileSync(join(repoRoot, "mkdocs.yml"), "utf8").split(/\r?\n/);
+  const patterns = [];
+  let inBlock = false;
+  for (const line of lines) {
+    if (!inBlock) {
+      if (/^exclude_docs:\s*\|\s*$/.test(line)) inBlock = true;
+      continue;
+    }
+    if (!line.trim()) continue;
+    if (!/^\s+/.test(line)) break;
+    patterns.push(line.trim().replace(/\\/g, "/"));
+  }
+  return patterns;
+}
+
+function globPattern(pattern) {
+  let source = "";
+  for (let i = 0; i < pattern.length; i += 1) {
+    const char = pattern[i];
+    if (char === "*" && pattern[i + 1] === "*") {
+      source += ".*";
+      i += 1;
+    } else if (char === "*") {
+      source += "[^/]*";
+    } else if (char === "?") {
+      source += "[^/]";
+    } else {
+      source += char.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
+    }
+  }
+  return new RegExp(`^${source}$`);
+}
+
+const excludedDocMatchers = mkdocsExcludedPatterns().map(globPattern);
+
+function isMkdocsExcluded(path) {
+  const rel = relative(docsRoot, path).split(sep).join("/");
+  if (!rel || rel.startsWith("../")) return false;
+  return excludedDocMatchers.some((matcher) => matcher.test(rel));
+}
 
 function walk(root, predicate, out = []) {
   for (const entry of readdirSync(root, { withFileTypes: true })) {
@@ -136,6 +178,10 @@ function validateTarget(sourceFile, rawTarget, label = "link", baseDir = dirname
     fail(sourceFile, `broken ${label}: ${rawTarget}`);
     return;
   }
+  if (isMkdocsExcluded(targetFile)) {
+    fail(sourceFile, `${label} targets a MkDocs-excluded document: ${rawTarget}`);
+    return;
+  }
   if (!exactCaseExists(targetFile)) {
     fail(sourceFile, `${label} has incorrect path casing: ${rawTarget}`);
   }
@@ -152,11 +198,19 @@ function validateTarget(sourceFile, rawTarget, label = "link", baseDir = dirname
   }
 }
 
-const docsMarkdown = walk(docsRoot, (path) => extname(path).toLowerCase() === ".md");
+const docsMarkdown = walk(
+  docsRoot,
+  (path) => extname(path).toLowerCase() === ".md" && !isMkdocsExcluded(path),
+);
 const packageReadmes = [
+  "packages/ff-occam/README.md",
   "packages/occam-mcp/README.md",
   "packages/occam-agent-sdk/README.md",
   "packages/occam-skill/README.md",
+].map((path) => join(repoRoot, path));
+const publicSkillCards = [
+  "skills/occam/SKILL.md",
+  "packages/occam-skill/skill/SKILL.md",
 ].map((path) => join(repoRoot, path));
 const publicMarkdown = [
   join(repoRoot, "README.md"),
@@ -164,6 +218,7 @@ const publicMarkdown = [
   join(repoRoot, "MCP_API_SPEC.md"),
   ...docsMarkdown,
   ...packageReadmes,
+  ...publicSkillCards,
 ];
 const linkDocuments = [...publicMarkdown, join(repoRoot, "llms.txt")];
 
@@ -212,9 +267,9 @@ if (!existsSync(llmsPath)) {
 
 const indexPath = join(docsRoot, "index.md");
 const indexText = readFileSync(indexPath, "utf8");
-for (const file of readdirSync(docsRoot, { withFileTypes: true })
-  .filter((entry) => entry.isFile() && entry.name.endsWith(".md") && entry.name !== "index.md")
-  .map((entry) => entry.name)) {
+for (const file of docsMarkdown
+  .filter((path) => dirname(path) === docsRoot && basename(path) !== "index.md")
+  .map((path) => basename(path))) {
   if (!indexText.includes(`(${file}`) && !indexText.includes(`(${file}#`)) {
     fail(indexPath, `top-level documentation page is not linked: ${file}`);
   }
@@ -250,7 +305,93 @@ const registry = readFileSync(registryPath, "utf8");
 const registryBlock = registry.match(/OccamToolNames\s*=\s*\[(.*?)\];/s)?.[1] ?? "";
 const coreTools = [...registryBlock.matchAll(/"(occam_[a-z0-9_]+)"/g)].map((match) => match[1]);
 if (coreTools.length !== 15) {
-  fail(registryPath, `expected 15 always-on tools; parsed ${coreTools.length}`);
+  fail(registryPath, `expected 15 tools in the full-profile core catalog; parsed ${coreTools.length}`);
+}
+
+const profilePath = join(
+  repoRoot,
+  "src",
+  "FFOccamMcp.Core",
+  "Transport",
+  "OccamToolProfile.cs",
+);
+const profileSource = readFileSync(profilePath, "utf8");
+const readerBlock = profileSource.match(/ReaderTools\s*=\s*\[(.*?)\];/s)?.[1] ?? "";
+const readerTools = [...readerBlock.matchAll(/"(occam_[a-z0-9_]+)"/g)].map(
+  (match) => match[1],
+);
+if (readerTools.length !== 8) {
+  fail(profilePath, `expected 8 tools in the default reader profile; parsed ${readerTools.length}`);
+}
+
+const version = readFileSync(join(repoRoot, "VERSION"), "utf8").trim();
+for (const skillPath of publicSkillCards) {
+  const skillVersion = readFileSync(skillPath, "utf8").match(/\bversion:\s*"([^"]+)"/)?.[1];
+  if (skillVersion !== version) {
+    fail(skillPath, `skill metadata version must match VERSION (${version}); got ${skillVersion ?? "missing"}`);
+  }
+}
+
+const primaryPackagePath = join(repoRoot, "packages", "ff-occam", "package.json");
+const primaryPackage = JSON.parse(readFileSync(primaryPackagePath, "utf8"));
+if (primaryPackage.name !== "ff-occam") {
+  fail(primaryPackagePath, `primary npm package must be ff-occam; got ${primaryPackage.name}`);
+}
+if (primaryPackage.version !== version) {
+  fail(primaryPackagePath, `package version must match VERSION (${version}); got ${primaryPackage.version}`);
+}
+if (primaryPackage.dependencies?.["@ff-occam/mcp"] !== version) {
+  fail(
+    primaryPackagePath,
+    `@ff-occam/mcp dependency must be pinned to ${version}; got ${primaryPackage.dependencies?.["@ff-occam/mcp"]}`,
+  );
+}
+
+for (const path of [
+  join(repoRoot, "INSTALL.md"),
+  join(docsRoot, "install.md"),
+  join(docsRoot, "connect", "after-install.md"),
+  join(docsRoot, "faq.md"),
+]) {
+  const text = readFileSync(path, "utf8");
+  const statesReaderCount =
+    /\breader\b[^\n]{0,80}\b8\b/i.test(text) || /\b8\b[^\n]{0,80}\breader\b/i.test(text);
+  const statesFullCount =
+    /\bfull\b[^\n]{0,80}\b15\b/i.test(text) || /\b15\b[^\n]{0,80}\bfull\b/i.test(text);
+  if (!statesReaderCount || !statesFullCount) {
+    fail(path, "profile-aware install/tool-count prose must state reader=8 and full=15");
+  }
+  if (/(?:expect|showed)\s+\*\*15\*\*[^\n]*tools/i.test(text)) {
+    fail(path, "install/tool health must not hard-require the full-profile 15-tool count");
+  }
+}
+
+for (const path of [
+  join(repoRoot, "README.md"),
+  join(docsRoot, "index.md"),
+  join(docsRoot, "faq.md"),
+  join(repoRoot, "packages", "ff-occam", "README.md"),
+]) {
+  const text = readFileSync(path, "utf8");
+  if (!text.includes(`ff-occam@${version}`)) {
+    fail(path, `primary npm command must pin ff-occam@${version}`);
+  }
+  if (/(?:npm\s+install(?:\s+-g)?|npx)\s+ff-occam-mcp\b/i.test(text)) {
+    fail(path, "primary npm command must use ff-occam, not ff-occam-mcp");
+  }
+}
+
+for (const path of publicMarkdown) {
+  const text = readFileSync(path, "utf8");
+  if (
+    /\bnpm\b[^\n]{0,120}\b(?:internal|non-public|not public)\b/i.test(text) ||
+    /\b(?:internal|non-public|not public)\b[^\n]{0,120}\bnpm\b/i.test(text)
+  ) {
+    fail(path, "npm is a public experimental RC channel; do not call it internal or non-public");
+  }
+  if (/\b15(?:\/51)?\b[^\n]{0,80}\bdefault(?:\s+MCP)?\s+tools\b/i.test(text)) {
+    fail(path, "the default reader profile exposes 8 tools; 15 is the full-profile catalog");
+  }
 }
 
 const toolIndexPath = join(docsRoot, "tools", "index.md");

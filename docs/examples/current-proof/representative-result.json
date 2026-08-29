@@ -1,8 +1,8 @@
 {
   "ok": true,
   "url": {
-    "url": "http://127.0.0.1:65280/representative-input.html",
-    "finalUrl": "http://127.0.0.1:65280/representative-input.html"
+    "url": "http://127.0.0.1:62042/representative-input.html",
+    "finalUrl": "http://127.0.0.1:62042/representative-input.html"
   },
   "markdown": "# Web context without the chrome\n\nAgent infrastructure · 8 minute read\n\nAI agents rarely need the whole interface of a webpage. They need the useful text, its structure, and enough source information to explain where the material came from.\n\n## The hidden cost of a page read\n\nA typical page wraps an article in navigation, consent controls, repeated links, related-content cards, scripts, and layout markup. When an agent receives that representation unchanged, limited context is spent on interface text before the actual task begins.\n\nThe problem compounds during research. Reading several sources can repeat the same headers and footers many times, leaving less room for the evidence that the model must compare.\n\n## Shape the source before the model sees it\n\nA web-context layer should preserve headings, paragraphs, lists, code, and the source URL while removing presentation-only material. It should also return an explicit failure when a page cannot be read instead of asking the model to reconstruct missing content from memory.\n\n```\nweb page\n  -> useful page structure\n  -> compact agent context\n  -> source-linked result\n```\n\n## What to measure\n\nMeasure the input and output using a declared method. A byte comparison can show representation size for one fixture, but it is not automatically a token-savings, answer-quality, or universal coverage claim. Record the source revision and keep the complete output available for inspection.\n\n## Operational boundary\n\nPublic demos need stricter limits than local tools. They must reject private destinations, cap response sizes, bound execution time, and expose typed failures for rate limits or access walls. Cookies and authenticated sessions do not belong in an anonymous demo.",
   "backend": "node_readability_turndown",
@@ -22,21 +22,21 @@
     "tokensUsed": 434,
     "truncationStrategy": null,
     "confidence": 0.9605,
-    "elapsedMs": 175,
+    "elapsedMs": 159,
     "signed": {
       "v": 1,
       "kind": "extraction",
-      "url": "http://127.0.0.1:65280/representative-input.html",
-      "finalUrl": "http://127.0.0.1:65280/representative-input.html",
+      "url": "http://127.0.0.1:62042/representative-input.html",
+      "finalUrl": "http://127.0.0.1:62042/representative-input.html",
       "backend": "node_readability_turndown",
-      "ts": "2026-08-01T10:53:29Z",
-      "toolchain": "ff-occam/1.0.0-rc.2",
+      "ts": "2026-08-28T18:47:29Z",
+      "toolchain": "ff-occam/1.0.0-rc.4",
       "contentHash": "sha256:89a00e72efdb335be3a269ba5b3e107a980019242873cec1cbd3b92c05435313",
       "tokens": 434,
       "confidence": 0.9605,
       "keyId": "k1:1a830d71a14381a8",
       "alg": "ecdsa-p256-sha256",
-      "sig": "iMQHkFWPx91O__13Ao5r5AOCJ6LEgK_vCMk0d76OX1sCSyZ2klCN3H8SahHJuAN25OpIAKziLsf-7lvq075Fnw"
+      "sig": "8_GTcV1KBLfYcR14ONlCBuktV8mwDxLX7pBP31L2SveyKfYW95SkBjtYYWb3M6eanwRBRnLXBhhZvkvsHcws_w"
     },
     "tokenEstimator": "heuristic-unicode-v1"
   },
@@ -44,7 +44,7 @@
     {
       "backend": "node_readability_turndown",
       "ok": true,
-      "latencyMs": 175,
+      "latencyMs": 159,
       "transportOk": true,
       "usable": true
     }
@@ -56,16 +56,16 @@
     "canonical": "https://contextforgeai.github.io/occam/examples/current-proof/representative-input.html"
   },
   "timings": {
-    "totalMs": 3175,
+    "totalMs": 2659,
     "preflightMs": 0,
-    "routeMs": 3175,
-    "networkMs": 88,
-    "parseMs": 87,
+    "routeMs": 2658,
+    "networkMs": 69,
+    "parseMs": 90,
     "postProcessMs": 0,
     "compileMs": 0
   },
   "contentHash": "89a00e72efdb335be3a269ba5b3e107a980019242873cec1cbd3b92c05435313",
-  "materializationKey": "sha256:0e1c2d68c0699e0ad3058015fa59f8eb40c172c463f982072a85e69d3f8dd7b7",
+  "materializationKey": "sha256:9498f3d9648a55784782e275c91376ad74bcbda18fccbfa64c686033931224f4",
   "access": {
     "disposition": "open",
     "confidence": 0.85,

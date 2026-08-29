@@ -80,7 +80,7 @@ A fetcher returns the response body (or status). Occam returns compiled markdown
 
 - This chapter deliberately avoids token-reduction percentages. The tokenizer is `heuristic-unicode-v1` with unmeasured error bounds; any future figure must declare baseline and tier.
 - "15 core tools" is one exposure slice of a larger product surface (51 named entrypoints)—not the whole product ([configuration](../configuration.md), [Chapter 18 — Exposure](18-exposure.md)).
-- npm (`npx @ff-occam/mcp`) is **not** a GA install channel; use tarball/doctor install paths ([Chapter 3](03-standing-up-an-install.md)).
+- npm (`ff-occam`, backed by `@ff-occam/mcp`) is a published experimental RC channel, not the guarded GA install path; prefer the signed bootstrap for the release install ([Chapter 3](03-standing-up-an-install.md)).
 - Occam does not prove truth, origin, identity, or trusted time—ever.
 
 ---

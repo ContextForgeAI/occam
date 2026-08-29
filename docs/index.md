@@ -4,53 +4,34 @@ hide:
   - toc
 ---
 
-<div class="oc-hero" markdown="1">
+# Less webpage. More usable context. { #less-webpage-more-usable-context .oc-visually-hidden }
 
-<p class="oc-brand-mark" aria-label="Occam"><span class="oc-brand-mark__glyph" aria-hidden="true">⌥</span><span class="oc-brand-mark__rule" aria-hidden="true"></span><span class="oc-brand-mark__letters">O C C A M</span></p>
+<div class="oc-signal-hero" markdown="0">
+  <figure class="oc-signal-asset" data-oc-motion="signal" aria-labelledby="oc-signal-caption">
+    <img
+      src="assets/occam-signal-corridor-rc4-fixture.png"
+      width="1487"
+      height="1058"
+      alt="Occam turns webpage noise into compact source-linked Markdown, then guides the user through Install, Connect, and Read."
+    >
+    <figcaption id="oc-signal-caption">
+      The 5,297 → 1,736 byte comparison is one controlled fixture. Bytes, not tokens; not a universal benchmark.
+    </figcaption>
+  </figure>
 
-<p class="oc-wordmark">Local-first web context for AI agents.</p>
-
-</div>
-
-# Stop wasting your agent's context on webpage noise.
-
-<div class="oc-hero oc-hero--rest" markdown="1">
-
-<p class="oc-hero-lead">
-Most pages wrap the useful part in navigation, scripts, repeated interface
-text, consent controls, and raw markup. Occam removes that presentation layer
-before it reaches the model and returns compact, source-linked content your
-agent can actually use.
-</p>
-
-<p class="oc-hero-audience">
-For developers and technical users building or running AI agents — especially
-local and self-hosted setups. Search finds pages and browser automation operates
-interfaces; Occam turns a known URL into compact context or an explicit failure.
-</p>
-
-<p class="oc-hero-actions">
-<a class="oc-btn oc-btn--primary" href="quick-start/">Get your first result</a>
-<a class="oc-btn oc-btn--secondary" href="#measured-before-and-after">See the transformation</a>
-</p>
-
-<div class="oc-hero-visual" aria-label="Measured comparison: controlled webpage input becomes compact agent context">
-  <div class="oc-hero-visual__panel oc-hero-visual__panel--noise">
-    <span class="oc-hero-visual__label">Controlled webpage</span>
-    <span class="oc-hero-visual__concept">Measured fixture · 5,297 UTF-8 bytes</span>
-    <ul class="oc-hero-visual__noise" aria-hidden="true">
-      <li>navigation · search · scripts</li>
-      <li>related links · newsletter form</li>
-      <li>cookie notice · footer · layout CSS</li>
-    </ul>
+  <div class="oc-signal-cta">
+    <div class="oc-signal-command">
+      <span class="oc-signal-command__label">npm RC · primary package</span>
+      <pre class="oc-signal-command__code"><code>npm install -g ff-occam@1.0.0-rc.4</code></pre>
+      <span class="oc-signal-command__note">For the guarded release install, use the <a href="install/">signed bootstrap</a>.</span>
+    </div>
+    <p class="oc-hero-actions">
+      <a class="oc-btn oc-btn--primary" href="quick-start/">Get your first result</a>
+      <a class="oc-btn oc-btn--secondary" href="#measured-before-and-after">Inspect proof</a>
+    </p>
   </div>
-  <span class="oc-hero-visual__arrow" aria-hidden="true">→</span>
-  <div class="oc-hero-visual__panel oc-hero-visual__panel--clean">
-    <span class="oc-hero-visual__label">Compact agent context</span>
-    <p class="oc-hero-visual__clean">Article structure and useful text preserved — 1,736 UTF-8 bytes, with the source URL attached.</p>
-  </div>
-</div>
 
+  <p class="oc-signal-meta">Local-first · MCP · explicit failures · 1.0.0-rc.4</p>
 </div>
 
 ## Measured before and after
@@ -100,7 +81,7 @@ answer-quality claim, and not a universal reduction rate.
 <summary>Method and source revision</summary>
 
 Runtime source revision
-`669e8dcae1afa7ddcf1ca5cf9388c4615e3a3603`.
+`b3c212c6d9e193619b6e8663148bd53932a0acc0`.
 Full method, complete input/output, the minimal live smoke proof, controlled
 failure, and reproduction scripts:
 [current proof bundle](examples/current-proof/README.md).
@@ -313,6 +294,6 @@ finish with a real page read.
 
 Compact index (gate + scanning). Narrative map: [Reference overview](documentation-map.md).
 
-[acquisition](acquisition.md) · [ask-ai](ask-ai.md) · [choosing-a-tool](choosing-a-tool.md) · [concepts](concepts.md) · [configuration](configuration.md) · [datasets](datasets.md) · [documentation-map](documentation-map.md) · [experimental](experimental.md) · [failure-codes](failure-codes.md) · [faq](faq.md) · [friend-test](friend-test.md) · [getting-started](getting-started.md) · [how-occam-works](how-occam-works.md) · [install](install.md) · [materialization](materialization.md) · [mcp-hosts](mcp-hosts.md) · [networking](networking.md) · [operators](operators.md) · [playbooks](playbooks.md) · [quality-baseline](quality-baseline.md) · [quick-start](quick-start.md) · [receipt_verification](receipt_verification.md) · [receipts](receipts.md) · [recipes](recipes.md) · [roadmap](roadmap.md) · [sessions](sessions.md) · [tools-reference](tools-reference.md) · [transports](transports.md) · [troubleshooting](troubleshooting.md) · [trust-and-safety](trust-and-safety.md) · [what-is-occam](what-is-occam.md)
+[acquisition](acquisition.md) · [ask-ai](ask-ai.md) · [choosing-a-tool](choosing-a-tool.md) · [concepts](concepts.md) · [configuration](configuration.md) · [datasets](datasets.md) · [documentation-map](documentation-map.md) · [experimental](experimental.md) · [failure-codes](failure-codes.md) · [faq](faq.md) · [getting-started](getting-started.md) · [how-occam-works](how-occam-works.md) · [install](install.md) · [materialization](materialization.md) · [mcp-hosts](mcp-hosts.md) · [networking](networking.md) · [operators](operators.md) · [playbooks](playbooks.md) · [quality-baseline](quality-baseline.md) · [quick-start](quick-start.md) · [receipt_verification](receipt_verification.md) · [receipts](receipts.md) · [recipes](recipes.md) · [roadmap](roadmap.md) · [sessions](sessions.md) · [tools-reference](tools-reference.md) · [transports](transports.md) · [troubleshooting](troubleshooting.md) · [trust-and-safety](trust-and-safety.md) · [what-is-occam](what-is-occam.md)
 
 </div>

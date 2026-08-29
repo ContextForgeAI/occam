@@ -2,7 +2,9 @@
 
 *Local-first web context for AI agents.*
 
-## Stop wasting your agent's context on webpage noise.
+![Occam turns webpage noise into compact, source-linked Markdown](docs/assets/occam-signal-corridor-rc4-fixture.png)
+
+## Stop wasting your agent's context on webpage noise
 
 Most pages wrap the useful part in navigation, scripts, repeated interface
 text, consent controls, and raw markup. Occam removes that presentation layer
@@ -15,6 +17,16 @@ especially in local and self-hosted environments.
 Search helps an agent find pages; browser automation operates interfaces.
 Occam turns a URL you already have into compact context with its source — or an
 explicit failure when it cannot read the page.
+
+Try the current npm release candidate:
+
+```bash
+npm install -g ff-occam@1.0.0-rc.4
+occam connect
+```
+
+`ff-occam` is the primary npm package. The lower-level MCP runtime remains
+available as `@ff-occam/mcp` for direct host integration.
 
 **[Get your first result](https://contextforgeai.github.io/occam/quick-start/)** ·
 [See the transformation](docs/examples/current-proof/README.md#representative-webpage-transformation) ·
@@ -30,6 +42,8 @@ The current proof bundle includes a controlled engineering article wrapped in
 navigation, search, related links, a newsletter form, a cookie notice, scripts,
 layout CSS, and a footer. With the default `occam_transcode` options, Occam
 kept the article structure and returned:
+
+![Measured HTML input beside compact Markdown output](docs/assets/occam-proof-before-after-rc4.png)
 
 ```markdown
 # Web context without the chrome

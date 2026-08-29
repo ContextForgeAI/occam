@@ -68,9 +68,9 @@ Local WS has no session semaphore; each socket builds a DI container that may ki
 
 Install, doctor, connect, session, refresh, and host-binary offline verbs (`keys export`, `verify`) are product entrypoints — not "advanced extras." The `occam` wrapper does not route `verify` or `keys`; use the host binary directly.
 
-### npm is not GA
+### npm is a public experimental RC
 
-`ff-occam` / `@ff-occam/mcp` are **not** a supported GA 1.0 install channel (INTERNAL / NOT PUBLIC INSTALL PATH until an end-to-end contract passes). Do not advertise `npx ff-occam` / `npx @ff-occam/mcp` as GA. Canonical install remains GitHub Release tarballs + bootstrap.
+`ff-occam` is the published primary npm package and wraps the lower-level `@ff-occam/mcp` runtime at the same version. The channel is public but experimental; do not present it as GA. The guarded release install remains the Cosign-policy-aware GitHub Release bootstrap.
 
 ---
 
@@ -88,11 +88,11 @@ Install, doctor, connect, session, refresh, and host-binary offline verbs (`keys
 
 ## Limitations
 
-- 15/51 ≈ 29% of named entrypoints are default MCP tools — the rest need CLI, env, or alternate modes.
+- 8/51 ≈ 16% of named entrypoints are exposed by the default `reader` profile; the `full` profile exposes 15/51 ≈ 29% before opt-in gates.
 - Canonical launcher is stdio-only; WS/Remote/BatchServer require direct binary flags.
 - Server instructions may mention tools (e.g. watch) without stating env gates — always check registration code and env.
 - `model_id` and `suggestedProfile` from client_capabilities are stored and echoed but not consumed by the host.
-- npm package and cosign bundle are not GA install/trust paths.
+- npm remains an experimental RC channel. The Cosign-policy-aware GitHub Release bundle is the guarded public RC path; neither channel becomes GA until `1.0.0` ships.
 
 ---
 

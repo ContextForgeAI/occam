@@ -71,9 +71,9 @@ Optional: run CHECKs from Chapters 1–2 on the same host.
 
 ## Common misconception
 
-**"`npx @ff-occam/mcp` is the quick path."**
+**"`npx ff-occam` is the guarded release path."**
 
-npm is classified INTERNAL/EXPERIMENTAL until an end-to-end install contract passes. Use doctor + tarball paths documented in [install.md](../install.md) and [getting-started.md](../getting-started.md).
+npm now publishes `ff-occam` as an experimental RC channel. It is useful for evaluation, but it is not the guarded GA path: the canonical release install remains the signed bootstrap plus doctor checks documented in [install.md](../install.md) and [getting-started.md](../getting-started.md). `@ff-occam/mcp` is the lower-level runtime package.
 
 ---
 

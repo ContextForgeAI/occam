@@ -6,6 +6,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+- **Connect verifier follows the rc.4 profile contract** — `tools/list` health
+  now checks the eight required reader tool identities instead of requiring a
+  historical 15-tool count. Default `OCCAM_PROFILE=reader` therefore verifies
+  successfully, expanded profiles remain valid, and spawn failures return a
+  typed verification result instead of escaping the connect flow.
+- **Public docs and npm identity sync** — the primary npm name is `ff-occam`;
+  install/smoke prose now distinguishes default `reader` (8) from `full` (15),
+  the portable skill metadata is rc.4, networking no longer claims Chromium
+  socket pinning, and the current proof identifies rc.4. The homepage now uses
+  the selected proof visual with bounded pointer depth, a one-time entrance,
+  and a reduced-motion-safe fallback.
 - **npm publish via GitHub Actions** — workflow `npm-publish` (`workflow_dispatch`) publishes
   experimental `@ff-occam/mcp` then `ff-occam` with dist-tag `rc`. Requires secret `NPM_TOKEN`.
   npm remains **not** a GA install channel.

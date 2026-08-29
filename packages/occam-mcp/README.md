@@ -2,11 +2,11 @@
 
 **Occam MCP** — local .NET host that turns a URL into token-budgeted Markdown with typed failures and optional integrity receipts (integrity relative to a key — not truth/origin proof).
 
-> **Package status:** npm is **NOT a GA 1.0 install channel** (OD-3). Prefer the primary package
-> name **`ff-occam`** (this package is `@ff-occam/mcp`). Neither is a supported published install
-> path until an end-to-end npm contract passes — use GitHub Release archives + bootstrap
-> (`INSTALL.md` / `docs/install.md`). Published install default remains **`1.0.0-rc.3`**; tree
-> foundation is **`1.0.0-rc.4`**. Registry / `npx` commands below are experimental. Core MCP tool
+> **Package status:** npm is **NOT a GA 1.0 install channel** (OD-3). The primary public package
+> name is **`ff-occam`**; this lower-level package is `@ff-occam/mcp`. For the guarded release
+> install, use GitHub Release archives + bootstrap (`INSTALL.md` / `docs/install.md`). The
+> published install default and package version are **`1.0.0-rc.4`**. Registry / `npx` commands
+> below are an experimental RC channel. Core MCP tool
 > count is registry-defined and varies by profile/opt-in — do not treat a fixed “14/15” as a health check.
 
 - **Local-first** — default extraction runs on your machine.
@@ -16,12 +16,15 @@
 ## Quick Start
 
 ```bash
-# Stdio mode (for Cursor, Claude, any MCP client)
-npx @ff-occam/mcp
+# Primary npm name — stdio mode for any MCP client
+npx ff-occam@1.0.0-rc.4
 
-# WebSocket mode
-npx @ff-occam/mcp --mcp-server
-npx @ff-occam/mcp --mcp-server --port 5051
+# Low-level scoped package (same host and version)
+npx @ff-occam/mcp@1.0.0-rc.4
+
+# WebSocket mode (experimental)
+npx ff-occam@1.0.0-rc.4 --mcp-server
+npx ff-occam@1.0.0-rc.4 --mcp-server --port 5051
 ```
 
 ## Installation
@@ -30,15 +33,20 @@ npx @ff-occam/mcp --mcp-server --port 5051
 # One-liner from GitHub Releases (no git, no .NET SDK — Node 20+ only)
 curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
 
-# Or via npm (not GA — requires a published registry package; prefer `ff-occam`)
-npm install -g @ff-occam/mcp
-occam-mcp
+# Or via npm RC (not the guarded GA install path)
+npm install -g ff-occam@1.0.0-rc.4
+ff-occam
 ```
 
-## MCP Tools (14)
+## MCP tool surface
+
+The default `OCCAM_PROFILE=reader` exposes 8 day-to-day tools. Set
+`OCCAM_PROFILE=full` for the complete 15-tool core catalog. Runtime
+`tools/list` is authoritative; environment-gated tools can add more.
 
 | Tool | Description |
 |------|-------------|
+| `occam_client_capabilities` | Set the session context budget used by later reads |
 | `occam_transcode` | Convert a URL to clean Markdown (live extract) + signed receipt |
 | `occam_probe` | Cheap HTTP diagnosis before a transcode |
 | `occam_digest` | Linear multi-URL digest (≤8 URLs) |
@@ -63,9 +71,9 @@ Add to `.cursor/mcp.json`:
   "mcpServers": {
     "ff-occam": {
       "command": "npx",
-      "args": ["@ff-occam/mcp"],
+      "args": ["-y", "ff-occam@1.0.0-rc.4"],
       "env": {
-        "OCCAM_HOME": "${workspaceFolder}/.occam"
+        "OCCAM_PROFILE": "reader"
       }
     }
   }
@@ -86,7 +94,7 @@ Or use the WebSocket transport:
 
 Then start the server:
 ```bash
-npx @ff-occam/mcp --mcp-server
+npx ff-occam@1.0.0-rc.4 --mcp-server
 ```
 
 ## Environment Variables
@@ -106,7 +114,7 @@ Two install modes — do not mix them:
 | Mode | When | MCP launcher |
 |------|------|----------------|
 | **Local tree** | `git clone`, `install.sh`, Level B tarball | `node scripts/launch-mcp-host.mjs` + `OCCAM_HOME` |
-| **npm / npx** | `npx @ff-occam/mcp` from registry | npm wrapper downloads release binary |
+| **npm / npx RC** | `npx ff-occam@1.0.0-rc.4` from registry | Primary wrapper delegates to `@ff-occam/mcp` and downloads the matching release binary |
 
 For a **git clone or tarball** (not `npx`):
 
@@ -176,14 +184,13 @@ available through `handshakeTimeoutMs`, `requestTimeoutMs`, and `shutdownTimeout
 - **Core**: Native AOT .NET 10 (single binary, ~15MB)
 - **Workers**: Node.js (http-extract, browser-extract, css-extract)
 - **Transport**: stdio (default) + optional WebSocket
-- **No file cache** — every call is live extraction
+- **Live by default** — every call fetches unless the caller opts into the TTL-bound response cache with `cache_ttl_s > 0`
 - **Honest failures** — typed `failure.code`, never hallucinate content
 
 ## Supported Platforms
 
 - Windows x64
 - Linux x64
-- macOS x64 (Intel)
 - macOS ARM64 (Apple Silicon)
 
 Requires Node.js 20+.
