@@ -26,6 +26,10 @@ The hash on a receipt binds this **compiled** form — not necessarily the origi
 
 Omit knobs for a first read — defaults are intended to be enough.
 
+Full advantage + knob flashcard (agents and humans): [Why Occam](why-occam.md).
+There is **no** public MCP parameter to select an alternate knowledge codec; live
+output is Markdown via the default passthrough codec.
+
 ## Structured outputs (opt-in)
 
 On `occam_transcode` and related tools, parameters such as `json_blocks`, `json_tables`, `json_feed`, and chunk modes add sidecars. They are **not** required for ordinary reading.

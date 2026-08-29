@@ -4,6 +4,9 @@ Capability docs describe **what Occam can do** as product areas — not individu
 MCP tools. For tool pickers and schemas, start at the
 [Reference overview](../documentation-map.md) or [Tool index](../tools/index.md).
 
+**Start here (human + agent):** [Why Occam — advantages and knobs](../why-occam.md) —
+one page that contrasts Occam with generic fetch and lists the knobs that matter.
+
 ## Who needs this
 
 - Operators deciding which surfaces to enable

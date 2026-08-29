@@ -2,7 +2,9 @@
 
 ## For AI assistants
 
-Start with the compact map — do **not** ingest the whole documentation site:
+**Read first:** [Why Occam — advantages and knobs](why-occam.md) — honesty, token contract, ladder, receipts, and opt-in knobs in one page. Do not treat Occam as a generic web fetch.
+
+Then the compact map — do **not** ingest the whole documentation site:
 
 - Repository: [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt) — agent routing, capability-family index, experimental gates, operator surface, and **trust limits**
 - Docs site entry: this page + task router below
@@ -18,17 +20,17 @@ Then:
 
 Runtime `tools/list` wins for tool availability and input schemas.
 
-**Honesty defaults:** `ok:false` means content is unknown. Receipts prove integrity relative to a key — not truth, origin, or trusted time. Crosscheck is multi-source comparison, not consensus proof. npm is not GA. Cosign on install is policy-gated (`required-cosign-v1` for published `1.0.0-rc.3`+, requires the `cosign` CLI; published `v1.0.0-rc.2` remains SHA-256-only) and proves release authenticity/signer identity, not page-content truth.
+**Honesty defaults:** `ok:false` means content is unknown. Receipts prove integrity relative to a key — not truth, origin, or trusted time. Crosscheck is multi-source comparison, not consensus proof. npm is not GA. Cosign on install is policy-gated (`required-cosign-v1` for published `1.0.0-rc.3`+, requires the `cosign` CLI; published `v1.0.0-rc.2` remains SHA-256-only) and proves release authenticity/signer identity, not page-content truth. There is **no** public MCP codec / compression-algorithm selector — use materialization knobs on [Why Occam](why-occam.md).
 
 ## For humans using an AI assistant
 
 Paste a prompt like:
 
-> Read https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt and help me use Occam to research these URLs: …
+> Read https://raw.githubusercontent.com/ContextForgeAI/occam/main/docs/why-occam.md and https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt. Treat Occam as honesty + token-budgeted extract (not generic fetch). Help me research these URLs: …
 
 Or point the assistant at the docs site:
 
-> https://contextforgeai.github.io/occam/
+> https://contextforgeai.github.io/occam/why-occam/
 
 ## Future: docs-aware assistant
 
@@ -36,6 +38,7 @@ A hosted “Ask AI” search over this documentation may arrive later. **Not shi
 
 ## Next
 
+- [Why Occam](why-occam.md)
 - [Quick Start](quick-start.md)
 - [Task router](choosing-a-tool.md)
 - [Handbook](handbook/index.md)

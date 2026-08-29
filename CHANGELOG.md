@@ -6,6 +6,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+- **Discoverability flashcard** — new [Why Occam](docs/why-occam.md) page (advantages vs
+  generic fetch + materialization knobs; no public codec selector). Wired into `llms.txt`
+  step 0, Ask AI, README, docs hub, MkDocs Getting Started / Capabilities, MCP
+  `instructions`, and AGENTS session start.
 - **rc5 plan slice (C)** — search result labels `S1`…`Sn` (notes only; always pass
   `url` to fetch tools); optional `OCCAM_SEARCH_PROVIDER=donsetch` and
   `OCCAM_MANAGED_PROVIDER=archive|donsetch` (local CLI / Wayback — not bundled);

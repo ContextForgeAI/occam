@@ -27,6 +27,7 @@ occam connect
 available as `@ff-occam/mcp` for direct host integration.
 
 **[Get your first result](https://contextforgeai.github.io/occam/quick-start/)** ·
+[Why Occam (advantages & knobs)](https://contextforgeai.github.io/occam/why-occam/) ·
 [See the transformation](docs/examples/current-proof/README.md#representative-webpage-transformation) ·
 [Read the documentation](https://contextforgeai.github.io/occam/)
 

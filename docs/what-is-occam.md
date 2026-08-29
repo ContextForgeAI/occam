@@ -71,6 +71,7 @@ Occam also supports:
 
 ## Next
 
+- [**Why Occam — advantages and knobs**](why-occam.md) — read this first (human + agent)
 - [Quick Start](quick-start.md)
 - [How Occam works](how-occam-works.md)
 - [Trust & Safety](trust-and-safety.md)

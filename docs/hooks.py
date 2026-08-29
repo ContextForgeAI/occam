@@ -16,6 +16,7 @@ def on_pre_build(config: dict[str, Any]) -> None:
 
 _PROSE_PAGES = {
     "what-is-occam.md",
+    "why-occam.md",
     "how-occam-works.md",
     "getting-started.md",
     "quick-start.md",

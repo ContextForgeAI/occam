@@ -2,10 +2,13 @@
 
 > Local MCP server: live URL → token-budgeted Markdown with typed failures. **ok:false = content unknown** — never substitute model memory. Receipts prove **integrity relative to a key**, not truth, origin, identity, or trusted time. **npm is not GA**; Cosign on install is **policy-gated** (`required-cosign-v1` on published `1.0.0-rc.3`+; published `v1.0.0-rc.2` remains SHA-256-only); crosscheck is **not consensus proof**. Runtime `tools/list` is authoritative (`OCCAM_PROFILE` default **`reader`**; opt-in gates vary exposure). Primary npm package name is **`ff-occam`**; it wraps the lower-level `@ff-occam/mcp` package at the same version — still not GA.
 
+**First read (human + agent):** [Why Occam — advantages and knobs](docs/why-occam.md) — honesty, token contract, ladder, receipts, and every common opt-in in one page. Do **not** treat Occam as generic web fetch. There is **no** public `codec=` / compression-algorithm MCP param.
+
 Use this file as the **agent documentation map**. Do not load every linked page at once. Follow the routing steps below, then open only what the current task needs.
 
 ## Agent routing (read in order)
 
+0. **Flashcard (once):** [Why Occam](docs/why-occam.md) — advantages + knobs; paste prompt at bottom if onboarding another agent.
 1. **Session budget (once):** `occam_client_capabilities` with your context window — sizes later reads when you omit `max_tokens`.
 2. **Pick a task:** [Choosing a tool](docs/choosing-a-tool.md) — goal → tool decision table.
 3. **One tool page:** [Per-tool index](docs/tools/index.md) — parameters and failure handling for the selected tool only.
@@ -25,6 +28,7 @@ Non-negotiable rules:
 
 ## Start (human + agent entry)
 
+- [**Why Occam — advantages and knobs**](docs/why-occam.md): Single flashcard — read first.
 - [Documentation hub](docs/index.md): Four audience routes and capability systems map.
 - [Quick Start](docs/quick-start.md): Install → connect → first read.
 - [Choosing a tool](docs/choosing-a-tool.md): Task router (start here for tool choice).

@@ -110,6 +110,7 @@ nav:
   - Quick Start: quick-start.md
   - Getting Started:
       - What is Occam?: what-is-occam.md
+      - Why Occam (advantages & knobs): why-occam.md
       - Install: install.md
       - Your first web read: getting-started.md
       - What happened after install?: connect/after-install.md
@@ -149,6 +150,7 @@ nav:
           - More recipes: recipes.md
   - Capabilities:
       - Overview: capabilities/index.md
+      - Why Occam (flashcard): why-occam.md
       - Web access:
           - Acquisition: acquisition.md
           - Networking and proxies: networking.md
