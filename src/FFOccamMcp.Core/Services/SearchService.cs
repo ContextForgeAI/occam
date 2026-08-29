@@ -5,7 +5,8 @@ namespace OccamMcp.Core.Services;
 /// <summary>
 /// Open-web search adapter (the agent's discovery step: query → result URLs). Off unless
 /// <c>OCCAM_SEARCH_PROVIDER</c> names a registered provider with its required config
-/// (<c>OCCAM_SEARCH_URL</c> for SearXNG, <c>OCCAM_SEARCH_API_KEY</c> for Brave/Tavily). Core never
+/// (<c>OCCAM_SEARCH_URL</c> for SearXNG, <c>OCCAM_SEARCH_API_KEY</c> for Brave/Tavily;
+/// Donsetch needs a local CLI on <c>PATH</c> or <c>OCCAM_DONSETCH_PATH</c>). Core never
 /// crawls or indexes — it delegates to the configured backend and normalizes results.
 /// </summary>
 public interface ISearchService

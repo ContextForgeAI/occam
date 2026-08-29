@@ -61,6 +61,9 @@ Read one web page → clean, compact LLM-ready Markdown (live extract, not model
 | `section` | string | — | Focus a heading/section (fit + content selector) |
 | `must_contain` | string | — | Probe needle → `mustContain.verdict` `MATCH`/`NO_MATCH` + up to 3 excerpts |
 | `deadline_ms` | int | — | Overall call deadline (1s–300s); cancels in-flight extract |
+| `compact_links` | bool | `false` | Keep markdown link text; strip destinations (changes `contentHash`) |
+| `include_media_refs` | bool | `true` | Include `mediaRefs` sidecar; set `false` to omit |
+| `compact_block_links` | bool | `false` | With `json_blocks`, clear `blocks[].links` (markdown unchanged unless `compact_links`) |
 
 ### Success response (key fields)
 
@@ -254,7 +257,7 @@ Open-web search → result URLs. Requires `OCCAM_SEARCH_PROVIDER`.
 
 ### Success response
 
-`ok`, `results[]` with `title`, `url`, `snippet`; optional `extractability`, `recommendedBackend` when `rerank=true`
+`ok`, `results[]` with `id` (`S1`…`Sn`, notes only), `title`, `url`, `snippet`; optional `extractability`, `recommendedBackend` when `rerank=true`. Always pass `url` to fetch tools.
 
 ---
 
@@ -386,7 +389,7 @@ Parameter: `only_walled` (default `false`)
 
 Parameters: `url`, `actions` (JSON array, max 16), `session_profile`, `focus_query`, `max_tokens`, `deadline_ms`
 
-Allowed `do`: `wait`, `wait_selector`, `wait_text`, `click`, `hover`, `type`, `press`, `scroll`. First failure stops remaining steps (`action_failed`). Typed text is redacted from `actionTrace`. Never cached. Raw page JS (`js_before_wait` / `wait_for.js`) is not exposed.
+Allowed `do`: `wait`, `wait_selector`, `wait_text`, `click`, `hover`, `type`, `press`, `scroll`. First failure stops remaining steps (`action_failed`). Typed text is redacted from `actionTrace`. Never cached. Raw page JS (`js_before_wait` / `wait_for.js`) is not exposed. On success, `actionPlanHash` is on the response and in `receipt.signed.actionPlanHash` when receipts are on.
 
 ---
 

@@ -187,6 +187,7 @@ public static class FailureCodeStrings
             "workers_unavailable" => "Occam workers are not ready.",
             "thin_extract" => "Extracted content is too thin or empty after compile.",
             "render_error" => "Returned document was a browser or client render error shell, not usable page content. Access is unknown — do not invent an answer from it.",
+            "action_failed" => "A browser action step failed before materialization. Read failedIndex and the redacted actionTrace; do not invent page content.",
             "content_selectors_miss" => "None of the content_selectors matched any section.",
             "captcha_or_challenge" => "Occam extract hit an anti-bot or Cloudflare challenge page.",
             "requires_login" => "Page likely requires login and no session_profile was provided.",

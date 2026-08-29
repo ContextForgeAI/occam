@@ -30,6 +30,7 @@ import { collectTables } from "../../shared/lib/dom-tables.mjs";
 import { addTableRule } from "../../shared/lib/turndown-table-rule.mjs";
 import { collectFeedItems, collectJsonFeed, looksLikeFeed, looksLikeJsonFeed } from "../../shared/lib/feed-items.mjs";
 import { shouldTryPdf, extractPdfMarkdown } from "../../shared/lib/pdf-extract.mjs";
+import { tryPdfOcr } from "../../shared/lib/pdf-ocr.mjs";
 import { collectPageMetadata } from "../../shared/lib/page-metadata.mjs";
 import { collectAccessEvidence } from "../../shared/lib/access-evidence.mjs";
 import { applyErrorShellAccess } from "../../shared/lib/error-shell.mjs";
@@ -505,8 +506,36 @@ async function extractPdfResponse(response, requestedUrl, started, contentType, 
   }
 
   if (parsed === null || parsed.markdown.length === 0) {
-    // No %PDF magic, or a scanned/image-only PDF with no extractable text — honest failure
-    // (the agent must not infer content; OCR is out of scope).
+    // No %PDF magic, or a scanned/image-only PDF with no extractable text.
+    // Optional OCR is off by default (OCCAM_PDF_OCR=1 + OCCAM_PDF_OCR_BIN).
+    if (parsed !== null && parsed.markdown.length === 0) {
+      const ocr = await tryPdfOcr(bytes);
+      if (ocr.ok) {
+        return await runPlugins({
+          ok: true,
+          backend: "pdf",
+          url: { requested: requestedUrl, final: response.url },
+          title: parsed.title || undefined,
+          markdown: ocr.markdown,
+          pdf_pages: parsed.pages,
+          pdf_ocr: true,
+          text_length: ocr.markdown.length,
+          content_type: contentType || undefined,
+          latency_ms: elapsed(),
+        }, features);
+      }
+      if (ocr.note !== "pdf_ocr_disabled") {
+        return {
+          ok: false,
+          backend: "pdf",
+          failure: "extraction_failed",
+          note: ocr.note,
+          content_type: contentType || undefined,
+          latency_ms: elapsed(),
+        };
+      }
+    }
+
     return {
       ok: false,
       backend: "pdf",

@@ -48,6 +48,7 @@ public sealed class WebSocketMcpTransport : IMcpTransport
         builder.Services.AddOccamMcpServer();
 
         var app = builder.Build();
+        app.UseLoopbackHostOriginGuard();
         app.UseWebSockets();
 
         app.Map("/", async context =>

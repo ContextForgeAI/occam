@@ -85,12 +85,15 @@ public static class OccamServiceCollectionExtensions
         services.AddSingleton<Backends.Managed.IManagedProvider, Backends.Managed.FirecrawlProvider>();
         services.AddSingleton<Backends.Managed.IManagedProvider, Backends.Managed.SpiderProvider>();
         services.AddSingleton<Backends.Managed.IManagedProvider, Backends.Managed.ScrapflyProvider>();
+        services.AddSingleton<Backends.Managed.IManagedProvider, Backends.Managed.ArchiveWaybackProvider>();
+        services.AddSingleton<Backends.Managed.IManagedProvider, Backends.Managed.DonsetchManagedProvider>();
         services.AddSingleton<Backends.IManagedExtractBackend, Backends.ManagedExtractBackend>();
         services.AddHttpClient(Services.SearchService.HttpClientName, c => c.Timeout = TimeSpan.FromMilliseconds(
             OccamMcp.Core.Configuration.OccamEnvironment.GetInt("OCCAM_SEARCH_TIMEOUT_MS", defaultValue: 20_000, min: 1_000, max: 120_000)));
         services.AddSingleton<Search.ISearchProvider, Search.SearxngProvider>();
         services.AddSingleton<Search.ISearchProvider, Search.BraveProvider>();
         services.AddSingleton<Search.ISearchProvider, Search.TavilyProvider>();
+        services.AddSingleton<Search.ISearchProvider, Search.DonsetchSearchProvider>();
         services.AddSingleton<Services.ISearchService, Services.SearchService>();
         services.AddHttpClient(Services.RobotsThrottleService.HttpClientName, c => c.Timeout = TimeSpan.FromMilliseconds(
             OccamMcp.Core.Configuration.OccamEnvironment.GetInt("OCCAM_ROBOTS_TIMEOUT_MS", defaultValue: 10_000, min: 1_000, max: 60_000)))

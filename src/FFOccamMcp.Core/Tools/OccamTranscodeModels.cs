@@ -91,7 +91,11 @@ public sealed record OccamTranscodeFailureResponse(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Semantics.SemanticCompletenessInfo? Completeness = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? Verdict = null);
+    string? Verdict = null,
+    /// <summary>Primary operational hint derived from agentMeta.decisions (Donsetch-style one-liner).</summary>
+    [property: JsonPropertyName("next_action")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? NextAction = null);
 
 public sealed record OccamTranscodeCompileInfo(
     int TokensEstimated,
@@ -357,7 +361,7 @@ internal static class OccamTranscodeResponseBuilder
 
     public static OccamTranscodeReceiptInfo? BuildReceipt(
         TranscodeOutcome result, string url, ReceiptSigner? signer, TimeAnchorService? timeAnchor = null,
-        bool emitCapsule = false, bool leafSetComplete = false)
+        bool emitCapsule = false, bool leafSetComplete = false, string? actionPlanHash = null)
     {
         var telemetry = new OccamTranscodeReceiptInfo(
             result.TokensEstimated,
@@ -401,7 +405,8 @@ internal static class OccamTranscodeResponseBuilder
             Confidence: result.Confidence,
             KeyId: string.Empty,
             Alg: string.Empty,
-            Sig: null);
+            Sig: null,
+            ActionPlanHash: NormalizeActionPlanHash(actionPlanHash));
 
         var signed = signer.Sign(envelope);
 
@@ -498,6 +503,19 @@ internal static class OccamTranscodeResponseBuilder
         }
 
         return mapped;
+    }
+
+    private static string? NormalizeActionPlanHash(string? actionPlanHash)
+    {
+        if (string.IsNullOrWhiteSpace(actionPlanHash))
+        {
+            return null;
+        }
+
+        var trimmed = actionPlanHash.Trim();
+        return trimmed.StartsWith("sha256:", StringComparison.Ordinal)
+            ? trimmed
+            : "sha256:" + trimmed;
     }
 }
 

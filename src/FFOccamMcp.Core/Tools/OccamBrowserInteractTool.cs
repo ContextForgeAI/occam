@@ -11,6 +11,7 @@ using OccamMcp.Core.Receipts;
 using OccamMcp.Core.Routing;
 using OccamMcp.Core.Session;
 using OccamMcp.Core.Workers;
+using ModelContextProtocol;
 using ModelContextProtocol.Server;
 
 namespace OccamMcp.Core.Tools;
@@ -35,6 +36,7 @@ public sealed class OccamBrowserInteractTool(
         [Description("Focus keywords for optional fit_markdown prune after extract.")] string? focus_query = null,
         [Description("Optional whole-response token budget (min 128).")] int? max_tokens = null,
         [Description("Overall action deadline in milliseconds (default 90000).")] int? deadline_ms = null,
+        IProgress<ProgressNotificationValue>? progress = null,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -62,6 +64,14 @@ public sealed class OccamBrowserInteractTool(
         }
 
         var planHash = BrowserActionPlan.PlanHash(validated.Actions);
+        var stepTotal = validated.Actions.Count;
+        progress?.Report(new ProgressNotificationValue
+        {
+            Progress = 0,
+            Total = stepTotal + 1,
+            Message = $"actions validated ({stepTotal})",
+        });
+
         var deadline = deadline_ms is > 0
             ? Math.Clamp(deadline_ms.Value, 1_000, 180_000)
             : BrowserActionPlan.DefaultDeadlineMs;
@@ -81,6 +91,15 @@ public sealed class OccamBrowserInteractTool(
             preflight.ActiveHeadersFile,
             preflight.ActiveStorageStatePath,
             cancellationToken).ConfigureAwait(false);
+
+        progress?.Report(new ProgressNotificationValue
+        {
+            Progress = interactResult.StepsRun,
+            Total = stepTotal + 1,
+            Message = interactResult.Ok
+                ? $"actions done ({interactResult.StepsRun}/{stepTotal}); materializing"
+                : $"action_failed at step {interactResult.FailedIndex?.ToString() ?? "?"}",
+        });
 
         if (!interactResult.Ok)
         {
@@ -120,7 +139,8 @@ public sealed class OccamBrowserInteractTool(
                 TokensEstimated: TokenEstimator.Estimate(fitted),
                 Truncated: truncated,
                 TruncationStrategy: truncationStrategy);
-            receipt = OccamTranscodeResponseBuilder.BuildReceipt(outcome, url.Trim(), receiptSigner);
+            receipt = OccamTranscodeResponseBuilder.BuildReceipt(
+                outcome, url.Trim(), receiptSigner, actionPlanHash: planHash);
         }
 
         return OccamJsonPrintableEscapes.Serialize(

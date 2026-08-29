@@ -64,6 +64,15 @@ a logging capability it does not push on the default path. Clients must not wait
 on `/mcp` in this release. For authenticated remote agents use **Remote MCP** (`--remote` + JWT /
 OIDC) below — not Streamable HTTP.
 
+**Host / Origin guard:** Streamable HTTP and local WebSocket reject requests whose `Host` is not
+loopback (`127.0.0.1` / `localhost` / `::1`) or whose `Origin` (when present) is not a loopback
+origin. Missing `Origin` is allowed (non-browser clients). This complements bind-address
+enforcement against DNS-rebinding.
+
+**Progress:** when a client sends a progress token on `tools/call`, `occam_digest` and
+`occam_browser_interact` emit `notifications/progress` with factual stage messages
+(`url i/N`, `actions validated`, …). Stdio clients that omit the token see no notifications.
+
 Smoke (dual-era + Streamable HTTP):
 
 ```bash

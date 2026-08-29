@@ -96,6 +96,18 @@ public static class ReceiptUnitTests
         assert("null leafSetComplete omitted (back-compat, bytes unchanged)",
             !canonical.Contains("leafSetComplete", StringComparison.Ordinal));
 
+        // --- actionPlanHash — signed browser-interact plan commitment (omit = back-compat) ---
+        var withPlan = golden with { ActionPlanHash = "sha256:planhash" };
+        var planCanonical = Encoding.UTF8.GetString(ReceiptCanonicalizer.CanonicalBytes(withPlan));
+        assert("actionPlanHash canonical position (before tokens)",
+            planCanonical.Contains("\"actionPlanHash\":\"sha256:planhash\",\"tokens\":100", StringComparison.Ordinal));
+        assert("null actionPlanHash omitted (back-compat, bytes unchanged)",
+            !canonical.Contains("actionPlanHash", StringComparison.Ordinal));
+        var planSigned = signer.Sign(positive with { ActionPlanHash = "sha256:planhash" });
+        assert("actionPlanHash receipt verifies (signed field)",
+            ReceiptVerifier.VerifyOffline(planSigned, pub, markdown).Verdict == ReceiptVerification.Verified
+            && planSigned.ActionPlanHash == "sha256:planhash");
+
         // --- Merkle root ---
         var root1 = MerkleTree.Root(new[] { ("alpha", (string?)"#a"), ("beta", "#b") });
         var root2 = MerkleTree.Root(new[] { ("alpha", (string?)"#a"), ("GAMMA", "#c") });

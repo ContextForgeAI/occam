@@ -56,8 +56,8 @@ Occam also supports:
 | Proves origin authenticity / identity | Local self-minted key; no PKI / registry |
 | Trusted timestamps | Signer clock only (optional TSA is separate and limited) |
 | CAPTCHA solving | Detects walls; does not bypass them |
-| Universal npm install | **npm is not a GA 1.0 channel** |
-| Cosign-enforced install | Installers check **SHA-256** vs the release manifest |
+| Universal npm install | **npm is not a GA 1.0 channel** (experimental RC packages `ff-occam` / `@ff-occam/mcp` exist) |
+| Cosign as page-content truth | Published `v1.0.0-rc.3`+ use `signaturePolicy=required-cosign-v1` (SHA-256 always + Cosign fail-closed). Cosign proves **release authenticity** vs the workflow identity — not page truth. `v1.0.0-rc.2` remains SHA-256-only |
 | Marketplace “trusted auto-merge” | Community automation is operational machinery, not a trust guarantee |
 
 ## Who it is for

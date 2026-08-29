@@ -16,6 +16,8 @@ using OccamMcp.Core.Routing;
 using OccamMcp.Core.Services;
 using OccamMcp.Core.Text;
 using OccamMcp.Core.Telemetry;
+using OccamMcp.Core.Backends.Managed;
+using OccamMcp.Core.Search;
 using OccamMcp.Core.Tools;
 using OccamMcp.Core.Workers;
 using Microsoft.Extensions.DependencyInjection;
@@ -3475,6 +3477,10 @@ internal static class L0InfraUnitTests
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_API_KEY", "k");
             assert("search brave ready with key", search.IsConfigured && search.ProviderName == "brave");
 
+            Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", "donsetch");
+            Environment.SetEnvironmentVariable("OCCAM_SEARCH_API_KEY", null);
+            assert("search donsetch keyless ready", search.IsConfigured && search.ProviderName == "donsetch");
+
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", "nonsuch");
             assert("search unknown provider disabled", !search.IsConfigured);
         }
@@ -3488,11 +3494,38 @@ internal static class L0InfraUnitTests
         // Response serialization round-trips (camelCase, snippet omitted when null).
         var ok = JsonSerializer.Serialize(
             new OccamSearchSuccessResponse(true, "q", "searxng", 1,
-                [new OccamSearchResultInfo("T", "https://e.com/a", "snip")]),
+                [new OccamSearchResultInfo("T", "https://e.com/a", "snip", Id: "S1")]),
             OccamSearchJsonContext.Default.OccamSearchSuccessResponse);
         var rt = JsonSerializer.Deserialize(ok, OccamSearchJsonContext.Default.OccamSearchSuccessResponse);
         assert("search response round-trips url", rt?.Results is { Length: 1 } && rt.Results[0].Url == "https://e.com/a");
         assert("search response camelCase", ok.Contains("\"results\"") && ok.Contains("\"snippet\""));
+        assert("search response includes id", ok.Contains("\"id\":\"S1\"") && rt?.Results[0].Id == "S1");
+
+        var labeled = OccamSearchTool.AssignResultIds(
+        [
+            new OccamSearchResultInfo("A", "https://a.example/", null),
+            new OccamSearchResultInfo("B", "https://b.example/", null),
+        ]);
+        assert("search AssignResultIds S1", labeled[0].Id == "S1" && labeled[0].Url == "https://a.example/");
+        assert("search AssignResultIds S2", labeled[1].Id == "S2");
+
+        var donsetchHits = DonsetchSearchProvider.ParseResults(
+            """{"results":[{"title":"T","url":"https://e.com/x","snippet":"s"},{"link":"https://e.com/y","name":"Y"}]}""",
+            maxResults: 5);
+        assert("donsetch parse results count", donsetchHits.Count == 2);
+        assert("donsetch parse url", donsetchHits[0].Url == "https://e.com/x" && donsetchHits[1].Url == "https://e.com/y");
+
+        assert(
+            "archive identity stamp",
+            ArchiveWaybackProvider.ToIdentitySnapshotUrl("https://web.archive.org/web/20240101120000/https://example.com/")
+                == "https://web.archive.org/web/20240101120000id_/https://example.com/");
+        using (var avail = JsonDocument.Parse("""{"archived_snapshots":{"closest":{"available":true,"url":"https://web.archive.org/web/20200101/https://example.com/"}}}"""))
+        {
+            assert("archive avail parse", ArchiveWaybackProvider.TryReadSnapshotUrl(avail.RootElement, out var snap)
+                && snap!.Contains("web.archive.org", StringComparison.Ordinal));
+        }
+        assert("donsetch managed markdown from json",
+            DonsetchManagedProvider.ExtractMarkdown("""{"markdown":"# Hi"}""") == "# Hi");
     }
 
     private static void RunManagedAdapterContract(Action<string, bool> assert)
@@ -3518,6 +3551,12 @@ internal static class L0InfraUnitTests
             Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "jina");
             assert("managed keyless provider ready", backend.IsReady);
             assert("managed no allowlist → any host", backend.ShouldAttempt("https://example.com/x"));
+
+            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "archive");
+            assert("managed archive keyless ready", backend.IsReady);
+            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "donsetch");
+            assert("managed donsetch keyless ready", backend.IsReady);
+            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "jina");
 
             // New keyed providers: registered + recognized, and gated on OCCAM_MANAGED_API_KEY.
             Environment.SetEnvironmentVariable("OCCAM_MANAGED_API_KEY", null);

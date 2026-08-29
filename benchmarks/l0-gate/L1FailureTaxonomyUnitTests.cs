@@ -56,7 +56,21 @@ internal static class L1FailureTaxonomyUnitTests
         assert("failure resolve workers", FailureCodeStrings.ResolveTranscodeFailure("no_json", 0) == "workers_unavailable");
         assert("failure resolve response too large", FailureCodeStrings.ResolveTranscodeFailure("response_too_large", 0) == "response_too_large");
         assert("failure resolve response truncated", FailureCodeStrings.ResolveTranscodeFailure("response_truncated", 0) == "response_truncated");
+        assert("failure normalize action_failed identity", FailureCodeStrings.Normalize("action_failed") == "action_failed");
+        assert("failure resolve action_failed", FailureCodeStrings.ResolveTranscodeFailure("action_failed", 0) == "action_failed");
+        assert("failure not retryable action_failed", !FailureCodeStrings.IsRetryable("action_failed"));
+        assert("failure format action_failed",
+            FailureCodeStrings.FormatTranscodeMessage("action_failed", 0).Contains("action", StringComparison.OrdinalIgnoreCase));
         assert("failure parse status from code", FailureCodeStrings.TryParseHttpStatusCode("http_404") == 404);
+
+        var next = NextActionFormatter.FromDecisions(TranscodeAgentDecisions.ForFailure("thin_extract"));
+        assert("next_action thin_extract primary",
+            next is not null
+            && next.StartsWith("retry_transcode(backend_policy=browser)", StringComparison.Ordinal));
+        assert("next_action empty decisions", NextActionFormatter.FromDecisions([]) is null);
+        assert("next_action from suggestedNext",
+            NextActionFormatter.FromHints(null, "occam_playbook_heal") == "continue: tool=occam_playbook_heal");
+        assert("next_action ignores none", NextActionFormatter.FromHints(null, "none") is null);
         assert("failure retryable timeout", FailureCodeStrings.IsRetryable("timeout"));
         assert("failure retryable response too large", !FailureCodeStrings.IsRetryable("response_too_large"));
         assert("failure retryable 404", !FailureCodeStrings.IsRetryable("http_404"));

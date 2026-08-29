@@ -18,7 +18,7 @@ Optional integrations send data to endpoints **you configure**:
 | Integration | What leaves |
 |-------------|-------------|
 | Web search (`OCCAM_SEARCH_*`) | Query + provider API traffic |
-| **Managed extract** (`OCCAM_MANAGED_*`) | Target URL and fetch parameters to Firecrawl, Jina, Spider, Scrapfly, or your override base URL |
+| **Managed extract** (`OCCAM_MANAGED_*`) | Target URL and fetch parameters to Firecrawl, Jina, Spider, Scrapfly, Wayback (`archive`), local Donsetch, or your override base URL |
 | Translation (`OCCAM_TRANSLATE_URL`) | Text you send for translation |
 | Time anchor (`OCCAM_TSA_URL`) | Hash of signature bytes to your TSA |
 | HTTP(S) proxy (`OCCAM_HTTP_PROXY`, …) | Traffic routed through your proxy — not Occam cloud |

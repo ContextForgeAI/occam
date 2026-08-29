@@ -6,6 +6,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+- **rc5 plan slice (C)** — search result labels `S1`…`Sn` (notes only; always pass
+  `url` to fetch tools); optional `OCCAM_SEARCH_PROVIDER=donsetch` and
+  `OCCAM_MANAGED_PROVIDER=archive|donsetch` (local CLI / Wayback — not bundled);
+  opt-in PDF OCR after `pdf_no_text_layer` via `OCCAM_PDF_OCR` + `OCCAM_PDF_OCR_BIN`;
+  resumable crawl MCP still deferred (map + digest + batch cover most cases).
+- **rc4 plan polish (B)** — unified failure `next_action` (derived from
+  `agentMeta.decisions`); transcode `compact_links` / `include_media_refs` /
+  `compact_block_links` (folded into materialization + cache keys); MCP progress
+  on `occam_digest` and `occam_browser_interact` when the client sends a progress
+  token; loopback Host/Origin guard on Streamable HTTP and local WebSocket.
+- **rc4 plan polish (A)** — Cosign/npm truth on `what-is-occam` + `roadmap`;
+  `action_failed` in the public failure taxonomy and L1 coverage; browser-interact
+  successes fold `actionPlanHash` into `receipt.signed` (optional field, back-compat
+  when omitted).
 - **Connect verifier follows the rc.4 profile contract** — `tools/list` health
   now checks the eight required reader tool identities instead of requiring a
   historical 15-tool count. Default `OCCAM_PROFILE=reader` therefore verifies

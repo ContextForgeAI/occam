@@ -36,6 +36,7 @@ On eligible success paths, tools can return a `receipt` object:
 | Field | Meaning |
 |-------|---------|
 | `signed.contentHash` | `sha256:` + hex hash of the **compiled** Markdown body (after budget/fit/focus — not raw HTML) |
+| `signed.actionPlanHash` | Present on `occam_browser_interact` successes — `sha256:` hash of the canonical action plan (omitted on ordinary transcode) |
 | `signed.blockMerkleRoot` | Merkle root over content blocks (when `json_blocks=true`) |
 | `blockLeaves` | Leaf hashes for drift checks and citation proofs (**not signed** — authenticated only via root reconstruction) |
 | `capsule` (opt-in `emit_capsule`) | `occam://capsule/…` wrapper: **signed core** plus **unsigned cargo** (content, leaves, optional timeAnchor/verifyRecipe). The wrapper itself is not signed. Verify the signed hashes — do not trust unsigned cargo as integrity proof. |

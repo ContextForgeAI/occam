@@ -10,7 +10,11 @@ public sealed record OccamSearchResultInfo(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     double? Extractability = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? RecommendedBackend = null);
+    string? RecommendedBackend = null,
+    /// <summary>Stable label <c>S1</c>…<c>Sn</c> after ranking — agent notes only; pass <see cref="Url"/> to fetch tools.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [property: JsonPropertyOrder(-1)]
+    string? Id = null);
 
 public sealed record OccamSearchSuccessResponse(
     bool Ok,

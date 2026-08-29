@@ -13,7 +13,7 @@ public sealed class OccamSearchTool(ISearchService searchService, ProbeService p
     private const int RerankProbeTimeoutMs = 6_000;
     private const int RerankMaxParallel = 5;
 
-    [McpServerTool(Name = "occam_search"), Description("Open-web search (query -> result URLs) via a configured backend (SearXNG/Brave/Tavily). Your discovery step when you don't have URLs yet - feed results into probe/transcode/digest. Requires OCCAM_SEARCH_PROVIDER. Returns { title, url, snippet }.")]
+    [McpServerTool(Name = "occam_search"), Description("Open-web search (query -> result URLs) via a configured backend (SearXNG/Brave/Tavily/Donsetch). Your discovery step when you don't have URLs yet - feed result urls into probe/transcode/digest. Each hit gets a label id S1..Sn (notes only; Occam does not resolve handles). Requires OCCAM_SEARCH_PROVIDER. Returns { id, title, url, snippet }.")]
     public async Task<string> Search(
         [Description("Search query.")] string query,
         [Description("Max results to return (1-20). Default 8.")] int max_results = DefaultMaxResults,
@@ -50,12 +50,15 @@ public sealed class OccamSearchTool(ISearchService searchService, ProbeService p
             results = await RerankAsync(results, cancellationToken).ConfigureAwait(false);
         }
 
+        // Assign S1…Sn after final order so labels match what the agent sees.
+        results = AssignResultIds(results);
+
         var suggested = results.Length > 0
-            ? "occam_transcode (fetch a result URL) or occam_digest (compare several)"
+            ? "Pass a result url to occam_transcode (one page) or occam_digest (several). Labels S1…Sn are for your notes only — Occam does not resolve handles server-side."
             : "refine query or try another provider";
         if (rerank && results.Length > 0)
         {
-            suggested = "results reranked by extractability — prefer the top (highest extractability) URLs for transcode";
+            suggested = "Results reranked by extractability — prefer top urls for transcode. Labels S1…Sn are notes only; always pass the url field.";
         }
 
         return JsonSerializer.Serialize(
@@ -121,9 +124,21 @@ public sealed class OccamSearchTool(ISearchService searchService, ProbeService p
             .Select(s => s.Result)];
     }
 
+    /// <summary>Stable <c>S1</c>… labels after ranking. Not a server-side handle store.</summary>
+    internal static OccamSearchResultInfo[] AssignResultIds(OccamSearchResultInfo[] results)
+    {
+        var labeled = new OccamSearchResultInfo[results.Length];
+        for (var i = 0; i < results.Length; i++)
+        {
+            labeled[i] = results[i] with { Id = $"S{i + 1}" };
+        }
+
+        return labeled;
+    }
+
     private static string DescribeFailure(string? code) => code switch
     {
-        "search_unconfigured" => "Search is not configured. Set OCCAM_SEARCH_PROVIDER (searxng|brave|tavily) + OCCAM_SEARCH_URL (SearXNG) or OCCAM_SEARCH_API_KEY (Brave/Tavily).",
+        "search_unconfigured" => "Search is not configured. Set OCCAM_SEARCH_PROVIDER (searxng|brave|tavily|donsetch) + OCCAM_SEARCH_URL (SearXNG) or OCCAM_SEARCH_API_KEY (Brave/Tavily); donsetch needs a local donsetch binary (OCCAM_DONSETCH_PATH optional).",
         "search_timeout" => "Search backend timed out. Retry or raise OCCAM_SEARCH_TIMEOUT_MS.",
         var c when c is not null && c.StartsWith("search_http_", StringComparison.Ordinal) => $"Search backend returned {c["search_http_".Length..]}. Check the endpoint/key.",
         _ => "Search backend call failed.",

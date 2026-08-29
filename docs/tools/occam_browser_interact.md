@@ -22,8 +22,10 @@ Run a short declarative browser action plan, then materialize Markdown + Receipt
 | `deadline_ms` | no | Per-call deadline |
 
 Allowed `do` values: `wait`, `wait_selector`, `wait_text`, `click`, `hover`, `type`, `press`, `scroll`.
-First failure stops remaining steps (`action_failed`). Typed text is **redacted** from `actionTrace`.
-Results are **never cached**. Raw page JS (`js_before_wait` / `wait_for.js`) is **not** exposed.
+First failure stops remaining steps (`failure.code=action_failed` — see [failure codes](../failure-codes.md)).
+Typed text is **redacted** from `actionTrace`. Results are **never cached**. Raw page JS
+(`js_before_wait` / `wait_for.js`) is **not** exposed. On success, `actionPlanHash` is returned on
+the response and, when receipts are on, also folded into `receipt.signed.actionPlanHash`.
 
 ## Related
 

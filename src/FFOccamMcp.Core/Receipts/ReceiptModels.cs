@@ -44,7 +44,11 @@ public sealed record ReceiptEnvelope(
     // leaves), not merely "not found". Null (omitted) unless the extract was complete; a null value
     // writes identical canonical bytes to a pre-field receipt, so it is backward-compatible.
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    bool? LeafSetComplete = null)
+    bool? LeafSetComplete = null,
+    // browser-interact only: hash of the canonical action plan that produced this content.
+    // Null/omitted on ordinary transcode — identical canonical bytes to pre-field receipts.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? ActionPlanHash = null)
 {
     public const int CurrentVersion = 1;
     public const string KindExtraction = "extraction";

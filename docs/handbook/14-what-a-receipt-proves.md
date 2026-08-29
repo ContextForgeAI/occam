@@ -20,7 +20,7 @@ Nothing else. No origin proof, no identity, no truth, no trusted time by default
 
 ### Receipt v1 envelope (positive extraction)
 
-Signed fields include url, finalUrl, backend, ts, toolchain, contentHash, blockMerkleRoot (when blocks present), keyId, alg, signature.
+Signed fields include url, finalUrl, backend, ts, toolchain, contentHash, blockMerkleRoot (when blocks present), optional `actionPlanHash` (browser-interact plans), keyId, alg, signature.
 
 **Always computed even when signing disabled:** `contentHash` on transcode success—unsigned hash is self-consistency only.
 

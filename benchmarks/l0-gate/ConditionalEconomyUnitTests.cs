@@ -78,6 +78,23 @@ internal static class ConditionalEconomyUnitTests
             baseOpts,
             rankBlocks: true);
         assert("mat key: rank_blocks changes key", rankOn != k1);
+
+        var compactOn = MaterializationKey.Compute(
+            "https://docs.python.org/3/library/asyncio.html",
+            "http_then_browser",
+            baseOpts with { CompactLinks = true });
+        assert("mat key: compact_links changes key", compactOn != k1);
+        var mediaOff = MaterializationKey.Compute(
+            "https://docs.python.org/3/library/asyncio.html",
+            "http_then_browser",
+            baseOpts with { IncludeMediaRefs = false });
+        assert("mat key: include_media_refs changes key", mediaOff != k1);
+
+        assert("compact links strips destinations",
+            MarkdownLinkCompactor.Compact("See [docs](https://example.com/a) and [here](https://x.test).")
+            == "See docs and here.");
+        assert("compact links preserves bare text",
+            MarkdownLinkCompactor.Compact("plain") == "plain");
     }
 
     private static void RunUnchangedEnvelope(Action<string, bool> assert)

@@ -42,6 +42,7 @@ public static class ReceiptCanonicalizer
             if (e.ContentHash is not null) w.WriteString("contentHash", e.ContentHash);
             if (e.BlockMerkleRoot is not null) w.WriteString("blockMerkleRoot", e.BlockMerkleRoot);
             if (e.LeafSetComplete is not null) w.WriteBoolean("leafSetComplete", e.LeafSetComplete.Value);
+            if (e.ActionPlanHash is not null) w.WriteString("actionPlanHash", e.ActionPlanHash);
             if (e.Tokens is not null) w.WriteNumber("tokens", e.Tokens.Value);
             if (e.FailureCode is not null) w.WriteString("failureCode", e.FailureCode);
             if (e.StatusCode is not null) w.WriteNumber("statusCode", e.StatusCode.Value);

@@ -5,6 +5,7 @@ using OccamMcp.Core.Digest;
 using OccamMcp.Core.Json;
 using OccamMcp.Core.Routing;
 using OccamMcp.Core.Services;
+using ModelContextProtocol;
 using ModelContextProtocol.Server;
 
 namespace OccamMcp.Core.Tools;
@@ -27,6 +28,7 @@ public sealed class OccamDigestTool(
         [Description("AF-5: source URL for auto-link-discovery (sitemap or HTML links). When set, urls is ignored.")] string? source_url = null,
         [Description("AF-5: max links to discover from source_url (1-8). Default 8.")] int max_links = DigestService.MaxUrlsCap,
         [Description("AF-6: SHA-256 of prior combined markdown — bare hex or receipt sha256:-prefixed contentHash. If combined matches, returns unchanged:true with empty combined.")] string? if_none_match = null,
+        IProgress<ProgressNotificationValue>? progress = null,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -48,6 +50,16 @@ public sealed class OccamDigestTool(
             return SerializeFailure("invalid_arguments", normalizationError ?? "urls is invalid.");
         }
 
+        Action<int, int, string>? onProgress = progress is null
+            ? null
+            : (current, total, msg) =>
+                progress.Report(new ProgressNotificationValue
+                {
+                    Progress = current,
+                    Total = total,
+                    Message = msg,
+                });
+
         var analysis = await digestService.DigestAsync(
             normalizedUrls,
             max_urls,
@@ -60,7 +72,8 @@ public sealed class OccamDigestTool(
             source_url,
             max_links,
             if_none_match,
-            cancellationToken);
+            cancellationToken,
+            onProgress);
 
         if (analysis.Ok)
         {

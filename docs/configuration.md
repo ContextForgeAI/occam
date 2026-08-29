@@ -121,10 +121,11 @@ Export profiles: `node scripts/occam-session.mjs export-state --profile <id>`.
 
 | Variable | Purpose |
 |----------|---------|
-| `OCCAM_SEARCH_PROVIDER` | `searxng` \| `brave` \| `tavily` (unset → `search_unconfigured`) |
+| `OCCAM_SEARCH_PROVIDER` | `searxng` \| `brave` \| `tavily` \| `donsetch` (unset → `search_unconfigured`) |
 | `OCCAM_SEARCH_URL` | Required for SearXNG base URL |
 | `OCCAM_SEARCH_API_KEY` | Required for Brave/Tavily |
 | `OCCAM_SEARCH_TIMEOUT_MS` | Default `20000` (1k–120k) |
+| `OCCAM_DONSETCH_PATH` | Optional absolute path to a local `donsetch` binary (`OCCAM_SEARCH_PROVIDER=donsetch` or `OCCAM_MANAGED_PROVIDER=donsetch`). Otherwise `donsetch` must be on `PATH`. Never bundled (AGPL). |
 
 ---
 
@@ -132,11 +133,28 @@ Export profiles: `node scripts/occam-session.mjs export-state --profile <id>`.
 
 | Variable | Purpose |
 |----------|---------|
-| `OCCAM_MANAGED_PROVIDER` | `firecrawl` \| `jina` \| `spider` \| `scrapfly` |
-| `OCCAM_MANAGED_API_KEY` | Provider API key |
-| `OCCAM_MANAGED_BASE_URL` | Override provider base URL |
+| `OCCAM_MANAGED_PROVIDER` | `firecrawl` \| `jina` \| `spider` \| `scrapfly` \| `archive` \| `donsetch` |
+| `OCCAM_MANAGED_API_KEY` | Provider API key (not required for `jina`, `archive`, `donsetch`) |
+| `OCCAM_MANAGED_BASE_URL` | Override provider base URL (`archive` defaults to `https://archive.org`) |
 | `OCCAM_MANAGED_DOMAINS` | Comma-separated domain allowlist |
 | `OCCAM_MANAGED_TIMEOUT_MS` | Default `60000` (1k–180k) |
+
+`archive` recovers a Wayback snapshot (rough Markdown). `donsetch` spawns a local Donsetch CLI fetch — operator-installed only.
+
+---
+
+## PDF OCR (optional, scanned PDFs)
+
+Off by default. After `pdf_no_text_layer`, the HTTP worker may call a local helper:
+
+| Variable | Purpose |
+|----------|---------|
+| `OCCAM_PDF_OCR` | `1` / `true` enables the OCR attempt |
+| `OCCAM_PDF_OCR_BIN` | Executable (or `node`) that accepts the PDF path as the last argv and prints text to stdout |
+| `OCCAM_PDF_OCR_ARGS` | Optional extra argv before the PDF path (e.g. path to a `.mjs` helper) |
+| `OCCAM_PDF_OCR_TIMEOUT_MS` | Default `60000` (1k–300k) |
+
+Honest notes on failure: `pdf_ocr_unconfigured`, `pdf_ocr_timeout`, `pdf_ocr_failed`, `pdf_ocr_empty`. Occam does not ship an OCR engine.
 
 ---
 

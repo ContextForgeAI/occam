@@ -163,6 +163,8 @@ test("MCP tools/list filtering + search hidden when unavailable", () => {
   assert.ok(isSearchConfigured({ OCCAM_SEARCH_PROVIDER: "brave", OCCAM_SEARCH_API_KEY: "k" }));
   assert.equal(isSearchConfigured({ OCCAM_SEARCH_PROVIDER: "brave" }), false);
   assert.ok(isSearchConfigured({ OCCAM_SEARCH_PROVIDER: "searxng", OCCAM_SEARCH_URL: "http://x" }));
+  assert.ok(isSearchConfigured({ OCCAM_SEARCH_PROVIDER: "donsetch" }));
+  assert.equal(isSearchConfigured({ OCCAM_SEARCH_PROVIDER: "nonsuch" }), false);
 
   const listed = [
     { name: "occam_transcode", description: "t", inputSchema: { type: "object" } },

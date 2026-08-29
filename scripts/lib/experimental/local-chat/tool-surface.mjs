@@ -86,6 +86,10 @@ export function isSearchConfigured(env = process.env) {
   if (name === "brave" || name === "tavily") {
     return Boolean(String(env.OCCAM_SEARCH_API_KEY || "").trim());
   }
+  if (name === "donsetch") {
+    // Binary presence is resolved by Core at call time; advertising when named is enough.
+    return true;
+  }
   // Unknown provider name — do not advertise.
   return false;
 }

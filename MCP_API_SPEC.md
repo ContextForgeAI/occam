@@ -142,6 +142,7 @@ Types: `OccamTranscodeSuccessResponse` in `OccamTranscodeModels.cs`.
 | `failure.reason` | string? | Human "why" for a browser-availability failure (`workers_unavailable` from a missing browser) |
 | `failure.fix` | object? | Actionable remedy: `{ kind, command, rootRequired }`. `command` is the exact thing to run (e.g. `occam install-browser` for a missing browser binary; `npx playwright install-deps chromium` for missing system libs); `rootRequired` marks the boundary occam can't cross for you (system libs need root) |
 | `agentMeta.decisions` | array? | Actionable next steps — same shape as probe `agentHints.decisions` |
+| `next_action` | string? | Primary one-liner derived from the first `agentMeta.decisions[]` row (or a non-`none` heal `suggestedNext`); omit when nothing actionable |
 
 Types: `OccamTranscodeFailureResponse`, `OccamTranscodeFailureInfo`, `OccamTranscodeAgentMetaInfo`.
 
@@ -724,7 +725,7 @@ Converts one HTTP(S) URL to Markdown. **Always live extract.**
 | `completeness` | object? | PR-F answer completeness: `{ status: complete\|partial\|incomplete, incompleteReason?, suggestedMinTokens? }` |
 | `verdict` | string? | Semantic judgment when computed; retrieval/transcode paths emit `not_evaluated` |
 | `quality` | object? | ADR-0004 extract quality breakdown on success: `{ score, noise, contentDensity, semanticRichness, lengthPrior, verdict }` where `verdict` is `short_quality` \| `rich` \| `noisy` \| `thin`. Length alone never decides thin vs quality. Omitted on `unchanged` / `delta_only` heavy-omit paths |
-| `receipt` | object? | AF-3 telemetry `{ tokensUsed, tokenEstimator, truncationStrategy, confidence, elapsedMs }` **plus Receipt v1 verifiable fields on success**: `signed` (the signed extraction envelope — `contentHash`, `blockMerkleRoot`, provenance, ECDsa P-256 signature), `blockLeaves` (unsigned sidecar that reconstructs the root; present with `json_blocks`), and `timeAnchor` (optional RFC3161 when `OCCAM_TIME_ANCHOR=1`). `tokenEstimator` names the model-independent heuristic; it is not a claim of exact tokenizer parity. Verify with `occam_verify` or the offline CLI (see [receipt_verification.md](docs/receipt_verification.md)). `OCCAM_RECEIPTS=off` → telemetry only, no `signed`. Blocks are reconciled to the returned (post-prune) markdown, so `contentHash`/`blockMerkleRoot`/`blocks` are mutually consistent |
+| `receipt` | object? | AF-3 telemetry `{ tokensUsed, tokenEstimator, truncationStrategy, confidence, elapsedMs }` **plus Receipt v1 verifiable fields on success**: `signed` (the signed extraction envelope — `contentHash`, optional `actionPlanHash` on `occam_browser_interact`, `blockMerkleRoot`, provenance, ECDsa P-256 signature), `blockLeaves` (unsigned sidecar that reconstructs the root; present with `json_blocks`), and `timeAnchor` (optional RFC3161 when `OCCAM_TIME_ANCHOR=1`). `tokenEstimator` names the model-independent heuristic; it is not a claim of exact tokenizer parity. Verify with `occam_verify` or the offline CLI (see [receipt_verification.md](docs/receipt_verification.md)). `OCCAM_RECEIPTS=off` → telemetry only, no `signed`. Blocks are reconciled to the returned (post-prune) markdown, so `contentHash`/`blockMerkleRoot`/`blocks` are mutually consistent |
 | `timings` | object? | Per-stage wall-clock breakdown (ms): `{ totalMs, preflightMs, routeMs, networkMs, parseMs, postProcessMs, compileMs }`. `networkMs` is the with-internet leg (DNS+connect+TLS+download), `parseMs` is the without-internet CPU leg (DOM+Readability+Turndown); `routeMs − networkMs − parseMs` ≈ worker spawn/IPC dispatch overhead. Present on http-backed transcodes (success and most failures) |
 | `recovery` | array? | AF-4 / PR-F: `[{ backend, ok, latencyMs, transportOk?, usable?, failureCode?, escalationReason? }]`. Legacy `ok` aliases `transportOk` (raw transport/extract completion). `usable` is independent router quality. Present on the `http_then_browser` recovery path |
 | `unchanged` | boolean? | AF-6: `true` when `if_none_match` matched — **whole-response** conditional: empty `markdown` and omitted heavy sidecars (`blocks`, `chunks`, `tables`, `feed`, `mediaRefs`, `screenshot`, translation). Not a Markdown-only 304 |
@@ -822,6 +823,7 @@ way as a positive one (`occam_verify offline`).
 | `dns_error` | Host did not resolve — `ENOTFOUND`/`EAI_AGAIN` (retryable) |
 | `tls_error` | Certificate invalid/expired/untrusted (not retryable) |
 | `extraction_failed` | Worker error or empty markdown (non-HTTP) |
+| `action_failed` | A step in `occam_browser_interact` failed (selector miss / timeout / invalid step); see `failedIndex` + redacted `actionTrace` |
 | `thin_extract` | Quality gate — content too thin (or empty after compile) |
 | `render_error` | Extracted document was a browser/client render error shell, not usable page content. Access is unknown (not restricted). Retry browser only if it has not already been tried. Do not invent an answer from it |
 | `response_too_large` | HTTP body exceeded `OCCAM_MAX_RESPONSE_BYTES` during download |
@@ -856,7 +858,7 @@ occam_transcode(url, fit_markdown=true, focus_query="authentication", max_tokens
 
 ## `occam_search`
 
-Open-web search (query → result URLs) — the agent's **discovery** step before `probe`/`transcode`/`digest`. Occam does not crawl or index; it delegates to a configured backend (SearXNG / Brave / Tavily) and normalizes results. **Opt-in** — off unless `OCCAM_SEARCH_PROVIDER` is set (returns `search_unconfigured` otherwise). Source: `Tools/OccamSearchTool.cs`.
+Open-web search (query → result URLs) — the agent's **discovery** step before `probe`/`transcode`/`digest`. Occam does not crawl or index; it delegates to a configured backend (SearXNG / Brave / Tavily / optional local Donsetch CLI) and normalizes results. **Opt-in** — off unless `OCCAM_SEARCH_PROVIDER` is set (returns `search_unconfigured` otherwise). Source: `Tools/OccamSearchTool.cs`.
 
 ### Parameters
 
@@ -866,7 +868,7 @@ Open-web search (query → result URLs) — the agent's **discovery** step befor
 | `max_results` | int | `8` | Max results, range **1–20** |
 | `rerank` | bool | `false` | Rerank by extractability — cheaply probes each hit and reorders so clean HTTP-extractable pages rank above paywalls/anti-bot/JS-stubs/dead links. Adds `extractability` (0–1) + `recommendedBackend` per result. Opt-in (extra probe latency) |
 
-Config (env): `OCCAM_SEARCH_PROVIDER` (`searxng` \| `brave` \| `tavily`), `OCCAM_SEARCH_URL` (SearXNG instance), `OCCAM_SEARCH_API_KEY` (Brave/Tavily), `OCCAM_SEARCH_TIMEOUT_MS` (default 20000) — see [Environment](#environment).
+Config (env): `OCCAM_SEARCH_PROVIDER` (`searxng` \| `brave` \| `tavily` \| `donsetch`), `OCCAM_SEARCH_URL` (SearXNG instance), `OCCAM_SEARCH_API_KEY` (Brave/Tavily), `OCCAM_DONSETCH_PATH` (optional path to local Donsetch binary), `OCCAM_SEARCH_TIMEOUT_MS` (default 20000) — see [Environment](#environment).
 
 ### Success response
 
@@ -877,11 +879,13 @@ Config (env): `OCCAM_SEARCH_PROVIDER` (`searxng` \| `brave` \| `tavily`), `OCCAM
   "provider": "searxng",
   "count": 2,
   "results": [
-    { "title": "…", "url": "https://…", "snippet": "…" }
+    { "id": "S1", "title": "…", "url": "https://…", "snippet": "…" }
   ],
-  "agentHints": { "suggestedNext": "occam_transcode (fetch a result URL) or occam_digest (compare several)" }
+  "agentHints": { "suggestedNext": "Pass a result url to occam_transcode (one page) or occam_digest (several). Labels S1…Sn are for your notes only — Occam does not resolve handles server-side." }
 }
 ```
+
+`id` values `S1`…`Sn` are assigned **after** final ranking. They are agent-side labels only — always pass `url` to `occam_transcode` / `occam_digest` / `occam_probe`. Occam does not store or resolve handles.
 
 With `rerank=true`, `results` are ordered by `extractability` (desc) and each also carries `extractability` (0–1) + `recommendedBackend` (e.g. `"extractability": 0.9, "recommendedBackend": "http"`).
 
@@ -890,7 +894,7 @@ With `rerank=true`, `results` are ordered by `extractability` (desc) and each al
 | Code | When |
 |------|------|
 | `invalid_arguments` | Empty `query` or `max_results` outside 1–20 |
-| `search_unconfigured` | No `OCCAM_SEARCH_PROVIDER` (or missing url/key) |
+| `search_unconfigured` | No `OCCAM_SEARCH_PROVIDER` (or missing url/key; Donsetch missing binary) |
 | `search_http_*` | Backend returned non-2xx |
 | `search_timeout` | Backend timed out |
 | `search_error` | Network/parse failure |

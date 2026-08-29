@@ -49,6 +49,7 @@ public sealed class StreamableHttpMcpTransport : IMcpTransport
             });
 
         var app = builder.Build();
+        app.UseLoopbackHostOriginGuard();
         app.MapMcp("/mcp");
         app.MapGet("/health", () => Results.Text("{\"ok\":true,\"mode\":\"streamable-http\",\"endpoint\":\"/mcp\"}", "application/json"));
 

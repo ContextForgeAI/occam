@@ -38,6 +38,13 @@ memory. Only `url` is required; everything else is opt-in.
 | `rank_blocks` | bool | `false` | no | Annotate each `json_blocks` block with 0–1 `salience` (BM25 vs `focus_query`); requires `json_blocks=true` and `focus_query` |
 | `tag_trust` | bool | `false` | no | Tag each `json_blocks` block with a `trust` channel (`suspicious` / `boilerplate`); requires `json_blocks=true` |
 | `delta_only` | bool | `false` | no | Return only the block-level delta and empty markdown (`deltaOnly:true`); requires `diff_against` + `json_blocks`; omits heavy sidecars |
+| `toc` | bool | `false` | no | Emit heading TOC |
+| `section` | string? | null | no | Structural heading focus |
+| `must_contain` | string? | null | no | Needle probe → `mustContain` |
+| `deadline_ms` | int? | null | no | Overall call deadline (1s–300s) |
+| `compact_links` | bool | `false` | no | Strip markdown link destinations (keep text); changes `contentHash` |
+| `include_media_refs` | bool | `true` | no | Include `mediaRefs`; set `false` to omit |
+| `compact_block_links` | bool | `false` | no | Clear `blocks[].links` when `json_blocks` is on |
 
 Removed: `auto_recover` — recovery is driven by `backend_policy` (`http_then_browser`), not a separate flag.
 

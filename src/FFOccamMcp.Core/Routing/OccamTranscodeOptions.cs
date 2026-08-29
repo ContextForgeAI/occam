@@ -25,6 +25,12 @@ public sealed record OccamTranscodeOptions
     public string? Section { get; init; }
     /// <summary>Require this substring in the materialized markdown (MATCH / NO_MATCH).</summary>
     public string? MustContain { get; init; }
+    /// <summary>When true, strip markdown link destinations (keep visible text).</summary>
+    public bool CompactLinks { get; init; }
+    /// <summary>When false, omit mediaRefs sidecar (default true = current behavior).</summary>
+    public bool IncludeMediaRefs { get; init; } = true;
+    /// <summary>When true with json_blocks, clear blocks[].links arrays.</summary>
+    public bool CompactBlockLinks { get; init; }
 
     public static OccamTranscodeOptions Default { get; } = new();
 }

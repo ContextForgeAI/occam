@@ -276,6 +276,10 @@ public sealed class TranscodePipeline(
             ? selection.Codec
             : codecRegistry.Default;
         var encodedMarkdown = codec.Encode(planned.View, KnowledgeCodecEncodeOptions.None).Surface;
+        if (ctx.Options.CompactLinks && !string.IsNullOrEmpty(encodedMarkdown))
+        {
+            encodedMarkdown = Compile.MarkdownLinkCompactor.Compact(encodedMarkdown);
+        }
 
         if (!planned.SelectorsMatched && ctx.Options.ContentSelectors.Length > 0)
         {
@@ -408,6 +412,10 @@ public sealed class TranscodePipeline(
         // Hide internally-fetched IR from the public envelope unless the caller opted in.
         outBlocks = ProjectBlocks(outBlocks, request);
         outTables = ProjectTables(outTables, request);
+        if (ctx.Options.CompactBlockLinks && outBlocks is { Count: > 0 })
+        {
+            outBlocks = CompactBlockLinkArrays(outBlocks);
+        }
 
         var outcome = new TranscodeOutcome(
             true,
@@ -454,6 +462,34 @@ public sealed class TranscodePipeline(
         IReadOnlyList<Workers.WorkerExtractChunkInfo>? chunks,
         MaterializationRequest request) =>
         chunks;
+
+    private static IReadOnlyList<Workers.WorkerExtractBlockInfo> CompactBlockLinkArrays(
+        IReadOnlyList<Workers.WorkerExtractBlockInfo> blocks)
+    {
+        var list = new Workers.WorkerExtractBlockInfo[blocks.Count];
+        for (var i = 0; i < blocks.Count; i++)
+        {
+            var b = blocks[i];
+            if (b.Links is not { Length: > 0 })
+            {
+                list[i] = b;
+                continue;
+            }
+
+            list[i] = new Workers.WorkerExtractBlockInfo
+            {
+                Type = b.Type,
+                Text = b.Text,
+                Links = [],
+                SourceSelector = b.SourceSelector,
+                Level = b.Level,
+                Salience = b.Salience,
+                Trust = b.Trust,
+            };
+        }
+
+        return list;
+    }
 
     private static Compile.OmittedManifest MergeStructuredOmitted(
         Compile.OmittedManifest? markdownOmitted,

@@ -24,6 +24,7 @@
 | `thin_extract` | Bad extraction (chrome / shell / near-empty) — **not** a short quality page | Until browser tried | Retry with `backend_policy=browser`; once a full browser render is **still** thin, `retryable` is dropped and the action becomes `stop` (see note) |
 | `render_error` | The returned document was a browser/client/render error shell rather than usable page content | Until browser tried | Retry with `backend_policy=browser` only if the browser has not already been exhausted; then `stop`. Access is **unknown**, not `restricted`. Do not invent an answer from it |
 | `extraction_failed` | Worker could not produce markdown | Sometimes | Read message; try browser |
+| `action_failed` | A step in `occam_browser_interact` failed (selector miss, timeout, invalid step) | No | Read `failedIndex` / redacted `actionTrace`; revise the plan — do not invent page content |
 | `content_selectors_miss` | `content_selectors` matched nothing | No | Widen selectors or drop them |
 | `captcha_or_challenge` | Anti-bot / Cloudflare challenge page | No | Stop; no CAPTCHA solver |
 | `requires_login` | Direct access-control evidence, no session | No | Add `session_profile` |
@@ -77,7 +78,8 @@ Transcode failures can include:
 - `agentMeta.decisions[]` — suggested next steps (`retry_transcode`, `configure_session_profile`, `stop`, …)
 - `agentHints.suggestedNextTool` — e.g. `occam_playbook_heal` when applicable
 
-Prefer these over guessing.
+Prefer these over guessing. Failures also expose a primary one-liner `next_action`
+(derived from the first `agentMeta.decisions[]` row — same policy, not a third engine).
 
 ---
 

@@ -13,6 +13,18 @@ internal static class L2TransportUnitTests
         RunToolRegistry(assert);
         RunContentLengthFraming(assert);
         RunRemoteConfiguration(assert);
+        RunLoopbackHostOriginGuard(assert);
+    }
+
+    private static void RunLoopbackHostOriginGuard(Action<string, bool> assert)
+    {
+        assert("transport host 127.0.0.1 allowed", LocalHttpRequestGuard.IsLoopbackHostHeader("127.0.0.1:5055"));
+        assert("transport host localhost allowed", LocalHttpRequestGuard.IsLoopbackHostHeader("localhost"));
+        assert("transport host ipv6 loopback allowed", LocalHttpRequestGuard.IsLoopbackHostHeader("[::1]:5055"));
+        assert("transport host public rejected", !LocalHttpRequestGuard.IsLoopbackHostHeader("evil.example:80"));
+        assert("transport origin loopback allowed", LocalHttpRequestGuard.IsLoopbackOrigin("http://127.0.0.1:3000"));
+        assert("transport origin https localhost allowed", LocalHttpRequestGuard.IsLoopbackOrigin("https://localhost"));
+        assert("transport origin remote rejected", !LocalHttpRequestGuard.IsLoopbackOrigin("https://attacker.example"));
     }
 
     private static void RunRemoteConfiguration(Action<string, bool> assert)

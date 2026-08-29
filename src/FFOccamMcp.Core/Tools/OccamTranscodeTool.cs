@@ -69,6 +69,9 @@ public sealed class OccamTranscodeTool(
         [Description("[tokens] Structural section / heading to focus (e.g. \"Installation\"). Maps to focus fragment + content selector; enables fit when needed.")] string? section = null,
         [Description("[structured] Require this substring in the materialized markdown. Returns mustContain:{verdict:MATCH|NO_MATCH,excerpts[],hitCount} — does not invent page content on miss.")] string? must_contain = null,
         [Description("[advanced] Overall deadline for this call in milliseconds (clamped 1000–300000). Cancels the in-flight extract when exceeded.")] int? deadline_ms = null,
+        [Description("[tokens] Strip markdown link destinations; keep visible link text only. Changes contentHash — store materializationKey with the flag. Opt-in; off by default.")] bool compact_links = false,
+        [Description("[structured] Include mediaRefs sidecar (images/video URLs). Default true. Set false to omit media refs and save tokens.")] bool include_media_refs = true,
+        [Description("[structured] When json_blocks is on, clear blocks[].links arrays (markdown unchanged unless compact_links). Opt-in; off by default.")] bool compact_block_links = false,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -145,6 +148,16 @@ public sealed class OccamTranscodeTool(
         if (!string.IsNullOrWhiteSpace(must_contain))
         {
             options = options with { MustContain = must_contain.Trim() };
+        }
+
+        if (compact_links || !include_media_refs || compact_block_links)
+        {
+            options = options with
+            {
+                CompactLinks = compact_links,
+                IncludeMediaRefs = include_media_refs,
+                CompactBlockLinks = compact_block_links,
+            };
         }
 
         if (!workerPaths.IsConfigured)
@@ -677,7 +690,8 @@ public sealed class OccamTranscodeTool(
                 Access: accessInfo,
                 Focus: new Semantics.SemanticFocusInfo("not_requested"),
                 Completeness: null,
-                Verdict: Semantics.SemanticVerdict.NotEvaluated),
+                Verdict: Semantics.SemanticVerdict.NotEvaluated,
+                NextAction: NextActionFormatter.FromHints(decisions, agentHints?.SuggestedNext)),
             OccamTranscodeJsonContext.Default.OccamTranscodeFailureResponse);
     }
 
@@ -693,7 +707,8 @@ public sealed class OccamTranscodeTool(
                 new OccamTranscodeUrlInfo(url, finalUrl),
                 new OccamTranscodeFailureInfo(code, message),
                 agentMeta,
-                null),
+                null,
+                NextAction: NextActionFormatter.FromDecisions(decisions)),
             OccamTranscodeJsonContext.Default.OccamTranscodeFailureResponse);
     }
 

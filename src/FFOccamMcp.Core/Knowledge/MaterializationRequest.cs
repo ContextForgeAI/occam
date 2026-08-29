@@ -37,7 +37,7 @@ public sealed record MaterializationRequest(
             ExposePublicBlocks: options.JsonBlocks || options.DiffAgainst is not null,
             ExposePublicTables: options.JsonTables,
             ExposePublicChunks: options.SemanticChunking,
-            ExposePublicMedia: true,
+            ExposePublicMedia: options.IncludeMediaRefs,
             ExposePublicFeed: options.JsonFeed,
             ExposePublicScreenshot: options.CaptureScreenshot,
             CapabilityProfile: "default",

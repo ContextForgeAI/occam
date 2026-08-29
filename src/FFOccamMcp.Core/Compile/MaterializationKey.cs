@@ -61,7 +61,10 @@ public static class MaterializationKey
         canonical.Append("capture_screenshot=").Append(options.CaptureScreenshot ? '1' : '0').Append('\n');
         canonical.Append("toc=").Append(options.EmitToc ? '1' : '0').Append('\n');
         canonical.Append("section=").Append(options.Section ?? string.Empty).Append('\n');
-        canonical.Append("must_contain=").Append(options.MustContain ?? string.Empty);
+        canonical.Append("must_contain=").Append(options.MustContain ?? string.Empty).Append('\n');
+        canonical.Append("compact_links=").Append(options.CompactLinks ? '1' : '0').Append('\n');
+        canonical.Append("include_media_refs=").Append(options.IncludeMediaRefs ? '1' : '0').Append('\n');
+        canonical.Append("compact_block_links=").Append(options.CompactBlockLinks ? '1' : '0');
 
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonical.ToString()));
         return "sha256:" + Convert.ToHexString(hash).ToLowerInvariant();

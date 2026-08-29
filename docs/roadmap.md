@@ -28,9 +28,9 @@ This page is the **public shipped log**. Detailed engineering backlog lives in l
 
 | Track | Status |
 |-------|--------|
-| GitHub release publish (`occam-release.yml`, `GITHUB_TOKEN`) | CI on SemVer tag `v*` — **tarball-only RC** (`linux-x64`, `osx-arm64`) |
+| GitHub release publish (`occam-release.yml`, `GITHUB_TOKEN`) | CI on SemVer tag `v*` — Level B archives + Cosign (`required-cosign-v1` on rc.3+) |
 | Product polish (receipt/login heuristics, doc-truth) | In progress |
-| npm publish (`@ff-occam/mcp`, `@ff-occam/skill`) | **Not part of `1.0.0-rc.2`** — deferred after tarball RC |
+| npm publish (`ff-occam`, `@ff-occam/mcp`) | **Experimental RC** via `npm-publish.yml` (dist-tag `rc`) — **not** a GA install channel |
 
 ---
 
@@ -41,8 +41,11 @@ This page is the **public shipped log**. Detailed engineering backlog lives in l
 | PB4c publish CLI + signed manifest exchange | CLI only — not a core MCP tool |
 | Playbook marketplace GitHub App | Design only |
 | WASM edge extractor | Future — not implemented in this tree’s public snapshot |
-| Editor marketplace extension | Future — not part of `1.0.0-rc.2` |
+| Editor marketplace extension | Future |
+| npm as GA install channel | RC packages exist; guarded install remains GitHub Release bootstrap |
 | Wide validation / wave2-eval | Not in this repo |
+| Donsetch / keyless-search acquisition backends, OCR | Partial: optional `OCCAM_SEARCH_PROVIDER=donsetch`, `OCCAM_MANAGED_PROVIDER=archive\|donsetch`, opt-in `OCCAM_PDF_OCR` — no BoringSSL/crawl rewrite; binaries not bundled |
+| Resumable crawl MCP (`OCCAM_CRAWL_MCP`) | Deferred — use `occam_map` + `occam_digest` (+ opt-in batch) for multi-URL workflows |
 
 ---
 

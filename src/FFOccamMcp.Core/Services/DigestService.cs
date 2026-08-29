@@ -73,7 +73,8 @@ public sealed class DigestService(
         string? sourceUrl = null,
         int? maxLinks = null,
         string? ifNoneMatch = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        Action<int, int, string>? onProgress = null)
     {
         // AF-5: source_url link discovery — when set, urls is ignored (no silent fallback).
         IReadOnlyList<string>? discoveredLinks = null;
@@ -153,7 +154,8 @@ public sealed class DigestService(
             fitMarkdown,
             perUrlMaxTokens,
             sessionProfile,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken,
+            onProgress).ConfigureAwait(false);
 
         var okCount = items.Count(i => i.Ok);
         var totalTokens = items.Where(i => i.Ok).Sum(i => i.TokensEstimated);
@@ -226,9 +228,18 @@ public sealed class DigestService(
         bool fitMarkdown,
         int? perUrlMaxTokens,
         string? sessionProfile,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Action<int, int, string>? onProgress)
     {
         var maxParallel = DigestParallelism.ResolveMaxParallel(backendPolicy, entries.Count);
+        var total = entries.Count;
+        var completed = 0;
+        void ReportDone(string url)
+        {
+            var n = Interlocked.Increment(ref completed);
+            onProgress?.Invoke(n, total, $"url {n}/{total}");
+        }
+
         if (maxParallel <= 1)
         {
             var sequential = new List<DigestItemResult>(entries.Count);
@@ -243,6 +254,7 @@ public sealed class DigestService(
                     sessionProfile,
                     backendPolicy,
                     cancellationToken).ConfigureAwait(false));
+                ReportDone(entry.Url);
             }
 
             return sequential;
@@ -273,6 +285,7 @@ public sealed class DigestService(
                             sessionProfile,
                             backendPolicy,
                             cancellationToken).ConfigureAwait(false);
+                        ReportDone(entries[index].Url);
                     }
                 }
                 finally
