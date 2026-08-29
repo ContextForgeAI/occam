@@ -61,9 +61,10 @@ material came from.
 
 For this controlled page:
 
-- **Input:** 5,297 UTF-8 HTML bytes.
-- **Output:** 1,736 UTF-8 Markdown bytes.
-- **Result:** 67.2% fewer bytes in this fixture.
+- **Input:** 5,297 UTF-8 HTML bytes (this page only).
+- **Output:** 1,736 UTF-8 Markdown bytes (this page only).
+- **Note:** The byte ratio is a property of the fixture — not a product average
+  or “Occam saves X%” claim. Other sites will differ.
 
 No tokenizer was used. This is not a universal size, token-savings, or
 answer-quality claim. The input body hash and runtime source revision are in

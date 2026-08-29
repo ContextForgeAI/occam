@@ -7,5 +7,5 @@
   "outputMarkdownUtf8Bytes": 1736,
   "byteReductionForThisExamplePercent": 67.2,
   "tokenizer": null,
-  "qualification": "This controlled page demonstrates removal of representative webpage chrome. It is not a universal size, token-savings, or answer-quality guarantee."
+  "qualification": "Single controlled demo page only. Byte reduction is a property of this fixture — not an average, not a product KPI, not a token or quality guarantee. Other sites will differ (often more chrome, sometimes almost none)."
 }

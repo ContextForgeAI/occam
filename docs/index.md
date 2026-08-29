@@ -56,20 +56,21 @@ Does <strong>not</strong> invent page text from model memory.
       <p class="oc-signal-output__source">source: representative-input.html</p>
     </section>
 
-    <dl class="oc-signal-metrics" aria-label="Controlled fixture measurement">
+    <dl class="oc-signal-metrics" aria-label="Demo fixture sizes for this page only">
       <div>
-        <dt>Webpage noise</dt>
+        <dt>This demo · HTML</dt>
         <dd>5,297 <span>B</span></dd>
       </div>
       <div>
-        <dt>Source-linked Markdown</dt>
+        <dt>This demo · Markdown</dt>
         <dd>1,736 <span>B</span></dd>
       </div>
     </dl>
   </div>
 
   <p class="oc-signal-caption">
-    One controlled fixture. UTF-8 bytes, not tokens; not a universal benchmark.
+    One inspectable demo page — not an average, not a promise. Real sites vary
+    (sometimes much more chrome, sometimes almost none). Bytes, not tokens.
   </p>
 
   <div class="oc-signal-cta">
@@ -84,7 +85,7 @@ Does <strong>not</strong> invent page text from model memory.
     <p class="oc-hero-actions">
       <a class="oc-btn oc-btn--primary" href="quick-start/">Get your first result</a>
       <a class="oc-btn oc-btn--secondary" href="why-occam/">Why Occam</a>
-      <a class="oc-btn oc-btn--secondary" href="#measured-before-and-after">Inspect proof</a>
+      <a class="oc-btn oc-btn--secondary" href="#inspect-one-demo-not-a-benchmark">Inspect demo</a>
     </p>
   </div>
 
@@ -112,14 +113,16 @@ Does <strong>not</strong> invent page text from model memory.
 
 Full knobs and tool map: **[Why Occam](why-occam.md)**. Agents: start at [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt).
 
-## Measured before and after
+## Inspect one demo (not a benchmark)
 
-One controlled representative fixture. Bytes, not tokens. Not a universal
-benchmark.
+The product claim is **usable context or an honest unknown** — not a fixed
+“% smaller” rate. Chromed marketing pages often shrink a lot; a clean docs page
+may barely shrink. We publish **one** stable fixture so you can open the input,
+run the same call, and check the method.
 
 <div class="oc-compare oc-compare--measured" markdown="0">
   <div class="oc-compare__panel oc-compare__panel--before">
-    <div class="oc-compare__eyebrow">Measured input</div>
+    <div class="oc-compare__eyebrow">Demo input</div>
     <div class="oc-compare__title">Article plus webpage chrome</div>
     <p class="oc-compare__url"><a href="examples/current-proof/representative-input.html">Open the controlled input</a></p>
     <pre class="oc-compare__md oc-compare__md--input"><code>&lt;header&gt;…search…&lt;/header&gt;
@@ -130,10 +133,10 @@ benchmark.
 &lt;/main&gt;
 &lt;section&gt;…cookie notice…&lt;/section&gt;
 &lt;footer&gt;…company links…&lt;/footer&gt;</code></pre>
-    <p class="oc-compare__measure">5,297 UTF-8 HTML bytes</p>
+    <p class="oc-compare__measure">5,297 UTF-8 HTML bytes · this page only</p>
   </div>
   <div class="oc-compare__panel oc-compare__panel--after">
-    <div class="oc-compare__eyebrow">Measured output</div>
+    <div class="oc-compare__eyebrow">Demo output</div>
     <div class="oc-compare__title">Compact Markdown</div>
     <pre class="oc-compare__md"><code># Web context without the chrome
 
@@ -145,15 +148,16 @@ source information to explain where the material came from.</code></pre>
       <li><span>Preserved</span> headings, paragraphs, list, code</li>
       <li><span>Source</span> attached in the result</li>
     </ul>
-    <p class="oc-compare__measure">1,736 UTF-8 Markdown bytes</p>
+    <p class="oc-compare__measure">1,736 UTF-8 Markdown bytes · this page only</p>
   </div>
 </div>
 
 <div class="oc-measure-note" markdown="1">
 
-For this controlled page, Occam returned **67.2% fewer UTF-8 bytes** than the
-HTML body (5,297 → 1,736). No tokenizer was used — not a token claim, not an
-answer-quality claim, and not a universal reduction rate.
+For **this** demo page the Markdown body is shorter than the HTML body
+(5,297 → 1,736 UTF-8 bytes). That ratio is a property of the fixture, not a
+product KPI — do not cite it as “Occam saves 67%.” No tokenizer was used; not a
+token or quality claim.
 
 <details class="oc-proof-disclosure">
 <summary>Method and source revision</summary>

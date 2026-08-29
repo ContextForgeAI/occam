@@ -116,11 +116,16 @@ There is **no** public MCP `codec=` / gzip-style algorithm switch. Live output i
 
 ---
 
-## Measured proof (one fixture)
+## Demo you can inspect (not a % KPI)
 
-Controlled article + chrome → compact Markdown. **5,297 → 1,736 UTF-8 bytes (67.2% fewer in this fixture).** Bytes, not tokens — not a universal benchmark.
+The win is **chrome out, article in — or `ok:false`**, not a fixed savings rate.
+A news homepage may drop far more bytes than this demo; a sparse docs page may
+drop almost none. We keep **one** controlled fixture so the method is checkable.
 
-![Before/after](docs/assets/occam-proof-before-after-rc4.png)
+![Before/after on the demo page](docs/assets/occam-proof-before-after-rc4.png)
+
+For **this** page only: HTML body 5,297 UTF-8 bytes → Markdown 1,736. Do not
+market that ratio as “Occam saves ~67%.” Bytes ≠ tokens.
 
 [Input](https://contextforgeai.github.io/occam/examples/current-proof/representative-input.html) · [Output](docs/examples/current-proof/representative-output.md) · [Method](docs/examples/current-proof/representative-measurement.json)
 

@@ -6,6 +6,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+- **Homepage / README proof framing** — stop leading with “67.2%”; treat fixture
+  bytes as one inspectable demo (sites vary), not a product KPI.
 - **Homepage clarity** — docs hub lead + “What you get (30 seconds)” table +
   denser Why Occam contrast; CTA to `why-occam`.
 - **README clarity pass** — Donsetch-style first screen: what you get in 30s, install,
