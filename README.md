@@ -1,193 +1,158 @@
 # Occam
 
-*Local-first web context for AI agents.*
+**Live web pages → compact Markdown for AI agents. Honest failures. Local-first.**
 
-## Stop wasting your agent's context on webpage noise
+[Docs](https://contextforgeai.github.io/occam/) · [Why Occam](https://contextforgeai.github.io/occam/why-occam/) · [Quick Start](https://contextforgeai.github.io/occam/quick-start/) · [`llms.txt`](llms.txt) · [Releases](https://github.com/ContextForgeAI/occam/releases)
 
-Most pages wrap the useful part in navigation, scripts, repeated interface
-text, consent controls, and raw markup. Occam removes that presentation layer
-before it reaches the model and returns compact, source-linked content your
-agent can actually use.
+> Occam is an MCP host (and CLI) that **acquires the real page now**, strips chrome, fits your token budget, and returns either usable Markdown **or** a typed `ok:false`. It does **not** invent page text from model memory.
 
-It is for developers and technical users building or running AI agents,
-especially in local and self-hosted environments.
+**Status:** published install channel **`1.0.0-rc.4`** (release candidate). npm is an RC path — not GA. Guarded install = signed GitHub Release bootstrap ([INSTALL.md](INSTALL.md)).
 
-Search helps an agent find pages; browser automation operates interfaces.
-Occam turns a URL you already have into compact context with its source — or an
-explicit failure when it cannot read the page.
+---
 
-Try the current npm release candidate:
+## What you get (30 seconds)
+
+| | Capability |
+|---|------------|
+| **Honest read** | Live extract → Markdown, or typed refusal. `ok:false` = content **unknown** — never guess. |
+| **Token contract** | Ambient budget via `occam_client_capabilities`, or `max_tokens` / `fit_markdown` + `focus_query`. Not an LLM summarizer. |
+| **Acquisition ladder** | HTTP first → browser when needed → optional managed / archive (operator env). |
+| **One page / many** | `occam_transcode` (one URL) · `occam_digest` (many) · `occam_map` / `occam_search` (discover). |
+| **Structure on demand** | Opt-in `json_blocks` / tables / feeds · `if_none_match` / `diff_against` for cheap re-checks. |
+| **Integrity** | Optional Receipt v1 → `occam_verify` (integrity vs a key — **not** truth). |
+| **Playbooks** | Per-site recipes: resolve / heal / lint / save when you author them. |
+| **Local-first** | Runs on your machine; SSRF / private URL blocks by default. |
+
+Full knobs + tool map: **[Why Occam](docs/why-occam.md)** (read this before treating Occam as “just fetch”).
+
+---
+
+## Install
+
+**Fast try (npm RC):**
 
 ```bash
 npm install -g ff-occam@1.0.0-rc.4
 occam connect
 ```
 
-`ff-occam` is the primary npm package. The lower-level MCP runtime remains
-available as `@ff-occam/mcp` for direct host integration.
-
-**[Get your first result](https://contextforgeai.github.io/occam/quick-start/)** ·
-[Why Occam (advantages & knobs)](https://contextforgeai.github.io/occam/why-occam/) ·
-[See the transformation](docs/examples/current-proof/README.md#representative-webpage-transformation) ·
-[Read the documentation](https://contextforgeai.github.io/occam/)
-
-> **Current status:** Published install channel is **`1.0.0-rc.4`**. The MCP host and documented connection paths are the supported
-> product surface. `occam chat` and other features listed as experimental are not stable 1.0
-> interfaces.
-
-## See the webpage noise disappear
-
-The current proof bundle includes a controlled engineering article wrapped in
-navigation, search, related links, a newsletter form, a cookie notice, scripts,
-layout CSS, and a footer. With the default `occam_transcode` options, Occam
-kept the article structure and returned:
-
-![Measured HTML input beside compact Markdown output](docs/assets/occam-proof-before-after-rc4.png)
-
-```markdown
-# Web context without the chrome
-
-AI agents rarely need the whole interface of a webpage. They need the useful
-text, its structure, and enough source information to explain where the
-material came from.
-```
-
-The controlled HTML body is **5,297 UTF-8 bytes**. Occam returned **1,736 UTF-8
-bytes** of Markdown — **67.2% fewer bytes in this fixture**. No tokenizer was
-used, so this is not a token-savings or answer-quality claim and not a universal
-reduction rate.
-
-Inspect the [input page](https://contextforgeai.github.io/occam/examples/current-proof/representative-input.html),
-[complete output](docs/examples/current-proof/representative-output.md), and
-[measurement method](docs/examples/current-proof/representative-measurement.json).
-The bundle also retains the minimal live `example.com` smoke proof and a
-controlled typed failure.
-
-## Install to first result
-
-Requires Node.js 20+. The release install does not require the .NET SDK.
-
-**Linux x64 / macOS Apple Silicon**
+**Guarded release (recommended):**
 
 ```bash
+# Linux x64 / macOS Apple Silicon
 curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
 ```
 
-**Windows x64**
-
 ```powershell
+# Windows x64
 irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
 ```
 
-The installer adds a user-scoped launcher, creates local Occam state, downloads
-browser dependencies when needed, and may update a detected host configuration
-after making a backup. Review [installation safety](docs/trust/installation-safety.md)
-before running it in a sensitive environment.
+Published RIDs today: `win-x64`, `linux-x64`, `osx-arm64`. Details, Cosign policy, safety notes: [INSTALL.md](INSTALL.md) · [installation safety](docs/trust/installation-safety.md).
 
-The currently published public release is `v1.0.0-rc.4`. It uses self-contained
-archives (`runtimeLayout=self-contained-v1`): the installer matches version/RID,
-verifies archive SHA-256, runs archive-member preflight before extract, verifies
-Cosign when the manifest declares `signaturePolicy=required-cosign-v1` (**requires
-the `cosign` CLI** — see [INSTALL.md](INSTALL.md)), checks the complete bundled
-runtime before replacing an install, and does not fetch post-install helpers from
-the mutable repository branch. Bootstrap scripts may still be delivered from the
-mutable `main` raw URL (separate from release runtime content). It then checks
-the local runtime, detects supported AI applications, and tells you whether a
-restart or another action is needed.
-Open a new conversation in the connected application and type:
+Then open a **new** chat in the connected host and ask it to read a URL (example below).
 
-Public release binaries are currently published for `win-x64`, `linux-x64`, and
-`osx-arm64` only. Intel Macs, Linux ARM64, and Windows ARM64 fail before download
-instead of receiving an incompatible archive.
+---
 
-> Use Occam to read https://example.com/ and summarize the page. Include the
-> source URL.
+## Two ways to use it
 
-Success means the application calls an Occam tool and returns content from the
-live page. Installation alone is not the finish line. The
-[Quick Start](docs/quick-start.md) shows exactly where to type, what to expect,
-and how to recover for each workflow.
+### MCP (AI agents — Cursor, Claude, Hermes, …)
 
-## Why Occam
+After `occam connect` (or a manual MCP snippet), the host sees Occam tools. Default profile **`reader`** ≈ 8 tools; **`full`** = 15 core tools. Runtime `tools/list` wins.
 
-### Cleaner context
-
-Useful page content instead of navigation, scripts, repeated interface text,
-and irrelevant boilerplate.
-
-### Predictable behavior
-
-A real result when Occam can read the source, and an explicit failure when it
-cannot. `ok: false` means the page content is unknown.
-
-### One reusable layer
-
-A consistent web-context layer across currently supported AI tools, with
-validation tiers that distinguish live-tested, config-tested, and assisted
-paths.
-
-## Choose your workflow
-
-| Workflow | Current path |
-|----------|--------------|
-| Supported AI application | Install, run `occam connect` when needed, then use Occam in a new conversation |
-| Cursor | Live-validated connection path; restart or reload when the connect result asks |
-| Hermes Agent | Live-validated path; a failed verification can be undone and reported as **Not connected** |
-| Local Ollama model | **Experimental:** `occam chat` with a locally installed, tool-capable model |
-| Custom agent | Use the MCP contract and generated snippet |
-
-Ollama is a model runtime, not an MCP host. Experimental `occam chat` calls the
-documented local Ollama API and uses Occam's own acquisition tools; it is not a
-native integration inside the Ollama App and does not use Ollama Web Search.
-
-See [supported hosts and validation tiers](docs/mcp-hosts.md).
-
-## How it works
+**Default page read — only `url` required:**
 
 ```text
-web page
-  → local-first acquisition
-  → useful page content
-  → compact agent context
-  → source and integrity information
+Use Occam to read https://example.com/ and summarize it. Include the source URL.
+On ok:false do not invent the page — report the failure code.
 ```
 
-Occam starts with a lightweight page read and can use a local browser when the
-page requires it. Advanced controls can focus, budget, structure, or verify the
-result. Start with one URL; add those controls only when the task needs them.
+Agent map: [`llms.txt`](llms.txt) → start with [Why Occam](docs/why-occam.md).
 
-[How Occam works](docs/how-occam-works.md) ·
-[Choose a tool](docs/choosing-a-tool.md) ·
-[MCP API](MCP_API_SPEC.md)
+### CLI (humans / scripts)
 
-## Trust and local control
+```bash
+occam doctor          # runtime health
+occam connect         # wire a supported MCP host
+occam --help
+```
 
-Normal page reading runs on your machine by default. Private and local
-destinations are denied unless the operator explicitly allows them. Source URLs
-remain attached to results, and optional Receipt v1 artifacts can check output
-integrity against a supplied key.
+Ad-hoc extract from a checkout (dev):
 
-Local-first does not mean “never network” or “never cloud”: the origin page is a
-network source, and explicitly configured search, managed acquisition, proxy,
-or remote transport providers can change the boundary. Receipts prove integrity
-relative to a key, not truth, identity, or authentic origin.
+```bash
+dotnet run --project benchmarks/l0-gate -- --url=https://example.com
+```
 
-[Trust & Safety](docs/trust-and-safety.md) ·
-[Installation safety](docs/trust/installation-safety.md) ·
-[Security policy](SECURITY.md)
+---
+
+## Core tools (what to call)
+
+| Goal | Tool |
+|------|------|
+| Size later reads to your model window | `occam_client_capabilities` |
+| Is this URL worth fetching? | `occam_probe` |
+| Read **one** page | `occam_transcode` |
+| Read **several** URLs | `occam_digest` (not N× transcode) |
+| List site links | `occam_map` |
+| Search the open web | `occam_search` (needs `OCCAM_SEARCH_PROVIDER`) |
+| Typed fields from a playbook | `occam_extract_knowledge` |
+| Prove a receipt / check a claim | `occam_verify` · `occam_claim_check` · `occam_attest` |
+
+Opt-in (env-gated): batch, watch, crosscheck, failure atlas, browser interact — [experimental](docs/experimental.md).
+
+---
+
+## Token knobs (not a “compression codec” picker)
+
+There is **no** public MCP `codec=` / gzip-style algorithm switch. Live output is Markdown. Shrink context with:
+
+| Knob | Effect |
+|------|--------|
+| `occam_client_capabilities(context_tokens=…)` | Ambient ~20% output budget |
+| `max_tokens` / `fit_markdown` + `focus_query` | Cap / BM25 prune |
+| `compact_links` / `include_media_refs` | Less link/media noise |
+| `json_blocks` + `rank_blocks` | Citation spans + salience |
+| `if_none_match` / `diff_against` | Skip unchanged / send deltas |
+
+---
+
+## Measured proof (one fixture)
+
+Controlled article + chrome → compact Markdown. **5,297 → 1,736 UTF-8 bytes (67.2% fewer in this fixture).** Bytes, not tokens — not a universal benchmark.
+
+![Before/after](docs/assets/occam-proof-before-after-rc4.png)
+
+[Input](https://contextforgeai.github.io/occam/examples/current-proof/representative-input.html) · [Output](docs/examples/current-proof/representative-output.md) · [Method](docs/examples/current-proof/representative-measurement.json)
+
+---
+
+## Trust limits (do not overclaim)
+
+| Claim | Reality |
+|-------|---------|
+| `ok:false` | Content **unknown** — never substitute training memory |
+| Receipts | Integrity **relative to a key** — not truth / identity / trusted time |
+| Crosscheck | Comparison — **not** consensus proof |
+| npm | Experimental RC — **not** GA |
+| Cosign | Release authenticity under policy — **not** page-content truth |
+| CAPTCHA | Detected — **not** solved |
+
+[Trust & Safety](docs/trust-and-safety.md)
+
+---
 
 ## Go deeper
 
-- [Quick Start](docs/quick-start.md) — reach a real first result.
-- [Install reference](INSTALL.md) — release channels, prerequisites, and verification.
-- [Documentation hub](docs/index.md) — tasks, guides, and reference.
-- [`llms.txt`](llms.txt) — machine-readable documentation map for agents.
-- [Tool reference](docs/tools-reference.md) — current public tool contract.
-- [Troubleshooting](docs/troubleshooting.md) — diagnostics and recovery.
-- [Contributing](CONTRIBUTING.md) — development setup and contribution workflow.
-- [Repository automation rules](AGENTS.md) — scope, doc sync, and verification requirements.
-- [Review guide](REVIEW_GUIDE.md) — focused review workflow.
+| Link | For |
+|------|-----|
+| [Why Occam](docs/why-occam.md) | Advantages + every common knob |
+| [Documentation hub](docs/index.md) | Site entry / landing |
+| [Quick Start](docs/quick-start.md) | Install → connect → first read |
+| [Choosing a tool](docs/choosing-a-tool.md) | Task → tool table |
+| [Tools reference](docs/tools-reference.md) | Compact param tables |
+| [MCP API](MCP_API_SPEC.md) | Normative response contract |
+| [Configuration](docs/configuration.md) | Env vars |
+| [Troubleshooting](docs/troubleshooting.md) | Symptom → fix |
+| [AGENTS.md](AGENTS.md) | Contributor / agent repo rules |
 
-Occam is licensed under
-[AGPL-3.0-or-later](LICENSE). Releases are published on
-[GitHub](https://github.com/ContextForgeAI/occam/releases).
+License: [AGPL-3.0-or-later](LICENSE).

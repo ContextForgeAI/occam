@@ -7,8 +7,9 @@ hide:
 # Less webpage. More usable context.
 
 <p class="oc-signal-lead">
-Strip navigation, scripts, consent UI, and repeated chrome before they reach
-your agent. Keep the useful structure, the source, and honest failure states.
+<strong>Live URL → compact Markdown for AI agents</strong> — or a typed
+<code>ok:false</code>. Strips chrome, fits a token budget, keeps the source.
+Does <strong>not</strong> invent page text from model memory.
 </p>
 
 <section class="oc-signal-hero" aria-label="Occam transformation overview">
@@ -82,6 +83,7 @@ your agent. Keep the useful structure, the source, and honest failure states.
     </div>
     <p class="oc-hero-actions">
       <a class="oc-btn oc-btn--primary" href="quick-start/">Get your first result</a>
+      <a class="oc-btn oc-btn--secondary" href="why-occam/">Why Occam</a>
       <a class="oc-btn oc-btn--secondary" href="#measured-before-and-after">Inspect proof</a>
     </p>
   </div>
@@ -94,6 +96,21 @@ your agent. Keep the useful structure, the source, and honest failure states.
 
   <p class="oc-signal-meta">Local-first · MCP · explicit failures · 1.0.0-rc.4</p>
 </section>
+
+## What you get (30 seconds)
+
+| | Capability |
+|---|------------|
+| **Honest read** | Live extract → Markdown, or typed refusal. `ok:false` = content **unknown**. |
+| **Token contract** | `occam_client_capabilities`, `max_tokens`, `fit_markdown` + `focus_query` — not an LLM summarizer. |
+| **Acquisition ladder** | HTTP → browser when needed → optional managed / archive. |
+| **One page / many** | `occam_transcode` · `occam_digest` · `occam_map` / `occam_search`. |
+| **Structure / diffs** | Opt-in blocks/tables/feeds · `if_none_match` / `diff_against`. |
+| **Integrity** | Optional Receipt v1 → `occam_verify` (integrity vs a key — not truth). |
+| **Playbooks** | Per-site recipes when you author them. |
+| **Local-first** | Runs with you; private URL / SSRF blocks by default. |
+
+Full knobs and tool map: **[Why Occam](why-occam.md)**. Agents: start at [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt).
 
 ## Measured before and after
 
@@ -266,24 +283,18 @@ verification are available when the task needs more control.
 
 ## Why Occam
 
-<div class="oc-pillars" markdown="1">
+Not “another web fetch.” Occam is the honesty + token-budget layer between your
+agent and the public web.
 
-<div class="oc-pillar" markdown="1">
-<div class="oc-pillar-label">Cleaner context</div>
-<p>Useful page content instead of navigation, scripts, repeated UI, and irrelevant boilerplate.</p>
-</div>
+| Generic fetch / memory | Occam |
+|------------------------|--------|
+| Empty HTML or invented text | Live Markdown **or** typed `ok:false` |
+| Burns the context window | Budget + focus prune (deterministic) |
+| No proof of what was returned | Optional Receipt v1 → verify |
+| One opaque “read” | Ladder, probe, map, search, digest |
 
-<div class="oc-pillar" markdown="1">
-<div class="oc-pillar-label">Predictable behavior</div>
-<p>A real result when Occam can read the source, and an explicit failure when it cannot.</p>
-</div>
-
-<div class="oc-pillar" markdown="1">
-<div class="oc-pillar-label">One reusable layer</div>
-<p>A consistent web-context layer across currently supported AI tools.</p>
-</div>
-
-</div>
+[Why Occam — full flashcard](why-occam.md) · [Choose a tool](choosing-a-tool.md) ·
+[Ask AI / agent prompt](ask-ai.md)
 
 ## Trust and local control
 
