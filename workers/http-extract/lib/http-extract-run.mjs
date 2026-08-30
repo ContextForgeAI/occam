@@ -638,10 +638,13 @@ function extractHtmlToMarkdown(html, finalUrl, requestedUrl, wantBlocks = false,
   const doc = dom.window.document;
   const access = collectAccessEvidence(doc, { requestedUrl, finalUrl });
   const iframeBlocks = collectIframeMarkdownBlocks(doc, finalUrl);
+  const evidenceDoneAt = performance.now();
 
   stripPromoBanners(doc);
   stripDomSelectors(doc, getDomStripSelectorsForUrl(finalUrl));
+  const strippingDoneAt = performance.now();
   preserveCodeWrappers(doc);
+  const codeDoneAt = performance.now();
 
   // Collect structured blocks/tables from the pristine (post-strip) DOM BEFORE Readability runs.
   // Readability.parse() mutates the passed document destructively, so running collection after it
@@ -652,12 +655,17 @@ function extractHtmlToMarkdown(html, finalUrl, requestedUrl, wantBlocks = false,
         ?? doc.body)
     : null;
   const blocks = blockRoot ? collectBlocks(blockRoot, { doc, baseUrl: finalUrl }) : undefined;
+  const blocksDoneAt = performance.now();
   const tableRoot = wantTables
     ? (pickMainContent(doc, finalUrl)?.root
         ?? doc.querySelector("article, [role='main'], main")
         ?? doc.body)
     : null;
   const tables = tableRoot ? collectTables(tableRoot, { doc }) : undefined;
+  const tablesDoneAt = performance.now();
+  // #region agent log
+  appendFileSync("/opt/cursor/logs/debug.log", JSON.stringify({ hypothesisId: "H", location: "workers/http-extract/lib/http-extract-run.mjs:666", message: "preprocessing sub-stages completed", data: { evidenceMs: Math.round(evidenceDoneAt - domParsedAt), strippingMs: Math.round(strippingDoneAt - evidenceDoneAt), codeMs: Math.round(codeDoneAt - strippingDoneAt), blocksMs: Math.round(blocksDoneAt - codeDoneAt), tablesMs: Math.round(tablesDoneAt - blocksDoneAt), blockCount: blocks?.length ?? 0, tableCount: tables?.length ?? 0 }, timestamp: Date.now() }) + "\n");
+  // #endregion
 
   const hasSeedSelectors = getContentSelectorsForUrl(finalUrl).length > 0;
   let article = hasSeedSelectors || isStrictPlaybookOverlay() ? pickMainContent(doc, finalUrl) : null;
