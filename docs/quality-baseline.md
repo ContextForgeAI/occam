@@ -53,6 +53,28 @@ Both are intentional; do not merge without updating both consumers.
 
 ---
 
+## Cross-project benchmark
+
+The maintainer harness can run the external Web Research Benchmark (WRB) with
+an Occam adapter at a pinned upstream revision:
+
+```bash
+python3 scripts/bench/wrb/occam_runner_selftest.py
+node scripts/bench/run-wrb.mjs --fetch-only --verbose
+```
+
+See [`scripts/bench/README.md`](../scripts/bench/README.md) for the full
+Occam-vs-DonSeTch run and scorecard commands. The adapter maps WRB fetch to
+`occam_transcode`, search to `occam_search`, and the crawl slot to focused
+`occam_map`. The last mapping measures URL discovery only; it is explicit
+capability-gap evidence, not a claim that Occam ships resumable content crawl.
+
+WRB is reproducible comparative evidence, not independent certification: its
+repository and initial corpus were created by the DonSeTch author, it uses
+deterministic substring probes, and it estimates tokens as `chars / 4`.
+
+---
+
 ## Gate markers (tier-1)
 
 Minimum before release claims:

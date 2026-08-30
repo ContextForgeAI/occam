@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "bench:extract": "node extract-bench.mjs",
+    "bench:wrb": "node run-wrb.mjs",
+    "test:wrb-runner": "python3 wrb/occam_runner_selftest.py",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

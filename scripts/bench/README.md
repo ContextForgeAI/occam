@@ -12,6 +12,9 @@ A "bad" run (many failures) is the *most* valuable — it's the bug list. The du
 | `build-corpus.mjs` | Build a content-focused corpus from a Tranco CSV (drops CDN/API/DNS infra domains). |
 | `sweep.mjs` | Resumable 3-arm sweep (Occam / raw fetch / Firecrawl). Appends one JSON line per URL. |
 | `summarize.mjs` | Aggregate a `results.jsonl` into honest stats + flag trust-model violations. |
+| `run-wrb.mjs` | Run the external Web Research Benchmark at a pinned revision with the Occam or DonSeTch runner. |
+| `compare-wrb.mjs` | Render two WRB JSON results as a direction-aware Markdown scorecard. |
+| `wrb/occam.py` | WRB adapter: transcode → fetch, search → search, map → crawl URL-discovery proxy. |
 | `package.json` | Declares the only dep (`tiktoken`, o200k tokenizer). `npm install` here before first run. |
 
 Inputs/outputs live outside git: corpus in `corpora/bench-1k.jsonl` (tracked), raw run data in
@@ -35,6 +38,48 @@ node scripts/bench/summarize.mjs artifacts/bench-1k-<date>/results.jsonl
 ```
 
 Firecrawl key: read from `.secrets/benchmark.env` (`FIRECRAWL_API_KEY=...`, gitignored). Rotate after use.
+
+## Cross-project WRB scorecard
+
+WRB is maintained in a separate repository. The launcher pins commit
+`52025c304f6cdd242eb6d3fef2f0cb3700838fbd`, checks it out under
+`artifacts/wrb/`, injects the Occam adapter, and records JSON results there.
+Pinning prevents an upstream task edit from silently changing a comparison.
+
+```bash
+# Contract self-test (no network, fake MCP host)
+python3 scripts/bench/wrb/occam_runner_selftest.py
+
+# Fetch only — the first useful capability comparison
+node scripts/bench/run-wrb.mjs --fetch-only --verbose
+
+# Full current surface. Unconfigured occam_search fails honestly.
+node scripts/bench/run-wrb.mjs --verbose
+
+# Same WRB revision with the competitor's native runner (donsetch on PATH)
+node scripts/bench/run-wrb.mjs --runner=donsetch --verbose
+
+# Compare the two saved results
+node scripts/bench/compare-wrb.mjs \
+  artifacts/wrb/52025c304f6c/results/occam.json \
+  artifacts/wrb/52025c304f6c/results/donsetch.json
+```
+
+Set `OCCAM_SEARCH_PROVIDER` and its provider-specific configuration only when
+the scorecard explicitly declares that configuration. Do not configure
+`OCCAM_SEARCH_PROVIDER=donsetch` for an Occam-vs-DonSeTch search comparison:
+that would benchmark DonSeTch through Occam and produce circular evidence.
+
+The adapter uses one long-lived MCP host, matching normal Occam use. Fetch maps
+to `occam_transcode`. Search maps to `occam_search`. WRB's crawl slot currently
+maps to focused `occam_map` (sitemap first, then homepage fallback), so it
+measures URL discovery and exposes the resumable-crawl gap; it must not be
+reported as full crawl parity.
+
+WRB uses deterministic substring probes and `chars / 4` token estimates. Its
+repository and initial task set were created by the DonSeTch author. Report it
+as reproducible comparative evidence, not independent certification or an
+agent-answer-quality score.
 
 ## Method notes (honesty rules — see HANDOFF §5c)
 

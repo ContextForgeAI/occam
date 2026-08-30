@@ -6,6 +6,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+- **Pinned WRB comparison harness** — `scripts/bench/run-wrb.mjs` checks out the
+  external Web Research Benchmark at a fixed commit and injects an honest Occam
+  adapter (`transcode`/`search` plus `map` as an explicitly labeled crawl
+  URL-discovery proxy); `compare-wrb.mjs` renders two result files as a
+  direction-aware scorecard. The runner has an offline fake-MCP contract
+  self-test, and the docs prohibit circular Occam-via-DonSeTch comparisons.
 - **Homepage / README proof framing** — stop leading with “67.2%”; treat fixture
   bytes as one inspectable demo (sites vary), not a product KPI.
 - **Homepage clarity** — docs hub lead + “What you get (30 seconds)” table +
