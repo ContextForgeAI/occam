@@ -6,6 +6,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+- **MCP structured-output wire fix** — normalize SDK-inferred JSON strings to
+  object-valued `structuredContent` after `tools/list` advertises `outputSchema`,
+  preserving compatibility with MCP clients that validate the field as a record.
 - **Safer generic pruning + npm package metadata fallback** — generic Markdown
   cleanup no longer drops every line that mentions Discord or Bluesky; exact
   navigation links remain removable. Direct npm package permalinks blocked by

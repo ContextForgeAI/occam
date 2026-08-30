@@ -11,10 +11,14 @@ internal static class OccamMcpToolWireEnricherUnitTests
         var raw = new CallToolResult
         {
             Content = [new TextContentBlock { Text = "{\"ok\":true,\"url\":\"https://example.com/\"}" }],
+            // ModelContextProtocol 2.2 infers a JSON string here after tools/list advertises
+            // outputSchema for a string-returning handler. The wire contract requires a record.
+            StructuredContent = JsonDocument.Parse(
+                "\"{\\\"ok\\\":true,\\\"url\\\":\\\"https://example.com/\\\"}\"").RootElement.Clone(),
         };
         var enriched = OccamMcpToolWireEnricher.EnrichCallToolResult(raw);
         assert(
-            "wire enricher: structuredContent set from JSON text",
+            "wire enricher: structuredContent is an object/record, not a JSON string",
             enriched.StructuredContent is { ValueKind: JsonValueKind.Object }
             && enriched.StructuredContent.Value.TryGetProperty("ok", out var ok)
             && ok.ValueKind == JsonValueKind.True);

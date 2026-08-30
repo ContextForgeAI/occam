@@ -52,8 +52,9 @@ Local and remote WebSocket messages are text-only and capped at 4 MiB by default
 ## Response envelope
 
 All tools return a **single string** containing JSON in `content[].text` (legacy path). When the body
-is a JSON object, the host also mirrors it in **`structuredContent`** (MCP 2026). Property names are
-**camelCase**. Treat stderr as decoration; treat stdout / HTTP as contract.
+is a JSON object, the host also mirrors it in **`structuredContent`** (MCP 2026). That wire value is
+a JSON object/record, never a JSON-encoded string. Property names are **camelCase**. Treat stderr as
+decoration; treat stdout / HTTP as contract.
 
 Typed expected failures (`ok:false` + `failureCode`) remain JSON tool **bodies** agents must parse
 (failure taxonomy unchanged). From **v1.0.0-rc.4**, the host also sets MCP **`isError:true`** on
