@@ -63,7 +63,9 @@ python3 scripts/bench/wrb/occam_runner_selftest.py
 node scripts/bench/run-wrb.mjs --fetch-only --verbose
 ```
 
-See [`scripts/bench/README.md`](../scripts/bench/README.md) for the full
+See the
+[`scripts/bench/README.md` benchmark guide](https://github.com/ContextForgeAI/occam/blob/main/scripts/bench/README.md)
+for the full
 Occam-vs-DonSeTch run and scorecard commands. The adapter maps WRB fetch to
 `occam_transcode`, search to `occam_search`, and the crawl slot to focused
 `occam_map`. The last mapping measures URL discovery only; it is explicit
@@ -84,7 +86,7 @@ public topic sitemap identifies the category but does not contain its articles.
 Neither URL has a bundled source adapter; a sitemap or unrelated-content
 substitution would only game WRB's substring probe. Live access behavior may
 change, so the detailed evidence and re-run guidance stay in the
-[benchmark harness documentation](../scripts/bench/README.md).
+[benchmark harness documentation](https://github.com/ContextForgeAI/occam/blob/main/scripts/bench/README.md).
 
 ---
 
