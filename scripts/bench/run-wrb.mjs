@@ -88,7 +88,7 @@ if (!hasRevision) {
     stdio: "inherit",
   });
 }
-run("git", ["checkout", "--detach", "--force", custom.wrbRef], {
+run("git", ["checkout", "--detach", custom.wrbRef], {
   cwd: wrbRoot,
   stdio: "ignore",
 });
@@ -113,11 +113,7 @@ if (custom.prepareOnly) {
 }
 
 const hasOutput = forwarded.some(
-  (arg, index) =>
-    arg === "--output"
-    || arg === "-o"
-    || arg.startsWith("--output=")
-    || (index > 0 && ["--output", "-o"].includes(forwarded[index - 1])),
+  (arg) => arg === "--output" || arg === "-o" || arg.startsWith("--output="),
 );
 const runnerArgs = [
   join(wrbRoot, "lib", "wrb.py"),
