@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import queue
 import shlex
+import signal
 import subprocess
 import threading
 import time
@@ -187,11 +188,17 @@ class _McpClient:
             return
         except subprocess.TimeoutExpired:
             pass
-        self._proc.terminate()
+        if os.name == "nt":
+            self._proc.terminate()
+        else:
+            os.killpg(self._proc.pid, signal.SIGTERM)
         try:
             self._proc.wait(timeout=2)
         except subprocess.TimeoutExpired:
-            self._proc.kill()
+            if os.name == "nt":
+                self._proc.kill()
+            else:
+                os.killpg(self._proc.pid, signal.SIGKILL)
             self._proc.wait(timeout=2)
 
 

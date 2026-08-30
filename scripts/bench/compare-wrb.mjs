@@ -36,6 +36,18 @@ function number(value, suffix = "") {
 const [left, right] = paths.map(load);
 const leftName = left.data.tool || "left";
 const rightName = right.data.tool || "right";
+const leftWrbRevision = left.data.provenance?.wrbRevision ?? null;
+const rightWrbRevision = right.data.provenance?.wrbRevision ?? null;
+if (
+  leftWrbRevision
+  && rightWrbRevision
+  && leftWrbRevision !== rightWrbRevision
+) {
+  console.error(
+    `error: WRB revisions differ (${leftWrbRevision} vs ${rightWrbRevision})`,
+  );
+  process.exit(2);
+}
 const rows = [];
 
 function add(area, metric, leftValue, rightValue, format, direction) {
@@ -95,6 +107,7 @@ console.log(`# WRB scorecard: ${leftName} vs ${rightName}`);
 console.log("");
 console.log(`- ${leftName}: ${left.path} (${left.data.timestamp || "timestamp unavailable"})`);
 console.log(`- ${rightName}: ${right.path} (${right.data.timestamp || "timestamp unavailable"})`);
+console.log(`- WRB revision: ${leftWrbRevision || rightWrbRevision || "not recorded"}`);
 console.log("");
 console.log(`| Area | Metric | ${leftName} | ${rightName} | Better value |`);
 console.log("|---|---|---:|---:|---|");

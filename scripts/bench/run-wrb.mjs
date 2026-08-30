@@ -10,8 +10,10 @@ import {
   copyFileSync,
   existsSync,
   mkdirSync,
+  readFileSync,
+  writeFileSync,
 } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const WRB_REPO = "https://github.com/dondai44423/wrb.git";
@@ -112,9 +114,21 @@ if (custom.prepareOnly) {
   process.exit(0);
 }
 
-const hasOutput = forwarded.some(
-  (arg) => arg === "--output" || arg === "-o" || arg.startsWith("--output="),
-);
+let requestedOutput = null;
+for (let index = 0; index < forwarded.length; index++) {
+  const arg = forwarded[index];
+  if (arg === "--output" || arg === "-o") {
+    requestedOutput = forwarded[index + 1] ?? null;
+    break;
+  }
+  if (arg.startsWith("--output=")) {
+    requestedOutput = arg.slice("--output=".length);
+    break;
+  }
+}
+const outputPath = requestedOutput
+  ? (isAbsolute(requestedOutput) ? requestedOutput : resolve(wrbRoot, requestedOutput))
+  : join(outputDir, `${custom.runner}.json`);
 const runnerArgs = [
   join(wrbRoot, "lib", "wrb.py"),
   custom.runner,
@@ -122,11 +136,8 @@ const runnerArgs = [
   custom.runner === "occam" ? "FF-Occam" : "DonSeTch",
   ...forwarded,
 ];
-if (!hasOutput) {
-  runnerArgs.push(
-    "--output",
-    join(outputDir, `${custom.runner}.json`),
-  );
+if (!requestedOutput) {
+  runnerArgs.push("--output", outputPath);
 }
 
 const python = process.env.PYTHON
@@ -143,4 +154,24 @@ if (completed.error) {
   console.error(`error: failed to start ${python}: ${completed.error.message}`);
   process.exit(1);
 }
-process.exit(completed.status ?? 1);
+if (completed.status !== 0) {
+  process.exit(completed.status ?? 1);
+}
+
+try {
+  const result = JSON.parse(readFileSync(outputPath, "utf8"));
+  result.provenance = {
+    wrbRevision: custom.wrbRef,
+    occamRevision,
+    runner: custom.runner,
+    searchProvider: custom.runner === "occam"
+      ? (process.env.OCCAM_SEARCH_PROVIDER || null)
+      : null,
+    crawlMapping: custom.runner === "occam" ? "occam_map_proxy" : "native",
+  };
+  writeFileSync(outputPath, `${JSON.stringify(result, null, 2)}\n`, "utf8");
+  console.error(`Provenance recorded: ${outputPath}`);
+} catch (error) {
+  console.error(`error: could not stamp WRB result provenance: ${error.message}`);
+  process.exit(1);
+}

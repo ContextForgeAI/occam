@@ -44,7 +44,9 @@ Firecrawl key: read from `.secrets/benchmark.env` (`FIRECRAWL_API_KEY=...`, giti
 WRB is maintained in a separate repository. The launcher pins commit
 `52025c304f6cdd242eb6d3fef2f0cb3700838fbd`, checks it out under
 `artifacts/wrb/`, injects the Occam adapter, and records JSON results there.
-Pinning prevents an upstream task edit from silently changing a comparison.
+Each result is stamped with the full WRB and Occam revisions plus runner
+configuration. Pinning prevents an upstream task edit from silently changing a
+comparison; the scorecard rejects results stamped with different WRB revisions.
 
 ```bash
 # Contract self-test (no network, fake MCP host)
