@@ -158,11 +158,11 @@ function collectLinks(el, baseUrl) {
 function selectorFor(el, ctx) {
   if (ctx.connected) {
     const absolute = buildPath(el, null, ctx);
-    if (absolute && verify(ctx.doc, absolute, el)) {
+    if (absolute) {
       return absolute;
     }
   }
-  // Detached wrapper (or verification failed): anchor inside the content root.
+  // Detached wrapper: anchor inside the content root.
   return buildPath(el, ctx.root, ctx);
 }
 
@@ -174,7 +174,7 @@ function buildPath(el, stopAt, ctx) {
   const segments = [];
   let node = el;
   while (node && node.nodeType === 1) {
-    if (stopAt === null && node.id && isUniqueId(ctx.doc, node.id)) {
+    if (stopAt === null && node.id && isSafeIdAnchor(ctx.doc, node)) {
       segments.unshift(`#${cssEscape(node.id, ctx)}`);
       break;
     }
@@ -215,20 +215,10 @@ export function buildElementSelector(el, options = {}) {
   return selectorFor(el, ctx);
 }
 
-function verify(doc, selector, el) {
-  try {
-    return doc.querySelector(selector) === el;
-  } catch {
-    return false;
-  }
-}
-
-function isUniqueId(doc, id) {
-  try {
-    return doc.querySelectorAll(`#${cssEscapeRaw(doc, id)}`).length === 1;
-  } catch {
-    return false;
-  }
+function isSafeIdAnchor(doc, el) {
+  const id = el.id;
+  return /^-?[_a-zA-Z]+[_a-zA-Z0-9-]*$/.test(id)
+    && doc.getElementById(id) === el;
 }
 
 function isConnected(el) {
