@@ -15,7 +15,7 @@ export const INSTALL_CONTRACT_LEGACY = "legacy";
 export const INSTALL_CONTRACT_SELF_CONTAINED_V1 = "self-contained-v1";
 
 /** Canonical public install default (must match the published GitHub Release). */
-export const PUBLIC_DEFAULT_RELEASE_VERSION = "1.0.0-rc.5";
+export const PUBLIC_DEFAULT_RELEASE_VERSION = "1.0.0";
 
 /**
  * @param {unknown} manifest

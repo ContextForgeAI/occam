@@ -2,9 +2,26 @@
 
 All notable changes to **FFOccamMCP** (L0 core) are documented here.
 
-Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1` was the first release candidate after L0 closed; `1.0.0-rc.2`, `1.0.0-rc.3`, `1.0.0-rc.4`, and `1.0.0-rc.5` are published RCs.
+Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1`…`1.0.0-rc.5` were release candidates; **`1.0.0` is GA**.
 
 ## [Unreleased]
+
+## [1.0.0] — 2026-08-31
+
+First **GA** cut of Occam Core 1.0. Same capability surface as `1.0.0-rc.5`
+(keyless DuckDuckGo search default, system Chrome/CMP path, source adapters,
+WRB harness, Streamable HTTP, fifteen core tools + Receipt v1). Live L3–L9 soak
+passed on `main` 2026-08-30; published-channel npm+AOT smoke on macOS arm64 and
+Linux x64 before this cut. npm remains an **experimental** install shortcut
+(dist-tag `latest` after publish) — the guarded public install channel is still
+GitHub Release + Cosign (`required-cosign-v1`).
+
+### Changed
+
+- **Tree version `1.0.0`** — `VERSION` + npm manifests + `server.json` bumped for GA.
+- **Public install default → published `1.0.0`** — bootstrap (`get-ff-occam.sh` /
+  `.ps1`), `PUBLIC_DEFAULT_RELEASE_VERSION`, and install docs track GitHub Release
+  `v1.0.0` (Cosign `required-cosign-v1`).
 
 ## [1.0.0-rc.5] — 2026-08-30
 

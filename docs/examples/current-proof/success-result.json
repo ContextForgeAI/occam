@@ -30,7 +30,7 @@
       "finalUrl": "https://example.com/",
       "backend": "node_readability_turndown",
       "ts": "2026-08-28T18:47:26Z",
-      "toolchain": "ff-occam/1.0.0-rc.5",
+      "toolchain": "ff-occam/1.0.0",
       "contentHash": "sha256:5945db6fd8137aa377638814ca9bb1ac0a663fd90a97f11f86c3f5c09cfb40e3",
       "tokens": 42,
       "confidence": 0.7188,

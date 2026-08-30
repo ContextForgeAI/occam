@@ -1,6 +1,6 @@
 # Roadmap — shipped log and direction
 
-> **Product version:** 1.0.0-rc.5 (published) · **L0 core:** CLOSED (fifteen core MCP tools; default profile `reader`).
+> **Product version:** 1.0.0 (GA) · **L0 core:** CLOSED (fifteen core MCP tools; default profile `reader`).
 > **North star:** [VISION.md](https://github.com/ContextForgeAI/occam/blob/main/VISION.md) · **Contract:** [MCP API](reference/mcp-api.md) · **Release notes:** [CHANGELOG.md](https://github.com/ContextForgeAI/occam/blob/main/CHANGELOG.md).
 
 This page is the **public shipped log**. Detailed engineering backlog lives in local `docs-internal/` (not committed).
@@ -42,7 +42,7 @@ This page is the **public shipped log**. Detailed engineering backlog lives in l
 | Playbook marketplace GitHub App | Design only |
 | WASM edge extractor | Future — not implemented in this tree’s public snapshot |
 | Editor marketplace extension | Future |
-| npm as GA install channel | RC packages exist; guarded install remains GitHub Release bootstrap |
+| npm as GA install channel | RC/GA packages exist on npm; **guarded** install remains GitHub Release bootstrap (npm stays experimental) |
 | Wide validation / wave2-eval | Not in this repo |
 | Donsetch / managed acquisition / PDF OCR | Partial: keyless DuckDuckGo is the default search provider; optional `OCCAM_SEARCH_PROVIDER=donsetch`, `OCCAM_MANAGED_PROVIDER=archive\|donsetch`, opt-in `OCCAM_PDF_OCR` — no BoringSSL/crawl rewrite; competitor binaries not bundled |
 | Resumable crawl MCP (`OCCAM_CRAWL_MCP`) | Deferred — use `occam_map` + `occam_digest` (+ opt-in batch) for multi-URL workflows |
