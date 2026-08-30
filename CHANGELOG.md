@@ -21,7 +21,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   adapter (`transcode`/`search` plus `map` as an explicitly labeled crawl
   URL-discovery proxy); `compare-wrb.mjs` renders two result files as a
   direction-aware scorecard. The runner has an offline fake-MCP contract
-  self-test, and the docs prohibit circular Occam-via-DonSeTch comparisons.
+  self-test, retains backend/final-source/failure diagnostics, and the docs
+  prohibit circular Occam-via-DonSeTch comparisons. Reuters and LeBonCoin
+  access-wall cases remain documented honest misses rather than probe-only
+  source substitutions.
 - **Homepage / README proof framing** — stop leading with “67.2%”; treat fixture
   bytes as one inspectable demo (sites vary), not a product KPI.
 - **Homepage clarity** — docs hub lead + “What you get (30 seconds)” table +

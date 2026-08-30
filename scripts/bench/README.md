@@ -76,12 +76,31 @@ The adapter uses one long-lived MCP host, matching normal Occam use. Fetch maps
 to `occam_transcode`. Search maps to `occam_search`. WRB's crawl slot currently
 maps to focused `occam_map` (sitemap first, then homepage fallback), so it
 measures URL discovery and exposes the resumable-crawl gap; it must not be
-reported as full crawl parity.
+reported as full crawl parity. The fetch adapter also retains `backend`,
+`final_url`, and `failure_code` in its runner response for direct diagnostics.
+The pinned WRB report currently discards those extra fields, so preserve the
+raw runner response when source-level evidence is required.
 
 WRB uses deterministic substring probes and `chars / 4` token estimates. Its
 repository and initial task set were created by the DonSeTch author. Report it
 as reproducible comparative evidence, not independent certification or an
 agent-answer-quality score.
+
+### Known honest misses (2026-08-29)
+
+- `https://www.leboncoin.fr/`: HTTP and browser both received a 403 DataDome
+  shell (about 771 bytes). The official mobile host, API, and advertised sitemap
+  were also blocked; the site's `robots.txt` requires special permission for
+  automated access. No bundled adapter is provided.
+- `https://www.reuters.com/technology/artificial-intelligence/`: HTTP and
+  browser both received a 401 CloudFront shell (about 771 bytes). Reuters'
+  public topic sitemap names this category but contains no category articles;
+  content feeds and APIs are authenticated or unavailable. Mapping the request
+  to the sitemap or unrelated AI news would be a false benchmark success.
+
+Both cases therefore remain `success=false`, with no content and no probe
+match. Re-check these live observations before treating them as permanent site
+behavior.
 
 ## Method notes (honesty rules — see HANDOFF §5c)
 

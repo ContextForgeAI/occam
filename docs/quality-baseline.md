@@ -72,6 +72,19 @@ capability-gap evidence, not a claim that Occam ships resumable content crawl.
 WRB is reproducible comparative evidence, not independent certification: its
 repository and initial corpus were created by the DonSeTch author, it uses
 deterministic substring probes, and it estimates tokens as `chars / 4`.
+The runner retains the selected `backend`, actual `final_url`, and
+`failure_code` for source-level diagnostics, although the pinned upstream
+summary does not copy those extension fields into its result JSON.
+
+The 2026-08-29 diagnostic run kept two Tier-3 misses honest. LeBonCoin returned
+403 DataDome shells to both local backends, and Reuters' AI category returned
+401 CloudFront shells. No faithful public content surface was available:
+LeBonCoin's alternate official surfaces were also blocked, while Reuters'
+public topic sitemap identifies the category but does not contain its articles.
+Neither URL has a bundled source adapter; a sitemap or unrelated-content
+substitution would only game WRB's substring probe. Live access behavior may
+change, so the detailed evidence and re-run guidance stay in the
+[benchmark harness documentation](../scripts/bench/README.md).
 
 ---
 

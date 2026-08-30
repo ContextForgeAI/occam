@@ -29,6 +29,18 @@ def _approx_tokens(text: str) -> int:
     return max(1, len(text) // 4) if text else 0
 
 
+def _fetch_provenance(payload: dict[str, Any]) -> dict[str, Any]:
+    url = payload.get("url")
+    final_url = url.get("finalUrl") if isinstance(url, dict) else None
+    failure = payload.get("failure")
+    failure_code = failure.get("code") if isinstance(failure, dict) else failure
+    return {
+        "backend": payload.get("backend", "unknown"),
+        "final_url": final_url if isinstance(final_url, str) else None,
+        "failure_code": failure_code if isinstance(failure_code, str) else None,
+    }
+
+
 class _McpClient:
     def __init__(self) -> None:
         timeout_ms = int(os.environ.get("OCCAM_WRB_TIMEOUT_MS", "90000"))
@@ -226,12 +238,14 @@ class Runner(BaseRunner):
             )
             markdown = payload.get("markdown", "")
             content = markdown[:max_chars] if isinstance(markdown, str) else ""
+            provenance = _fetch_provenance(payload)
             return {
                 "success": payload.get("ok") is True,
                 "content": content,
                 "latency_ms": round((time.monotonic() - started) * 1000),
                 "tokens": _approx_tokens(content),
-                "tier": payload.get("backend", "unknown"),
+                "tier": provenance["backend"],
+                **provenance,
             }
         except Exception as exc:
             return {
@@ -240,6 +254,9 @@ class Runner(BaseRunner):
                 "latency_ms": round((time.monotonic() - started) * 1000),
                 "tokens": 0,
                 "tier": "error",
+                "backend": "error",
+                "final_url": None,
+                "failure_code": "runner_error",
                 "error": str(exc),
             }
 

@@ -44,11 +44,22 @@ for line in sys.stdin:
         name = params["name"]
         args = params["arguments"]
         if name == "occam_transcode":
-            payload = {
-                "ok": True,
-                "markdown": "needle-" + ("x" * 40),
-                "backend": "http",
-            }
+            if args["url"].endswith("/blocked"):
+                payload = {
+                    "ok": False,
+                    "backend": "node_readability_turndown",
+                    "failure": {"code": "http_401"},
+                }
+            else:
+                payload = {
+                    "ok": True,
+                    "markdown": "needle-" + ("x" * 40),
+                    "backend": "npm_registry_package",
+                    "url": {
+                        "requestedUrl": args["url"],
+                        "finalUrl": "https://registry.example.test/package/latest",
+                    },
+                }
         elif name == "occam_search":
             payload = {
                 "ok": True,
@@ -93,7 +104,17 @@ def main() -> None:
             assert fetched["success"] is True
             assert fetched["content"] == "needle-xxxxx"
             assert fetched["tokens"] == 3
-            assert fetched["tier"] == "http"
+            assert fetched["tier"] == "npm_registry_package"
+            assert fetched["backend"] == "npm_registry_package"
+            assert fetched["final_url"] == "https://registry.example.test/package/latest"
+            assert fetched["failure_code"] is None
+
+            blocked = runner.fetch("https://example.com/blocked")
+            assert blocked["success"] is False
+            assert blocked["content"] == ""
+            assert blocked["backend"] == "node_readability_turndown"
+            assert blocked["final_url"] is None
+            assert blocked["failure_code"] == "http_401"
 
             searched = runner.search("needle", max_results=1)
             assert searched["success"] is True
