@@ -40,8 +40,11 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   bytes as one inspectable demo (sites vary), not a product KPI.
 - **Homepage clarity** — docs hub lead + “What you get (30 seconds)” table +
   denser Why Occam contrast; CTA to `why-occam`.
-- **README clarity pass** — Donsetch-style first screen: what you get in 30s, install,
-  MCP vs CLI, tool map, token knobs, trust limits; deep install prose stays in INSTALL.md.
+- **README value-first rewrite** — the first screen now answers what Occam is,
+  installs the RC, routes readers through Read / Research / Verify, contrasts
+  generic fetch behavior, and publishes the pinned same-machine WRB comparison.
+  Safety details, complete tools, token controls, and trust limits follow after
+  the product is clear.
 - **Discoverability flashcard** — new [Why Occam](docs/why-occam.md) page (advantages vs
   generic fetch + materialization knobs; no public codec selector). Wired into `llms.txt`
   step 0, Ask AI, README, docs hub, MkDocs Getting Started / Capabilities, MCP
