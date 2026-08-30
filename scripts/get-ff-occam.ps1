@@ -51,7 +51,7 @@ function Resolve-PublishedRid([string]$Os = "Windows_NT", [string]$Architecture 
   throw "no public Occam release for $Os/$Architecture (published RIDs: win-x64, linux-x64, osx-arm64)"
 }
 
-$Version = if ($env:OCCAM_VERSION) { $env:OCCAM_VERSION } else { "1.0.0-rc.5" }
+$Version = if ($env:OCCAM_VERSION) { $env:OCCAM_VERSION } else { "1.0.0" }
 $Rid = if ($env:OCCAM_RID) { $env:OCCAM_RID } else { Resolve-PublishedRid }
 Assert-PublishedRid $Rid
 $InstallDir = if ($env:OCCAM_INSTALL_DIR) { $env:OCCAM_INSTALL_DIR } else {

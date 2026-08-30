@@ -7,7 +7,7 @@ description: >-
   unknown — never substitute model memory.
 license: AGPL-3.0-or-later
 metadata:
-  version: "1.0.0-rc.5"
+  version: "1.0.0"
   homepage: https://www.npmjs.com/package/ff-occam
   mcp_package: "ff-occam"
 ---

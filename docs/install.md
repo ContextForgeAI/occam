@@ -6,8 +6,8 @@ This page is the documentation-site copy of the same happy path.
 
 **Requirements:** Node.js **20+**. No .NET SDK on the install machine.  
 **Cosign:** required for published `v1.0.0-rc.3`+ (`signaturePolicy=required-cosign-v1`). See [Sigstore install](https://docs.sigstore.dev/cosign/system_config/installation/).
-**Published release:** `1.0.0-rc.5`
-**Public install default:** `1.0.0-rc.5`
+**Published release:** `1.0.0`
+**Public install default:** `1.0.0`
 
 ---
 
@@ -58,7 +58,7 @@ The bootstrap selects install behavior from the **release manifest contract**, n
 | `runtimeLayout=self-contained-v1` (published `v1.0.0-rc.3`+) | Self-contained: SHA-256 + archive preflight + complete runtime closure; **no** executable helper overlay; Cosign when `signaturePolicy=required-cosign-v1` |
 | unknown `runtimeLayout` / unknown `signaturePolicy` | Fail closed |
 
-**Public default** (no `OCCAM_VERSION`): **`1.0.0-rc.5`**. Set `OCCAM_VERSION=1.0.0-rc.4`, `1.0.0-rc.3`, or `1.0.0-rc.2` only for an older channel.
+**Public default** (no `OCCAM_VERSION`): **`1.0.0`**. Set `OCCAM_VERSION=1.0.0-rc.5`, `1.0.0-rc.4`, `1.0.0-rc.3`, or `1.0.0-rc.2` only for an older channel.
 
 1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases
 2. Requires the manifest version and RID to match the request, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). For self-contained manifests, archive-member preflight runs **before** extract
@@ -159,7 +159,7 @@ Expect **exit 0**. Tool count follows `OCCAM_PROFILE` (default `reader` = **8**;
 | `OCCAM_SETUP` | `auto` | `auto` \| `manual` \| `ask` |
 | `OCCAM_HOST` | (none) | Legacy **fallback** snippet preference (`hermes` \| `cursor`) — does not replace connect |
 | `OCCAM_INSTALL_DIR` | `~/.local/share/ff-occam` | Install root |
-| `OCCAM_VERSION` | `1.0.0-rc.5` (public default) | Release version; set an older tag only for a legacy channel |
+| `OCCAM_VERSION` | `1.0.0` (public default) | Release version; set an older tag only for a legacy channel |
 | `OCCAM_RID` | detected | Published RID override: `win-x64` \| `linux-x64` \| `osx-arm64` only |
 
 ## Do not

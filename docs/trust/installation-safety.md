@@ -4,7 +4,7 @@
 
 The canonical installer downloads a GitHub Release archive and verifies **SHA-256** against the published `*-manifest.json` before extract.
 
-**Publication state:** the public channel default is published `v1.0.0-rc.5`
+**Publication state:** the public channel default is published `v1.0.0`
 (`runtimeLayout=self-contained-v1`). Older channels remain available via
 explicit `OCCAM_VERSION` (for example `1.0.0-rc.3` or legacy Level B
 `1.0.0-rc.2`).
