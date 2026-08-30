@@ -1,28 +1,52 @@
 /** Generic CMP / cookie-banner dismiss — site-agnostic selectors only. */
 
 export const CONSENT_SELECTORS = [
+  // Vendor ids / testids first (stable, language-independent).
   "#onetrust-accept-btn-handler",
   "#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll",
   "#truste-consent-button",
   'button[data-testid="accept-all"]',
+  '[data-testid="accept-all"]',
   'button[id*="accept-all" i]',
   'button[id*="accept_all" i]',
-  'button[class*="accept" i]',
+  ".fc-cta-consent",
+  'button.fc-button.fc-cta-consent.fc-primary-button',
   'button[aria-label*="accept" i]',
   'button[aria-label*="agree" i]',
+  'button[class*="accept" i]',
+  // English
   'a[role="button"]:has-text("Accept")',
   'button:has-text("Accept all")',
   'button:has-text("Accept All")',
   'button:has-text("Accept cookies")',
+  'button:has-text("Accept and close")',
   'button:has-text("Allow all")',
   'button:has-text("I agree")',
   'button:has-text("Agree")',
   'button:has-text("Got it")',
-  'button:has-text("OK")',
-  '[data-testid="accept-all"]',
-  ".fc-cta-consent",
-  'button.fc-button.fc-cta-consent.fc-primary-button',
+  // French / EU CMPs (Accepter before any vague OK — "OK" false-positives leave the wall up)
+  'button:has-text("Tout accepter")',
+  'button:has-text("Accepter et fermer")',
+  'button:has-text("Accepter tout")',
+  'button:has-text("J\'accepte")',
+  'button:has-text("Accepter")',
+  'button:has-text("Continuer sans accepter")',
+  // German / Dutch / Spanish / Italian / Portuguese
+  'button:has-text("Alle akzeptieren")',
+  'button:has-text("Alles akzeptieren")',
+  'button:has-text("Akzeptieren")',
+  'button:has-text("Alles accepteren")',
+  'button:has-text("Aceptar todo")',
+  'button:has-text("Aceptar")',
+  'button:has-text("Accetta tutto")',
+  'button:has-text("Accetta")',
+  'button:has-text("Aceitar tudo")',
+  'button:has-text("Aceitar")',
 ];
+
+/** Role-name patterns for getByRole — keep in sync with CONSENT_SELECTORS languages. */
+export const CONSENT_ROLE_NAME_RE =
+  /accept|agree|allow all|got it|accepter|akzeptieren|accepteren|aceptar|accetta|aceitar/i;
 
 const CONSENT_FRAME_HINTS = ["consent", "cookie", "gdpr", "privacy", "sp_message"];
 
@@ -71,26 +95,39 @@ async function clickConsentInScopes(scopes, page, extraSelectors = []) {
   const selectors = [...extraSelectors, ...CONSENT_SELECTORS];
 
   for (const scope of ordered) {
-    for (const selector of selectors) {
-      try {
-        const locator = scope.locator(selector).first();
-        if (await locator.isVisible({ timeout: 500 })) {
-          await locator.click({ timeout: 2500, force: true });
-          return selector;
-        }
-      } catch {
-        // try next
-      }
-    }
-
+    // Prefer controls inside an open dialog / alertdialog (custom CMP portals).
+    const dialogScopes = [scope];
     try {
-      const roleBtn = scope.getByRole("button", { name: /accept|agree|allow all|got it/i }).first();
-      if (await roleBtn.isVisible({ timeout: 300 })) {
-        await roleBtn.click({ timeout: 2500, force: true });
-        return "role:accept-button";
+      const dialogCount = await scope.locator('[role="dialog"], [role="alertdialog"], dialog, [aria-modal="true"]').count();
+      for (let i = 0; i < Math.min(dialogCount, 4); i++) {
+        dialogScopes.push(scope.locator('[role="dialog"], [role="alertdialog"], dialog, [aria-modal="true"]').nth(i));
       }
     } catch {
-      // continue
+      // keep page/frame only
+    }
+
+    for (const clickScope of dialogScopes) {
+      for (const selector of selectors) {
+        try {
+          const locator = clickScope.locator(selector).first();
+          if (await locator.isVisible({ timeout: 400 })) {
+            await locator.click({ timeout: 2500, force: true });
+            return selector;
+          }
+        } catch {
+          // try next
+        }
+      }
+
+      try {
+        const roleBtn = clickScope.getByRole("button", { name: CONSENT_ROLE_NAME_RE }).first();
+        if (await roleBtn.isVisible({ timeout: 300 })) {
+          await roleBtn.click({ timeout: 2500, force: true });
+          return "role:accept-button";
+        }
+      } catch {
+        // continue
+      }
     }
   }
 

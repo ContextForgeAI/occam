@@ -962,7 +962,8 @@ browser-availability failure's `failure.fix.command` points at, so an agent or s
 typed error without a human. A JSON marker goes to stdout (`{ ok, action:"install_browser",
 status:"installed"|"already_present"|"worker_missing"|"failed", exitCode }`), playwright's own progress
 to stderr. Exit `0` browser ready / `1` install failed / `2` worker tree not found. A configured system
-browser (`OCCAM_BROWSER_CHANNEL=chrome|msedge` or `OCCAM_BROWSER_EXECUTABLE_PATH`) short-circuits to
+browser (`OCCAM_BROWSER_CHANNEL=chrome|msedge`, `OCCAM_BROWSER_EXECUTABLE_PATH`, or auto-detected
+system Chrome/Edge when channel is unset and `OCCAM_BROWSER_PREFER_SYSTEM` is not `0`) short-circuits to
 `already_present` — nothing to download.
 
 ---

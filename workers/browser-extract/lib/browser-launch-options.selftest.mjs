@@ -3,6 +3,7 @@ import {
   resolveBrowserLaunchOptions,
   usesSystemBrowser,
   classifyBrowserLaunchError,
+  detectSystemBrowserChannel,
   STEALTH_ARGS,
   STEALTH_INIT_SCRIPT,
 } from "./browser-launch-options.mjs";
@@ -12,6 +13,7 @@ for (const key of [
   "OCCAM_BROWSER_CHANNEL",
   "OCCAM_BROWSER_EXECUTABLE_PATH",
   "OCCAM_CHROME_PATH",
+  "OCCAM_BROWSER_PREFER_SYSTEM",
 ]) {
   delete process.env[key];
 }
@@ -22,7 +24,10 @@ assert.ok(STEALTH_ARGS.includes("--disable-blink-features=AutomationControlled")
 assert.ok(typeof STEALTH_INIT_SCRIPT === "string");
 assert.ok(STEALTH_INIT_SCRIPT.includes("webdriver"));
 
-// ---- base (no env) ----
+// Force bundled for baseline assertions (machines with Chrome must not flip these).
+process.env.OCCAM_BROWSER_PREFER_SYSTEM = "0";
+
+// ---- base (no channel, prefer-system off) ----
 const base = resolveBrowserLaunchOptions();
 assert.equal(base.headless, true);
 assert.ok(Array.isArray(base.args));
@@ -64,14 +69,61 @@ assert.equal(chromium.headless, true);
 assert.equal(chromium.channel, undefined); // chromium is the default, not a "channel"
 assert.equal(usesSystemBrowser(), false);
 
+// ---- auto-prefer: detectSystemBrowserChannel (injectable existsSync) ----
+delete process.env.OCCAM_BROWSER_CHANNEL;
+process.env.OCCAM_BROWSER_PREFER_SYSTEM = "1";
+const fakeChromePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+assert.equal(
+  detectSystemBrowserChannel({
+    platform: "win32",
+    env: { ProgramFiles: "C:\\Program Files", "ProgramFiles(x86)": "C:\\Program Files (x86)" },
+    home: "C:\\Users\\dev",
+    existsSync: (path) => path === fakeChromePath,
+  }),
+  "chrome",
+);
+assert.equal(
+  detectSystemBrowserChannel({
+    platform: "linux",
+    env: {},
+    home: "/home/dev",
+    existsSync: (path) => path === "/usr/bin/google-chrome-stable",
+  }),
+  "chrome",
+);
+assert.equal(
+  detectSystemBrowserChannel({
+    platform: "linux",
+    env: {},
+    home: "/home/dev",
+    existsSync: () => false,
+  }),
+  null,
+);
+
+// With prefer-system on and a real detection result via resolve path: stub by setting
+// channel-less + PREFER_SYSTEM=0 already covered; live machine check only that
+// OCCAM_BROWSER_CHANNEL=chromium still wins over prefer-system.
+process.env.OCCAM_BROWSER_CHANNEL = "chromium";
+process.env.OCCAM_BROWSER_PREFER_SYSTEM = "1";
+assert.equal(resolveBrowserLaunchOptions().channel, undefined);
+assert.equal(usesSystemBrowser(), false);
+
 // ---- B6: provision-gate probe — the single source of truth the C# host asks ----
 // This is the contract FeatureDiscoveryService.WillAutoProvisionBrowser() reads instead of mirroring the
 // rule in C#. Each case below is one the old C# mirror also had to get right; they must stay in lockstep
 // with browser-session.mjs's real gate (autoInstallEnabled() && !usesSystemBrowser()).
-for (const key of ["OCCAM_BROWSER_CHANNEL", "OCCAM_BROWSER_EXECUTABLE_PATH", "OCCAM_CHROME_PATH", "OCCAM_BROWSER_AUTOINSTALL"]) {
+for (const key of [
+  "OCCAM_BROWSER_CHANNEL",
+  "OCCAM_BROWSER_EXECUTABLE_PATH",
+  "OCCAM_CHROME_PATH",
+  "OCCAM_BROWSER_AUTOINSTALL",
+  "OCCAM_BROWSER_PREFER_SYSTEM",
+]) {
   delete process.env[key];
 }
-assert.equal(willAutoProvision(), true, "default: bundled chromium + autoinstall on → we provision");
+process.env.OCCAM_BROWSER_PREFER_SYSTEM = "0";
+assert.equal(willAutoProvision(), true, "default bundled + prefer-system off + autoinstall on → we provision");
 
 process.env.OCCAM_BROWSER_AUTOINSTALL = "0";
 assert.equal(willAutoProvision(), false, "OCCAM_BROWSER_AUTOINSTALL=0 → branch-3 ask, no provision");
@@ -88,7 +140,7 @@ assert.equal(willAutoProvision(), true, "chromium IS the bundled browser we inst
 process.env.OCCAM_BROWSER_CHANNEL = "firefox";
 assert.equal(willAutoProvision(), true, "unknown channel is not a system browser → still ours to provision");
 process.env.OCCAM_BROWSER_CHANNEL = "";
-assert.equal(willAutoProvision(), true, "empty channel → default bundled");
+assert.equal(willAutoProvision(), true, "empty channel + prefer-system off → default bundled");
 delete process.env.OCCAM_BROWSER_CHANNEL;
 
 process.env.OCCAM_BROWSER_EXECUTABLE_PATH = "/x/chrome";
@@ -100,6 +152,7 @@ delete process.env.OCCAM_CHROME_PATH;
 
 // ---- args are fresh copies (not shared reference) ----
 delete process.env.OCCAM_BROWSER_CHANNEL;
+process.env.OCCAM_BROWSER_PREFER_SYSTEM = "0";
 const a = resolveBrowserLaunchOptions();
 const b = resolveBrowserLaunchOptions();
 assert.notStrictEqual(a.args, b.args, "args arrays must be distinct copies");

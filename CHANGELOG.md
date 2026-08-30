@@ -6,6 +6,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+- **System Chrome preference + multilingual CMP dismiss** — when
+  `OCCAM_BROWSER_CHANNEL` is unset, the browser worker prefers an installed
+  system Chrome/Edge (disable with `OCCAM_BROWSER_PREFER_SYSTEM=0` or force
+  `OCCAM_BROWSER_CHANNEL=chromium`). Consent dismiss adds common EU-language
+  accept/refuse labels, prefers controls inside `[role=dialog]`, and drops the
+  false-positive bare `OK` click. HTML preprocess also strips consent-like
+  modal dialogs (vendor id lists miss custom React portals), so Readability
+  does not treat French CMP copy as the article. LeBonCoin: bundled Chromium
+  remains DataDome `403`; system Chrome yields real homepage Markdown. Pinned
+  WRB re-check: LeBonCoin `true_positive`; overall 36/48 unchanged on that run
+  when another Tier-3 URL missed. Reuters CloudFront `401` remains an honest
+  miss — no sitemap/probe substitution.
 - **Faithful crates.io README adapter** — exact `/crates/<name>` permalinks use
   the rate-unlimited sparse index to select the latest non-yanked version, then
   fetch the official rendered README from `static.crates.io`. The API is only a

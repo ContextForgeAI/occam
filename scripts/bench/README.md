@@ -88,21 +88,24 @@ repository and initial task set were created by the DonSeTch author. Report it
 as reproducible comparative evidence, not independent certification or an
 agent-answer-quality score.
 
-### Known honest misses (2026-08-29)
+### Known honest misses / anti-bot notes (2026-08-30)
 
-- `https://www.leboncoin.fr/`: HTTP and browser both received a 403 DataDome
-  shell (about 771 bytes). The official mobile host, API, and advertised sitemap
-  were also blocked; the site's `robots.txt` requires special permission for
-  automated access. No bundled adapter is provided.
+- `https://www.leboncoin.fr/`: HTTP and **bundled Playwright Chromium** still
+  receive a short DataDome `http_403` shell (~771 bytes). **System Chrome/Edge**
+  (default when installed; `OCCAM_BROWSER_CHANNEL=chrome` or auto-prefer) opens
+  the real page. Multilingual CMP dismiss plus consent-dialog HTML strip keep
+  Readability off the French cookie wall so the homepage Markdown includes
+  listings chrome (e.g. « Déposer une annonce »), not CMP prose. No site-specific
+  host branch and no public sanctioned adapter. Re-checked on the pinned WRB
+  fetch arm (2026-08-30, same pin): LeBonCoin is a true_positive when a system
+  Chrome/Edge is available; headline retrieval can stay flat if another Tier-3
+  URL (e.g. Kayak) flips on the same run. Reuters remains an honest miss.
 - `https://www.reuters.com/technology/artificial-intelligence/`: HTTP and
   browser both received a 401 CloudFront shell (about 771 bytes). Reuters'
   public topic sitemap names this category but contains no category articles;
   content feeds and APIs are authenticated or unavailable. Mapping the request
   to the sitemap or unrelated AI news would be a false benchmark success.
-
-Both cases therefore remain `success=false`, with no content and no probe
-match. Re-check these live observations before treating them as permanent site
-behavior.
+  Remains an honest miss.
 
 ## Method notes (honesty rules — see HANDOFF §5c)
 

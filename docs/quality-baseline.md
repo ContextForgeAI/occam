@@ -78,14 +78,16 @@ The runner retains the selected `backend`, actual `final_url`, and
 `failure_code` for source-level diagnostics, although the pinned upstream
 summary does not copy those extension fields into its result JSON.
 
-The 2026-08-29 diagnostic run kept two Tier-3 misses honest. LeBonCoin returned
-403 DataDome shells to both local backends, and Reuters' AI category returned
-401 CloudFront shells. No faithful public content surface was available:
-LeBonCoin's alternate official surfaces were also blocked, while Reuters'
-public topic sitemap identifies the category but does not contain its articles.
-Neither URL has a bundled source adapter; a sitemap or unrelated-content
-substitution would only game WRB's substring probe. Live access behavior may
-change, so the detailed evidence and re-run guidance stay in the
+The 2026-08-30 diagnostic re-check separates two LeBonCoin layers. HTTP and
+**bundled Playwright Chromium** still see DataDome `http_403` shells; **system
+Chrome/Edge** (now preferred when installed) opens the live page, and generic
+multilingual CMP dismiss is required so the French cookie wall is not extracted
+as the article. Reuters' AI category still returns 401 CloudFront shells with no
+faithful public content surface — its topic sitemap identifies the category but
+does not contain its articles. Neither URL has a host-specific branch or a
+bundled source adapter; a sitemap or unrelated-content substitution would only
+game WRB's substring probe. Live access behavior may change, so the detailed
+evidence and re-run guidance stay in the
 [benchmark harness documentation](https://github.com/ContextForgeAI/occam/blob/main/scripts/bench/README.md).
 
 ---
