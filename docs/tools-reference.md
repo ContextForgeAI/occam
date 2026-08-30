@@ -245,7 +245,8 @@ Extract typed `facts[]` driven by playbook `knowledge_schema`.
 
 ## 10. `occam_search`
 
-Open-web search → result URLs. Requires `OCCAM_SEARCH_PROVIDER`.
+Open-web search → result URLs. Default keyless DuckDuckGo HTML (`provider=duckduckgo`);
+override or disable via `OCCAM_SEARCH_PROVIDER`.
 
 ### Parameters
 

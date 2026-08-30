@@ -3451,7 +3451,7 @@ internal static class L0InfraUnitTests
 
     private static void RunSearchContract(Action<string, bool> assert)
     {
-        // occam_search is off unless OCCAM_SEARCH_PROVIDER names a provider with its required config:
+        // Default (unset) → keyless duckduckgo. off/none → search_unconfigured.
         // SearXNG needs OCCAM_SEARCH_URL; Brave/Tavily need OCCAM_SEARCH_API_KEY. Env read live.
         var prevProvider = Environment.GetEnvironmentVariable("OCCAM_SEARCH_PROVIDER");
         var prevUrl = Environment.GetEnvironmentVariable("OCCAM_SEARCH_URL");
@@ -3463,9 +3463,18 @@ internal static class L0InfraUnitTests
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", null);
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_URL", null);
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_API_KEY", null);
-            assert("search disabled by default", !search.IsConfigured);
-            assert("search unconfigured → typed failure",
+            assert("search default is duckduckgo", search.IsConfigured && search.ProviderName == "duckduckgo");
+
+            Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", "off");
+            assert("search off → unconfigured", !search.IsConfigured);
+            assert("search off → typed failure",
                 search.SearchAsync("test", 5, CancellationToken.None).GetAwaiter().GetResult().FailureCode == "search_unconfigured");
+
+            Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", "none");
+            assert("search none → unconfigured", !search.IsConfigured);
+
+            Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", "duckduckgo");
+            assert("search duckduckgo explicit ready", search.IsConfigured && search.ProviderName == "duckduckgo");
 
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", "searxng");
             assert("search searxng needs base url", !search.IsConfigured);
@@ -3484,6 +3493,8 @@ internal static class L0InfraUnitTests
 
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", "nonsuch");
             assert("search unknown provider disabled", !search.IsConfigured);
+
+            RunDuckDuckGoHtmlParseContract(assert);
         }
         finally
         {
@@ -3527,6 +3538,47 @@ internal static class L0InfraUnitTests
         }
         assert("donsetch managed markdown from json",
             DonsetchManagedProvider.ExtractMarkdown("""{"markdown":"# Hi"}""") == "# Hi");
+    }
+
+    private static void RunDuckDuckGoHtmlParseContract(Action<string, bool> assert)
+    {
+        const string fixture = """
+            <html><body><div id="links">
+              <div class="result">
+                <h2 class="result__title">
+                  <a rel="nofollow" class="result__a" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fnginx.org%2Fen%2Fdocs%2F&amp;rut=abc">Nginx docs</a>
+                </h2>
+                <a class="result__snippet" href="#">Official reverse proxy documentation.</a>
+              </div>
+              <div class="result">
+                <h2 class="result__title">
+                  <a class="result__a" href="https://example.com/direct">Direct hit</a>
+                </h2>
+                <div class="result__snippet">Plain snippet text</div>
+              </div>
+              <div class="result">
+                <a class="result__a" href="//duckduckgo.com/y.js?ad=1">Ad tracker</a>
+              </div>
+            </div></body></html>
+            """;
+
+        var hits = DuckDuckGoHtmlParser.Parse(fixture, maxResults: 5);
+        assert("ddg parse count", hits.Count == 2);
+        assert("ddg unwrap uddg", hits[0].Url == "https://nginx.org/en/docs/");
+        assert("ddg title", hits[0].Title.Contains("Nginx", StringComparison.OrdinalIgnoreCase));
+        assert("ddg snippet", hits[0].Snippet is not null && hits[0].Snippet.Contains("reverse proxy", StringComparison.OrdinalIgnoreCase));
+        assert("ddg direct https", hits[1].Url == "https://example.com/direct");
+        assert("ddg looks like results", DuckDuckGoHtmlParser.LooksLikeResultsPage(fixture));
+        assert("ddg resolve filters ddg host", DuckDuckGoHtmlParser.ResolveResultUrl("https://duckduckgo.com/about") is null);
+        assert(
+            "ddg resolve uddg",
+            DuckDuckGoHtmlParser.ResolveResultUrl("//duckduckgo.com/l/?uddg=https%3A%2F%2Fexample.org%2Fa&rut=1")
+                == "https://example.org/a");
+        assert(
+            "ddg anomaly challenge detected",
+            DuckDuckGoHtmlParser.LooksLikeAnomalyChallenge(
+                """<div class="anomaly-modal__title">Unfortunately, bots use DuckDuckGo too.</div><form action="//duckduckgo.com/anomaly.js">"""));
+        assert("ddg anomaly not on normal SERP", !DuckDuckGoHtmlParser.LooksLikeAnomalyChallenge(fixture));
     }
 
     private static void RunManagedAdapterContract(Action<string, bool> assert)

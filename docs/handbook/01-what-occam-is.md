@@ -51,7 +51,7 @@ These are the six categories most often confused with Occam. Twelve more exist i
 | **A crawler** | `occam_map` caps at 64 links with bounded second-level expansion; no frontier queue | "Bounded link listing from sitemap/homepage/robots" |
 | **A CAPTCHA bypass** | No solver; challenges become `captcha_or_challenge` | "Detects walls; sessions/browser/managed may pass some legitimately" |
 | **A cache or CDN** | Default path never reads disk cache; live extract every call | "Re-extracts unless caller opts into local TTL replay" |
-| **A search engine** | `occam_search` fails closed without `OCCAM_SEARCH_PROVIDER` | "Queries the operator-configured search provider" |
+| **A search engine** | `occam_search` discloses `provider` (default DuckDuckGo HTML; not an Occam index) | "Queries the operator-configured or default search provider" |
 | **A fact-checker or summarizer** | No LLM in host/workers; `claim_check` hardcodes `not_evaluated`; reductions are selection/truncation with `compile.omitted` | "Retrieves passages and proves membership in signed extracts; does not judge truth" |
 
 ---

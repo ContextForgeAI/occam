@@ -2,21 +2,20 @@
 
 **Canonical tool:** `occam_search`
 
-Open-web search (query → result URLs) via a configured provider (SearXNG, Brave, Tavily, or
-optional local Donsetch). Your discovery step when you don't have URLs yet.
+Open-web search (query → result URLs). **Default** when `OCCAM_SEARCH_PROVIDER` is
+unset: keyless DuckDuckGo HTML SERP with `provider: "duckduckgo"` disclosed in the
+response. Occam does not index the web — it delegates discovery and names the source.
 
-> **Requires configuration.** The tool is always listed, but every call fails with
-> `search_unconfigured` until the host sets `OCCAM_SEARCH_PROVIDER`
-> (`searxng` | `brave` | `tavily` | `donsetch`) plus `OCCAM_SEARCH_URL` (SearXNG),
-> `OCCAM_SEARCH_API_KEY` (Brave/Tavily), or a local `donsetch` binary on `PATH` /
-> `OCCAM_DONSETCH_PATH`. See [configuration](../configuration.md).
+Override with `OCCAM_SEARCH_PROVIDER=searxng` \| `brave` \| `tavily` \| `donsetch`
+(plus URL/key/binary as required), or `off` / `none` for the air-gap
+`search_unconfigured` contract. See [configuration](../configuration.md).
 
 ## When to use
 
 - No URLs yet → search, then feed **result urls** into probe / transcode / digest.
 - Each hit includes `id` (`S1`…`Sn`) after ranking — labels for your notes only; Occam does
   not resolve handles server-side.
-- Discovering pages within one known site → [`occam_map`](occam_map.md) is cheaper and needs no provider.
+- Discovering pages within one known site → [`occam_map`](occam_map.md) is cheaper.
 - `rerank=true` probes every hit and reorders so clean, HTTP-extractable pages rank above
   paywalls/anti-bot walls/JS stubs — worth the extra latency when you will transcode the winners.
 
@@ -41,16 +40,16 @@ Failure envelope: `ok: false`, `query`, `failure: {code, message}`.
 
 ## Failure codes
 
-`invalid_arguments`, `search_unconfigured`, `search_timeout` (retry or raise
-`OCCAM_SEARCH_TIMEOUT_MS`), `search_http_<status>` (backend endpoint/key problem), `search_error`
-(other backend failure). See [failure codes](../failure-codes.md).
+`invalid_arguments`, `search_unconfigured` (provider `off` / incomplete explicit config),
+`search_timeout` (retry or raise `OCCAM_SEARCH_TIMEOUT_MS`), `search_http_<status>`,
+`search_error` (empty/blocked SERP or parse miss). See [failure codes](../failure-codes.md).
 
 ## Example
 
-Call:
+Call (no env required after install):
 
 ```json
-{ "query": "nginx rate limiting configuration", "max_results": 5, "rerank": true }
+{ "query": "nginx rate limiting configuration", "max_results": 5 }
 ```
 
 Trimmed response:
@@ -59,12 +58,12 @@ Trimmed response:
 {
   "ok": true,
   "query": "nginx rate limiting configuration",
-  "provider": "searxng",
+  "provider": "duckduckgo",
   "count": 5,
   "results": [
-    { "title": "Rate Limiting with NGINX", "url": "https://blog.nginx.org/…", "snippet": "…", "extractability": 0.94, "recommendedBackend": "http" }
+    { "id": "S1", "title": "Rate Limiting with NGINX", "url": "https://blog.nginx.org/…", "snippet": "…" }
   ],
-  "agentHints": { "suggestedNext": "results reranked by extractability — prefer the top (highest extractability) URLs for transcode" }
+  "agentHints": { "suggestedNext": "Pass a result url to occam_transcode…" }
 }
 ```
 

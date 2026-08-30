@@ -859,7 +859,11 @@ occam_transcode(url, fit_markdown=true, focus_query="authentication", max_tokens
 
 ## `occam_search`
 
-Open-web search (query → result URLs) — the agent's **discovery** step before `probe`/`transcode`/`digest`. Occam does not crawl or index; it delegates to a configured backend (SearXNG / Brave / Tavily / optional local Donsetch CLI) and normalizes results. **Opt-in** — off unless `OCCAM_SEARCH_PROVIDER` is set (returns `search_unconfigured` otherwise). Source: `Tools/OccamSearchTool.cs`.
+Open-web search (query → result URLs) — the agent's **discovery** step before `probe`/`transcode`/`digest`.
+Occam does not crawl or index; it delegates to a backend and normalizes results with a disclosed
+`provider`. **Default** when `OCCAM_SEARCH_PROVIDER` is unset: keyless DuckDuckGo HTML
+(`provider=duckduckgo`). Set `off`/`none` for `search_unconfigured`. Explicit `searxng` /
+`brave` / `tavily` / `donsetch` keep their URL/key/binary requirements. Source: `Tools/OccamSearchTool.cs`.
 
 ### Parameters
 
@@ -869,7 +873,7 @@ Open-web search (query → result URLs) — the agent's **discovery** step befor
 | `max_results` | int | `8` | Max results, range **1–20** |
 | `rerank` | bool | `false` | Rerank by extractability — cheaply probes each hit and reorders so clean HTTP-extractable pages rank above paywalls/anti-bot/JS-stubs/dead links. Adds `extractability` (0–1) + `recommendedBackend` per result. Opt-in (extra probe latency) |
 
-Config (env): `OCCAM_SEARCH_PROVIDER` (`searxng` \| `brave` \| `tavily` \| `donsetch`), `OCCAM_SEARCH_URL` (SearXNG instance), `OCCAM_SEARCH_API_KEY` (Brave/Tavily), `OCCAM_DONSETCH_PATH` (optional path to local Donsetch binary), `OCCAM_SEARCH_TIMEOUT_MS` (default 20000) — see [Environment](#environment).
+Config (env): `OCCAM_SEARCH_PROVIDER` (unset → `duckduckgo`; `off`\|`none`\|`duckduckgo`\|`searxng`\|`brave`\|`tavily`\|`donsetch`), `OCCAM_SEARCH_URL` (SearXNG instance), `OCCAM_SEARCH_API_KEY` (Brave/Tavily), `OCCAM_DONSETCH_PATH` (optional path to local Donsetch binary), `OCCAM_SEARCH_TIMEOUT_MS` (default 20000) — see [Environment](#environment).
 
 ### Success response
 
@@ -877,7 +881,7 @@ Config (env): `OCCAM_SEARCH_PROVIDER` (`searxng` \| `brave` \| `tavily` \| `dons
 {
   "ok": true,
   "query": "occam mcp",
-  "provider": "searxng",
+  "provider": "duckduckgo",
   "count": 2,
   "results": [
     { "id": "S1", "title": "…", "url": "https://…", "snippet": "…" }
@@ -895,10 +899,10 @@ With `rerank=true`, `results` are ordered by `extractability` (desc) and each al
 | Code | When |
 |------|------|
 | `invalid_arguments` | Empty `query` or `max_results` outside 1–20 |
-| `search_unconfigured` | No `OCCAM_SEARCH_PROVIDER` (or missing url/key; Donsetch missing binary) |
+| `search_unconfigured` | Provider `off`/`none`, unknown name, or missing url/key for an explicit keyed provider |
 | `search_http_*` | Backend returned non-2xx |
 | `search_timeout` | Backend timed out |
-| `search_error` | Network/parse failure |
+| `search_error` | Empty/blocked SERP, network, or parse failure |
 
 ---
 

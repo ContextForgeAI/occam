@@ -122,11 +122,16 @@ Export profiles: `node scripts/occam-session.mjs export-state --profile <id>`.
 
 | Variable | Purpose |
 |----------|---------|
-| `OCCAM_SEARCH_PROVIDER` | `searxng` \| `brave` \| `tavily` \| `donsetch` (unset → `search_unconfigured`) |
+| `OCCAM_SEARCH_PROVIDER` | Unset → keyless **`duckduckgo`** (HTML SERP, `provider` disclosed). `off` \| `none` → `search_unconfigured`. Explicit: `duckduckgo` \| `searxng` \| `brave` \| `tavily` \| `donsetch`. |
 | `OCCAM_SEARCH_URL` | Required for SearXNG base URL |
 | `OCCAM_SEARCH_API_KEY` | Required for Brave/Tavily |
 | `OCCAM_SEARCH_TIMEOUT_MS` | Default `20000` (1k–120k) |
 | `OCCAM_DONSETCH_PATH` | Optional absolute path to a local `donsetch` binary (`OCCAM_SEARCH_PROVIDER=donsetch` or `OCCAM_MANAGED_PROVIDER=donsetch`). Otherwise `donsetch` must be on `PATH`. Never bundled (AGPL). |
+
+Occam does not index the web. The DuckDuckGo default is disclosed discovery for
+first-run Research; operators who want a dedicated backend set SearXNG/Brave/Tavily
+(or `off` for air-gap). DuckDuckGo may soft-block automated egress with an anomaly
+challenge — Occam returns `search_http_202` and does not solve CAPTCHAs.
 
 ---
 

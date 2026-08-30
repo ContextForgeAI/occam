@@ -48,10 +48,10 @@
 | `invalid_urls` | Bad digest/map URL list | No | Fix `urls` parameter |
 | `digest_failed` | All digest URLs failed | No | Retry singles with transcode |
 | `sitemap_not_found` | Map source=sitemap empty | No | Retry `source=homepage` |
-| `search_unconfigured` | No `OCCAM_SEARCH_PROVIDER` | No | Configure search or skip |
+| `search_unconfigured` | Provider `off`/`none`, unknown name, or explicit provider missing key/URL | No | Default DuckDuckGo when unset; configure dedicated provider or skip |
 | `search_timeout` | Search backend slow | Yes | Retry or raise timeout |
-| `search_http_<status>` | Search backend returned an HTTP error (`<status>`) | Depends on status | Check the endpoint/API key; back off on `429`/`5xx` |
-| `search_error` | Search backend failed for another reason | Sometimes | Read message; check `OCCAM_SEARCH_PROVIDER` config |
+| `search_http_<status>` | Search backend returned an HTTP error (`<status>`) | Depends on status | Check endpoint/API key; DuckDuckGo soft-blocks may need retry or another provider |
+| `search_error` | Empty/blocked SERP, parse miss, or other backend failure | Sometimes | Retry, refine query, or set SearXNG/Brave/Tavily |
 
 HTTP codes may appear as `http_<status>` (e.g. `http_418`).
 
