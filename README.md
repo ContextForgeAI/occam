@@ -36,8 +36,9 @@ Include the source. If the read fails, report the reason instead of guessing.
 | **Research** | Focus and combine several known sources | `occam_digest(urls, focus_query)` |
 | **Verify** | Check extract integrity and portable citation proofs | `occam_verify(receipt, markdown)` |
 
-Open-web discovery is available through `occam_search` when a search provider
-is configured. Occam does not pretend an unconfigured search backend exists.
+Open-web discovery works out of the box through `occam_search` (keyless DuckDuckGo
+HTML, `provider` disclosed). Override with SearXNG/Brave/Tavily, or set
+`OCCAM_SEARCH_PROVIDER=off` for air-gap.
 
 ## Why not a generic fetch?
 
@@ -126,7 +127,7 @@ dotnet run --project benchmarks/l0-gate -- --url=https://example.com
 | Read **one** page | `occam_transcode` |
 | Read **several** URLs | `occam_digest` (not N× transcode) |
 | List site links | `occam_map` |
-| Search the open web | `occam_search` (needs `OCCAM_SEARCH_PROVIDER`) |
+| Search the open web | `occam_search` (default DuckDuckGo; override/off via env) |
 | Typed fields from a playbook | `occam_extract_knowledge` |
 | Prove a receipt / check a claim | `occam_verify` · `occam_claim_check` · `occam_attest` |
 

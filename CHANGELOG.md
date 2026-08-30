@@ -6,6 +6,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+- **Keyless default search (DuckDuckGo HTML)** — when `OCCAM_SEARCH_PROVIDER` is
+  unset, `occam_search` uses disclosed DuckDuckGo HTML/lite discovery
+  (`provider=duckduckgo`). Set `off`/`none` for the previous
+  `search_unconfigured` air-gap contract; explicit searxng/brave/tavily/donsetch
+  still require their URL/key/binary. Empty SERPs and DuckDuckGo anomaly/CAPTCHA
+  interstitials stay typed failures (`search_error` / `search_http_202`) — never
+  solved and never invented URLs.
 - **Faster budgeted CMP dismiss** — one consent scan with a hard time budget,
   CSS vendor hits via `querySelector`, and no multi-second waits when the click
   misses (HTML still strips consent-like dialogs). Cuts browser-path tails on

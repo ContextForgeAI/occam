@@ -10,7 +10,8 @@ You have a question or a site root, not a finished URL list.
 
 ## Search the web
 
-Requires `OCCAM_SEARCH_PROVIDER` (see [Configuration](../configuration.md)).
+Requires no search env for the default DuckDuckGo path (see [Configuration](../configuration.md)).
+Set `OCCAM_SEARCH_PROVIDER=off` to disable, or configure SearXNG/Brave/Tavily.
 
 ```json
 { "name": "occam_search", "arguments": { "query": "nginx reverse proxy", "max_results": 5 } }

@@ -51,7 +51,7 @@
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `search_unconfigured` | No provider | Set `OCCAM_SEARCH_PROVIDER` + URL or API key |
+| `search_unconfigured` | Provider off / incomplete config | Default is DuckDuckGo when unset; set `OCCAM_SEARCH_PROVIDER=off` to disable, or configure searxng/brave/tavily |
 | Translation warning | No LibreTranslate | Set `OCCAM_TRANSLATE_URL` or omit `translate_to` |
 | Unsigned receipts | Signing disabled | Unset `OCCAM_RECEIPTS=off` |
 

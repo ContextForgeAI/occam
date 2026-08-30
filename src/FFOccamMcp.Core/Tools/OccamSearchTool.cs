@@ -13,7 +13,7 @@ public sealed class OccamSearchTool(ISearchService searchService, ProbeService p
     private const int RerankProbeTimeoutMs = 6_000;
     private const int RerankMaxParallel = 5;
 
-    [McpServerTool(Name = "occam_search"), Description("Open-web search (query -> result URLs) via a configured backend (SearXNG/Brave/Tavily/Donsetch). Your discovery step when you don't have URLs yet - feed result urls into probe/transcode/digest. Each hit gets a label id S1..Sn (notes only; Occam does not resolve handles). Requires OCCAM_SEARCH_PROVIDER. Returns { id, title, url, snippet }.")]
+    [McpServerTool(Name = "occam_search"), Description("Open-web search (query -> result URLs). Default keyless backend is DuckDuckGo HTML (provider=duckduckgo disclosed); override with OCCAM_SEARCH_PROVIDER=searxng|brave|tavily|donsetch, or off to disable. Your discovery step when you don't have URLs yet - feed result urls into probe/transcode/digest. Each hit gets a label id S1..Sn (notes only; Occam does not resolve handles). Returns { id, title, url, snippet, provider }. Occam does not index the web.")]
     public async Task<string> Search(
         [Description("Search query.")] string query,
         [Description("Max results to return (1-20). Default 8.")] int max_results = DefaultMaxResults,
@@ -138,10 +138,13 @@ public sealed class OccamSearchTool(ISearchService searchService, ProbeService p
 
     private static string DescribeFailure(string? code) => code switch
     {
-        "search_unconfigured" => "Search is not configured. Set OCCAM_SEARCH_PROVIDER (searxng|brave|tavily|donsetch) + OCCAM_SEARCH_URL (SearXNG) or OCCAM_SEARCH_API_KEY (Brave/Tavily); donsetch needs a local donsetch binary (OCCAM_DONSETCH_PATH optional).",
+        "search_unconfigured" => "Search is disabled or incomplete. Default is keyless duckduckgo when OCCAM_SEARCH_PROVIDER is unset. Set OCCAM_SEARCH_PROVIDER=off to keep search off; searxng needs OCCAM_SEARCH_URL; brave/tavily need OCCAM_SEARCH_API_KEY; donsetch needs a local binary (OCCAM_DONSETCH_PATH optional).",
         "search_timeout" => "Search backend timed out. Retry or raise OCCAM_SEARCH_TIMEOUT_MS.",
-        var c when c is not null && c.StartsWith("search_http_", StringComparison.Ordinal) => $"Search backend returned {c["search_http_".Length..]}. Check the endpoint/key.",
-        _ => "Search backend call failed.",
+        var c when c is not null && c.StartsWith("search_http_", StringComparison.Ordinal) =>
+            c is "search_http_202" or "search_http_403" or "search_http_429"
+                ? "Search backend soft-blocked or rate-limited this egress (DuckDuckGo may show an anomaly challenge). Retry later or set OCCAM_SEARCH_PROVIDER to searxng/brave/tavily."
+                : $"Search backend returned {c["search_http_".Length..]}. Check the endpoint/key, or set a dedicated provider (searxng/brave/tavily).",
+        _ => "Search backend call failed (empty or blocked SERP, or parse miss). Retry, refine the query, or set OCCAM_SEARCH_PROVIDER to searxng/brave/tavily.",
     };
 
     private static string SerializeFailure(string query, string code, string message) =>

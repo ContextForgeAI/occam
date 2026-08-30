@@ -13,7 +13,7 @@
 | **Check if a URL is worth fetching** | `occam_probe` | Cheap; returns extractability score and recommended backend |
 | **Research several pages** | `occam_digest` | Up to 8 URLs; use `focus_query` for synthesis |
 | **Find URLs on a site I don't know yet** | `occam_map` → `occam_digest` | Map discovers links; digest reads them |
-| **Search the web for URLs** | `occam_search` → probe/transcode | Requires `OCCAM_SEARCH_PROVIDER` |
+| **Search the web for URLs** | `occam_search` → probe/transcode | Default DuckDuckGo; override/off via env |
 | **Get structured fields (price, author, …)** | `occam_playbook_resolve` → `occam_extract_knowledge` | Needs a playbook with `knowledge_schema` |
 | **Use a site's tuned extract recipe** | `occam_playbook_resolve` → `occam_transcode` | `playbook_policy=auto` (default) |
 | **Fix a hard site (draft a playbook)** | `occam_transcode` fails → `occam_playbook_heal` → edit JSON → `occam_playbook_lint` → `occam_playbook_save` | Local only |

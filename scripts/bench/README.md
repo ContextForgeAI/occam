@@ -67,10 +67,13 @@ node scripts/bench/compare-wrb.mjs \
   artifacts/wrb/52025c304f6c/results/donsetch.json
 ```
 
-Set `OCCAM_SEARCH_PROVIDER` and its provider-specific configuration only when
-the scorecard explicitly declares that configuration. Do not configure
+Set `OCCAM_SEARCH_PROVIDER` only when the scorecard explicitly declares that
+configuration. When unset, Occam's search arm uses keyless DuckDuckGo HTML
+(`provider=duckduckgo`) — record that provider in the run notes. Do not set
 `OCCAM_SEARCH_PROVIDER=donsetch` for an Occam-vs-DonSeTch search comparison:
 that would benchmark DonSeTch through Occam and produce circular evidence.
+For a fair vs-competitor search arm, either both sides use their native
+keyless defaults, or both use an explicitly declared dedicated backend.
 
 The adapter uses one long-lived MCP host, matching normal Occam use. Fetch maps
 to `occam_transcode`. Search maps to `occam_search`. WRB's crawl slot currently
