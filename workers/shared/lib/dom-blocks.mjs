@@ -152,8 +152,8 @@ function collectLinks(el, baseUrl) {
 }
 
 /**
- * Builds a CSS selector for `el`. When the root is connected, returns a document-absolute path
- * verified to round-trip; otherwise a wrapper-relative best-effort path.
+ * Builds a CSS selector for `el`. When the root is connected, derives a document-absolute path
+ * from the live tree; otherwise returns a wrapper-relative best-effort path.
  */
 function selectorFor(el, ctx) {
   if (ctx.connected) {
@@ -168,7 +168,7 @@ function selectorFor(el, ctx) {
 
 /**
  * Walks ancestors of `el` up to (but not past) `stopAt`. When `stopAt` is null, walks to the
- * document root, short-circuiting on a unique id.
+ * document root, short-circuiting on an id whose first document match is this element.
  */
 function buildPath(el, stopAt, ctx) {
   const segments = [];
