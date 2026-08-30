@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  buildSourceAdapterFetchHeaders,
   renderSourceAdapterPayload,
   resolveSourceAdapter,
 } from "./source-adapter.mjs";
@@ -20,6 +21,17 @@ assert.equal(scoped?.sourceUrl, "https://registry.npmjs.org/%40scope%2Fexample/l
 
 assert.equal(resolveSourceAdapter("https://www.npmjs.com/search?q=react"), null);
 assert.equal(resolveSourceAdapter("https://example.com/package/react"), null);
+assert.equal(resolveSourceAdapter("https://www.npmjs.com/package/%E0%A4%A"), null);
+
+const adapterHeaders = buildSourceAdapterFetchHeaders({
+  "User-Agent": "caller-user-agent",
+  Accept: "text/plain",
+  "X-API-Key": "test-only",
+  "X-Site-Session": "test-only",
+});
+assert.deepEqual(Object.keys(adapterHeaders).sort(), ["Accept", "User-Agent"]);
+assert.equal(adapterHeaders.Accept, "application/json");
+assert.notEqual(adapterHeaders["User-Agent"], "caller-user-agent");
 
 const markdown = renderSourceAdapterPayload("npm_registry_package", {
   name: "example",

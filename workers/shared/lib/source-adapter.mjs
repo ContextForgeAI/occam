@@ -1,4 +1,3 @@
-import { mergeFetchHeaders, stripCrossOriginSensitiveHeaders } from "./request-headers.mjs";
 import { getDefaultFetchHeaders } from "./default-fetch-headers.mjs";
 import { EgressProxyError, egressFetch } from "./egress-proxy.mjs";
 import { loadSeedForUrl } from "./playbook-seed.mjs";
@@ -9,7 +8,13 @@ const adapters = new Map([
   ["npm_registry_package", {
     resolve(requestedUrl) {
       const parsed = new URL(requestedUrl);
-      const match = decodeURIComponent(parsed.pathname).match(/^\/package\/((?:@[^/]+\/)?[^/]+)\/?$/);
+      let decodedPathname;
+      try {
+        decodedPathname = decodeURIComponent(parsed.pathname);
+      } catch {
+        return null;
+      }
+      const match = decodedPathname.match(/^\/package\/((?:@[^/]+\/)?[^/]+)\/?$/);
       if (!match || !/^(?:@[a-z0-9][a-z0-9._~-]*\/)?[a-z0-9][a-z0-9._~-]*$/i.test(match[1])) {
         return null;
       }
@@ -90,6 +95,15 @@ export function renderSourceAdapterPayload(adapterName, payload, sourceUrl) {
   return adapters.get(adapterName)?.render(payload, sourceUrl) ?? null;
 }
 
+export function buildSourceAdapterFetchHeaders(_requestHeaders = {}) {
+  // Source adapters target public cross-origin APIs; caller/session headers must never follow.
+  const defaults = getDefaultFetchHeaders();
+  return {
+    "User-Agent": defaults.userAgent,
+    Accept: "application/json",
+  };
+}
+
 export async function trySourceAdapter({
   requestedUrl,
   requestHeaders,
@@ -104,16 +118,8 @@ export async function trySourceAdapter({
   let dispatcher;
   try {
     dispatcher = await pinnedDispatcherForUrl(resolved.sourceUrl);
-    const defaults = getDefaultFetchHeaders();
-    const safeHeaders = stripCrossOriginSensitiveHeaders(
-      requestHeaders,
-      requestedUrl,
-      resolved.sourceUrl);
     const response = await egressFetch(resolved.sourceUrl, {
-      headers: mergeFetchHeaders(safeHeaders, {
-        "User-Agent": defaults.userAgent,
-        Accept: "application/json",
-      }),
+      headers: buildSourceAdapterFetchHeaders(requestHeaders),
       signal: AbortSignal.timeout(30_000),
       ...(dispatcher ? { dispatcher } : {}),
     });
