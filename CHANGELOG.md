@@ -42,7 +42,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   denser Why Occam contrast; CTA to `why-occam`.
 - **README value-first rewrite** — the first screen now answers what Occam is,
   installs the RC, routes readers through Read / Research / Verify, contrasts
-  generic fetch behavior, and publishes the pinned same-machine WRB comparison.
+  generic fetch behavior, and publishes a pinned per-tier Occam baseline.
   Safety details, complete tools, token controls, and trust limits follow after
   the product is clear.
 - **Discoverability flashcard** — new [Why Occam](docs/why-occam.md) page (advantages vs

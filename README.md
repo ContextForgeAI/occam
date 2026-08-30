@@ -49,25 +49,24 @@ is configured. Occam does not pretend an unconfigured search backend exists.
 | No evidence for later citation checks | Optional signed receipt and block proofs |
 | Missing content invites a model-memory guess | `ok:false` means **unknown** |
 
-## Measured on the same live corpus
+## Measured live baseline
 
-One pinned [WRB](https://github.com/dondai44423/wrb) run on 2026-08-30, same
-machine and network. These are live observations, not universal success claims.
+One pinned 48-URL run on 2026-08-30. These are live observations from one
+machine and network, not universal success or latency claims.
 
-| Fetch metric | FF-Occam | DonSeTch 3.4.2 |
-|--------------|---------:|---------------:|
-| Tier 1 retrieval | 100.0% | 100.0% |
-| Tier 2 retrieval | 75.0% | 75.0% |
-| Tier 3 retrieval | 38.5% | 53.8% |
-| Overall retrieval | 75.0% (36/48) | 79.2% (38/48) |
-| False-positive rate | 0.0% | 0.0% |
-| Successful fetch p50 | 630 ms | 708 ms |
-| Successful fetch p90 | 1,973 ms | 969 ms |
+| Fetch metric | FF-Occam |
+|--------------|---------:|
+| Tier 1 retrieval | 100.0% |
+| Tier 2 retrieval | 75.0% |
+| Tier 3 retrieval | 38.5% |
+| Overall retrieval | 75.0% (36/48) |
+| False-positive rate | 0.0% |
+| Successful fetch p50 | 630 ms |
+| Successful fetch p90 | 1,973 ms |
 
 Method, pinned revision, runner, limitations, and reproduction commands:
-[`scripts/bench/README.md`](scripts/bench/README.md). WRB was created by the
-DonSeTch author; treat it as reproducible comparative evidence, not independent
-certification.
+[`scripts/bench/README.md`](scripts/bench/README.md). Treat this as
+reproducible baseline evidence, not independent certification.
 
 ---
 
