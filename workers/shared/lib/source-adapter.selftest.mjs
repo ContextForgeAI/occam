@@ -11,6 +11,7 @@ import {
   resolveSourceAdapter,
   selectLatestNonYankedVersion,
   sparseIndexUrlForCrate,
+  staticCratesReadmeUrl,
 } from "./source-adapter.mjs";
 import { resetSeedCache } from "./playbook-seed.mjs";
 
@@ -45,6 +46,10 @@ assert.equal(resolveSourceAdapter("https://example.com/crates/tokio"), null);
 assert.equal(sparseIndexUrlForCrate("a"), "https://index.crates.io/1/a");
 assert.equal(sparseIndexUrlForCrate("ab"), "https://index.crates.io/2/ab");
 assert.equal(sparseIndexUrlForCrate("abc"), "https://index.crates.io/3/a/abc");
+assert.equal(
+  staticCratesReadmeUrl("tokio", "1.53.1"),
+  "https://static.crates.io/readmes/tokio/tokio-1.53.1.html",
+);
 
 const latestVersion = selectLatestNonYankedVersion([
   JSON.stringify({ vers: "1.9.0", yanked: false }),

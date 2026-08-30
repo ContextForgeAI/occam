@@ -76,6 +76,11 @@ export function sparseIndexUrlForCrate(crateName) {
   return `https://index.crates.io/${name.slice(0, 2)}/${name.slice(2, 4)}/${name}`;
 }
 
+export function staticCratesReadmeUrl(crateName, version) {
+  const encodedName = encodeURIComponent(crateName);
+  return `https://static.crates.io/readmes/${encodedName}/${encodedName}-${encodeURIComponent(version)}.html`;
+}
+
 export function resolveCratesReadmeRequest(requestedUrl) {
   let parsed;
   try {
@@ -272,37 +277,8 @@ async function fetchCratesReadme({
     return null;
   }
 
-  const apiUrl = `https://crates.io/api/v1/crates/${encodeURIComponent(resolution.crateName)}/${encodeURIComponent(version)}/readme`;
-  const staticUrl = await cratesApiRateLimiter.run(() => fetchPinned(
-    apiUrl,
-    {
-      headers: buildSourceAdapterFetchHeaders({}, "crates_io_readme", "text/html"),
-      redirect: "manual",
-      signal: AbortSignal.timeout(30_000),
-    },
-    async (response) => {
-      const location = response.headers.get("location");
-      await response.body?.cancel().catch(() => {});
-      if (![301, 302, 303, 307, 308].includes(response.status) || !location) {
-        return null;
-      }
-      const target = new URL(location, apiUrl);
-      const expectedPath = `/readmes/${resolution.crateName}/${resolution.crateName}-${version}.html`;
-      return target.protocol === "https:"
-        && target.hostname === "static.crates.io"
-        && target.pathname === expectedPath
-        && !target.search
-        && !target.hash
-        ? target.href
-        : null;
-    },
-  ));
-  if (!staticUrl) {
-    return null;
-  }
-
-  const rendered = await fetchPinned(
-    staticUrl,
+  const fetchRendered = (sourceUrl) => fetchPinned(
+    sourceUrl,
     {
       headers: buildSourceAdapterFetchHeaders({}, "crates_io_readme", "text/html"),
       redirect: "error",
@@ -326,6 +302,30 @@ async function fetchCratesReadme({
       } : null;
     },
   );
+
+  const expectedStaticUrl = staticCratesReadmeUrl(resolution.crateName, version);
+  let rendered = await fetchRendered(expectedStaticUrl);
+  if (!rendered) {
+    const apiUrl = `https://crates.io/api/v1/crates/${encodeURIComponent(resolution.crateName)}/${encodeURIComponent(version)}/readme`;
+    const redirectedStaticUrl = await cratesApiRateLimiter.run(() => fetchPinned(
+      apiUrl,
+      {
+        headers: buildSourceAdapterFetchHeaders({}, "crates_io_readme", "text/html"),
+        redirect: "manual",
+        signal: AbortSignal.timeout(30_000),
+      },
+      async (response) => {
+        const location = response.headers.get("location");
+        await response.body?.cancel().catch(() => {});
+        if (![301, 302, 303, 307, 308].includes(response.status) || !location) {
+          return null;
+        }
+        const target = new URL(location, apiUrl);
+        return target.href === expectedStaticUrl ? target.href : null;
+      },
+    ));
+    rendered = redirectedStaticUrl ? await fetchRendered(redirectedStaticUrl) : null;
+  }
   if (!rendered) {
     return null;
   }
