@@ -32,10 +32,13 @@ def _approx_tokens(text: str) -> int:
 def _fetch_provenance(payload: dict[str, Any]) -> dict[str, Any]:
     url = payload.get("url")
     final_url = url.get("finalUrl") if isinstance(url, dict) else None
+    receipt = payload.get("receipt")
+    receipt_backend = receipt.get("backend") if isinstance(receipt, dict) else None
     failure = payload.get("failure")
     failure_code = failure.get("code") if isinstance(failure, dict) else failure
     return {
-        "backend": payload.get("backend", "unknown"),
+        "backend": payload.get("backend")
+        or (receipt_backend if isinstance(receipt_backend, str) else "unknown"),
         "final_url": final_url if isinstance(final_url, str) else None,
         "failure_code": failure_code if isinstance(failure_code, str) else None,
     }

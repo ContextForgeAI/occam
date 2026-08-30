@@ -47,8 +47,8 @@ for line in sys.stdin:
             if args["url"].endswith("/blocked"):
                 payload = {
                     "ok": False,
-                    "backend": "node_readability_turndown",
                     "failure": {"code": "http_401"},
+                    "receipt": {"backend": "browser_playwright"},
                 }
             else:
                 payload = {
@@ -112,7 +112,8 @@ def main() -> None:
             blocked = runner.fetch("https://example.com/blocked")
             assert blocked["success"] is False
             assert blocked["content"] == ""
-            assert blocked["backend"] == "node_readability_turndown"
+            assert blocked["tier"] == "browser_playwright"
+            assert blocked["backend"] == "browser_playwright"
             assert blocked["final_url"] is None
             assert blocked["failure_code"] == "http_401"
 

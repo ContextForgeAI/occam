@@ -78,6 +78,8 @@ maps to focused `occam_map` (sitemap first, then homepage fallback), so it
 measures URL discovery and exposes the resumable-crawl gap; it must not be
 reported as full crawl parity. The fetch adapter also retains `backend`,
 `final_url`, and `failure_code` in its runner response for direct diagnostics.
+On failures, `backend` comes from the signed negative receipt because the
+top-level failure payload has no successful-content backend.
 The pinned WRB report currently discards those extra fields, so preserve the
 raw runner response when source-level evidence is required.
 
