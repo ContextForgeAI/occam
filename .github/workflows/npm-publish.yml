@@ -89,8 +89,26 @@ jobs:
             ls -la ff-occam-mcp-*.tgz
             echo "dry-run: skipped npm publish @ff-occam/mcp"
           else
-            npm publish --access public --tag "$NPM_TAG" --ignore-scripts
-            npm view "@ff-occam/mcp@${{ steps.ver.outputs.version }}" version
+            VER="${{ steps.ver.outputs.version }}"
+            if npm view "@ff-occam/mcp@${VER}" version >/dev/null 2>&1; then
+              echo "already on registry: @ff-occam/mcp@${VER}"
+            else
+              npm publish --access public --tag "$NPM_TAG" --ignore-scripts
+            fi
+            # Registry can lag a few seconds after publish — retry before failing the job.
+            ok=0
+            for i in 1 2 3 4 5 6 7 8 9 10; do
+              if npm view "@ff-occam/mcp@${VER}" version; then
+                ok=1
+                break
+              fi
+              echo "npm view not ready yet (attempt ${i}/10); sleeping 3s"
+              sleep 3
+            done
+            if [ "$ok" != "1" ]; then
+              echo "error: @ff-occam/mcp@${VER} still not visible after publish" >&2
+              exit 1
+            fi
           fi
 
       - name: Install + test ff-occam
@@ -132,9 +150,26 @@ jobs:
             ls -la ff-occam-*.tgz
             echo "dry-run: skipped npm publish ff-occam"
           else
-            npm publish --access public --tag "$NPM_TAG" --ignore-scripts
-            npm view "ff-occam@${{ steps.ver.outputs.version }}" version
-            npm view "ff-occam@${{ steps.ver.outputs.version }}" dependencies
+            VER="${{ steps.ver.outputs.version }}"
+            if npm view "ff-occam@${VER}" version >/dev/null 2>&1; then
+              echo "already on registry: ff-occam@${VER}"
+            else
+              npm publish --access public --tag "$NPM_TAG" --ignore-scripts
+            fi
+            ok=0
+            for i in 1 2 3 4 5 6 7 8 9 10; do
+              if npm view "ff-occam@${VER}" version; then
+                ok=1
+                break
+              fi
+              echo "npm view not ready yet (attempt ${i}/10); sleeping 3s"
+              sleep 3
+            done
+            if [ "$ok" != "1" ]; then
+              echo "error: ff-occam@${VER} still not visible after publish" >&2
+              exit 1
+            fi
+            npm view "ff-occam@${VER}" dependencies
           fi
 
       - name: Summary
