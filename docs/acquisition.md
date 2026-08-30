@@ -12,6 +12,7 @@ How Occam obtains a page. This documents the **locked** acquisition contract (EF
 HTTP extract
    │
    ├─ usable success ─────────────────────────────► done (stop)
+   ├─ configured public source adapter succeeds ──► done (source disclosed)
    ├─ 404 / 410 ──────────────────────────────────► fail (no browser, no managed)
    ├─ public-reference short-circuit (failed HTTP) ► fail (no browser)
    ├─ thin / short challenge / other escalate ────► Browser extract
@@ -31,6 +32,7 @@ HTTP extract
 | Behavior | Meaning |
 |----------|---------|
 | Usable HTTP success stops | Non-empty Markdown, not thin, not a short challenge body → no browser |
+| Public source adapters are explicit | A bundled playbook may map a blocked presentation page to a sanctioned public metadata surface. npm package permalinks can use latest-version metadata from `registry.npmjs.org`; `backend` and `url.finalUrl` disclose the actual source |
 | Thin / challenge may escalate | Bad extraction or short challenge-like body can open the browser rung |
 | Browser escalation is conditional | Not every failure escalates; terminal HTTP failures do not |
 | 404 / 410 short-circuit | No browser chase; no managed |
@@ -39,6 +41,7 @@ HTTP extract
 | Managed only after local failure | Only on the cascade policy; **not** a `backend_policy` enum value |
 | Managed failure never surfaces | Recorded; the caller still sees a local failure outcome |
 | No CAPTCHA solving | Walls become typed failures; use sessions / browser / operator-configured provider |
+| No browser-bypass claim | The npm metadata adapter does not bypass Cloudflare and does not promise the package README; unsupported routes keep the honest original failure |
 | Private-IP protections | Apply on specific paths (HTTP/browser/CSS workers with guards); scope is not universal across every helper client |
 
 ## `backend_policy`

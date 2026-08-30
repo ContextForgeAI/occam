@@ -6,6 +6,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+- **Safer generic pruning + npm package metadata fallback** — generic Markdown
+  cleanup no longer drops every line that mentions Discord or Bluesky; exact
+  navigation links remain removable. Direct npm package permalinks blocked by
+  the presentation site can use the bundled playbook's public
+  `registry.npmjs.org/<package>/latest` metadata adapter. The result discloses
+  `backend=npm_registry_package` and the registry `url.finalUrl`; it does not
+  claim a browser/Cloudflare bypass or guaranteed README content.
 - **Pinned WRB comparison harness** — `scripts/bench/run-wrb.mjs` checks out the
   external Web Research Benchmark at a fixed commit and injects an honest Occam
   adapter (`transcode`/`search` plus `map` as an explicitly labeled crawl

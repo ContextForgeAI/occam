@@ -44,6 +44,10 @@ fragment-free page.
 
 On success, optional `quality.verdict` may be `short_quality` or `rich` — both are usable. Do not treat a short body as failure.
 
+For a direct npm `/package/<name>` permalink blocked by the presentation site, the bundled playbook
+may return public latest-version registry metadata instead. Check `backend=npm_registry_package` and
+`url.finalUrl` for the actual source; this is not a browser bypass and does not guarantee README text.
+
 ### Multi-source research
 
 ```
