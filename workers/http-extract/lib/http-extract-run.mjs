@@ -1,5 +1,4 @@
 import { Readability } from "@mozilla/readability";
-import { appendFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { JSDOM, VirtualConsole } from "jsdom";
 import TurndownService from "turndown";
@@ -120,9 +119,6 @@ export async function runHttpExtract(options) {
 async function runHttpExtractCore(options) {
   const { url } = options;
   const started = performance.now();
-  // #region agent log
-  appendFileSync("/opt/cursor/logs/debug.log", `${JSON.stringify({ hypothesisId: "B,C", location: "workers/http-extract/lib/http-extract-run.mjs:entry", message: "http extract entry", data: { host: new URL(url).hostname, path: new URL(url).pathname, htmlFile: Boolean(options.htmlFile) }, timestamp: Date.now() })}\n`);
-  // #endregion
   // Split point for the "with-internet vs without" breakdown: timestamp set the moment the
   // response body is fully in memory. Everything before = network I/O (DNS + connect + TLS +
   // TTFB + download); everything after = CPU (JSDOM + Readability + Turndown + prune).
@@ -181,9 +177,6 @@ async function runHttpExtractCore(options) {
         signal: AbortSignal.timeout(30_000),
         ...(pinnedDispatcher ? { dispatcher: pinnedDispatcher } : {}),
       });
-      // #region agent log
-      appendFileSync("/opt/cursor/logs/debug.log", `${JSON.stringify({ hypothesisId: "B,C", location: "workers/http-extract/lib/http-extract-run.mjs:response", message: "http response received", data: { status: response.status, ok: response.ok, finalHost: new URL(response.url).hostname, finalPath: new URL(response.url).pathname, contentType: response.headers.get("content-type") ?? "" }, timestamp: Date.now() })}\n`);
-      // #endregion
 
       if (!response.ok) {
         // Release the body we are deliberately not reading. Without this the request stays in-flight:
@@ -324,9 +317,6 @@ async function runHttpExtractCore(options) {
     const wantBlocks = featureActive(options.features, "json_blocks");
     const wantTables = featureActive(options.features, "json_tables");
     const extracted = extractHtmlToMarkdown(html, finalUrl, url, wantBlocks, wantTables);
-    // #region agent log
-    appendFileSync("/opt/cursor/logs/debug.log", `${JSON.stringify({ hypothesisId: "A,B,C", location: "workers/http-extract/lib/http-extract-run.mjs:extracted", message: "http extraction result before host postprocessing", data: { host: new URL(finalUrl).hostname, ok: extracted.ok, failure: extracted.payload?.failure ?? null, markdownLength: extracted.payload?.markdown?.length ?? 0, titleLength: extracted.payload?.title?.length ?? 0, hasDiscord: /\bdiscord\b/i.test(extracted.payload?.markdown ?? "") }, timestamp: Date.now() })}\n`);
-    // #endregion
     if (!extracted.ok) {
       if (sizeMeta.truncated) {
         return {

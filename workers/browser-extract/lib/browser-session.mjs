@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { chromium } from "playwright";
 import { extractMarkdownFromHtml } from "./extract-html.mjs";
 import { tryDismissConsent, hideConsentOverlays, waitForConsentOverlayHidden } from "./consent.mjs";
@@ -507,9 +507,6 @@ export async function renderAndExtract(context, url, options = {}) {
     page.on('framenavigated', navigationHandler);
 
     const mainResponse = await page.goto(url, { waitUntil, timeout: gotoTimeout });
-    // #region agent log
-    appendFileSync("/opt/cursor/logs/debug.log", `${JSON.stringify({ hypothesisId: "B,C", location: "workers/browser-extract/lib/browser-session.mjs:goto", message: "browser navigation completed", data: { host: new URL(url).hostname, path: new URL(url).pathname, status: mainResponse?.status?.() ?? 0, finalHost: new URL(page.url()).hostname, finalPath: new URL(page.url()).pathname, waitUntil, gotoTimeout }, timestamp: Date.now() })}\n`);
-    // #endregion
     
     // Remove the listener after initial navigation
     page.off('framenavigated', navigationHandler);
@@ -564,9 +561,6 @@ export async function renderAndExtract(context, url, options = {}) {
         hasChallengeNode,
       };
     }).catch(() => null);
-    // #region agent log
-    appendFileSync("/opt/cursor/logs/debug.log", `${JSON.stringify({ hypothesisId: "B,C", location: "workers/browser-extract/lib/browser-session.mjs:challenge", message: "browser challenge decision", data: { titleLength: challengeProbe?.title?.length ?? 0, textLen: challengeProbe?.textLen ?? 0, hasChallengeNode: challengeProbe?.hasChallengeNode ?? false, challengeWall: isChallengeWall(challengeProbe) }, timestamp: Date.now() })}\n`);
-    // #endregion
     if (isChallengeWall(challengeProbe)) {
       return {
         ok: false,
@@ -682,9 +676,6 @@ export async function renderAndExtract(context, url, options = {}) {
       extracted.access.redirected_to_login = url.toLowerCase() !== finalUrl.toLowerCase()
         && isLoginRoute(finalUrl);
     }
-    // #region agent log
-    appendFileSync("/opt/cursor/logs/debug.log", `${JSON.stringify({ hypothesisId: "A,B,C", location: "workers/browser-extract/lib/browser-session.mjs:extracted", message: "browser extraction result before generic prune", data: { host: new URL(finalUrl).hostname, extracted: Boolean(extracted), markdownLength: extracted?.markdown?.length ?? 0, titleLength: extracted?.title?.length ?? 0, htmlLength: html.length, hasDiscord: /\bdiscord\b/i.test(extracted?.markdown ?? "") }, timestamp: Date.now() })}\n`);
-    // #endregion
 
     if (extracted && recipe?.contentPrefix) {
       const prefix = String(recipe.contentPrefix).trim();

@@ -1,5 +1,3 @@
-import { appendFileSync } from "node:fs";
-
 /**
  * Host-agnostic markdown boilerplate prune (footer, ads, SPA chrome noise).
  * @param {string} markdown
@@ -9,10 +7,6 @@ export function genericMarkdownPrune(markdown) {
   if (!markdown) {
     return markdown;
   }
-
-  // #region agent log
-  appendFileSync("/opt/cursor/logs/debug.log", `${JSON.stringify({ hypothesisId: "A", location: "workers/shared/lib/generic-markdown-prune.mjs:entry", message: "generic prune input", data: { length: markdown.length, discordLines: markdown.split("\n").filter((line) => /\bdiscord\b/i.test(line)).length, hasDiscord: /\bdiscord\b/i.test(markdown) }, timestamp: Date.now() })}\n`);
-  // #endregion
 
   // Empty-text anchor links are never content: MkDocs line-number anchors
   // ("[](#__codelineno-0-1)" before each code line), HN/Reddit upvote arrows
@@ -64,9 +58,5 @@ export function genericMarkdownPrune(markdown) {
     kept.push(line);
   }
 
-  const result = kept.join("\n").replace(/\n{3,}/g, "\n\n").trim();
-  // #region agent log
-  appendFileSync("/opt/cursor/logs/debug.log", `${JSON.stringify({ hypothesisId: "A", location: "workers/shared/lib/generic-markdown-prune.mjs:exit", message: "generic prune output", data: { length: result.length, removedChars: markdown.length - result.length, hasDiscord: /\bdiscord\b/i.test(result) }, timestamp: Date.now() })}\n`);
-  // #endregion
-  return result;
+  return kept.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
