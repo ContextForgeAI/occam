@@ -2,7 +2,7 @@
 
 This evidence bundle records a minimal live page read, a representative
 webpage-noise transformation, and one controlled failure from Occam Core
-`1.0.0-rc.4`.
+`1.0.0-rc.5`.
 
 It is deliberately small. The fixture proves the behavior of this example; it
 is not a universal success-rate, size-reduction, or token-savings claim.

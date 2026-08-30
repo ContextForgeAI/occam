@@ -1,6 +1,6 @@
 {
   "name": "@ff-occam/mcp",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "type": "module",
   "description": "FF-Occam MCP — Native AOT .NET 10 host with 15 MCP tools for live web extraction into clean Markdown, with a locally-signed verifiable receipt. Zero-config install via npx.",
   "license": "AGPL-3.0-or-later",

@@ -165,7 +165,7 @@ function testPowerShellSourceGuards() {
     assert.ok(index >= 0, `PowerShell bootstrap is missing ${label} manifest validation`);
     assert.ok(index < archiveDownload, `PowerShell ${label} validation must precede archive download`);
   }
-  assert.match(ps1, /1\.0\.0-rc\.4/, "public default release must be published 1.0.0-rc.4");
+  assert.match(ps1, /1\.0\.0-rc\.5/, "public default release must be published 1.0.0-rc.5");
   console.log("ok: PowerShell source guards cover identity/layout/sha before download");
 }
 

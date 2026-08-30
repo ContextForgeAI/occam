@@ -4,7 +4,7 @@
 
 **Authority:** This handbook follows the canonical model in `docs-audit/` (product definition, trust model, owner decisions, honesty schema). Where older pages under `docs/` disagree, **this handbook and the code win**.
 
-**Version baseline:** 1.0.0-rc.4 (published install channel) · core MCP tools from the registry (runtime `tools/list` varies by profile/opt-in; product default `OCCAM_PROFILE=reader`) · live extract by default (opt-in `cache_ttl_s` for local replay)
+**Version baseline:** 1.0.0-rc.5 (published install channel) · core MCP tools from the registry (runtime `tools/list` varies by profile/opt-in; product default `OCCAM_PROFILE=reader`) · live extract by default (opt-in `cache_ttl_s` for local replay)
 
 ---
 

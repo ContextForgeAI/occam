@@ -16,7 +16,7 @@ import {
 } from "./bootstrap-release-contract.mjs";
 
 function main() {
-  assert.equal(PUBLIC_DEFAULT_RELEASE_VERSION, "1.0.0-rc.4");
+  assert.equal(PUBLIC_DEFAULT_RELEASE_VERSION, "1.0.0-rc.5");
 
   // LEGACY MANIFEST: runtimeLayout absent → legacy + sha256-only
   assert.equal(resolveInstallContract({ version: "1.0.0-rc.2", rid: "win-x64" }), INSTALL_CONTRACT_LEGACY);

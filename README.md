@@ -11,7 +11,7 @@ Markdown or an explicit reason why the content is unknown.
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
 ```bash
-npm install -g ff-occam@1.0.0-rc.4
+npm install -g ff-occam@1.0.0-rc.5
 occam connect
 ```
 
@@ -22,7 +22,7 @@ Use Occam to read https://example.com/ and tell me what it says.
 Include the source. If the read fails, report the reason instead of guessing.
 ```
 
-> Current release: **1.0.0-rc.4**. npm is the fastest RC trial path. The
+> Current release: **1.0.0-rc.5**. npm is the fastest RC trial path. The
 > production-oriented path uses a signed release bootstrap; see
 > [Install safely](#install-safely).
 

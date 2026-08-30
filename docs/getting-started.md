@@ -4,7 +4,7 @@
 
 If you still need install: [Quick Start](quick-start.md) · canonical reference [Install](install.md) · root [`INSTALL.md`](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md).
 
-Published `v1.0.0-rc.4` installs verify archive SHA-256 against the release
+Published `v1.0.0-rc.5` installs verify archive SHA-256 against the release
 manifest, run archive-member preflight before extract, and verify Cosign when
 the manifest declares `signaturePolicy=required-cosign-v1` (requires the
 `cosign` CLI on PATH). Self-contained runtime closure

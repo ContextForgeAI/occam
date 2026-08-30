@@ -30,7 +30,7 @@
       "finalUrl": "http://127.0.0.1:62042/representative-input.html",
       "backend": "node_readability_turndown",
       "ts": "2026-08-28T18:47:29Z",
-      "toolchain": "ff-occam/1.0.0-rc.4",
+      "toolchain": "ff-occam/1.0.0-rc.5",
       "contentHash": "sha256:89a00e72efdb335be3a269ba5b3e107a980019242873cec1cbd3b92c05435313",
       "tokens": 434,
       "confidence": 0.9605,

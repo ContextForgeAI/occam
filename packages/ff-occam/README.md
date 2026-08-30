@@ -8,10 +8,10 @@ into compact, source-linked Markdown or an explicit typed failure.
 > [`INSTALL.md`](../../INSTALL.md).
 
 ```bash
-npx ff-occam@1.0.0-rc.4
+npx ff-occam@1.0.0-rc.5
 
 # Optional global CLI aliases: ff-occam and occam
-npm install -g ff-occam@1.0.0-rc.4
+npm install -g ff-occam@1.0.0-rc.5
 ff-occam --help
 ```
 

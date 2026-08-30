@@ -1,6 +1,6 @@
 # MCP API Specification — FF-Occam MCP
 
-**Version:** `1.0.0-rc.4` (fifteen tools + opt-in batch/watch/crosscheck/browser_interact; Agent-First AF-1..AF-6; Receipt v1; live-only). Public install default: published `1.0.0-rc.4`.
+**Version:** `1.0.0-rc.5` (fifteen tools + opt-in batch/watch/crosscheck/browser_interact; Agent-First AF-1..AF-6; Receipt v1; live-only). Public install default: published `1.0.0-rc.5`.
 **Transport:** stdio MCP (default) + optional **Streamable HTTP** (`--mcp-http`), local WebSocket, and authenticated WSS (see [docs/transports.md](docs/transports.md))
 **Tools:** 15 — `occam_client_capabilities`, `occam_transcode`, `occam_probe`, `occam_digest`, `occam_playbook_resolve`, `occam_map`, `occam_playbook_heal`, `occam_playbook_save`, `occam_extract_knowledge`, **`occam_search`**, **`occam_verify`**, **`occam_claim_check`**, **`occam_attest`**, **`occam_playbook_lint`**, **`occam_dataset_export`** · **opt-in tools:** +3 async batch (`occam_batch_*`) when `OCCAM_BATCH_MCP=1`, `occam_watch` (stateful change-watch) when `OCCAM_WATCH_MCP=1`, `occam_crosscheck` (SI-14 consensus/cloaking cross-check) when `OCCAM_CONSENSUS_MCP=1`, `occam_failure_atlas` (SI-10 per-host closure map) when `OCCAM_ATLAS_MCP=1`, and **`occam_browser_interact`** when `OCCAM_BROWSER_ACTIONS_MCP=1` — see [docs/tools-reference.md](docs/tools-reference.md#opt-in-tools). Runtime `tools/list` may be narrower via `OCCAM_PROFILE` (`reader` default | `researcher` | `auditor` | `full`) — see [docs/configuration.md](docs/configuration.md#tool-surface-profile-occam_profile). Client context sizing: `occam_client_capabilities` / `OCCAM_CLIENT_CONTEXT_TOKENS` — see [docs/configuration.md](docs/configuration.md#client-context-budget-occam_client_context_tokens).
 
@@ -216,7 +216,7 @@ Legacy strings remain accepted during RC.2 prerelease compatibility, including J
         "signed": {
           "v": 1, "kind": "extraction", "url": "https://nginx.org/en/docs/",
           "finalUrl": "https://nginx.org/en/docs/", "backend": "http",
-          "ts": "2026-07-04T12:00:00Z", "toolchain": "ff-occam/1.0.0-rc.4",
+          "ts": "2026-07-04T12:00:00Z", "toolchain": "ff-occam/1.0.0-rc.5",
           "contentHash": "sha256:7c1e…", "tokens": 420, "confidence": 0.85,
           "keyId": "k1:1a2b3c4d5e6f7a8b", "alg": "ecdsa-p256-sha256", "sig": "MEQCIH…"
         }
@@ -678,7 +678,7 @@ Converts one HTTP(S) URL to Markdown. **Always live extract.**
     "signed": {
       "v": 1, "kind": "extraction",
       "url": "https://example.com/docs", "finalUrl": "https://example.com/docs",
-      "backend": "http", "ts": "2026-07-04T12:00:00Z", "toolchain": "ff-occam/1.0.0-rc.4",
+      "backend": "http", "ts": "2026-07-04T12:00:00Z", "toolchain": "ff-occam/1.0.0-rc.5",
       "contentHash": "sha256:9f2b…", "tokens": 842, "confidence": 0.85,
       "keyId": "k1:1a2b3c4d5e6f7a8b", "alg": "ecdsa-p256-sha256", "sig": "MEUCIQ…"
     }
@@ -798,7 +798,7 @@ intent. A missing fragment does not invent a target; the regular focus query may
     "signed": {
       "v": 1, "kind": "negative",
       "url": "https://example.com/missing", "finalUrl": "https://example.com/missing",
-      "backend": "http", "ts": "2026-07-04T12:00:00Z", "toolchain": "ff-occam/1.0.0-rc.4",
+      "backend": "http", "ts": "2026-07-04T12:00:00Z", "toolchain": "ff-occam/1.0.0-rc.5",
       "failureCode": "http_404", "statusCode": 404,
       "keyId": "k1:1a2b3c4d5e6f7a8b", "alg": "ecdsa-p256-sha256", "sig": "MEUCIA…"
     }

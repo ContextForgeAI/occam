@@ -1,6 +1,6 @@
 {
   "name": "@ff-occam/agent-sdk",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "type": "module",
   "description": "TypeScript SDK for FF-Occam MCP — high-level research, transcode, digest, map, extract workflows",
   "license": "AGPL-3.0-or-later",
@@ -57,7 +57,7 @@
     "node": ">=20.0.0"
   },
   "peerDependencies": {
-    "@ff-occam/mcp": "1.0.0-rc.4"
+    "@ff-occam/mcp": "1.0.0-rc.5"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
