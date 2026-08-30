@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -345,6 +346,7 @@ public sealed class OccamTranscodeTool(
         // Whole-response conditional / delta economy: omit large sidecars when the body is intentionally
         // empty. unchanged:true is a minimal envelope; delta_only keeps only diff + verification metadata.
         var omitHeavySidecars = unchanged == true || deltaPrimary;
+        var receiptStarted = Stopwatch.GetTimestamp();
         OccamTranscodeReceiptInfo? receipt;
         if (unchanged == true)
         {
@@ -377,7 +379,9 @@ public sealed class OccamTranscodeTool(
                 ReceiptsPolicy.Enabled() ? timeAnchorService : null,
                 emitCapsule: emit_capsule);
         }
+        var receiptMs = Stopwatch.GetElapsedTime(receiptStarted).TotalMilliseconds;
 
+        var serializeStarted = Stopwatch.GetTimestamp();
         var json = OccamJsonPrintableEscapes.Serialize(
             new OccamTranscodeSuccessResponse(
                 true,
@@ -428,6 +432,10 @@ public sealed class OccamTranscodeTool(
                     ? null
                     : MapMustContain(Compile.MustContainMatcher.Evaluate(result.Markdown ?? string.Empty, options.MustContain))),
             OccamTranscodeJsonContext.Default.OccamTranscodeSuccessResponse);
+        var serializeMs = Stopwatch.GetElapsedTime(serializeStarted).TotalMilliseconds;
+        // #region agent log
+        File.AppendAllText("/opt/cursor/logs/debug.log", $"{{\"hypothesisId\":\"G\",\"location\":\"src/FFOccamMcp.Core/Tools/OccamTranscodeTool.cs:435\",\"message\":\"receipt and response serialization completed\",\"data\":{{\"receiptMs\":{receiptMs.ToString(System.Globalization.CultureInfo.InvariantCulture)},\"serializeMs\":{serializeMs.ToString(System.Globalization.CultureInfo.InvariantCulture)},\"jsonChars\":{json.Length},\"receiptEnabled\":{ReceiptsPolicy.Enabled().ToString().ToLowerInvariant()}}},\"timestamp\":{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}}}\n");
+        // #endregion
 
         // Only cache real successes; never an unchanged (AF-6) body — cacheable already
         // excludes if_none_match, so unchanged is null on this path.

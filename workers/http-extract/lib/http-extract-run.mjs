@@ -1,4 +1,5 @@
 import { Readability } from "@mozilla/readability";
+import { appendFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { JSDOM, VirtualConsole } from "jsdom";
 import TurndownService from "turndown";
@@ -119,6 +120,9 @@ export async function runHttpExtract(options) {
 async function runHttpExtractCore(options) {
   const { url } = options;
   const started = performance.now();
+  // #region agent log
+  appendFileSync("/opt/cursor/logs/debug.log", JSON.stringify({ hypothesisId: "A|H", location: "workers/http-extract/lib/http-extract-run.mjs:124", message: "http extract entry", data: { host: new URL(url).hostname, htmlFile: Boolean(options.htmlFile), features: options.features ?? null }, timestamp: Date.now() }) + "\n");
+  // #endregion
   // Split point for the "with-internet vs without" breakdown: timestamp set the moment the
   // response body is fully in memory. Everything before = network I/O (DNS + connect + TLS +
   // TTFB + download); everything after = CPU (JSDOM + Readability + Turndown + prune).
@@ -177,6 +181,10 @@ async function runHttpExtractCore(options) {
         signal: AbortSignal.timeout(30_000),
         ...(pinnedDispatcher ? { dispatcher: pinnedDispatcher } : {}),
       });
+      const headersAt = performance.now();
+      // #region agent log
+      appendFileSync("/opt/cursor/logs/debug.log", JSON.stringify({ hypothesisId: "A", location: "workers/http-extract/lib/http-extract-run.mjs:185", message: "response headers received", data: { headersMs: Math.round(headersAt - started), status: response.status, contentLength: response.headers.get("content-length"), finalHost: new URL(response.url).hostname }, timestamp: Date.now() }) + "\n");
+      // #endregion
 
       if (!response.ok) {
         // Release the body we are deliberately not reading. Without this the request stays in-flight:
@@ -211,6 +219,9 @@ async function runHttpExtractCore(options) {
 
       const body = await readResponseBodyForExtract(response, maxResponseBytes);
       fetchDoneAt = performance.now(); // body fully read: network leg ends here
+      // #region agent log
+      appendFileSync("/opt/cursor/logs/debug.log", JSON.stringify({ hypothesisId: "B", location: "workers/http-extract/lib/http-extract-run.mjs:223", message: "response body read", data: { bodyMs: Math.round(fetchDoneAt - headersAt), networkMs: Math.round(fetchDoneAt - started), bytesRead: body.bytesRead, truncated: body.truncated }, timestamp: Date.now() }) + "\n");
+      // #endregion
       html = body.html;
       sizeMeta = body;
       finalUrl = response.url;
@@ -616,9 +627,14 @@ function renderFeedMarkdown(feed) {
 }
 
 function extractHtmlToMarkdown(html, finalUrl, requestedUrl, wantBlocks = false, wantTables = false) {
+  const extractStarted = performance.now();
   const virtualConsole = new VirtualConsole();
   virtualConsole.on("jsdomError", () => {});
   const dom = new JSDOM(html, { url: finalUrl, virtualConsole });
+  const domParsedAt = performance.now();
+  // #region agent log
+  appendFileSync("/opt/cursor/logs/debug.log", JSON.stringify({ hypothesisId: "C", location: "workers/http-extract/lib/http-extract-run.mjs:638", message: "JSDOM parsed", data: { domMs: Math.round(domParsedAt - extractStarted), htmlChars: html.length }, timestamp: Date.now() }) + "\n");
+  // #endregion
   const doc = dom.window.document;
   const access = collectAccessEvidence(doc, { requestedUrl, finalUrl });
   const iframeBlocks = collectIframeMarkdownBlocks(doc, finalUrl);
@@ -645,9 +661,16 @@ function extractHtmlToMarkdown(html, finalUrl, requestedUrl, wantBlocks = false,
 
   const hasSeedSelectors = getContentSelectorsForUrl(finalUrl).length > 0;
   let article = hasSeedSelectors || isStrictPlaybookOverlay() ? pickMainContent(doc, finalUrl) : null;
+  const readabilityStarted = performance.now();
+  let usedReadability = false;
   if (!article?.content && !isStrictPlaybookOverlay()) {
+    usedReadability = true;
     article = new Readability(doc).parse();
   }
+  const readabilityDoneAt = performance.now();
+  // #region agent log
+  appendFileSync("/opt/cursor/logs/debug.log", JSON.stringify({ hypothesisId: "D|H", location: "workers/http-extract/lib/http-extract-run.mjs:673", message: "content selected", data: { preprocessMs: Math.round(readabilityStarted - domParsedAt), readabilityMs: Math.round(readabilityDoneAt - readabilityStarted), articleChars: article?.content?.length ?? 0, usedReadability, seeded: hasSeedSelectors, strict: isStrictPlaybookOverlay(), wantBlocks, wantTables }, timestamp: Date.now() }) + "\n");
+  // #endregion
   if (!article?.content && !isStrictPlaybookOverlay()) {
     article = pickMainContent(doc, finalUrl);
   }
@@ -678,6 +701,10 @@ function extractHtmlToMarkdown(html, finalUrl, requestedUrl, wantBlocks = false,
   const turndown = new TurndownService({ headingStyle: "atx", codeBlockStyle: "fenced" });
   addTableRule(turndown);
   const body = turndown.turndown(article.content);
+  const turndownDoneAt = performance.now();
+  // #region agent log
+  appendFileSync("/opt/cursor/logs/debug.log", JSON.stringify({ hypothesisId: "E", location: "workers/http-extract/lib/http-extract-run.mjs:706", message: "Turndown completed", data: { turndownMs: Math.round(turndownDoneAt - readabilityDoneAt), markdownChars: body.length }, timestamp: Date.now() }) + "\n");
+  // #endregion
   const title = (article.title ?? "").trim();
   let markdown = title.length > 0 ? `# ${title}\n\n${body}` : body;
   markdown = appendIframeMarkdownBlocks(markdown, iframeBlocks);
@@ -691,6 +718,9 @@ function extractHtmlToMarkdown(html, finalUrl, requestedUrl, wantBlocks = false,
   }
   const media_refs = collectMediaRefs(doc, finalUrl, { root: mediaRoot });
   const meta = collectPageMetadata(doc, finalUrl);
+  // #region agent log
+  appendFileSync("/opt/cursor/logs/debug.log", JSON.stringify({ hypothesisId: "F", location: "workers/http-extract/lib/http-extract-run.mjs:724", message: "worker post-processing completed", data: { postMs: Math.round(performance.now() - turndownDoneAt), extractMs: Math.round(performance.now() - extractStarted), outputChars: markdown.length, mediaRefs: media_refs.length }, timestamp: Date.now() }) + "\n");
+  // #endregion
 
   return {
     ok: true,
