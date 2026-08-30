@@ -466,6 +466,7 @@ internal static class L0InfraUnitTests
     {
         var occamHome = WorkerPaths.ResolveOccamHome() ?? Directory.GetCurrentDirectory();
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "shared", "lib", "generic-markdown-prune.selftest.mjs"), "generic markdown prune selftest");
+        RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "shared", "lib", "source-adapter.selftest.mjs"), "source adapter selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "shared", "lib", "plain-text-pass-through.selftest.mjs"), "plain text pass-through selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "http-extract", "lib", "access-evidence.selftest.mjs"), "access evidence selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "shared", "lib", "error-shell.selftest.mjs"), "error shell selftest");

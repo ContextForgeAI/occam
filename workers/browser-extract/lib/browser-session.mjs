@@ -576,20 +576,18 @@ export async function renderAndExtract(context, url, options = {}) {
       };
     }
 
-    consentClicked = await tryDismissConsent(page, { aggressive: consentAggressive, recipe });
-    if (!consentClicked) {
-      consentClicked = await tryDismissConsent(page, { aggressive: true, recipe });
-    }
+    // Single budgeted consent pass. HTML preprocess stripConsentOnly still removes
+    // consent-like [role=dialog] nodes, so a miss must not burn multi-second waits.
+    consentClicked = await tryDismissConsent(page, { aggressive: true, recipe });
 
     if (useReextract && consentClicked) {
-      await waitForConsentOverlayHidden(page, { timeoutMs: consentAggressive ? 5000 : 4000 });
+      await waitForConsentOverlayHidden(page, { timeoutMs: consentAggressive ? 2500 : 1500 });
       consentReextract = true;
-      await page.waitForTimeout(consentAggressive ? 1000 : 600);
-    } else if (useCssHide && !consentClicked) {
+      await page.waitForTimeout(consentAggressive ? 450 : 300);
+    } else if (!consentClicked) {
       await hideConsentOverlays(page);
-      await page.waitForTimeout(consentAggressive ? 1000 : 800);
     } else {
-      await page.waitForTimeout(consentAggressive ? 1000 : 800);
+      await page.waitForTimeout(consentAggressive ? 450 : 300);
     }
 
     // MCP browser_interact: declarative actions only (no playbook js_before_wait / wait_for.js).

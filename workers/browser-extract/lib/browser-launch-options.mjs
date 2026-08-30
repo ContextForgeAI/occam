@@ -2,6 +2,9 @@
  * Resolve Playwright chromium.launch() options from environment.
  * OCCAM_BROWSER_CHANNEL=chrome|msedge uses system browser (no ms-playwright download).
  * OCCAM_BROWSER_EXECUTABLE_PATH or OCCAM_CHROME_PATH — explicit binary path.
+ * When channel is unset, prefer an installed system Chrome/Edge (TLS fingerprint closer
+ * to a real browser). Force bundled Chromium with OCCAM_BROWSER_CHANNEL=chromium, or
+ * disable the preference with OCCAM_BROWSER_PREFER_SYSTEM=0.
  *
  * Anti-detection baseline ("lean-A"): stock browser fingerprint that doesn't
  * announce "I am automated" to every site. This is table-stakes for a real
@@ -9,6 +12,10 @@
  *   ✓ hide the `navigator.webdriver` flag + disable AutomationControlled blink feature
  *   ✗ no CAPTCHA solving, no identity rotation, no proxy chaining (opt-in escalation)
  */
+
+import { existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 
 const ALLOWED_CHANNELS = new Set([
   "chrome",
@@ -41,6 +48,97 @@ export const STEALTH_INIT_SCRIPT = `
 `;
 
 /**
+ * Well-known install paths for Playwright `channel` browsers.
+ * Detection is path-only (no launch) so resolve stays sync and cheap.
+ * @param {{ existsSync?: (path: string) => boolean, platform?: string, env?: NodeJS.ProcessEnv, home?: string }} [opts]
+ * @returns {"chrome"|"msedge"|"chrome-beta"|"msedge-beta"|null}
+ */
+export function detectSystemBrowserChannel(opts = {}) {
+  const exists = opts.existsSync ?? existsSync;
+  const platform = opts.platform ?? process.platform;
+  const env = opts.env ?? process.env;
+  const home = opts.home ?? homedir();
+
+  /** @type {{ channel: "chrome"|"msedge"|"chrome-beta"|"msedge-beta", paths: string[] }[]} */
+  const candidates = [];
+
+  if (platform === "win32") {
+    const pf = env.ProgramFiles || "C:\\Program Files";
+    const pf86 = env["ProgramFiles(x86)"] || "C:\\Program Files (x86)";
+    const local = env.LOCALAPPDATA || join(home, "AppData", "Local");
+    candidates.push(
+      {
+        channel: "chrome",
+        paths: [
+          join(pf, "Google", "Chrome", "Application", "chrome.exe"),
+          join(pf86, "Google", "Chrome", "Application", "chrome.exe"),
+          join(local, "Google", "Chrome", "Application", "chrome.exe"),
+        ],
+      },
+      {
+        channel: "msedge",
+        paths: [
+          join(pf86, "Microsoft", "Edge", "Application", "msedge.exe"),
+          join(pf, "Microsoft", "Edge", "Application", "msedge.exe"),
+          join(local, "Microsoft", "Edge", "Application", "msedge.exe"),
+        ],
+      },
+      {
+        channel: "chrome-beta",
+        paths: [join(pf, "Google", "Chrome Beta", "Application", "chrome.exe")],
+      },
+    );
+  } else if (platform === "darwin") {
+    candidates.push(
+      {
+        channel: "chrome",
+        paths: ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"],
+      },
+      {
+        channel: "msedge",
+        paths: ["/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"],
+      },
+      {
+        channel: "chrome-beta",
+        paths: ["/Applications/Google Chrome Beta.app/Contents/MacOS/Google Chrome Beta"],
+      },
+    );
+  } else {
+    candidates.push(
+      {
+        channel: "chrome",
+        paths: [
+          "/usr/bin/google-chrome-stable",
+          "/usr/bin/google-chrome",
+          "/opt/google/chrome/chrome",
+        ],
+      },
+      {
+        channel: "msedge",
+        paths: ["/usr/bin/microsoft-edge", "/usr/bin/microsoft-edge-stable"],
+      },
+      {
+        channel: "chrome-beta",
+        paths: ["/usr/bin/google-chrome-beta"],
+      },
+    );
+  }
+
+  for (const candidate of candidates) {
+    if (candidate.paths.some((path) => exists(path))) {
+      return candidate.channel;
+    }
+  }
+  return null;
+}
+
+function preferSystemBrowserEnabled(env = process.env) {
+  const raw = env.OCCAM_BROWSER_PREFER_SYSTEM?.trim()?.toLowerCase();
+  // Default ON — system Chrome/Edge TLS is closer to a real browser than bundled Chromium.
+  return raw !== "0" && raw !== "false" && raw !== "off" && raw !== "no";
+}
+
+/**
  * @returns {import('playwright').LaunchOptions}
  */
 export function resolveBrowserLaunchOptions() {
@@ -59,6 +157,16 @@ export function resolveBrowserLaunchOptions() {
   const channel = process.env.OCCAM_BROWSER_CHANNEL?.trim()?.toLowerCase();
   if (channel && channel !== "chromium" && ALLOWED_CHANNELS.has(channel)) {
     return { ...base, channel };
+  }
+  if (channel === "chromium") {
+    return base;
+  }
+
+  if (preferSystemBrowserEnabled()) {
+    const detected = detectSystemBrowserChannel();
+    if (detected) {
+      return { ...base, channel: detected };
+    }
   }
 
   return base;
@@ -104,6 +212,14 @@ export function usesSystemBrowser() {
   }
 
   const channel = process.env.OCCAM_BROWSER_CHANNEL?.trim()?.toLowerCase();
-  return Boolean(channel && channel !== "chromium" && ALLOWED_CHANNELS.has(channel));
+  if (channel === "chromium") {
+    return false;
+  }
+  if (channel && ALLOWED_CHANNELS.has(channel)) {
+    return true;
+  }
+  if (!channel && preferSystemBrowserEnabled()) {
+    return detectSystemBrowserChannel() != null;
+  }
+  return false;
 }
-

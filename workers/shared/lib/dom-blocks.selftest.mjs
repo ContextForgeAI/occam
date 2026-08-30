@@ -35,4 +35,50 @@ const li = blocks.find((b) => b.type === "list_item");
 assert.ok(li, "list item present");
 assert.equal(li.level, undefined, "list item carries no level");
 
+// Provenance generation must stay linear in block count. In particular, it must not issue a
+// full-document selector query for every block merely to re-verify a path that was derived from
+// that same live DOM.
+const manyHtml = `<!DOCTYPE html><html><body>
+  <main id="content">${Array.from(
+    { length: 400 },
+    (_, index) => `<p>Block ${index} with enough content for provenance.</p>`,
+  ).join("")}</main>
+</body></html>`;
+const manyDom = new JSDOM(manyHtml, { url: "https://example.com/large" });
+const manyDoc = manyDom.window.document;
+const manyRoot = manyDoc.getElementById("content");
+const originalQuerySelector = manyDoc.querySelector.bind(manyDoc);
+const originalQuerySelectorAll = manyDoc.querySelectorAll.bind(manyDoc);
+let documentQueries = 0;
+manyDoc.querySelector = (...args) => {
+  documentQueries += 1;
+  return originalQuerySelector(...args);
+};
+manyDoc.querySelectorAll = (...args) => {
+  documentQueries += 1;
+  return originalQuerySelectorAll(...args);
+};
+const manyBlocks = collectBlocks(manyRoot, { doc: manyDoc, baseUrl: manyDoc.URL });
+assert.equal(manyBlocks.length, 400);
+assert.equal(documentQueries, 0, "selector provenance performs no repeated document scans");
+for (let index = 0; index < manyBlocks.length; index += 1) {
+  assert.equal(
+    originalQuerySelector(manyBlocks[index].source_selector),
+    manyRoot.children[index],
+    `block ${index} selector round-trips`,
+  );
+}
+
+// A duplicate id may anchor the first matching element (querySelector does too), while later
+// duplicates must fall back to a structural path so both selectors retain exact provenance.
+const duplicateDom = new JSDOM(
+  "<!doctype html><html><body><main><section id='dup'><p>First</p></section><section id='dup'><p>Second</p></section></main></body></html>",
+);
+const duplicateDoc = duplicateDom.window.document;
+const duplicateRoot = duplicateDoc.querySelector("main");
+const duplicateBlocks = collectBlocks(duplicateRoot, { doc: duplicateDoc });
+assert.equal(duplicateBlocks.length, 2);
+assert.equal(duplicateDoc.querySelector(duplicateBlocks[0].source_selector)?.textContent, "First");
+assert.equal(duplicateDoc.querySelector(duplicateBlocks[1].source_selector)?.textContent, "Second");
+
 console.log("dom-blocks heading-level: OK");

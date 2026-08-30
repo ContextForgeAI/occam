@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "id": "npmjs.com",
+  "hosts": ["npmjs.com"],
+  "meta": {
+    "title": "npm package pages",
+    "tags": ["package_registry", "spa_docs"]
+  },
+  "routing": {
+    "preferred_backend": "http_then_browser"
+  },
+  "extract": {
+    "sourceAdapter": "npm_registry_package"
+  },
+  "agent_notes": "Package permalinks may be blocked by npmjs.com. The HTTP worker can fall back to the public npm registry latest-version metadata endpoint; url.finalUrl identifies that alternate source. This is not a browser bypass and does not promise README content."
+}

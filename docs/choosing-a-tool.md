@@ -44,6 +44,15 @@ fragment-free page.
 
 On success, optional `quality.verdict` may be `short_quality` or `rich` — both are usable. Do not treat a short body as failure.
 
+For a direct npm `/package/<name>` permalink blocked by the presentation site, the bundled playbook
+may return public latest-version registry metadata instead. Check `backend=npm_registry_package` and
+`url.finalUrl` for the actual source; this is not a browser bypass and does not guarantee README text.
+
+For an exact crates.io `/crates/<name>` permalink, the bundled playbook may resolve the latest
+non-yanked version through the sparse index and return its official rendered README. Check
+`backend=crates_io_readme` and the `static.crates.io` `url.finalUrl`. Other crates.io paths stay on
+the normal acquisition ladder rather than being guessed or rewritten.
+
 ### Multi-source research
 
 ```

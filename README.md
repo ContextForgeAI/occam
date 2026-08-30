@@ -1,42 +1,78 @@
-# Occam
+# FF-Occam
 
-**Live web pages → compact Markdown for AI agents. Honest failures. Local-first.**
+**Live web → compact, source-linked, verifiable context for AI agents.**
 
-[Docs](https://contextforgeai.github.io/occam/) · [Why Occam](https://contextforgeai.github.io/occam/why-occam/) · [Quick Start](https://contextforgeai.github.io/occam/quick-start/) · [`llms.txt`](llms.txt) · [Releases](https://github.com/ContextForgeAI/occam/releases)
+Occam reads current web pages on your machine, removes interface noise, fits
+the useful content to an agent's context window, and returns either clean
+Markdown or an explicit reason why the content is unknown.
 
-> Occam is an MCP host (and CLI) that **acquires the real page now**, strips chrome, fits your token budget, and returns either usable Markdown **or** a typed `ok:false`. It does **not** invent page text from model memory.
-
-**Status:** published install channel **`1.0.0-rc.4`** (release candidate). npm is an RC path — not GA. Guarded install = signed GitHub Release bootstrap ([INSTALL.md](INSTALL.md)).
-
----
-
-## What you get (30 seconds)
-
-| | Capability |
-|---|------------|
-| **Honest read** | Live extract → Markdown, or typed refusal. `ok:false` = content **unknown** — never guess. |
-| **Token contract** | Ambient budget via `occam_client_capabilities`, or `max_tokens` / `fit_markdown` + `focus_query`. Not an LLM summarizer. |
-| **Acquisition ladder** | HTTP first → browser when needed → optional managed / archive (operator env). |
-| **One page / many** | `occam_transcode` (one URL) · `occam_digest` (many) · `occam_map` / `occam_search` (discover). |
-| **Structure on demand** | Opt-in `json_blocks` / tables / feeds · `if_none_match` / `diff_against` for cheap re-checks. |
-| **Integrity** | Optional Receipt v1 → `occam_verify` (integrity vs a key — **not** truth). |
-| **Playbooks** | Per-site recipes: resolve / heal / lint / save when you author them. |
-| **Local-first** | Runs on your machine; SSRF / private URL blocks by default. |
-
-Full knobs + tool map: **[Why Occam](docs/why-occam.md)** (read this before treating Occam as “just fetch”).
-
----
-
-## Install
-
-**Fast try (npm RC):**
+[![CI](https://github.com/ContextForgeAI/occam/actions/workflows/ci.yml/badge.svg)](https://github.com/ContextForgeAI/occam/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/ff-occam?label=npm)](https://www.npmjs.com/package/ff-occam)
+[![License](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
 ```bash
 npm install -g ff-occam@1.0.0-rc.4
 occam connect
 ```
 
-**Guarded release (recommended):**
+Then open a new conversation in your MCP client:
+
+```text
+Use Occam to read https://example.com/ and tell me what it says.
+Include the source. If the read fails, report the reason instead of guessing.
+```
+
+> Current release: **1.0.0-rc.4**. npm is the fastest RC trial path. The
+> production-oriented path uses a signed release bootstrap; see
+> [Install safely](#install-safely).
+
+![A webpage reduced to source-linked Markdown](docs/assets/occam-proof-before-after-rc4.png)
+
+## Three jobs
+
+| Need | Use Occam to | Start with |
+|------|--------------|------------|
+| **Read** | Turn one live URL into clean Markdown | `occam_transcode(url)` |
+| **Research** | Focus and combine several known sources | `occam_digest(urls, focus_query)` |
+| **Verify** | Check extract integrity and portable citation proofs | `occam_verify(receipt, markdown)` |
+
+Open-web discovery is available through `occam_search` when a search provider
+is configured. Occam does not pretend an unconfigured search backend exists.
+
+## Why not a generic fetch?
+
+| Generic fetch | FF-Occam |
+|---------------|----------|
+| Raw HTML, page chrome, or a silent empty shell | Compact Markdown or typed `ok:false` |
+| Output can consume the whole context window | Explicit budget, focus, sections, and deltas |
+| One acquisition method | HTTP → browser → disclosed public/managed adapters |
+| No evidence for later citation checks | Optional signed receipt and block proofs |
+| Missing content invites a model-memory guess | `ok:false` means **unknown** |
+
+## Measured live baseline
+
+One pinned 48-URL run on 2026-08-30. These are live observations from one
+machine and network, not universal success or latency claims.
+
+| Fetch metric | FF-Occam |
+|--------------|---------:|
+| Tier 1 retrieval | 100.0% |
+| Tier 2 retrieval | 75.0% |
+| Tier 3 retrieval | 38.5% |
+| Overall retrieval | 75.0% (36/48) |
+| False-positive rate | 0.0% |
+| Successful fetch p50 | 630 ms |
+| Successful fetch p90 | 1,973 ms |
+
+Method, pinned revision, runner, limitations, and reproduction commands:
+[`scripts/bench/README.md`](scripts/bench/README.md). Treat this as
+reproducible baseline evidence, not independent certification.
+
+---
+
+## Install safely
+
+For production-oriented installs, use the signed GitHub Release bootstrap:
 
 ```bash
 # Linux x64 / macOS Apple Silicon
@@ -48,24 +84,20 @@ curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/g
 irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
 ```
 
-Published RIDs today: `win-x64`, `linux-x64`, `osx-arm64`. Details, Cosign policy, safety notes: [INSTALL.md](INSTALL.md) · [installation safety](docs/trust/installation-safety.md).
-
-Then open a **new** chat in the connected host and ask it to read a URL (example below).
+Published RIDs: `win-x64`, `linux-x64`, `osx-arm64`. The bootstrap verifies
+the archive binding and required Cosign bundle before installing. Details:
+[INSTALL.md](INSTALL.md) ·
+[installation safety](docs/trust/installation-safety.md).
 
 ---
 
-## Two ways to use it
+## Use it
 
 ### MCP (AI agents — Cursor, Claude, Hermes, …)
 
-After `occam connect` (or a manual MCP snippet), the host sees Occam tools. Default profile **`reader`** ≈ 8 tools; **`full`** = 15 core tools. Runtime `tools/list` wins.
-
-**Default page read — only `url` required:**
-
-```text
-Use Occam to read https://example.com/ and summarize it. Include the source URL.
-On ok:false do not invent the page — report the failure code.
-```
+After `occam connect`, Cursor, Claude, Hermes, and other MCP clients can call
+Occam. The default `reader` profile exposes the everyday reading tools; use
+`full` only for playbook authoring and advanced evidence workflows.
 
 Agent map: [`llms.txt`](llms.txt) → start with [Why Occam](docs/why-occam.md).
 
@@ -85,7 +117,7 @@ dotnet run --project benchmarks/l0-gate -- --url=https://example.com
 
 ---
 
-## Core tools (what to call)
+## Tools by task
 
 | Goal | Tool |
 |------|------|
@@ -102,9 +134,9 @@ Opt-in (env-gated): batch, watch, crosscheck, failure atlas, browser interact �
 
 ---
 
-## Token knobs (not a “compression codec” picker)
+## Spend fewer context tokens
 
-There is **no** public MCP `codec=` / gzip-style algorithm switch. Live output is Markdown. Shrink context with:
+Live output is Markdown, not an opaque summary. Shape it with:
 
 | Knob | Effect |
 |------|--------|
@@ -116,16 +148,11 @@ There is **no** public MCP `codec=` / gzip-style algorithm switch. Live output i
 
 ---
 
-## Demo you can inspect (not a % KPI)
+## Inspect the controlled demo
 
-The win is **chrome out, article in — or `ok:false`**, not a fixed savings rate.
-A news homepage may drop far more bytes than this demo; a sparse docs page may
-drop almost none. We keep **one** controlled fixture so the method is checkable.
-
-![Before/after on the demo page](docs/assets/occam-proof-before-after-rc4.png)
-
-For **this** page only: HTML body 5,297 UTF-8 bytes → Markdown 1,736. Do not
-market that ratio as “Occam saves ~67%.” Bytes ≠ tokens.
+The hero image uses one inspectable fixture: 5,297 UTF-8 HTML bytes become
+1,736 Markdown bytes while preserving the article structure. This is a
+reproducible example, not an average reduction or token claim.
 
 [Input](https://contextforgeai.github.io/occam/examples/current-proof/representative-input.html) · [Output](docs/examples/current-proof/representative-output.md) · [Method](docs/examples/current-proof/representative-measurement.json)
 

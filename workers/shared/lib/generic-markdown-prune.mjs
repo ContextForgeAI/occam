@@ -30,8 +30,6 @@ export function genericMarkdownPrune(markdown) {
     /^community$/i,
     /become a sponsor/i,
     /^sponsor$/i,
-    /\bdiscord\b/i,
-    /\bbluesky\b/i,
     /^menu\s*on this page/i,
     /menuon this page/i,
     /^[-*]\s+\[(Discord|Bluesky|GitHub|X)\]/i,

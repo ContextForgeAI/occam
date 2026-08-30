@@ -28,6 +28,7 @@
 | Empty or tiny markdown | SPA or thin HTTP extract | `backend_policy=browser` or `http_then_browser` |
 | `captcha_or_challenge` | Cloudflare / bot wall | Stop; export session cookies only if site allows |
 | `requires_login` / `http_403` | Gated content | `occam-session.mjs export-state` → `session_profile` |
+| npm package permalink returns `http_403` | npmjs.com presentation page is blocked and the URL is not eligible for the bundled package adapter | Use a direct `/package/<name>` permalink. Eligible package pages fall back to public latest-version metadata from `registry.npmjs.org`; this does not bypass Cloudflare or guarantee README content |
 | `http_404` | Bad link | Fix URL |
 | `timeout` | Slow site, cold browser, or exhausted map/probe deadline | Retry; raise per-call `timeout_ms` for map/probe or `OCCAM_BROWSER_TIMEOUT_MS` for browser extracts |
 | `response_too_large` | Page exceeds cap | Raise `OCCAM_MAX_RESPONSE_BYTES` or skip |

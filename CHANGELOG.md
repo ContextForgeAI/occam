@@ -6,12 +6,61 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+- **Faster budgeted CMP dismiss** — one consent scan with a hard time budget,
+  CSS vendor hits via `querySelector`, and no multi-second waits when the click
+  misses (HTML still strips consent-like dialogs). Cuts browser-path tails on
+  CMP-heavy pages without changing honesty.
+- **System Chrome preference + multilingual CMP dismiss** — when
+  `OCCAM_BROWSER_CHANNEL` is unset, the browser worker prefers an installed
+  system Chrome/Edge (disable with `OCCAM_BROWSER_PREFER_SYSTEM=0` or force
+  `OCCAM_BROWSER_CHANNEL=chromium`). Consent dismiss adds common EU-language
+  accept/refuse labels, prefers controls inside `[role=dialog]`, and drops the
+  false-positive bare `OK` click. HTML preprocess also strips consent-like
+  modal dialogs (vendor id lists miss custom React portals), so Readability
+  does not treat French CMP copy as the article. LeBonCoin: bundled Chromium
+  remains DataDome `403`; system Chrome yields real homepage Markdown. Pinned
+  WRB re-check: LeBonCoin `true_positive`; overall 36/48 unchanged on that run
+  when another Tier-3 URL missed. Reuters CloudFront `401` remains an honest
+  miss — no sitemap/probe substitution.
+- **Faithful crates.io README adapter** — exact `/crates/<name>` permalinks use
+  the rate-unlimited sparse index to select the latest non-yanked version, then
+  fetch the official rendered README from `static.crates.io`. The API is only a
+  rate-limited fallback (one request per second with an identifying user agent).
+  Rich links and code are preserved; `backend=crates_io_readme` and the static
+  final URL disclose the source, while malformed or failed adaptations retain
+  the normal honest fallback ladder.
+- **Linear structured-block provenance** — build DOM-derived `source_selector`
+  paths directly from the live tree instead of re-querying the full document
+  for every block. Selectors retain round-trip provenance while large pages
+  avoid repeated whole-document scans.
+- **MCP structured-output wire fix** — normalize SDK-inferred JSON strings to
+  object-valued `structuredContent` after `tools/list` advertises `outputSchema`,
+  preserving compatibility with MCP clients that validate the field as a record.
+- **Safer generic pruning + npm package metadata fallback** — generic Markdown
+  cleanup no longer drops every line that mentions Discord or Bluesky; exact
+  navigation links remain removable. Direct npm package permalinks blocked by
+  the presentation site can use the bundled playbook's public
+  `registry.npmjs.org/<package>/latest` metadata adapter. The result discloses
+  `backend=npm_registry_package` and the registry `url.finalUrl`; it does not
+  claim a browser/Cloudflare bypass or guaranteed README content.
+- **Pinned WRB comparison harness** — `scripts/bench/run-wrb.mjs` checks out the
+  external Web Research Benchmark at a fixed commit and injects an honest Occam
+  adapter (`transcode`/`search` plus `map` as an explicitly labeled crawl
+  URL-discovery proxy); `compare-wrb.mjs` renders two result files as a
+  direction-aware scorecard. The runner has an offline fake-MCP contract
+  self-test, retains backend/final-source/failure diagnostics, and the docs
+  prohibit circular Occam-via-DonSeTch comparisons. Reuters and LeBonCoin
+  access-wall cases remain documented honest misses rather than probe-only
+  source substitutions.
 - **Homepage / README proof framing** — stop leading with “67.2%”; treat fixture
   bytes as one inspectable demo (sites vary), not a product KPI.
 - **Homepage clarity** — docs hub lead + “What you get (30 seconds)” table +
   denser Why Occam contrast; CTA to `why-occam`.
-- **README clarity pass** — Donsetch-style first screen: what you get in 30s, install,
-  MCP vs CLI, tool map, token knobs, trust limits; deep install prose stays in INSTALL.md.
+- **README value-first rewrite** — the first screen now answers what Occam is,
+  installs the RC, routes readers through Read / Research / Verify, contrasts
+  generic fetch behavior, and publishes a pinned per-tier Occam baseline.
+  Safety details, complete tools, token controls, and trust limits follow after
+  the product is clear.
 - **Discoverability flashcard** — new [Why Occam](docs/why-occam.md) page (advantages vs
   generic fetch + materialization knobs; no public codec selector). Wired into `llms.txt`
   step 0, Ask AI, README, docs hub, MkDocs Getting Started / Capabilities, MCP

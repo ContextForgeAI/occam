@@ -53,6 +53,45 @@ Both are intentional; do not merge without updating both consumers.
 
 ---
 
+## Cross-project benchmark
+
+The maintainer harness can run the external Web Research Benchmark (WRB) with
+an Occam adapter at a pinned upstream revision:
+
+```bash
+python3 scripts/bench/wrb/occam_runner_selftest.py
+node scripts/bench/run-wrb.mjs --fetch-only --verbose
+```
+
+See the
+[`scripts/bench/README.md` benchmark guide](https://github.com/ContextForgeAI/occam/blob/main/scripts/bench/README.md)
+for the full
+Occam-vs-DonSeTch run and scorecard commands. The adapter maps WRB fetch to
+`occam_transcode`, search to `occam_search`, and the crawl slot to focused
+`occam_map`. The last mapping measures URL discovery only; it is explicit
+capability-gap evidence, not a claim that Occam ships resumable content crawl.
+
+WRB is reproducible comparative evidence, not independent certification: its
+repository and initial corpus were created by the DonSeTch author, it uses
+deterministic substring probes, and it estimates tokens as `chars / 4`.
+The runner retains the selected `backend`, actual `final_url`, and
+`failure_code` for source-level diagnostics, although the pinned upstream
+summary does not copy those extension fields into its result JSON.
+
+The 2026-08-30 diagnostic re-check separates two LeBonCoin layers. HTTP and
+**bundled Playwright Chromium** still see DataDome `http_403` shells; **system
+Chrome/Edge** (now preferred when installed) opens the live page, and generic
+multilingual CMP dismiss is required so the French cookie wall is not extracted
+as the article. Reuters' AI category still returns 401 CloudFront shells with no
+faithful public content surface — its topic sitemap identifies the category but
+does not contain its articles. Neither URL has a host-specific branch or a
+bundled source adapter; a sitemap or unrelated-content substitution would only
+game WRB's substring probe. Live access behavior may change, so the detailed
+evidence and re-run guidance stay in the
+[benchmark harness documentation](https://github.com/ContextForgeAI/occam/blob/main/scripts/bench/README.md).
+
+---
+
 ## Gate markers (tier-1)
 
 Minimum before release claims:

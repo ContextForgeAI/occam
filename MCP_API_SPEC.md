@@ -40,7 +40,7 @@ Local and remote WebSocket messages are text-only and capped at 4 MiB by default
 
 1. **Parseable output** — JSON envelope, not raw Markdown strings.
 2. **Honest failures** — typed `failure.code`; agents must not hallucinate page content.
-3. **Backend transparency** — success includes the winning extractor identifier (for example `node_readability_turndown`, `browser_playwright`, `pdf`, or `managed_<provider>`). This is not the request's abstract `backend_policy`.
+3. **Backend transparency** — success includes the winning extractor identifier (for example `node_readability_turndown`, `browser_playwright`, `npm_registry_package`, `crates_io_readme`, `pdf`, or `managed_<provider>`). This is not the request's abstract `backend_policy`.
 4. **Live extract by default** — every call fetches the page unless `cache_ttl_s > 0` returns a prior signed envelope (`cached: true`). No built-in HTML/Markdown disk cache in Core.
 5. **Token economy (L1a)** — optional `max_tokens`, `fit_markdown`, `focus_query`, `content_selectors`. Defaults preserve L0 full-markdown behavior.
 6. **Probe (L1b)** — cheap HTTP diagnosis before transcode; routing hints, no workers.
@@ -52,8 +52,9 @@ Local and remote WebSocket messages are text-only and capped at 4 MiB by default
 ## Response envelope
 
 All tools return a **single string** containing JSON in `content[].text` (legacy path). When the body
-is a JSON object, the host also mirrors it in **`structuredContent`** (MCP 2026). Property names are
-**camelCase**. Treat stderr as decoration; treat stdout / HTTP as contract.
+is a JSON object, the host also mirrors it in **`structuredContent`** (MCP 2026). That wire value is
+a JSON object/record, never a JSON-encoded string. Property names are **camelCase**. Treat stderr as
+decoration; treat stdout / HTTP as contract.
 
 Typed expected failures (`ok:false` + `failureCode`) remain JSON tool **bodies** agents must parse
 (failure taxonomy unchanged). From **v1.0.0-rc.4**, the host also sets MCP **`isError:true`** on
@@ -105,9 +106,9 @@ log(result.backend)   # transcode only — winning extractor identifier
 |-------|------|---------|
 | `ok` | boolean | Always `true` on success |
 | `url.url` | string | URL you requested |
-| `url.finalUrl` | string \| null | URL after redirects |
+| `url.finalUrl` | string \| null | URL that supplied the returned content after redirects or a sanctioned source adapter. npm package-page fallback identifies its public registry metadata URL; an exact crates.io `/crates/<name>` adaptation identifies the official `static.crates.io` rendered README URL. |
 | `markdown` | string | Extracted Markdown (after compile knobs) |
-| `backend` | string | Winning extractor identifier, such as `node_readability_turndown`, `browser_playwright`, `pdf`, `css_extract_http`, or `managed_<provider>` (for example `managed_firecrawl`). Do not compare this field to `backend_policy`. |
+| `backend` | string | Winning extractor identifier, such as `node_readability_turndown`, `browser_playwright`, `npm_registry_package`, `crates_io_readme`, `pdf`, `css_extract_http`, or `managed_<provider>` (for example `managed_firecrawl`). Do not compare this field to `backend_policy`. |
 | `mediaRefs` | array? | Structured media handles (`url`, `kind`, `alt`, `contextHeading`, `selectorHint`) |
 | `meta` | object? | Always-on page metadata when found: `{ publishedAt, author, lang, canonical }` (og/meta/JSON-LD; each field omitted when absent). Useful for RAG freshness/citations |
 | `compile` | object? | Omitted when no token knobs were set; `tokenEstimator` identifies the heuristic behind `tokensEstimated` |
@@ -961,7 +962,8 @@ browser-availability failure's `failure.fix.command` points at, so an agent or s
 typed error without a human. A JSON marker goes to stdout (`{ ok, action:"install_browser",
 status:"installed"|"already_present"|"worker_missing"|"failed", exitCode }`), playwright's own progress
 to stderr. Exit `0` browser ready / `1` install failed / `2` worker tree not found. A configured system
-browser (`OCCAM_BROWSER_CHANNEL=chrome|msedge` or `OCCAM_BROWSER_EXECUTABLE_PATH`) short-circuits to
+browser (`OCCAM_BROWSER_CHANNEL=chrome|msedge`, `OCCAM_BROWSER_EXECUTABLE_PATH`, or auto-detected
+system Chrome/Edge when channel is unset and `OCCAM_BROWSER_PREFER_SYSTEM` is not `0`) short-circuits to
 `already_present` — nothing to download.
 
 ---

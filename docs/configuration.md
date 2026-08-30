@@ -44,8 +44,9 @@ Export profiles: `node scripts/occam-session.mjs export-state --profile <id>`.
 |----------|---------|---------|
 | `PLAYWRIGHT_BROWSERS_PATH` | Playwright cache | Standard browser cache path |
 | `OCCAM_PLAYWRIGHT_BROWSERS_PATH` | — | Occam-specific override |
-| `OCCAM_BROWSER_CHANNEL` | `chromium` | `chrome` \| `msedge` \| `chromium` |
-| `OCCAM_BROWSER_AUTOINSTALL` | on | On first genuine browser need with no browser installed, occam provisions the user-level Chromium itself and reports `browser_provisioned`. Set `0` to instead return a typed `browser_required` failure to run manually. System libraries (root) are never auto-installed |
+| `OCCAM_BROWSER_CHANNEL` | auto | `chrome` \| `msedge` \| `chromium` \| unset. Unset (default): prefer an installed system Chrome/Edge when found, else bundled Playwright Chromium. Set `chromium` to force the bundled browser. |
+| `OCCAM_BROWSER_PREFER_SYSTEM` | on | When `OCCAM_BROWSER_CHANNEL` is unset, prefer system Chrome/Edge if present. Set `0` to always use bundled Chromium unless a channel/path is explicit. |
+| `OCCAM_BROWSER_AUTOINSTALL` | on | On first genuine browser need with no browser installed, occam provisions the user-level Chromium itself and reports `browser_provisioned`. Set `0` to instead return a typed `browser_required` failure to run manually. System libraries (root) are never auto-installed. Auto-provision is skipped when a system browser is configured or auto-detected. |
 | `OCCAM_BROWSER_EXECUTABLE_PATH` | — | Absolute browser binary |
 | `OCCAM_CHROME_PATH` | — | Alias for executable path |
 | `OCCAM_BROWSER_PROFILE` | `shared` | `shared`/`daemon`/`lean` = daemon pool; `isolated`/`parallel` = one-shot |

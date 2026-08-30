@@ -428,7 +428,6 @@ public sealed class OccamTranscodeTool(
                     ? null
                     : MapMustContain(Compile.MustContainMatcher.Evaluate(result.Markdown ?? string.Empty, options.MustContain))),
             OccamTranscodeJsonContext.Default.OccamTranscodeSuccessResponse);
-
         // Only cache real successes; never an unchanged (AF-6) body — cacheable already
         // excludes if_none_match, so unchanged is null on this path.
         if (cacheable && cacheKey is not null && unchanged != true)

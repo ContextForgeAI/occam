@@ -59,7 +59,7 @@ internal static class OccamMcpToolWireEnricher
             }
 
             if (result.StructuredContent is null
-                || result.StructuredContent.Value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+                || result.StructuredContent.Value.ValueKind != JsonValueKind.Object)
             {
                 result.StructuredContent = document.RootElement.Clone();
             }
