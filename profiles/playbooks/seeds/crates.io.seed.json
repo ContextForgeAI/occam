@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "id": "crates.io",
+  "hosts": ["crates.io"],
+  "meta": {
+    "title": "crates.io package pages",
+    "tags": ["package_registry", "spa_docs"]
+  },
+  "routing": {
+    "preferred_backend": "http_then_browser"
+  },
+  "extract": {
+    "sourceAdapter": "crates_io_readme"
+  },
+  "agent_notes": "Exact /crates/<name> permalinks use the sparse index to select the latest non-yanked version, then fetch the official rendered README. backend and url.finalUrl disclose the alternate source; failures fall back to the normal acquisition ladder."
+}

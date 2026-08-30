@@ -6,6 +6,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+- **Faithful crates.io README adapter** — exact `/crates/<name>` permalinks use
+  the rate-unlimited sparse index to select the latest non-yanked version, then
+  fetch the official rendered README under crates.io's one-request-per-second
+  API policy and an identifying user agent. Rich links and code are preserved;
+  `backend=crates_io_readme` and the `static.crates.io` final URL disclose the
+  source, while malformed or failed adaptations retain the normal honest
+  fallback ladder.
 - **Linear structured-block provenance** — build DOM-derived `source_selector`
   paths directly from the live tree instead of re-querying the full document
   for every block. Selectors retain round-trip provenance while large pages

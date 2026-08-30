@@ -32,7 +32,7 @@ HTTP extract
 | Behavior | Meaning |
 |----------|---------|
 | Usable HTTP success stops | Non-empty Markdown, not thin, not a short challenge body → no browser |
-| Public source adapters are explicit | A bundled playbook may map a blocked presentation page to a sanctioned public metadata surface. npm package permalinks can use latest-version metadata from `registry.npmjs.org`; `backend` and `url.finalUrl` disclose the actual source |
+| Public source adapters are explicit | A bundled playbook may map a presentation page to a sanctioned public source. npm package permalinks can use latest-version metadata from `registry.npmjs.org`. Exact crates.io `/crates/<name>` permalinks resolve the latest non-yanked version through the sparse index, then use the official rendered README. `backend` and `url.finalUrl` disclose the actual source |
 | Thin / challenge may escalate | Bad extraction or short challenge-like body can open the browser rung |
 | Browser escalation is conditional | Not every failure escalates; terminal HTTP failures do not |
 | 404 / 410 short-circuit | No browser chase; no managed |

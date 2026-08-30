@@ -12,5 +12,9 @@
   },
   "overrides": {
     "canvas": "npm:@favware/skip-dependency@1.2.1"
+  },
+  "dependencies": {
+    "jsdom": "26.1.0",
+    "turndown": "7.2.4"
   }
 }

@@ -35,7 +35,10 @@ import { collectPageMetadata } from "../../shared/lib/page-metadata.mjs";
 import { collectAccessEvidence } from "../../shared/lib/access-evidence.mjs";
 import { applyErrorShellAccess } from "../../shared/lib/error-shell.mjs";
 import { preserveCodeWrappers } from "../../shared/lib/preserve-code-wrappers.mjs";
-import { trySourceAdapter } from "../../shared/lib/source-adapter.mjs";
+import {
+  shouldTrySourceAdapterFirst,
+  trySourceAdapter,
+} from "../../shared/lib/source-adapter.mjs";
 
 /** True when the given OCCAM feature is active for this run. */
 function featureActive(features, name) {
@@ -123,6 +126,8 @@ async function runHttpExtractCore(options) {
   // response body is fully in memory. Everything before = network I/O (DNS + connect + TLS +
   // TTFB + download); everything after = CPU (JSDOM + Readability + Turndown + prune).
   let fetchDoneAt = null;
+  let requestHeaders = {};
+  let sourceAdapterAttempted = false;
   const timing = () => {
     const now = performance.now();
     return {
@@ -148,6 +153,20 @@ async function runHttpExtractCore(options) {
       sizeMeta.bytesRead = Buffer.byteLength(html, "utf8");
       fetchDoneAt = performance.now(); // cached HTML: no network leg
     } else {
+      requestHeaders = await readRequestHeadersFile(options.headersFile ?? undefined);
+      if (shouldTrySourceAdapterFirst(url)) {
+        sourceAdapterAttempted = true;
+        const adapted = await trySourceAdapter({
+          requestedUrl: url,
+          requestHeaders,
+          maxResponseBytes,
+          started,
+        });
+        if (adapted) {
+          return await runPlugins(adapted, options.features);
+        }
+      }
+
       // SSRF / DNS-rebinding protection: resolve the host across BOTH families and pin the connection to the
       // resolved IPs so a re-resolve can't rebind to an internal target. Pinning ALWAYS happens;
       // OCCAM_ALLOW_PRIVATE_URLS=1 only relaxes the private-IP rejection (local testing) — it does not turn
@@ -166,7 +185,6 @@ async function runHttpExtractCore(options) {
         };
       }
 
-      const requestHeaders = await readRequestHeadersFile(options.headersFile ?? undefined);
       const defaults = getDefaultFetchHeaders();
       const defaultHeaders = {
         "User-Agent": defaults.userAgent,
@@ -183,11 +201,8 @@ async function runHttpExtractCore(options) {
         // it leaks a connection in the long-lived daemon, and it is what made the pool teardown below
         // hang forever on a large error page (see the destroy() note in `finally`).
         await response.body?.cancel().catch(() => {});
-        const adapted = await trySourceAdapter({
-          requestedUrl: url,
-          requestHeaders,
-          maxResponseBytes,
-          started,
+        const adapted = sourceAdapterAttempted ? null : await trySourceAdapter({
+          requestedUrl: url, requestHeaders, maxResponseBytes, started,
         });
         if (adapted) {
           return await runPlugins(adapted, options.features);
@@ -327,6 +342,13 @@ async function runHttpExtractCore(options) {
           max_bytes: sizeMeta.maxBytes,
           latency_ms: Math.round(performance.now() - started),
         };
+      }
+
+      const adapted = options.htmlFile || sourceAdapterAttempted ? null : await trySourceAdapter({
+        requestedUrl: url, requestHeaders, maxResponseBytes, started,
+      });
+      if (adapted) {
+        return await runPlugins(adapted, options.features);
       }
 
       return {
