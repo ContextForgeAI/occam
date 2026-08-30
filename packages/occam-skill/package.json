@@ -1,6 +1,6 @@
 {
   "name": "@ff-occam/skill",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "type": "module",
   "description": "Portable FF-Occam agent skill — lazy MCP orchestration for Cursor, Claude Code, Hermes, and other harnesses",
   "license": "AGPL-3.0-or-later",

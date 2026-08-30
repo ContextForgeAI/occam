@@ -77,7 +77,7 @@ Does <strong>not</strong> invent page text from model memory.
     <div class="oc-signal-command">
       <span class="oc-signal-command__label">npm RC · primary package</span>
       <div class="oc-signal-command__row">
-        <code data-oc-install-command>npm install -g ff-occam@1.0.0-rc.4</code>
+        <code data-oc-install-command>npm install -g ff-occam@1.0.0-rc.5</code>
         <button type="button" class="oc-signal-copy" data-oc-copy-command aria-label="Copy npm install command" aria-live="polite">Copy</button>
       </div>
       <span class="oc-signal-command__note">For the guarded release install, use the <a href="install/">signed bootstrap</a>.</span>
@@ -95,7 +95,7 @@ Does <strong>not</strong> invent page text from model memory.
     <li><a href="quick-start/"><span>03</span><strong>Read</strong><small>Get compact context or an explicit failure.</small></a></li>
   </ol>
 
-  <p class="oc-signal-meta">Local-first · MCP · explicit failures · 1.0.0-rc.4</p>
+  <p class="oc-signal-meta">Local-first · MCP · explicit failures · 1.0.0-rc.5</p>
 </section>
 
 ## What you get (30 seconds)
@@ -352,7 +352,7 @@ finish with a real page read.
 <a class="oc-btn oc-btn--secondary" href="examples/current-proof/">Inspect the proof</a>
 </p>
 
-<p class="oc-meta-line"><strong>Version:</strong> 1.0.0-rc.4 (published install channel) · <strong>Status:</strong> release candidate · <strong>License:</strong> AGPL-3.0-or-later</p>
+<p class="oc-meta-line"><strong>Version:</strong> 1.0.0-rc.5 (published install channel) · <strong>Status:</strong> release candidate · <strong>License:</strong> AGPL-3.0-or-later</p>
 
 ## Explore deeper
 

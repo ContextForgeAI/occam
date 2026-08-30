@@ -5,7 +5,7 @@
 > **Package status:** npm is **NOT a GA 1.0 install channel** (OD-3). The primary public package
 > name is **`ff-occam`**; this lower-level package is `@ff-occam/mcp`. For the guarded release
 > install, use GitHub Release archives + bootstrap (`INSTALL.md` / `docs/install.md`). The
-> published install default and package version are **`1.0.0-rc.4`**. Registry / `npx` commands
+> published install default and package version are **`1.0.0-rc.5`**. Registry / `npx` commands
 > below are an experimental RC channel. Core MCP tool
 > count is registry-defined and varies by profile/opt-in — do not treat a fixed “14/15” as a health check.
 
@@ -17,14 +17,14 @@
 
 ```bash
 # Primary npm name — stdio mode for any MCP client
-npx ff-occam@1.0.0-rc.4
+npx ff-occam@1.0.0-rc.5
 
 # Low-level scoped package (same host and version)
-npx @ff-occam/mcp@1.0.0-rc.4
+npx @ff-occam/mcp@1.0.0-rc.5
 
 # WebSocket mode (experimental)
-npx ff-occam@1.0.0-rc.4 --mcp-server
-npx ff-occam@1.0.0-rc.4 --mcp-server --port 5051
+npx ff-occam@1.0.0-rc.5 --mcp-server
+npx ff-occam@1.0.0-rc.5 --mcp-server --port 5051
 ```
 
 ## Installation
@@ -34,7 +34,7 @@ npx ff-occam@1.0.0-rc.4 --mcp-server --port 5051
 curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
 
 # Or via npm RC (not the guarded GA install path)
-npm install -g ff-occam@1.0.0-rc.4
+npm install -g ff-occam@1.0.0-rc.5
 ff-occam
 ```
 
@@ -71,7 +71,7 @@ Add to `.cursor/mcp.json`:
   "mcpServers": {
     "ff-occam": {
       "command": "npx",
-      "args": ["-y", "ff-occam@1.0.0-rc.4"],
+      "args": ["-y", "ff-occam@1.0.0-rc.5"],
       "env": {
         "OCCAM_PROFILE": "reader"
       }
@@ -94,7 +94,7 @@ Or use the WebSocket transport:
 
 Then start the server:
 ```bash
-npx ff-occam@1.0.0-rc.4 --mcp-server
+npx ff-occam@1.0.0-rc.5 --mcp-server
 ```
 
 ## Environment Variables
@@ -114,7 +114,7 @@ Two install modes — do not mix them:
 | Mode | When | MCP launcher |
 |------|------|----------------|
 | **Local tree** | `git clone`, `install.sh`, Level B tarball | `node scripts/launch-mcp-host.mjs` + `OCCAM_HOME` |
-| **npm / npx RC** | `npx ff-occam@1.0.0-rc.4` from registry | Primary wrapper delegates to `@ff-occam/mcp` and downloads the matching release binary |
+| **npm / npx RC** | `npx ff-occam@1.0.0-rc.5` from registry | Primary wrapper delegates to `@ff-occam/mcp` and downloads the matching release binary |
 
 For a **git clone or tarball** (not `npx`):
 

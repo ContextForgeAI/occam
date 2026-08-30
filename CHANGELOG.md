@@ -2,10 +2,22 @@
 
 All notable changes to **FFOccamMCP** (L0 core) are documented here.
 
-Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1` was the first release candidate after L0 closed; `1.0.0-rc.2`, `1.0.0-rc.3`, and `1.0.0-rc.4` are published RCs.
+Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1` was the first release candidate after L0 closed; `1.0.0-rc.2`, `1.0.0-rc.3`, `1.0.0-rc.4`, and `1.0.0-rc.5` are published RCs.
 
 ## [Unreleased]
 
+## [1.0.0-rc.5] — 2026-08-30
+
+Published on GitHub Releases with Cosign-signed Level B archives. Not GA; live
+L3–L9 soak on `main` passed 2026-08-30 before this cut.
+
+### Changed
+
+- **Tree version `1.0.0-rc.5`** — `VERSION` + npm manifests + `server.json` bumped for the
+  cut.
+- **Public install default → published `1.0.0-rc.5`** — bootstrap (`get-ff-occam.sh` /
+  `.ps1`), `PUBLIC_DEFAULT_RELEASE_VERSION`, and install docs track GitHub Release
+  `v1.0.0-rc.5` (Cosign `required-cosign-v1`).
 - **Keyless default search (DuckDuckGo HTML)** — when `OCCAM_SEARCH_PROVIDER` is
   unset, `occam_search` uses disclosed DuckDuckGo HTML/lite discovery
   (`provider=duckduckgo`). Set `off`/`none` for the previous
@@ -86,7 +98,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   `action_failed` in the public failure taxonomy and L1 coverage; browser-interact
   successes fold `actionPlanHash` into `receipt.signed` (optional field, back-compat
   when omitted).
-- **Connect verifier follows the rc.4 profile contract** — `tools/list` health
+- **Connect verifier follows the reader profile contract** — `tools/list` health
   now checks the eight required reader tool identities instead of requiring a
   historical 15-tool count. Default `OCCAM_PROFILE=reader` therefore verifies
   successfully, expanded profiles remain valid, spawn failures return a typed
@@ -94,8 +106,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   baseline (identity list when names are present; count ≥ 8 otherwise).
 - **Public docs and npm identity sync** — the primary npm name is `ff-occam`;
   install/smoke prose now distinguishes default `reader` (8) from `full` (15),
-  the portable skill metadata is rc.4, networking no longer claims Chromium
-  socket pinning, and the current proof identifies rc.4. The documentation
+  the portable skill metadata is rc.5, networking no longer claims Chromium
+  socket pinning, and the current proof identifies rc.5. The documentation
   homepage now uses a responsive semantic layout (live processing stream,
   copyable install command, Install → Connect → Read) whose sample Markdown
   matches the representative proof fixture; the old raster corridor asset is
@@ -103,7 +115,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 - **npm publish via GitHub Actions** — workflow `npm-publish` (`workflow_dispatch`) publishes
   experimental `@ff-occam/mcp` then `ff-occam` with dist-tag `rc`. Requires secret `NPM_TOKEN`.
   npm remains **not** a GA install channel.
-- **`ff-occam` depends on `@ff-occam/mcp@1.0.0-rc.4`** — registry pin (replaces `file:` sibling)
+- **`ff-occam` depends on `@ff-occam/mcp@1.0.0-rc.5`** — registry pin (replaces `file:` sibling)
   so published tarballs resolve on npm.
 
 ## [1.0.0-rc.4] — 2026-08-27

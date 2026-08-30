@@ -4,7 +4,7 @@ Durable architecture decisions extracted from the RC.2 engineering set. The
 RC.2 working diaries and PR-by-PR reports are **not** part of the public
 documentation set.
 
-**Status:** accepted for the `1.0.0-rc.4` line. Where this page and the code
+**Status:** accepted for the `1.0.0-rc.5` line. Where this page and the code
 disagree, the code wins. Normative API shapes remain in [MCP_API_SPEC.md](https://github.com/ContextForgeAI/occam/blob/main/MCP_API_SPEC.md).
 
 ---
