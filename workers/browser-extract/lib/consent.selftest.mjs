@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { JSDOM } from "jsdom";
 import {
   CONSENT_SELECTORS,
+  CONSENT_CSS_SELECTORS,
+  CONSENT_TEXT_SELECTORS,
   CONSENT_ROLE_NAME_RE,
+  CONSENT_SCAN_BUDGET_MS,
 } from "./consent.mjs";
 import {
   stripConsentOnly,
@@ -11,12 +14,19 @@ import {
 } from "./html-preprocess.mjs";
 
 assert.ok(CONSENT_SELECTORS.includes('button:has-text("Accepter")'));
-assert.ok(CONSENT_SELECTORS.includes('button:has-text("Tout accepter")'));
+assert.ok(CONSENT_TEXT_SELECTORS.includes('button:has-text("Tout accepter")'));
+assert.ok(CONSENT_CSS_SELECTORS.includes("#onetrust-accept-btn-handler"));
 assert.ok(CONSENT_SELECTORS.includes('button:has-text("Alle akzeptieren")'));
 assert.ok(CONSENT_SELECTORS.includes('button:has-text("Continuer sans accepter")'));
 assert.ok(
   !CONSENT_SELECTORS.includes('button:has-text("OK")'),
   "bare OK is a false-positive on non-CMP buttons and must stay out",
+);
+assert.ok(CONSENT_SCAN_BUDGET_MS <= 3000, "consent scan must stay budgeted for browser p90");
+assert.equal(
+  CONSENT_SELECTORS[0],
+  CONSENT_CSS_SELECTORS[0],
+  "CSS vendor selectors must lead the combined list",
 );
 
 assert.match("Accepter", CONSENT_ROLE_NAME_RE);

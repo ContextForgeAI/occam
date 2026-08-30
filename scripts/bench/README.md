@@ -100,6 +100,9 @@ agent-answer-quality score.
   fetch arm (2026-08-30, same pin): LeBonCoin is a true_positive when a system
   Chrome/Edge is available; headline retrieval can stay flat if another Tier-3
   URL (e.g. Kayak) flips on the same run. Reuters remains an honest miss.
+  Browser-path CMP dismiss is time-budgeted so a miss does not dominate
+  successful-fetch latency tails; Wikipedia-scale HTTP extracts still set p90
+  on this corpus when system Chrome makes LeBonCoin a success.
 - `https://www.reuters.com/technology/artificial-intelligence/`: HTTP and
   browser both received a 401 CloudFront shell (about 771 bytes). Reuters'
   public topic sitemap names this category but contains no category articles;

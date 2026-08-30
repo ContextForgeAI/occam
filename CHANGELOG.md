@@ -6,6 +6,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+- **Faster budgeted CMP dismiss** — one consent scan with a hard time budget,
+  CSS vendor hits via `querySelector`, and no multi-second waits when the click
+  misses (HTML still strips consent-like dialogs). Cuts browser-path tails on
+  CMP-heavy pages without changing honesty.
 - **System Chrome preference + multilingual CMP dismiss** — when
   `OCCAM_BROWSER_CHANNEL` is unset, the browser worker prefers an installed
   system Chrome/Edge (disable with `OCCAM_BROWSER_PREFER_SYSTEM=0` or force
