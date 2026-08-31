@@ -27,6 +27,9 @@ npx ff-occam@1.0.0 --mcp-server
 npx ff-occam@1.0.0 --mcp-server --port 5051
 ```
 
+Operator CLI verbs (`connect`, `doctor`, …) are **not** provided by this package —
+they refuse with a pointer to the guarded installer. Use `get-ff-occam`, then `occam connect`.
+
 ## Installation
 
 ```bash

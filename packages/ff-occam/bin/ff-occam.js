@@ -2,11 +2,15 @@
 /**
  * ff-occam — primary npm CLI (aliases: ff-occam, occam).
  * Delegates to @ff-occam/mcp launcher (release download or OCCAM_HOME local build).
+ *
+ * Operator verbs (connect, doctor, …) are NOT supported here — refuse before
+ * spawning the MCP host so they do not look like a silent hang / junk argv.
  */
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
+import { pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -16,10 +20,22 @@ function resolveMcpEntry() {
     return require.resolve("@ff-occam/mcp/bin/occam-mcp.js");
   } catch {
     // Monorepo dev: sibling package before npm link/publish.
-    const sibling = join(__dirname, "..", "occam-mcp", "bin", "occam-mcp.js");
-    return sibling;
+    return join(__dirname, "..", "occam-mcp", "bin", "occam-mcp.js");
   }
 }
+
+function resolveOperatorGuard() {
+  try {
+    return require.resolve("@ff-occam/mcp/lib/operator-cli-guard.mjs");
+  } catch {
+    return join(__dirname, "..", "occam-mcp", "lib", "operator-cli-guard.mjs");
+  }
+}
+
+const { refuseOperatorCliVerbOrContinue } = await import(
+  pathToFileURL(resolveOperatorGuard()).href,
+);
+refuseOperatorCliVerbOrContinue(process.argv.slice(2), { prefix: "[ff-occam]" });
 
 const entry = resolveMcpEntry();
 const child = spawn(process.execPath, [entry, ...process.argv.slice(2)], {
