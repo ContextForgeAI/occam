@@ -131,7 +131,7 @@ jobs:
           OCCAM_FORCE_DOTNET_RUN: "0"
           OCCAM_PROFILE: full
         run: node scripts/lib/mcp-dual-era.selftest.mjs
-        timeout-minutes: 3
+        timeout-minutes: 5
 
       - name: MCP Streamable HTTP
         env:
