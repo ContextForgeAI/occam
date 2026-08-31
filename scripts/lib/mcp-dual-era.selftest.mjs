@@ -13,6 +13,7 @@
 import { spawn } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { McpStdioClient } from "./mcp-stdio-client.mjs";
+import { resolveHostBinary } from "./resolve-host-binary.mjs";
 
 const META_2026 = {
   "io.modelcontextprotocol/protocolVersion": "2026-07-28",
@@ -22,6 +23,9 @@ const META_2026 = {
 
 function spawnHost() {
   const occamHome = process.env.OCCAM_HOME || process.cwd();
+  const forceDotnet =
+    process.env.OCCAM_FORCE_DOTNET_RUN === "1" ||
+    process.env.OCCAM_FORCE_DOTNET_RUN === "true";
   const env = {
     ...process.env,
     OCCAM_HOME: occamHome,
@@ -29,12 +33,23 @@ function spawnHost() {
     OCCAM_FORCE_DOTNET_RUN: process.env.OCCAM_FORCE_DOTNET_RUN ?? "1",
     OCCAM_PROFILE: process.env.OCCAM_PROFILE ?? "full",
   };
-  return spawn(process.execPath, ["scripts/launch-mcp-host.mjs"], {
+  const spawnOpts = {
     cwd: occamHome,
     env,
     stdio: ["pipe", "pipe", "pipe"],
     windowsHide: true,
-  });
+    // Process group on Unix so close() can SIGTERM/SIGKILL the whole tree (Core + workers).
+    detached: process.platform !== "win32",
+  };
+
+  if (!forceDotnet) {
+    const binary = resolveHostBinary(occamHome);
+    if (binary) {
+      return spawn(binary, [], spawnOpts);
+    }
+  }
+
+  return spawn(process.execPath, ["scripts/launch-mcp-host.mjs"], spawnOpts);
 }
 
 /**
@@ -122,8 +137,13 @@ async function main() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((err) => {
-    console.error(`error: ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
-  });
+  main()
+    .then(() => {
+      // CI gate-fast: lingering MCP host pipes keep the event loop open after OK.
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error(`error: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    });
 }
