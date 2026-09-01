@@ -67,7 +67,7 @@ Use the **release tarball / bootstrap scripts** — see [Install](install.md).
 |---------|------------|
 | `get-ff-occam.sh` / `.ps1` bootstrap | **Yes** — supported release channel |
 | Manual tarball + SHA-256 manifest | **No** — integrity inspection only; use the guarded bootstrap to install |
-| `npx ff-occam@1.0.0` | Experimental npm RC — primary package name; not the guarded GA install path |
+| `npx ff-occam@1.0.1` | Experimental npm RC — primary package name; not the guarded GA install path |
 | `npx @ff-occam/mcp` | Low-level npm entry — not the primary public package name |
 | Cosign `.bundle` alone | **No** — the bootstrap must verify it under the manifest policy |
 

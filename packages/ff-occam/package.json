@@ -1,6 +1,6 @@
 {
   "name": "ff-occam",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "FF Occam — verifiable web materialization MCP host (primary npm entry). Installs the Native AOT .NET host + Node workers.",
   "license": "AGPL-3.0-or-later",
@@ -37,7 +37,7 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "@ff-occam/mcp": "1.0.0"
+    "@ff-occam/mcp": "1.0.1"
   },
   "publishConfig": {
     "access": "public",

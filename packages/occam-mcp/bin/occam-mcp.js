@@ -40,6 +40,7 @@ import { Readable } from "node:stream";
 import { extract as createExtract } from "tar";
 import { refuseOperatorCliVerbOrContinue } from "../lib/operator-cli-guard.mjs";
 import { ensureWorkersInstalled } from "../lib/ensure-workers-installed.mjs";
+import { resolveHostReleaseVersion } from "../lib/host-release-version.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = resolve(__dirname, "..");
@@ -209,7 +210,8 @@ async function ensureBinary(rid) {
   if (cachedBinary && existsSync(manifestPath)) {
     try {
       const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-      if (manifest.version === VERSION && manifest.rid === rid) {
+      const hostRelease = resolveHostReleaseVersion();
+      if (manifest.version === hostRelease && manifest.rid === rid) {
         return { binaryPath: cachedBinary, home: installDir };
       }
     } catch {
@@ -217,17 +219,20 @@ async function ensureBinary(rid) {
     }
   }
 
-  console.error(`[ff-occam/mcp] Downloading ${VERSION} for ${rid}...`);
+  const hostRelease = resolveHostReleaseVersion();
+  console.error(
+    `[ff-occam/mcp] Downloading host ${hostRelease} for ${rid} (npm ${VERSION})...`,
+  );
 
   if (existsSync(installDir)) {
     rmSync(installDir, { recursive: true, force: true });
   }
   mkdirSync(installDir, { recursive: true });
 
-  const stem = `ff-occam-${VERSION}-${rid}`;
+  const stem = `ff-occam-${hostRelease}-${rid}`;
   const tarballName = `${stem}.tar.gz`;
-  const tarballUrl = `${RELEASE_BASE_URL}/v${VERSION}/${tarballName}`;
-  const manifestUrl = `${RELEASE_BASE_URL}/v${VERSION}/${stem}-manifest.json`;
+  const tarballUrl = `${RELEASE_BASE_URL}/v${hostRelease}/${tarballName}`;
+  const manifestUrl = `${RELEASE_BASE_URL}/v${hostRelease}/${stem}-manifest.json`;
 
   const tarballPath = join(installDir, tarballName);
   const dlManifestPath = join(installDir, "download-manifest.json");
@@ -316,6 +321,7 @@ OPTIONS:
 
 ENVIRONMENT:
   OCCAM_HOME             Repo root (clone/tarball) — skips GitHub download
+  OCCAM_HOST_RELEASE_VERSION  GitHub Release tag for host tarball (default: pinned host release)
   OCCAM_RELEASE_BASE_URL Custom release base URL (npx / global install only)
   OCCAM_RECEIPTS=off     Disable signed extraction receipts
   OCCAM_BANNER=0         Disable stderr banner

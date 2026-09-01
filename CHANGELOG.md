@@ -6,10 +6,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-09-01
+
+npm-only patch — ships #32 + #33 without a new GitHub Release host cut. Guarded
+install (`get-ff-occam`) still defaults to **`v1.0.0`**; `npx` downloads the
+`1.0.0` host tarball via `HOST_RELEASE_VERSION` while npm semver is **`1.0.1`**.
+
 ### Fixed
 
-- **CI `gate-fast` dual-era hang** — MCP dual-era selftest now exits after OK (AOT spawn + process group cleanup); landed via #32.
-- **npm operator CLI honesty** — `npx ff-occam connect` / `doctor` / other tarball CLI verbs refuse with a pointer to `get-ff-occam` instead of starting the MCP host with junk argv. npm cache path also runs worker `npm install` when `node_modules` is missing so extracts do not fail on `@mozilla/readability`.
+- **CI `gate-fast` dual-era hang** — MCP dual-era selftest exits after OK (#32).
+- **npm operator CLI honesty** — `npx ff-occam connect` / `doctor` / other tarball CLI verbs refuse with a pointer to `get-ff-occam` instead of starting the MCP host with junk argv (#33).
+- **npm worker deps** — release cache path runs `npm install` under `workers/` when `node_modules` is missing so extracts do not fail on `@mozilla/readability`.
 
 ### Docs
 
