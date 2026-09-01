@@ -6,6 +6,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+### Fixed
+
+- **CI `gate-fast` dual-era hang** — MCP dual-era selftest now exits after OK (AOT spawn + process group cleanup); landed via #32.
+- **npm operator CLI honesty** — `npx ff-occam connect` / `doctor` / other tarball CLI verbs refuse with a pointer to `get-ff-occam` instead of starting the MCP host with junk argv. npm cache path also runs worker `npm install` when `node_modules` is missing so extracts do not fail on `@mozilla/readability`.
+
+### Docs
+
+- Troubleshooting: npm `connect` vs guarded install; Linux AOT needs glibc ≥ 2.38 (bookworm too old).
+
 ## [1.0.0] — 2026-08-31
 
 First **GA** cut of Occam Core 1.0. Same capability surface as `1.0.0-rc.5`

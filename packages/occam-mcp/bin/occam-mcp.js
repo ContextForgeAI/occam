@@ -38,6 +38,8 @@ import { createGunzip } from "node:zlib";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
 import { extract as createExtract } from "tar";
+import { refuseOperatorCliVerbOrContinue } from "../lib/operator-cli-guard.mjs";
+import { ensureWorkersInstalled } from "../lib/ensure-workers-installed.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = resolve(__dirname, "..");
@@ -324,6 +326,10 @@ GIT CLONE / LOCAL INSTALL:
   node scripts/launch-mcp-host.mjs with OCCAM_HOME. Run ./scripts/occam-doctor.sh first.
   See INSTALL.md at repo root.
 
+OPERATOR CLI (connect / doctor / …):
+  Not available via npx. Use the guarded installer, then: occam connect
+  curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+
 EXAMPLES:
   npx @ff-occam/mcp                    # stdio mode (for Cursor, Claude)
   npx @ff-occam/mcp --mcp-server       # WebSocket mode
@@ -352,6 +358,7 @@ async function main() {
     process.exit(0);
   }
 
+  refuseOperatorCliVerbOrContinue(args, { prefix: "[ff-occam/mcp]" });
   rejectInRepoNpmEntry();
 
   const useWebSocket = args.includes("--mcp-server");
@@ -373,6 +380,12 @@ async function main() {
   if (resolved.kind === "launcher") {
     failCloneWithoutBinary(resolved.repoRoot);
     return;
+  }
+
+  const workers = ensureWorkersInstalled(resolved.home, { prefix: "[ff-occam/mcp]" });
+  if (!workers.ok) {
+    console.error(workers.error);
+    process.exit(1);
   }
 
   const env = { ...process.env, OCCAM_HOME: resolved.home };

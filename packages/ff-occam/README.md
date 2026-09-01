@@ -10,10 +10,14 @@ into compact, source-linked Markdown or an explicit typed failure.
 ```bash
 npx ff-occam@1.0.0
 
-# Optional global CLI aliases: ff-occam and occam
+# Optional global CLI aliases: ff-occam and occam (MCP host only)
 npm install -g ff-occam@1.0.0
 ff-occam --help
 ```
+
+Operator commands (`connect`, `doctor`, `disconnect`, …) are **not** part of this
+npm package. Use the guarded installer in [`INSTALL.md`](../../INSTALL.md), then
+`occam connect`.
 
 This package is a thin CLI wrapper around
 [`@ff-occam/mcp`](../occam-mcp) at the same version pin. Use `OCCAM_HOME` to
