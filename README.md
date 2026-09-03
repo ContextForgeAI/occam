@@ -11,7 +11,7 @@ Markdown or an explicit reason why the content is unknown.
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
 ```bash
-npm install -g ff-occam@1.0.0
+npm install -g ff-occam@1.0.1
 occam connect
 ```
 

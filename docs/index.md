@@ -77,7 +77,7 @@ Does <strong>not</strong> invent page text from model memory.
     <div class="oc-signal-command">
       <span class="oc-signal-command__label">npm RC · primary package</span>
       <div class="oc-signal-command__row">
-        <code data-oc-install-command>npm install -g ff-occam@1.0.0</code>
+        <code data-oc-install-command>npm install -g ff-occam@1.0.1</code>
         <button type="button" class="oc-signal-copy" data-oc-copy-command aria-label="Copy npm install command" aria-live="polite">Copy</button>
       </div>
       <span class="oc-signal-command__note">For the guarded release install, use the <a href="install/">signed bootstrap</a>.</span>
