@@ -79,15 +79,6 @@ public static class OccamServiceCollectionExtensions
             });
         services.AddHttpClient(Services.TranslationService.HttpClientName, c => c.Timeout = TimeSpan.FromMilliseconds(
             OccamMcp.Core.Configuration.OccamEnvironment.GetInt("OCCAM_TRANSLATE_TIMEOUT_MS", defaultValue: 20_000, min: 1_000, max: 120_000)));
-        services.AddHttpClient(Backends.ManagedExtractBackend.HttpClientName, c => c.Timeout = TimeSpan.FromMilliseconds(
-            OccamMcp.Core.Configuration.OccamEnvironment.GetInt("OCCAM_MANAGED_TIMEOUT_MS", defaultValue: 60_000, min: 1_000, max: 180_000)));
-        services.AddSingleton<Backends.Managed.IManagedProvider, Backends.Managed.JinaProvider>();
-        services.AddSingleton<Backends.Managed.IManagedProvider, Backends.Managed.FirecrawlProvider>();
-        services.AddSingleton<Backends.Managed.IManagedProvider, Backends.Managed.SpiderProvider>();
-        services.AddSingleton<Backends.Managed.IManagedProvider, Backends.Managed.ScrapflyProvider>();
-        services.AddSingleton<Backends.Managed.IManagedProvider, Backends.Managed.ArchiveWaybackProvider>();
-        services.AddSingleton<Backends.Managed.IManagedProvider, Backends.Managed.DonsetchManagedProvider>();
-        services.AddSingleton<Backends.IManagedExtractBackend, Backends.ManagedExtractBackend>();
         services.AddHttpClient(Services.SearchService.HttpClientName, c => c.Timeout = TimeSpan.FromMilliseconds(
             OccamMcp.Core.Configuration.OccamEnvironment.GetInt("OCCAM_SEARCH_TIMEOUT_MS", defaultValue: 20_000, min: 1_000, max: 120_000)));
         services.AddSingleton<Search.ISearchProvider, Search.DuckDuckGoSearchProvider>();
@@ -174,14 +165,6 @@ public static class OccamServiceCollectionExtensions
         var services = new ServiceCollection();
         services.AddOccamCore();
         return services.BuildServiceProvider().GetRequiredService<Services.ITranslationService>();
-    }
-
-    /// <summary>Resolves a standalone managed extraction backend (gate/diagnostics ad-hoc path).</summary>
-    public static Backends.IManagedExtractBackend BuildManagedBackend()
-    {
-        var services = new ServiceCollection();
-        services.AddOccamCore();
-        return services.BuildServiceProvider().GetRequiredService<Backends.IManagedExtractBackend>();
     }
 
     /// <summary>Resolves a standalone search service (gate/diagnostics ad-hoc path).</summary>

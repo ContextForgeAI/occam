@@ -15,7 +15,7 @@
 | Agent guesses missing pages from training | **`ok:false` = content unknown** — never substitute memory |
 | Raw HTML burns the context window | Token budget + focus prune (**not** a LLM summarizer) |
 | No integrity of what was returned | Optional **Receipt v1** → `occam_verify` (integrity vs a key — not truth) |
-| One opaque “read” | Ladder: HTTP → browser → optional managed; probe / map / search / digest |
+| One opaque “read” | Ladder: HTTP → browser; probe / map / search / digest |
 | Silent length = “bad page” | `thin_extract` ≠ `short_quality` success |
 
 Default one-page call: **`occam_transcode` with only `url`**. Everything else is opt-in.
@@ -26,7 +26,7 @@ Default one-page call: **`occam_transcode` with only `url`**. Everything else is
 
 1. **Honesty contract** — typed failures; `thin_extract` is bad extract; short complete pages stay `ok:true`.  
 2. **Token contract (K2)** — ambient budget via `occam_client_capabilities` (~20% of context) or explicit `max_tokens`; drops reported in `compile.omitted`.  
-3. **Acquisition ladder** — cheap HTTP first, browser when needed, managed only as last rung on opted-in hosts.  
+3. **Acquisition ladder** — cheap HTTP first, browser when needed; typed refusal when both fail.  
 4. **Materialization** — focus, structured sidecars, differential re-reads — same extract, different shapes.  
 5. **Receipts & evidence** — signed extract integrity; claim_check / attest for citation workflows (heuristic — not crypto truth).  
 6. **Playbooks** — per-site recipes (resolve / heal / lint / save) without rewriting the host.  
@@ -67,7 +67,7 @@ There is **no** public MCP parameter to pick a knowledge codec (`compact-markdow
 | `session_profile` | Operator cookies for login walls (no CAPTCHA solve) |
 | `playbook_policy` / playbook tools | Site recipe overlay / authoring |
 | `occam_search` | Needs `OCCAM_SEARCH_PROVIDER` (incl. optional local Donsetch) |
-| Managed / archive / PDF OCR | Operator env — see [configuration](configuration.md) · [experimental](experimental.md) |
+| PDF OCR | Operator env — see [configuration](configuration.md) · [experimental](experimental.md) |
 
 ---
 

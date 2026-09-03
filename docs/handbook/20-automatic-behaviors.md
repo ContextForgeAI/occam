@@ -69,7 +69,6 @@ Your very first successful `occam_transcode` likely also: minted or loaded a sig
 - Many are correct engineering (post-processors, eligibility rules) but surprising in combination.
 - Disabling receipts does not disable key mint or playbook signing.
 - Robots compliance is off by default and fails open on fetch errors.
-- Managed egress is easy to miss when `OCCAM_MANAGED_DOMAINS` is unset (all hosts eligible).
 
 ---
 

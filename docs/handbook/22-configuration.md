@@ -19,8 +19,7 @@ The full environment-variable catalog lives in user docs ([Configuration](../con
 | Variable | What people assume | What code does |
 |----------|-------------------|----------------|
 | `OCCAM_RECEIPTS=off` | All signing off | Key still minted; playbook save still signs; `contentHash` and Merkle math still ship |
-| `OCCAM_HTTP_PROXY` / `OCCAM_HTTPS_PROXY` | All network obeys proxy | Worker egress only — Core C# `HttpClient`s (probe, map, managed, search) **ignore** proxy env |
-| `OCCAM_MANAGED_DOMAINS` unset | No managed hosts | **All hosts eligible** when provider configured |
+| `OCCAM_HTTP_PROXY` / `OCCAM_HTTPS_PROXY` | All network obeys proxy | Worker egress only — Core C# `HttpClient`s (probe, map, search) **ignore** proxy env |
 | `OCCAM_BATCH_DB_PATH` ending in `.db` | SQLite store | Store forces `.json` — file is JSON |
 | `OCCAM_CHUNK_SIZE` | Tokens | **Characters**, not tokens |
 | `OCCAM_RESPECT_ROBOTS` | Polite crawling | Off by default; **fail-open** on robots fetch error |
@@ -57,7 +56,7 @@ For each surprise in [Chapter 20](20-automatic-behaviors.md), ask which env var 
 
 ## Common misconception
 
-**"`OCCAM_HTTP_PROXY` routes every network operation."** It reaches worker egress only. Probe, map, managed acquisition, and search use Core HTTP clients that ignore it; rotation additionally misses several worker spawn paths.
+**"`OCCAM_HTTP_PROXY` routes every network operation."** It reaches worker egress only. Probe, map, and search use Core HTTP clients that ignore it; rotation additionally misses several worker spawn paths.
 
 ---
 

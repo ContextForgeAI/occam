@@ -33,12 +33,11 @@ Per `PHASE6-ACQUISITION-CONTRACT.md` and `OccamRouter`:
 1. **HTTP attempt** — Run HTTP extract backend.
 2. **HTTP usable success → STOP** — Non-empty markdown, not equivalently thin, not a short challenge page → return HTTP result.
 3. **Thin / short-challenge HTTP → escalate** — Unusable HTTP triggers browser rung.
-4. **Terminal HTTP (404/410) → STOP** — No browser, no managed.
+4. **Terminal HTTP (404/410) → STOP** — No browser.
 5. **Public-reference failed HTTP → STOP** — Wikipedia/RFC-style tiers skip browser **silently** (looks like ordinary HTTP failure; no "we chose not to escalate" flag).
 6. **Browser attempt** — When escalation conditions met.
 7. **Browser usable success → STOP**
-8. **Dual local failure → rank** — `FailureRanking.Informativeness` picks HTTP vs browser failure for the surface (e.g. `http_403` rank 100 beats browser `timeout` rank 50).
-9. **Managed** — Only if both locals failed under `http_then_browser`, operator configured provider keys, and host eligible (`OCCAM_MANAGED_DOMAINS`; **unset = all hosts eligible**). Managed **success** may surface; managed **failure** is recorded but **never** becomes the surfaced failure.
+8. **Dual local failure → rank** — `FailureRanking.Informativeness` picks HTTP vs browser failure for the surface (e.g. `http_403` rank 100 beats browser `timeout` rank 50). There is **no** third-party managed scrape rung.
 
 ### Post-processors (after a backend returns)
 
@@ -60,12 +59,6 @@ Task R ladder flavors:
 - `/v2/` 404 — terminate, no browser.
 - JS playground — HTTP thin → browser with escalation reason.
 - Partner 403 — dual fail → surface `http_403` by rank.
-
-### Managed provider honesty
-
-- Third party sees the URL and returns content Occam may sign.
-- Managed HttpClient lacks the same outbound guard as some other paths—operator trust decision.
-- No automatic retry/backoff anywhere in the ladder.
 
 ---
 

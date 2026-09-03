@@ -44,7 +44,7 @@ This page is the **public shipped log**. Detailed engineering backlog lives in l
 | Editor marketplace extension | Future |
 | npm as GA install channel | RC/GA packages exist on npm; **guarded** install remains GitHub Release bootstrap (npm stays experimental) |
 | Wide validation / wave2-eval | Not in this repo |
-| Donsetch / managed acquisition / PDF OCR | Partial: keyless DuckDuckGo is the default search provider; optional `OCCAM_SEARCH_PROVIDER=donsetch`, `OCCAM_MANAGED_PROVIDER=archive\|donsetch`, opt-in `OCCAM_PDF_OCR` — no BoringSSL/crawl rewrite; competitor binaries not bundled |
+| Donsetch search / PDF OCR | Partial: keyless DuckDuckGo is the default search provider; optional `OCCAM_SEARCH_PROVIDER=donsetch`, opt-in `OCCAM_PDF_OCR` — no BoringSSL/crawl rewrite; third-party binaries not bundled. **Managed extract escalation removed** (own HTTP/browser ladder only). |
 | Resumable crawl MCP (`OCCAM_CRAWL_MCP`) | Deferred — use `occam_map` + `occam_digest` (+ opt-in batch) for multi-URL workflows |
 
 ---

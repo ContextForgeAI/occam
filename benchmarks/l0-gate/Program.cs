@@ -201,20 +201,6 @@ if (!string.IsNullOrWhiteSpace(options.Watch))
     return 0;
 }
 
-// Package 3 managed-adapter diagnostics: directly fetch one URL via the managed backend.
-if (!string.IsNullOrWhiteSpace(options.ManagedFetch))
-{
-    var managed = OccamServiceCollectionExtensions.BuildManagedBackend();
-    Console.WriteLine($"managed: provider={Environment.GetEnvironmentVariable("OCCAM_MANAGED_PROVIDER") ?? "(unset)"} ready={managed.IsReady} shouldAttempt={managed.ShouldAttempt(options.ManagedFetch!)}");
-    var mr = managed.Extract(options.ManagedFetch!, CancellationToken.None);
-    Console.WriteLine($"managed result: ok={mr.Ok} backend={mr.Backend} failure={mr.Failure ?? "-"} latencyMs={mr.LatencyMs} mdlen={(mr.Markdown?.Length ?? 0)}");
-    if (mr.Markdown is { Length: > 0 })
-    {
-        Console.WriteLine("  head: " + mr.Markdown[..Math.Min(160, mr.Markdown.Length)].Replace("\n", " "));
-    }
-    return mr.Ok ? 0 : 1;
-}
-
 // Parity "traps" tier (LT) — opt-in, third-party hosts; not part of fast/default gate.
 if (options.Traps)
 {

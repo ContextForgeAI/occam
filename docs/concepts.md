@@ -40,7 +40,7 @@ Aliases: `http-then-browser` is accepted.
 
 If Playwright is missing, the host may downgrade browser requests to HTTP and add a warning.
 
-Optional **managed providers** (Firecrawl, Jina, Spider, Scrapfly, Wayback `archive`, local Donsetch) can run as a last resort after local backends fail on opted-in domains — see [Configuration](configuration.md).
+Acquisition ladder is **local only**: HTTP → browser (when policy escalates) → typed `ok:false`. Operator cookies via `session_profile` stay on the local browser path — there is no third-party scrape escalation rung.
 
 ---
 

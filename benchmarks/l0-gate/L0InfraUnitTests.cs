@@ -16,7 +16,6 @@ using OccamMcp.Core.Routing;
 using OccamMcp.Core.Services;
 using OccamMcp.Core.Text;
 using OccamMcp.Core.Telemetry;
-using OccamMcp.Core.Backends.Managed;
 using OccamMcp.Core.Search;
 using OccamMcp.Core.Tools;
 using OccamMcp.Core.Workers;
@@ -3031,7 +3030,6 @@ internal static class L0InfraUnitTests
         assert("json_blocks omitted when null", !plainJson.Contains("\"blocks\""));
 
         RunTranslationContract(assert);
-        RunManagedAdapterContract(assert);
         RunMetadataContract(assert);
         RunSearchContract(assert);
         RunPoliteFetchContract(assert);
@@ -3526,18 +3524,6 @@ internal static class L0InfraUnitTests
             maxResults: 5);
         assert("donsetch parse results count", donsetchHits.Count == 2);
         assert("donsetch parse url", donsetchHits[0].Url == "https://e.com/x" && donsetchHits[1].Url == "https://e.com/y");
-
-        assert(
-            "archive identity stamp",
-            ArchiveWaybackProvider.ToIdentitySnapshotUrl("https://web.archive.org/web/20240101120000/https://example.com/")
-                == "https://web.archive.org/web/20240101120000id_/https://example.com/");
-        using (var avail = JsonDocument.Parse("""{"archived_snapshots":{"closest":{"available":true,"url":"https://web.archive.org/web/20200101/https://example.com/"}}}"""))
-        {
-            assert("archive avail parse", ArchiveWaybackProvider.TryReadSnapshotUrl(avail.RootElement, out var snap)
-                && snap!.Contains("web.archive.org", StringComparison.Ordinal));
-        }
-        assert("donsetch managed markdown from json",
-            DonsetchManagedProvider.ExtractMarkdown("""{"markdown":"# Hi"}""") == "# Hi");
     }
 
     private static void RunDuckDuckGoHtmlParseContract(Action<string, bool> assert)
@@ -3579,66 +3565,6 @@ internal static class L0InfraUnitTests
             DuckDuckGoHtmlParser.LooksLikeAnomalyChallenge(
                 """<div class="anomaly-modal__title">Unfortunately, bots use DuckDuckGo too.</div><form action="//duckduckgo.com/anomaly.js">"""));
         assert("ddg anomaly not on normal SERP", !DuckDuckGoHtmlParser.LooksLikeAnomalyChallenge(fixture));
-    }
-
-    private static void RunManagedAdapterContract(Action<string, bool> assert)
-    {
-        // Package 3: managed backend is off unless OCCAM_MANAGED_PROVIDER names a provider; keyed
-        // providers (firecrawl) also need OCCAM_MANAGED_API_KEY; per-domain opt-in via
-        // OCCAM_MANAGED_DOMAINS. Env is read live, so toggle + restore around the assertions.
-        var prevProvider = Environment.GetEnvironmentVariable("OCCAM_MANAGED_PROVIDER");
-        var prevKey = Environment.GetEnvironmentVariable("OCCAM_MANAGED_API_KEY");
-        var prevDomains = Environment.GetEnvironmentVariable("OCCAM_MANAGED_DOMAINS");
-        try
-        {
-            var backend = OccamServiceCollectionExtensions.BuildManagedBackend();
-
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", null);
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_API_KEY", null);
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_DOMAINS", null);
-            assert("managed disabled by default", !backend.IsReady && !backend.ShouldAttempt("https://example.com/"));
-
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "firecrawl");
-            assert("managed keyed provider needs key", !backend.IsReady);
-
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "jina");
-            assert("managed keyless provider ready", backend.IsReady);
-            assert("managed no allowlist → any host", backend.ShouldAttempt("https://example.com/x"));
-
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "archive");
-            assert("managed archive keyless ready", backend.IsReady);
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "donsetch");
-            assert("managed donsetch keyless ready", backend.IsReady);
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "jina");
-
-            // New keyed providers: registered + recognized, and gated on OCCAM_MANAGED_API_KEY.
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_API_KEY", null);
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "spider");
-            assert("managed spider needs key", !backend.IsReady);
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "scrapfly");
-            assert("managed scrapfly needs key", !backend.IsReady);
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_API_KEY", "k");
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "spider");
-            assert("managed spider ready with key", backend.IsReady);
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "scrapfly");
-            assert("managed scrapfly ready with key", backend.IsReady);
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_API_KEY", null);
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "jina");
-
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_DOMAINS", "example.com, foo.org");
-            assert("managed allowlist host match", backend.ShouldAttempt("https://example.com/x"));
-            assert("managed allowlist subdomain match", backend.ShouldAttempt("https://docs.example.com/x"));
-            assert("managed allowlist excludes others", !backend.ShouldAttempt("https://other.com/x"));
-
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", "nonsuch");
-            assert("managed unknown provider disabled", !backend.IsReady);
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_PROVIDER", prevProvider);
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_API_KEY", prevKey);
-            Environment.SetEnvironmentVariable("OCCAM_MANAGED_DOMAINS", prevDomains);
-        }
     }
 
     private static void RunTranslationContract(Action<string, bool> assert)
