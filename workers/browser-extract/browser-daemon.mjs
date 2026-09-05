@@ -140,11 +140,13 @@ const server = http.createServer(async (req, res) => {
         body.headers_file
         ?? process.env.OCCAM_REQUEST_HEADERS_FILE
         ?? null;
+      const storageStateFile = body.storage_state_file ?? null;
 
       const result = await pool.captureSkeleton(url, {
         maxNodes: body.max_nodes ?? 600,
         consentAggressive: body.consent_aggressive === true,
         headersFile,
+        storageStateFile,
       });
 
       sendJson(res, 200, result);

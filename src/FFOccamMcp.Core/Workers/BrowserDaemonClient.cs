@@ -34,6 +34,7 @@ internal sealed record BrowserDaemonSkeletonRequest
     public required string Url { get; init; }
     public int MaxNodes { get; init; }
     public string? HeadersFile { get; init; }
+    public string? StorageStateFile { get; init; }
 }
 
 /// <summary>Request payload for browser daemon interact endpoint.</summary>
@@ -160,7 +161,8 @@ public sealed class BrowserDaemonClient : IBrowserDaemonClient
         int timeoutMs,
         string? headersFile,
         CancellationToken cancellationToken,
-        int port = 0)
+        int port = 0,
+        string? storageStateFile = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -180,6 +182,7 @@ public sealed class BrowserDaemonClient : IBrowserDaemonClient
                 Url = url,
                 MaxNodes = maxNodes,
                 HeadersFile = headersFile,
+                StorageStateFile = storageStateFile,
             };
 
             var json = JsonSerializer.Serialize(request, BrowserDaemonJsonContext.Default.BrowserDaemonSkeletonRequest);
