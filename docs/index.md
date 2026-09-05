@@ -75,12 +75,16 @@ Does <strong>not</strong> invent page text from model memory.
 
   <div class="oc-signal-cta">
     <div class="oc-signal-command">
-      <span class="oc-signal-command__label">npm RC · primary package</span>
+      <span class="oc-signal-command__label">One command · host + PATH + connect</span>
       <div class="oc-signal-command__row">
-        <code data-oc-install-command>npm install -g ff-occam@1.0.1</code>
-        <button type="button" class="oc-signal-copy" data-oc-copy-command aria-label="Copy npm install command" aria-live="polite">Copy</button>
+        <code
+          data-oc-install-command
+          data-oc-install-win="irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex"
+          data-oc-install-unix="curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash"
+        >curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash</code>
+        <button type="button" class="oc-signal-copy" data-oc-copy-command aria-label="Copy install command" aria-live="polite">Copy</button>
       </div>
-      <span class="oc-signal-command__note">For the guarded release install, use the <a href="install/">signed bootstrap</a>.</span>
+      <span class="oc-signal-command__note">Windows, Linux, and macOS — see <a href="install/">Install</a>. Experimental MCP-only (no <code>occam connect</code>): <code>npx ff-occam@1.0.1</code>.</span>
     </div>
     <p class="oc-hero-actions">
       <a class="oc-btn oc-btn--primary" href="quick-start/">Get your first result</a>

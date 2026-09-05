@@ -10,21 +10,28 @@ Markdown or an explicit reason why the content is unknown.
 [![npm](https://img.shields.io/npm/v/ff-occam?label=npm)](https://www.npmjs.com/package/ff-occam)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
-```bash
-npm install -g ff-occam@1.0.1
-occam connect
+```powershell
+# Windows
+irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
 ```
 
-Then open a new conversation in your MCP client:
+```bash
+# Linux x64 / macOS Apple Silicon
+curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+```
+
+That one command installs the host, puts `occam` on your PATH, and runs
+`occam connect`. Then open a new conversation in your MCP client:
 
 ```text
 Use Occam to read https://example.com/ and tell me what it says.
 Include the source. If the read fails, report the reason instead of guessing.
 ```
 
-> Current release: **1.0.0 (GA)**. npm is the fastest trial path and remains
-> **experimental** (not the guarded install channel). Production-oriented
-> installs use a signed release bootstrap; see [Install safely](#install-safely).
+> Current release: **1.0.0 (GA)**. Experimental MCP-only trial:
+> `npx ff-occam@1.0.1` — this does **not** install the `occam` operator CLI
+> (`connect`, `doctor`, …). Prefer the bootstrap above.
+> Details: [Install safely](#install-safely).
 
 ![A webpage reduced to source-linked Markdown](docs/assets/occam-proof-before-after-rc4.png)
 

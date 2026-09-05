@@ -1,4 +1,24 @@
 (() => {
+  function isWindows() {
+    const platform = navigator.userAgentData?.platform || navigator.platform || "";
+    const ua = navigator.userAgent || "";
+    return /Win/i.test(platform) || /Windows/i.test(ua);
+  }
+
+  function applyOsInstallCommand(command) {
+    const win = command.getAttribute("data-oc-install-win");
+    const unix = command.getAttribute("data-oc-install-unix");
+    if (!win || !unix) return;
+    const windows = isWindows();
+    command.textContent = windows ? win : unix;
+    const label = command.closest(".oc-signal-command")?.querySelector(".oc-signal-command__label");
+    if (label) {
+      label.textContent = windows
+        ? "Windows · one command"
+        : "Linux / macOS · one command";
+    }
+  }
+
   function initializeHeroInteractions() {
     const button = document.querySelector("[data-oc-copy-command]");
     const command = document.querySelector("[data-oc-install-command]");
@@ -6,6 +26,8 @@
     if (!button || !command || button.dataset.ocCopyReady === "true") {
       return;
     }
+
+    applyOsInstallCommand(command);
 
     let resetTimer;
     const reset = () => {

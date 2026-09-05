@@ -6,6 +6,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+### Fixed
+
+- **Install UX honesty** — README and the docs hero no longer advertise
+  `npm install -g ff-occam` followed by `occam connect`. The happy path is the
+  bootstrap one-liner (host + PATH + connect). The npm package no longer claims
+  the `occam` bin name (that name is the release operator CLI). `npm install -g`
+  prints a postinstall that points at `get-ff-occam` and, on Windows, warns when
+  the npm global bin is not on PATH.
+
 ### Removed
 
 - **Managed extract escalation** — third-party scrape adapters (Firecrawl, Jina, Spider, Scrapfly, Wayback `archive`, Donsetch-as-extract) and `OCCAM_MANAGED_*` are gone. Acquisition is local HTTP → browser → typed refusal only. `OCCAM_SEARCH_PROVIDER=donsetch` remains for search discovery.

@@ -1,23 +1,35 @@
 # ff-occam
 
-Primary npm package for **FF Occam** — the local-first MCP host that turns a URL
-into compact, source-linked Markdown or an explicit typed failure.
+Primary npm package for **FF Occam** — an experimental launcher for the
+local-first MCP host that turns a URL into compact, source-linked Markdown
+or an explicit typed failure.
 
-> npm is an RC channel, not the guarded GA install path. The canonical release
-> installer remains the signed GitHub Release bootstrap documented in
-> [`INSTALL.md`](../../INSTALL.md).
+> npm is an RC channel, not the guarded GA install path. This package starts
+> the MCP host only. It does **not** install the `occam` operator CLI
+> (`connect`, `doctor`, `smoke`, …). For host + PATH + connect in one step,
+> use the signed bootstrap in [`INSTALL.md`](../../INSTALL.md).
 
 ```bash
+# MCP-only trial (stdio). Does not provide `occam connect`.
 npx ff-occam@1.0.1
 
-# Optional global CLI aliases: ff-occam and occam (MCP host only)
+# Optional global MCP launcher. Command name is `ff-occam`, not `occam`.
+# On Windows, `npm bin -g` must be on PATH or PowerShell will not see it.
 npm install -g ff-occam@1.0.1
 ff-occam --help
 ```
 
-Operator commands (`connect`, `doctor`, `disconnect`, …) are **not** part of this
-npm package. Use the guarded installer in [`INSTALL.md`](../../INSTALL.md), then
-`occam connect`.
+Full install (recommended):
+
+```powershell
+# Windows
+irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+```
+
+```bash
+# Linux x64 / macOS Apple Silicon
+curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+```
 
 This package is a thin CLI wrapper around
 [`@ff-occam/mcp`](../occam-mcp) at the same version pin. Use `OCCAM_HOME` to

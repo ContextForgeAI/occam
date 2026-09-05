@@ -275,6 +275,9 @@ for (const file of docsMarkdown
   }
 }
 if (!indexText.includes("(tools/index.md)")) fail(indexPath, "missing route to the per-tool index");
+if (!indexText.includes("get-ff-occam.ps1") || !indexText.includes("get-ff-occam.sh")) {
+  fail(indexPath, "docs hero must advertise the guarded bootstrap (get-ff-occam.sh and .ps1)");
+}
 
 const readmePath = join(repoRoot, "README.md");
 const readme = readFileSync(readmePath, "utf8");
@@ -283,6 +286,12 @@ for (const required of ["docs/index.md", "docs/quick-start.md", "llms.txt", "AGE
     // README uses both (path) and bare links; accept either markdown link form.
   }
   if (!readme.includes(required)) fail(readmePath, `missing entry-point reference: ${required}`);
+}
+if (!readme.includes("get-ff-occam.ps1") || !readme.includes("get-ff-occam.sh")) {
+  fail(readmePath, "README must advertise the guarded bootstrap (get-ff-occam.sh and .ps1)");
+}
+if (/npm install -g ff-occam[^\n]*\n+\s*occam connect\b/i.test(readme)) {
+  fail(readmePath, "do not advertise npm install -g followed by occam connect");
 }
 
 // Install docs should describe connect, not only "print snippet" as the primary wire path.
@@ -337,6 +346,9 @@ const primaryPackage = JSON.parse(readFileSync(primaryPackagePath, "utf8"));
 if (primaryPackage.name !== "ff-occam") {
   fail(primaryPackagePath, `primary npm package must be ff-occam; got ${primaryPackage.name}`);
 }
+if (primaryPackage.bin?.occam) {
+  fail(primaryPackagePath, "npm package must not claim the occam bin (that name is the release operator CLI)");
+}
 if (primaryPackage.version !== version) {
   fail(primaryPackagePath, `package version must match VERSION (${version}); got ${primaryPackage.version}`);
 }
@@ -378,6 +390,9 @@ for (const path of [
   }
   if (/(?:npm\s+install(?:\s+-g)?|npx)\s+ff-occam-mcp\b/i.test(text)) {
     fail(path, "primary npm command must use ff-occam, not ff-occam-mcp");
+  }
+  if (/npm install -g ff-occam[^\n]*\n+\s*occam connect\b/i.test(text)) {
+    fail(path, "do not advertise npm install -g followed by occam connect");
   }
 }
 

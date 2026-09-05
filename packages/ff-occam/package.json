@@ -2,7 +2,7 @@
   "name": "ff-occam",
   "version": "1.0.1",
   "type": "module",
-  "description": "FF Occam — verifiable web materialization MCP host (primary npm entry). Installs the Native AOT .NET host + Node workers.",
+  "description": "FF Occam — experimental npm launcher for the MCP host. Does not install the occam operator CLI (connect, doctor). Use get-ff-occam for the full install.",
   "license": "AGPL-3.0-or-later",
   "repository": {
     "type": "git",
@@ -22,14 +22,15 @@
     "rag"
   ],
   "bin": {
-    "ff-occam": "bin/ff-occam.js",
-    "occam": "bin/ff-occam.js"
+    "ff-occam": "bin/ff-occam.js"
   },
   "files": [
     "bin/",
+    "scripts/postinstall.js",
     "README.md"
   ],
   "scripts": {
+    "postinstall": "node scripts/postinstall.js",
     "test": "node --test test/package.test.js",
     "prepublishOnly": "npm test"
   },

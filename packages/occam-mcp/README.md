@@ -35,10 +35,16 @@ they refuse with a pointer to the guarded installer. Use `get-ff-occam`, then `o
 ```bash
 # One-liner from GitHub Releases (no git, no .NET SDK — Node 20+ only)
 curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+```
 
-# Or via npm RC (not the guarded GA install path)
-npm install -g ff-occam@1.0.1
-ff-occam
+```powershell
+# Windows
+irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+```
+
+```bash
+# Experimental MCP-only (not the guarded GA path; command is ff-occam, not occam)
+npx ff-occam@1.0.1
 ```
 
 ## MCP tool surface
