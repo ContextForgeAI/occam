@@ -487,7 +487,7 @@ internal sealed class NullBrowserDaemonClient : IBrowserDaemonClient
 
     public Task<ExtractRunResult?> TryExtractAsync(string url, int timeoutMs, bool forceRecycle, string? headersFile, string? storageStateFile, CancellationToken cancellationToken, int port = 0, string? features = null, string? playbookOverlayJson = null, bool playbookOverlayStrict = false) => Task.FromResult<ExtractRunResult?>(null);
 
-    public Task<string?> TryCaptureSkeletonJsonAsync(string url, int maxNodes, int timeoutMs, string? headersFile, CancellationToken cancellationToken, int port = 0) => Task.FromResult<string?>(null);
+    public Task<string?> TryCaptureSkeletonJsonAsync(string url, int maxNodes, int timeoutMs, string? headersFile, CancellationToken cancellationToken, int port = 0, string? storageStateFile = null) => Task.FromResult<string?>(null);
 
     public Task<BrowserInteractWorkerResult?> TryInteractAsync(string url, string actionsJson, int deadlineMs, int timeoutMs, string? headersFile, string? storageStateFile, CancellationToken cancellationToken, int port = 0) => Task.FromResult<BrowserInteractWorkerResult?>(null);
 }

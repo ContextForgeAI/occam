@@ -26,7 +26,8 @@ public interface IBrowserDaemonClient
         int timeoutMs,
         string? headersFile,
         CancellationToken cancellationToken,
-        int port = 0);
+        int port = 0,
+        string? storageStateFile = null);
 
     Task<BrowserInteractWorkerResult?> TryInteractAsync(
         string url,

@@ -22,49 +22,54 @@ public sealed class DomSkeletonWorker(WorkerPaths paths, IBrowserPoolManager bro
             return null;
         }
 
-        var headersFile = preflight.ActiveHeadersFile
-            ?? OccamEnvironment.Get("OCCAM_REQUEST_HEADERS_FILE");
-
-        if (browserPool.IsEnabled && await browserPool.TryEnsureMinimumHealthyAsync(paths))
+        using (preflight.HeadersScope)
         {
-            BrowserPoolSlot? slot = null;
-            try
-            {
-                var maxNodes = Math.Clamp(request.MaxSkeletonNodes, 50, 600);
-                slot = await browserPool.AcquireSlotAsync(CancellationToken.None);
-                var daemonJson = await browserDaemonClient.TryCaptureSkeletonJsonAsync(
-                    request.Url,
-                    maxNodes,
-                    120_000,
-                    headersFile,
-                    CancellationToken.None,
-                    slot.Port);
+            var headersFile = preflight.ActiveHeadersFile
+                ?? OccamEnvironment.Get("OCCAM_REQUEST_HEADERS_FILE");
+            var storageStateFile = preflight.ActiveStorageStatePath;
 
-                if (!string.IsNullOrWhiteSpace(daemonJson))
+            if (browserPool.IsEnabled && await browserPool.TryEnsureMinimumHealthyAsync(paths))
+            {
+                BrowserPoolSlot? slot = null;
+                try
                 {
-                    var jsonLine = NodeWorkerOutputCapture.TryParseLastJsonLine(daemonJson) ?? daemonJson.Trim();
-                    var parsed = ParseWorkerJsonLine(jsonLine, request);
-                    if (parsed is { Ok: true })
+                    var maxNodes = Math.Clamp(request.MaxSkeletonNodes, 50, 600);
+                    slot = await browserPool.AcquireSlotAsync(CancellationToken.None);
+                    var daemonJson = await browserDaemonClient.TryCaptureSkeletonJsonAsync(
+                        request.Url,
+                        maxNodes,
+                        120_000,
+                        headersFile,
+                        CancellationToken.None,
+                        slot.Port,
+                        storageStateFile);
+
+                    if (!string.IsNullOrWhiteSpace(daemonJson))
                     {
-                        browserPool.ReleaseSlot(slot, ok: true, extractMs: parsed.LatencyMs);
-                        slot = null;
-                        return parsed;
+                        var jsonLine = NodeWorkerOutputCapture.TryParseLastJsonLine(daemonJson) ?? daemonJson.Trim();
+                        var parsed = ParseWorkerJsonLine(jsonLine, request);
+                        if (parsed is { Ok: true })
+                        {
+                            browserPool.ReleaseSlot(slot, ok: true, extractMs: parsed.LatencyMs);
+                            slot = null;
+                            return parsed;
+                        }
+                    }
+                }
+                finally
+                {
+                    if (slot is not null)
+                    {
+                        browserPool.ReleaseSlot(slot, ok: false, extractMs: 0);
                     }
                 }
             }
-            finally
-            {
-                if (slot is not null)
-                {
-                    browserPool.ReleaseSlot(slot, ok: false, extractMs: 0);
-                }
-            }
-        }
 
-        return TryCaptureOneShot(request, headersFile);
+            return TryCaptureOneShot(request, headersFile, storageStateFile);
+        }
     }
 
-    private PlaybookHealResult? TryCaptureOneShot(PlaybookHealRequest request, string? headersFile)
+    private PlaybookHealResult? TryCaptureOneShot(PlaybookHealRequest request, string? headersFile, string? storageStateFile)
     {
         var script = ResolveScript(paths);
         if (script is null)
@@ -80,6 +85,11 @@ public sealed class DomSkeletonWorker(WorkerPaths paths, IBrowserPoolManager bro
             if (!string.IsNullOrWhiteSpace(headersFile) && File.Exists(headersFile))
             {
                 args += $" --headers-file=\"{headersFile}\"";
+            }
+
+            if (!string.IsNullOrWhiteSpace(storageStateFile) && File.Exists(storageStateFile))
+            {
+                args += $" --storage-state-file=\"{storageStateFile}\"";
             }
 
             var psi = new ProcessStartInfo
@@ -178,22 +188,6 @@ public sealed class DomSkeletonWorker(WorkerPaths paths, IBrowserPoolManager bro
         }
 
         return null;
-    }
-
-    private static FetchHeadersScope? CreateHeadersScope(string? sessionProfile)
-    {
-        if (string.IsNullOrWhiteSpace(sessionProfile))
-        {
-            return null;
-        }
-
-        var session = SessionProfileHeaders.Resolve(sessionProfile);
-        if (session.Status != SessionProfileStatus.Ok || session.Headers.Count == 0)
-        {
-            return null;
-        }
-
-        return FetchHeadersScope.Create(session.Headers);
     }
 
     private static PlaybookHealResult Fail(PlaybookHealRequest request, string code, string message, int latencyMs) =>

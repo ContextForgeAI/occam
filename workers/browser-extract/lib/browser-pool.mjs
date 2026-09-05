@@ -255,7 +255,7 @@ export class BrowserPool {
 
   /**
    * @param {string} url
-   * @param {{ maxNodes?: number, consentAggressive?: boolean, headersFile?: string | null }} [options]
+   * @param {{ maxNodes?: number, consentAggressive?: boolean, headersFile?: string | null, storageStateFile?: string | null }} [options]
    */
   async captureSkeleton(url, options = {}) {
     const run = async () => this.#captureSkeletonOnce(url, options);
@@ -269,6 +269,7 @@ export class BrowserPool {
     const session = await this.ensureSession({
       blockStylesheets: true,
       headersFile: options.headersFile ?? null,
+      storageStateFile: options.storageStateFile ?? null,
     });
 
     const page = await session.context.newPage();

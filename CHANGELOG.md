@@ -9,6 +9,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 ### Changed
 
 - **Own-ladder agentHints** — `captcha_or_challenge` / `http_401` / `http_403` / `requires_login` decisions now lead with `session_profile` (occam-session export-state) and local `backend_policy=browser`. Probe maps `session_cookies` challenge class to the same path. No third-party scrape guidance.
+- **Heal forwards `storageState`** — `occam_playbook_heal` passes session-profile Playwright `storageState` on both daemon `/skeleton` and one-shot `dom-skeleton-capture` (same as transcode). `occam_extract_knowledge` still drops it on the CSS extract leg.
 
 ### Fixed
 

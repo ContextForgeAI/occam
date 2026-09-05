@@ -1,4 +1,5 @@
 import { chromium } from "playwright";
+import { existsSync } from "node:fs";
 import { flattenOpenShadowRoots } from "./lib/shadow-dom-flatten.mjs";
 import { buildDomSkeleton } from "./lib/dom-skeleton.mjs";
 import { tryDismissConsent } from "./lib/consent.mjs";
@@ -13,10 +14,11 @@ const mode = modeArg?.split("=")[1] ?? "skeleton";
 const maxNodesArg = args.find((a) => a.startsWith("--max-nodes="));
 const maxNodes = maxNodesArg ? Number.parseInt(maxNodesArg.split("=")[1], 10) : 600;
 const headersFileArg = args.find((a) => a.startsWith("--headers-file="));
+const storageStateFileArg = args.find((a) => a.startsWith("--storage-state-file="));
 const url = args.find((a) => !a.startsWith("-"));
 
 if (!url) {
-  console.error("Usage: node dom-skeleton-capture.mjs <url> [--mode=skeleton] [--max-nodes=600]");
+  console.error("Usage: node dom-skeleton-capture.mjs <url> [--mode=skeleton] [--max-nodes=600] [--headers-file=…] [--storage-state-file=…]");
   process.exit(1);
 }
 
@@ -30,14 +32,20 @@ const started = performance.now();
 let browser;
 try {
   const headersFile = headersFileArg?.slice("--headers-file=".length).replace(/^"|"$/g, "");
+  const storageStateFile = storageStateFileArg?.slice("--storage-state-file=".length).replace(/^"|"$/g, "") ?? null;
   const { userAgent, extraHTTPHeaders, headers } = await resolveBrowserContextOptions(headersFile);
   browser = await chromium.launch(resolveBrowserLaunchOptions());
-  const context = await browser.newContext({
+  /** @type {import('playwright').BrowserContextOptions} */
+  const contextOptions = {
     userAgent,
     extraHTTPHeaders,
     viewport: { width: 1280, height: 720 },
     bypassCSP: true,
-  });
+  };
+  if (storageStateFile && existsSync(storageStateFile)) {
+    contextOptions.storageState = storageStateFile;
+  }
+  const context = await browser.newContext(contextOptions);
 
   // lean-A: mask navigator.webdriver.
   await context.addInitScript(STEALTH_INIT_SCRIPT);

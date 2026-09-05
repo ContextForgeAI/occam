@@ -36,7 +36,8 @@ Session data can include HTTP headers and Playwright `storageState`. **Not every
 |------|---------|---------|------------------------|
 | **1** | `occam_transcode`, digest, claim paths | Yes | Yes |
 | **2** | `occam_probe`, `occam_map` | Yes (HTTP only) | **No** — HTTP-only tools |
-| **3** | `occam_playbook_heal`, `occam_extract_knowledge` | Headers forwarded | **`storageState` dropped silently** on browser leg |
+| **3** | `occam_playbook_heal` | Headers forwarded | Yes (daemon + one-shot skeleton) |
+| **3b** | `occam_extract_knowledge` | Headers forwarded | **`storageState` still dropped** on CSS/browser extract leg |
 
 Task R: changelog behind login — import session (`occam session import` / export-state), transcode with `session_profile` and `backend_policy=browser`. Same profile on `occam_probe` reaches **less**—by design.
 
@@ -75,7 +76,7 @@ Inspect responses and logs: transcode should use browser state; probe remains HT
 
 **"A session profile reproduces the same authenticated state in every tool."**
 
-Three tiers exist. Tier 2 never uses `storageState`; tier 3 drops it on some tools. Always match tool to wall type.
+Three tiers exist. Tier 2 never uses `storageState`. Heal forwards it; `occam_extract_knowledge` still drops it on the CSS extract leg. Always match tool to wall type.
 
 ---
 

@@ -1068,7 +1068,8 @@ internal static class L0InfraUnitTests
             int timeoutMs,
             string? headersFile,
             CancellationToken cancellationToken,
-            int port = 0) => Task.FromResult<string?>(null);
+            int port = 0,
+            string? storageStateFile = null) => Task.FromResult<string?>(null);
 
         public Task<OccamMcp.Core.BrowserActions.BrowserInteractWorkerResult?> TryInteractAsync(
             string url,
