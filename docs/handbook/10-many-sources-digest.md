@@ -32,7 +32,7 @@ Rule: **several URLs → one `occam_digest`, not N× `occam_transcode`**—when 
 | Playbook overlay on items | Not on digest items | Available per transcode |
 | Receipt strength | **Reduced** — content hash only, no block leaves / time anchor | Full Receipt v1 when enabled |
 | Failure isolation | Batch preflight can affect whole call | Independent per URL |
-| Parallelism | Internal fan-out, one MCP call | Agent-orchestrated |
+| Parallelism | Internal fan-out, **one in-flight per host** (cross-host up to cap), one MCP call | Agent-orchestrated |
 
 ### Per-item failures
 
@@ -69,6 +69,7 @@ No model synthesizes across URLs. You receive bounded excerpts and hints; synthe
 - Reduced receipts weaken per-item trust vs transcode ([Chapter 14](14-what-a-receipt-proves.md)).
 - Batch SSRF/session preflight is whole-batch—not per-item session granularity.
 - Silent URL count/token clamps—verify list length in response.
+- Same-host URLs are extracted **sequentially** (polite); only distinct hosts fan out in parallel.
 - For claim-level proofs, you may still need full transcode receipts on critical URLs.
 
 ---

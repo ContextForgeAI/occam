@@ -3,7 +3,8 @@
 **Canonical tool:** `occam_digest`
 
 Research several pages at once: digest up to 8 URLs into per-page excerpts plus an optional
-combined Markdown block.
+combined Markdown block. **Polite by host:** URLs that share a registrable host run one at a
+time; different hosts may fan out (see `OCCAM_DIGEST_MAX_PARALLEL`).
 
 ## When to use
 

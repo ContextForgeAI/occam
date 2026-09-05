@@ -1101,7 +1101,8 @@ still valid).
 | `OCCAM_BROWSER_TIMEOUT_MS` | Per-browser extract timeout (queue wait derives from slot count) |
 | `OCCAM_HTTP_DAEMON` | `0` disables HTTP daemon (one-shot mode) |
 | `OCCAM_HTTP_DAEMON_IDLE_TTL_MS` | HTTP daemon idle TTL in ms (`120000` default, `0` disables auto-stop) |
-| `OCCAM_DIGEST_PARALLEL` | `0` forces sequential digest execution |
+| `OCCAM_DIGEST_PARALLEL` | `0` forces fully sequential digest execution |
+| `OCCAM_DIGEST_MAX_PARALLEL` | Cap concurrent **hosts** (1–8); same-host URLs stay serial |
 | `OCCAM_MAX_RESPONSE_BYTES` | HTTP body size cap for extraction |
 | `OCCAM_MAX_PDF_BYTES` | PDF body size cap (default 16 MiB; PDFs exceed the 1 MiB HTML cap). Oversize → `response_too_large` |
 | `OCCAM_REQUEST_HEADERS_FILE` | Extra HTTP headers JSON |
