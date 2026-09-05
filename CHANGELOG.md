@@ -6,7 +6,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
-<<<<<<< HEAD
+### Changed
+
+- **Own-ladder agentHints** — `captcha_or_challenge` / `http_401` / `http_403` / `requires_login` decisions now lead with `session_profile` (occam-session export-state) and local `backend_policy=browser`. Probe maps `session_cookies` challenge class to the same path. No third-party scrape guidance.
+
 ### Fixed
 
 - **Install UX honesty** — README and the docs hero no longer advertise
@@ -15,11 +18,6 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   the `occam` bin name (that name is the release operator CLI). `npm install -g`
   prints a postinstall that points at `get-ff-occam` and, on Windows, warns when
   the npm global bin is not on PATH.
-=======
-### Changed
-
-- **Own-ladder agentHints** — `captcha_or_challenge` / `http_401` / `http_403` / `requires_login` decisions now lead with `session_profile` (occam-session export-state) and local `backend_policy=browser`. Probe maps `session_cookies` challenge class to the same path. No third-party scrape guidance.
->>>>>>> dcd6668 (feat(agent): own-ladder session + browser hints on walls)
 
 ### Removed
 
