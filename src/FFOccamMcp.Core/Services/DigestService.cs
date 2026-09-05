@@ -262,30 +262,37 @@ public sealed class DigestService(
 
         // C2: Task.WhenAll + a semaphore instead of Parallel.For. The old shape blocked `maxParallel`
         // thread-pool threads (each worker run pinned up to three) for the whole fan-out; awaiting costs none.
+        // Polite multi-URL: group by host so same-origin digests stay sequential while distinct hosts
+        // fan out up to maxParallel (map→digest on one site never stampedes that origin).
         // The scope MUST be pushed inside each task: AsyncLocal copy-on-write is per async flow, so a scope
         // pushed out here would leak across siblings instead of giving each URL its own routing decision.
         var parallelResults = new DigestItemResult[entries.Count];
+        var hostGroups = DigestHostScheduler.GroupIndicesByHost(entries.Select(e => e.Url).ToList());
         using var gate = new SemaphoreSlim(maxParallel, maxParallel);
-        var tasks = new Task[entries.Count];
-        for (var i = 0; i < entries.Count; i++)
+        var groupTasks = new Task[hostGroups.Count];
+        for (var g = 0; g < hostGroups.Count; g++)
         {
-            var index = i;
-            tasks[index] = Task.Run(async () =>
+            var indices = hostGroups[g];
+            groupTasks[g] = Task.Run(async () =>
             {
                 await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
-                    using (HttpExtractRoutingScope.PushOneShot())
+                    foreach (var index in indices)
                     {
-                        parallelResults[index] = await TranscodeEntryAsync(
-                            entries[index],
-                            focusQuery,
-                            fitMarkdown,
-                            perUrlMaxTokens,
-                            sessionProfile,
-                            backendPolicy,
-                            cancellationToken).ConfigureAwait(false);
-                        ReportDone(entries[index].Url);
+                        cancellationToken.ThrowIfCancellationRequested();
+                        using (HttpExtractRoutingScope.PushOneShot())
+                        {
+                            parallelResults[index] = await TranscodeEntryAsync(
+                                entries[index],
+                                focusQuery,
+                                fitMarkdown,
+                                perUrlMaxTokens,
+                                sessionProfile,
+                                backendPolicy,
+                                cancellationToken).ConfigureAwait(false);
+                            ReportDone(entries[index].Url);
+                        }
                     }
                 }
                 finally
@@ -295,7 +302,7 @@ public sealed class DigestService(
             }, cancellationToken);
         }
 
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+        await Task.WhenAll(groupTasks).ConfigureAwait(false);
         return parallelResults;
     }
 

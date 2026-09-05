@@ -178,8 +178,8 @@ When a proxy pool is active, HTTP and browser daemons are disabled (rotation req
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `OCCAM_DIGEST_PARALLEL` | on | `0` forces sequential |
-| `OCCAM_DIGEST_MAX_PARALLEL` | — | Cap 1–8 parallel URL extracts |
+| `OCCAM_DIGEST_PARALLEL` | on | `0` forces fully sequential (all hosts) |
+| `OCCAM_DIGEST_MAX_PARALLEL` | — | Cap 1–8 **hosts** in flight; URLs that share a host are always serial |
 
 ---
 

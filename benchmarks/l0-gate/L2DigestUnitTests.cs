@@ -88,6 +88,32 @@ internal static class L2DigestUnitTests
         assert("digest parallel opt out", WithDigestParallelEnv("0", null, () =>
             DigestParallelism.ResolveMaxParallel(OccamBackendPolicy.Http, 8) == 1));
 
+        // Polite multi-URL: same-host URLs share one group (serial); distinct hosts fan out.
+        var sameHost = DigestHostScheduler.GroupIndicesByHost(
+        [
+            "https://www.nginx.org/en/docs/",
+            "https://nginx.org/en/docs/http/",
+            "https://Nginx.org/en/",
+        ]);
+        assert("digest host group single host", sameHost.Count == 1 && sameHost[0].Count == 3);
+        assert("digest host group preserves order", sameHost[0][0] == 0 && sameHost[0][1] == 1 && sameHost[0][2] == 2);
+        assert("digest host key strips www", DigestHostScheduler.HostKey("https://www.nginx.org/") == "nginx.org");
+        assert("digest single-host detection", DigestHostScheduler.IsSingleHost(
+            ["https://a.example/x", "https://www.a.example/y"]));
+
+        var mixed = DigestHostScheduler.GroupIndicesByHost(
+        [
+            "https://a.example/1",
+            "https://b.example/1",
+            "https://a.example/2",
+            "https://c.example/1",
+        ]);
+        assert("digest host group mixed count", mixed.Count == 3);
+        assert("digest host group a has two", mixed[0].Count == 2 && mixed[0][0] == 0 && mixed[0][1] == 2);
+        assert("digest host group b then c", mixed[1][0] == 1 && mixed[2][0] == 3);
+        assert("digest not single-host when mixed", !DigestHostScheduler.IsSingleHost(
+            ["https://a.example/1", "https://b.example/1"]));
+
         assert("digest id stable", DigestService.ComputeDigestId(["https://b.example/", "https://a.example/"])
             == DigestService.ComputeDigestId(["https://a.example", "https://b.example/"]));
 

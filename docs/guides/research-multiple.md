@@ -23,7 +23,7 @@ You already have several URLs (or a search/map result) and need a combined brief
 }
 ```
 
-Prefer **one** `occam_digest` over N× `occam_transcode`.
+Prefer **one** `occam_digest` over N× `occam_transcode`. Same-site batches (typical after `occam_map`) stay **polite**: one extract in flight per host; distinct hosts may still run in parallel.
 
 Tool: [`occam_digest`](../tools/occam_digest.md)
 
