@@ -97,7 +97,7 @@ occam_attest(claims=[{claim, sourceUrl}, …])
 | Situation | Do this instead |
 |-----------|-----------------|
 | `ok: false` on transcode | Read `failure.code`; do not invent content |
-| `captcha_or_challenge` | Stop; no CAPTCHA solver in this product |
+| `captcha_or_challenge` | Try `session_profile` + local `backend_policy=browser`; then stop — no CAPTCHA solver |
 | `http_404` | Fix or drop the URL |
 | No `knowledge_schema` | Use `occam_transcode`, not `occam_extract_knowledge` |
 | Several known URLs | One `occam_digest`, not N× `occam_transcode` |

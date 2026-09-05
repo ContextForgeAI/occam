@@ -146,7 +146,19 @@ public static class ProbeAgentHints
                 "Anti-bot or challenge page expected. This MCP has no CAPTCHA solver."),
         };
 
-        if (challenge?.RecommendedAction is "skip_url" or "stop"
+        if (challenge?.RecommendedAction == "session_cookies")
+        {
+            decisions.Add(new ProbeDecision(
+                "configure_session_profile",
+                "JS challenge class often clears with operator cookies — export via occam-session.mjs export-state, then retry with session_profile + backend_policy=browser.",
+                Parameter: "session_profile"));
+            decisions.Add(new ProbeDecision(
+                "try_browser",
+                "Retry occam_transcode with backend_policy=browser (local only; no third-party scrape).",
+                Tool: "occam_transcode",
+                Parameter: "backend_policy=browser"));
+        }
+        else if (challenge?.RecommendedAction is "skip_url" or "stop"
             && !DomainTierRegistry.IsBrowserFriendlySocialHost(url))
         {
             decisions.Add(new ProbeDecision(
