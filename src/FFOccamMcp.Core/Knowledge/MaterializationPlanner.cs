@@ -60,7 +60,8 @@ public sealed class MaterializationPlanner
             compiled.Markdown,
             request.FocusQuery,
             request.FocusFragment,
-            compiled.Truncated);
+            compiled.Truncated,
+            request.MaxTokens);
 
         return new MaterializationResult(
             view,

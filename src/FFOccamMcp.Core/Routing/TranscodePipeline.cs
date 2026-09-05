@@ -269,6 +269,16 @@ public sealed class TranscodePipeline(
                 BrowserProvisioned: browserProvisioned);
 
         var planned = materializationPlanner.Plan(request, bundle);
+        if (planned.Assessment?.SuggestedMinTokens is int suggested
+            && budgetPrepared.WholeResponseMaxTokens is int whole
+            && budgetPrepared.SurfaceMaxTokens is int surface)
+        {
+            // Translate the planner's surface retry estimate back to the caller's budget units.
+            planned = planned with { Assessment = planned.Assessment with
+            {
+                SuggestedMinTokens = Math.Max(whole + 1, suggested + Math.Max(0, whole - surface)),
+            } };
+        }
 
         // Resolve codec via fail-closed selector (null id → configured default). No public MCP codec param.
         var selection = KnowledgeCodecSelector.Select(codecRegistry, requestedCodecId: null);

@@ -22,7 +22,7 @@ The hash on a receipt binds this **compiled** form — not necessarily the origi
 |-----------|------|
 | `max_tokens` | Explicit budget for this call |
 | `occam_client_capabilities` / `OCCAM_CLIENT_CONTEXT_TOKENS` | Ambient budget (~20% of declared context, clamped) |
-| `fit_markdown` + `focus_query` | Prune toward relevance when over budget |
+| `fit_markdown` + `focus_query` | Prune toward relevance even when the full page fits; retain locally coupled instruction blocks before budgeting |
 
 Omit knobs for a first read — defaults are intended to be enough.
 
@@ -35,6 +35,12 @@ output is Markdown via the default passthrough codec.
 On `occam_transcode` and related tools, parameters such as `json_blocks`, `json_tables`, `json_feed`, and chunk modes add sidecars. They are **not** required for ordinary reading.
 
 Omitted content may be summarized in an omission manifest when fitting drops material — honesty about what was cut.
+
+Focused fitting keeps locally coupled commands, procedural lists, and adjacent explanations together. Independent navigation links remain individually filterable. When a selected instruction cannot fit, an explicit omission replaces it rather than a heading or introduction without its steps.
+
+`compile.omitted` can report `focus_filtered` even when `compile.truncated` is false: filtering and budget truncation are different operations. SNIP comments include removals within retained sections when space permits. `completeness.incompleteReason=focus_body_filtered` means the selected answer was lost during filtering; increasing the budget is not a remedy. `focus_body_truncated` denotes budget loss, with an estimated `suggestedMinTokens` above the current budget. Completeness concerns the selected answer, not every section of the source.
+
+Digest defaults to `fit_markdown=true`; transcode defaults to false. Digest's `focusMatched` measures lexical overlap in the excerpt, while `focus.status` measures structural section matching. `focusMatched:true` can coexist with `focus.status:weak` and does not prove answer completeness.
 
 ## Cache and identity
 

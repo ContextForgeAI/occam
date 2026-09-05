@@ -48,6 +48,12 @@ public static class TranscodeCompiler
         // mistakes a truncated body for the whole page.
         var omitted = OmittedManifestBuilder.Build(
             preBudgetText, text, truncated, truncationStrategy, tokensBeforeBudget, tokens);
+        if (options.FitMarkdown && !string.Equals(source, preBudgetText, StringComparison.Ordinal))
+        {
+            omitted = OmittedManifestBuilder.Build(source, text, true,
+                truncated ? "focus_filtered_and_budget" : "focus_filtered",
+                TokenEstimator.Estimate(source), tokens);
+        }
 
         return new TranscodeCompileResult(
             text,

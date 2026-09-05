@@ -10,6 +10,7 @@ internal static class L1aTokenEconomyTests
     {
         RunTokenBudget(assert);
         SectionIndexUnitTests.Run(assert);
+        FocusedInstructionUnitTests.Run(assert);
         RunFitMarkdown(assert);
         RunContentSelectors(assert);
         RunTranscodeCompiler(assert);

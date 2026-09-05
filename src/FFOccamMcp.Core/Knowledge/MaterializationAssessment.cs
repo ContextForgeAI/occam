@@ -25,7 +25,8 @@ public static class MaterializationAssessmentEvaluator
         string compiledMarkdown,
         string? focusQuery,
         string? focusFragment,
-        bool truncated)
+        bool truncated,
+        int? maxTokens = null)
     {
         if (string.IsNullOrWhiteSpace(focusQuery) && string.IsNullOrWhiteSpace(focusFragment))
         {
@@ -50,8 +51,9 @@ public static class MaterializationAssessmentEvaluator
             return new MaterializationAssessment(
                 selection.Status,
                 MaterializationCompleteness.Incomplete,
-                "focus_body_truncated",
-                unit is null ? null : Math.Max(ResponseBudgetPlanner.MinMarkdownTokens, unit.Tokens + 32),
+                truncated ? "focus_body_truncated" : "focus_body_filtered",
+                !truncated || unit is null ? null : Math.Max(
+                    (maxTokens ?? 0) + 1, Math.Max(ResponseBudgetPlanner.MinMarkdownTokens, unit.Tokens + 32)),
                 unit?.Tokens);
         }
 

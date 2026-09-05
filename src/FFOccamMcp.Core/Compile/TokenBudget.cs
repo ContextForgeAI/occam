@@ -79,6 +79,11 @@ public static class TokenBudget
             return result + marker;
         }
 
+        // Do not split a protected answer merely to make room for an omission comment.
+        // The compiler also returns a machine-readable omission manifest.
+        var minimum = AnswerUnitSelector.Select(selection.Section, focusQuery);
+        if (minimum?.EvidenceKind == "instruction") return result;
+
         var contentBudget = Math.Max(1, maxTokens - TokenEstimator.Estimate(marker));
         return TruncateHeadSafe(result, contentBudget) + marker;
     }
@@ -314,6 +319,11 @@ public static class TokenBudget
         var localIndex = SectionIndex.Build(section);
         var localSection = localIndex.Sections.FirstOrDefault();
         var minimum = localSection is null ? null : AnswerUnitSelector.Select(localSection, focusQuery);
+        if (minimum?.EvidenceKind == "instruction" && minimum.Tokens > maxTokens)
+        {
+            const string marker = "<!-- SNIP: instruction omitted (reason: budget_exceeded) -->";
+            return TokenEstimator.Estimate(marker) <= maxTokens ? marker : string.Empty;
+        }
         if (minimum is not null && minimum.Tokens <= maxTokens)
         {
             var protectedBlocks = AnswerUnitSelector.SplitBlocks(minimum.Text);

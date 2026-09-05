@@ -71,13 +71,9 @@ public static partial class FitMarkdown
             var keepHeading = heading is null;
             if (heading is not null)
             {
-                var tagWeight = HeadingTagWeight(heading.HeadingLevel);
-                var headingTerms = focused ? focusTerms : queryTerms;
-                var headingScore = Bm25Score(heading, headingTerms, docFreq, paragraphs.Count, avgDl) * tagWeight;
                 keepHeading = !IsBoilerplateHeading(heading.Text)
                     && (plan.KeptBody.Count > 0
-                        || (heading.HeadingLevel == 1 && anyBodyKept)
-                        || (focused && (headingScore >= minHeadingScore || FocusMatcher.MatchesMarkdown(heading.Text, focusQuery))));
+                        || (heading.HeadingLevel == 1 && anyBodyKept));
             }
 
             if (keepHeading && heading is not null)
@@ -88,17 +84,19 @@ public static partial class FitMarkdown
             kept.AddRange(plan.KeptBody);
         }
 
-        // AF-2: inject SNIP markers for fully-dropped sections (only when result still shrinks vs original)
+        // Include removals inside retained sections too; omit comments when they erase the size saving.
         if (focused && kept.Count >= 2)
         {
             var snipBlocks = new List<Block>();
             foreach (var plan in sectionKeeps)
             {
-                if (!plan.SectionDropped) continue;
-                var heading = plan.Section.Heading;
-                var droppedTokens = plan.Section.Body.Sum(b => Math.Max(1, FocusMatcher.Tokenize(b.Text).Count));
+                var retainedLines = plan.KeptBody.SelectMany(b => b.Text.Split('\n')).ToHashSet(StringComparer.Ordinal);
+                var removed = plan.Section.Body.Select(b => string.Join('\n', b.Text.Split('\n')
+                    .Where(line => !retainedLines.Contains(line)))).Where(text => !string.IsNullOrWhiteSpace(text)).ToList();
+                if (removed.Count == 0) continue;
+                var droppedTokens = removed.Sum(TokenEstimator.Estimate);
                 snipBlocks.Add(new Block(
-                    $"<!-- SNIP: ({plan.Section.Body.Count} paragraphs, {droppedTokens} tokens, reason: bm25_below_threshold) -->",
+                    $"<!-- SNIP: ({removed.Count} paragraphs, {droppedTokens} tokens, reason: focus_filtered) -->",
                     BlockKind.Paragraph));
             }
             if (snipBlocks.Count > 0)
@@ -313,6 +311,24 @@ public static partial class FitMarkdown
             }
         }
 
+        if (focused)
+        {
+            // Score seeds independently, then close local instruction dependencies before budgeting.
+            // A list/command cannot be judged solely by its own keyword overlap.
+            var groups = InstructionDependencies.Groups(body.Select(b => b.Text).ToList());
+            foreach (var (start, end) in groups)
+            {
+                var members = body.GetRange(start, end - start + 1);
+                if (!sectionMatchesFocus && !members.Any(member => kept.Any(k => member.Text.Contains(k.Text, StringComparison.Ordinal)))) continue;
+                foreach (var member in members)
+                {
+                    kept.RemoveAll(k => member.Text.Contains(k.Text, StringComparison.Ordinal));
+                    var clean = member.Kind == BlockKind.Code ? member.Text : FilterBoilerplateLines(member.Text);
+                    if (!string.IsNullOrWhiteSpace(clean)) kept.Add(member with { Text = clean });
+                }
+            }
+            kept = kept.OrderBy(k => body.FindIndex(b => b.Text.Contains(k.Text, StringComparison.Ordinal))).ToList();
+        }
         return kept;
     }
 
@@ -711,10 +727,7 @@ public static partial class FitMarkdown
         public int HeadingLevel => Heading?.HeadingLevel ?? 0;
     }
 
-    private sealed record SectionKeepPlan(MarkdownSection Section, List<Block> KeptBody)
-    {
-        public bool SectionDropped => KeptBody.Count == 0 && Section.Heading is not null;
-    }
+    private sealed record SectionKeepPlan(MarkdownSection Section, List<Block> KeptBody);
 
     [GeneratedRegex(@"\[([^\]]+)\]\([^)]+\)")]
     private static partial Regex LinkRegex();

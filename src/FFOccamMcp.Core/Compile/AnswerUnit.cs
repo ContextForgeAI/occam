@@ -15,6 +15,16 @@ public static class AnswerUnitSelector
         }
 
         var heading = $"{new string('#', Math.Max(1, section.Level))} {section.Heading}";
+        var groups = InstructionDependencies.Groups(blocks);
+        var group = groups.FirstOrDefault(g => blocks.Skip(g.Start).Take(g.End - g.Start + 1)
+            .Any(block => FocusMatcher.MatchesMarkdown(block, focusQuery)));
+        if (groups.Count > 0)
+        {
+            if (group == default) group = groups[0];
+            var instruction = string.Join("\n\n", new[] { heading }
+                .Concat(blocks.Skip(group.Start).Take(group.End - group.Start + 1)));
+            return new MinimumAnswerUnit(instruction, TokenEstimator.Estimate(instruction), "instruction");
+        }
         var prose = blocks.FirstOrDefault(block => !IsStructured(block));
         var structuredIndex = blocks.FindIndex(IsStructured);
         var parts = new List<string> { heading };
@@ -50,11 +60,7 @@ public static class AnswerUnitSelector
 
     private static bool IsStructured(string block)
     {
-        var first = block.Split('\n', 2)[0].TrimStart();
-        return first.StartsWith("- ", StringComparison.Ordinal)
-            || first.StartsWith("* ", StringComparison.Ordinal)
-            || first.StartsWith("```", StringComparison.Ordinal)
-            || first.StartsWith('|');
+        return InstructionDependencies.IsStructured(block);
     }
 
     private static string StructuredKind(string block)

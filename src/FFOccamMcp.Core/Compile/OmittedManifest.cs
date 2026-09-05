@@ -2,10 +2,10 @@ namespace OccamMcp.Core.Compile;
 
 /// <summary>
 /// #7 omitted-manifest: a structured, machine-readable record of what max_tokens budgeting dropped
-/// from the returned markdown. The token budgeter leaves in-band SNIP comments
+/// or focus fitting from the returned markdown. The token budgeter leaves in-band SNIP comments
 /// (<c>&lt;!-- SNIP: … --&gt;</c>); this promotes the same information to a first-class field so a
 /// consuming agent KNOWS there are holes — and their size and shape — instead of inferring
-/// completeness from a silently-truncated body. Present only when truncation actually occurred.
+/// completeness from a silently-truncated body. Filtering can populate it without budget truncation.
 /// </summary>
 /// <param name="Reason">Truncation strategy that produced the holes: head_safe / sandwich / focus_window.</param>
 /// <param name="TokensDropped">Estimated tokens removed (pre-budget estimate minus the returned estimate).</param>
@@ -48,6 +48,7 @@ public static class OmittedManifestBuilder
         {
             "sandwich" => "middle",
             "focus_window" => "unchosen",
+            "focus_filtered" or "focus_filtered_and_budget" => "filtered",
             _ => "tail",
         };
 

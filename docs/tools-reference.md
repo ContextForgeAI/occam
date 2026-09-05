@@ -38,7 +38,7 @@ Read one web page → clean, compact LLM-ready Markdown (live extract, not model
 | `url` | string | **required** | HTTP or HTTPS URL |
 | `backend_policy` | string | `http_then_browser` | `http`, `browser`, or `http_then_browser` |
 | `max_tokens` | int? | null | Projected-payload token ceiling (min 128) across markdown + serialized sidecars. Unrequested fields cost zero; focused output protects a minimum answer unit; never auto-expands |
-| `fit_markdown` | bool | `false` | BM25-style paragraph prune |
+| `fit_markdown` | bool | `false` | BM25-style prune with local instruction dependencies; see [materialization](materialization.md) for omission semantics |
 | `focus_query` | string? | null | Structural focus for constrained output; also guides prune when `fit_markdown=true`. Preserves numeric/technical identifiers |
 | `content_selectors` | string? | null | JSON array or comma-separated heading anchors |
 | `session_profile` | string? | null | Profile id under `OCCAM_SESSIONS_ROOT` |

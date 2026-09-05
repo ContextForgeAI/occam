@@ -18,6 +18,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Fixed
 
+- **Focused instruction retention** — focus fitting retains locally coupled commands, procedural lists, and explanatory text before budgeting; independent navigation links remain filterable. Oversized instruction units are omitted explicitly instead of leaving dangling introductions. Filtering omissions are reported separately from budget truncation, and budget retry suggestions exceed the caller's current budget.
+
 - **Install UX honesty** — README and the docs hero no longer advertise
   `npm install -g ff-occam` followed by `occam connect`. The happy path is the
   bootstrap one-liner (host + PATH + connect). The npm package no longer claims
