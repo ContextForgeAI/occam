@@ -1047,10 +1047,12 @@ Statically validate a playbook/genome JSON against the 1.x schema (SI-13, no net
 
 Returns `{ grade, agentReady, errors, warnings, infos, issues:[{ severity, field, code, message }] }`.
 `grade` ∈ `ready` (clean) \| `usable` (warnings only) \| `broken` (has errors); `agentReady` is true iff
-`errors == 0` (resolve/save would accept it). **Errors:** missing/invalid `schema_version` (1.x), missing
-`id`, missing/empty `hosts`, missing/empty `extract.contentSelectors`. **Warnings:** non-bare host, invalid
-`routing.preferred_backend`, blank selector, unrouted `knowledge_schema` class, missing `meta.title`.
-**Info:** missing `agent_notes`. Use before a live `occam_playbook_save` to avoid a wasted verify.
+`errors == 0` (shared schema gate with save — live verify is separate). **Errors:** missing/invalid
+`schema_version` (1.x), missing `id`, missing/empty `hosts`, missing/empty `extract.contentSelectors`
+(or `content_selectors`), forbidden secret keys. **Warnings:** non-bare host, invalid
+`routing.preferred_backend` (aliases like `http-then-browser` are accepted), blank selector, unrouted
+`knowledge_schema` class, missing `meta.title`. **Info:** missing `agent_notes`. Use before a live
+`occam_playbook_save` to avoid a wasted verify.
 
 ---
 

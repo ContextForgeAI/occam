@@ -27,9 +27,12 @@ errors):
 - `errors`, `warnings`, `infos` — counts
 - `issues[]` — `{severity, field, code, message}`
 
-Severity meaning: **errors** break resolve/save (missing `schema_version` / `id` / `hosts` /
-`extract.contentSelectors`); **warnings** degrade quality (bad backend, non-bare host, unrouted
-`knowledge_schema` class); **infos** are nudges.
+Severity meaning: **errors** break the shared save/lint schema gate (missing `schema_version` / `id` /
+`hosts` / `extract.contentSelectors` or `content_selectors`, forbidden secret keys); **warnings** degrade
+quality (bad backend, non-bare host, unrouted `knowledge_schema` class); **infos** are nudges.
+
+`agentReady: true` means save would accept the document **before** live verify — not that dry-run
+`verify.score` will pass.
 
 ## Example
 

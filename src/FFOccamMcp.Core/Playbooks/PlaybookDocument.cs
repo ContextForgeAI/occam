@@ -12,6 +12,11 @@ public sealed record PlaybookDocument(
     {
         try
         {
+            if (!PlaybookSchemaGate.IsSaveAcceptable(json))
+            {
+                return null;
+            }
+
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;
             var schemaVersion = root.TryGetProperty("schema_version", out var versionEl)

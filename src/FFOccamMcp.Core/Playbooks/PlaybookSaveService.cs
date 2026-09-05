@@ -20,9 +20,19 @@ public sealed class PlaybookSaveService(
             return Fail(request.Url, "playbook_schema_invalid", "playbook_json is required.");
         }
 
-        if (PlaybookCommunityHygiene.ContainsForbiddenKeys(request.PlaybookJson))
+        var hardErrors = PlaybookSchemaGate.CollectHardErrors(request.PlaybookJson);
+        if (hardErrors.Any(e => e.Code == "forbidden_secret_key"))
         {
             return Fail(request.Url, "playbook_save_rejected", "playbook_json contains forbidden secret keys.");
+        }
+
+        if (hardErrors.Count > 0)
+        {
+            var first = hardErrors[0];
+            return Fail(
+                request.Url,
+                "playbook_schema_invalid",
+                $"{first.Field}: {first.Message}");
         }
 
         var document = PlaybookDocument.TryParse(request.PlaybookJson);

@@ -13,6 +13,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 - **Prefer-content DOM skeleton** — heal skeleton walk defers nav/header/footer/aside and seeds `mainCandidates` from content landmarks so a tight `maxNodes` budget still reaches `main`/`#content` on chrome-heavy docs pages.
 - **Heal draft stub** — successful `occam_playbook_heal` may include mechanical `draftPlaybookJson` (top `contentSelectors` from `mainCandidates`); still review → lint → save with verify.
 - **`occam_extract_knowledge` storageState** — browser-fallback CSS extract now loads Playwright `storageState` from `session_profile` (Tier 1 parity with transcode/heal).
+- **Lint ↔ save schema gate** — `PlaybookSchemaGate` is shared: missing `contentSelectors`/`content_selectors`, non-1.x schema, and forbidden secret keys fail both lint and save the same way; `http-then-browser` is accepted. Live verify remains save-only.
 
 ### Fixed
 
