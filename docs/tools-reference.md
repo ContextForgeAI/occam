@@ -194,7 +194,7 @@ the first link returns `ok: false`, `failureCode: "timeout"`.
 
 ## 7. `occam_playbook_heal`
 
-Capture DOM skeleton and selector candidates to draft a playbook after a failed transcode.
+Capture DOM skeleton, selector candidates, and optional mechanical `draftPlaybookJson` after a failed transcode.
 
 ### Parameters
 
