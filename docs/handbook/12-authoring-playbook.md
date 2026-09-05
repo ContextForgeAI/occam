@@ -20,8 +20,8 @@ Only run this loop on **genuine extraction failures** (`thin_extract`, etc.)—n
 
 1. **`occam_playbook_heal(url)`** — Browser-backed skeleton capture, candidate selectors, optional mechanical `draftPlaybookJson` stub. Does not LLM-author a recipe; review the stub (or write your own) before save. `--consent-aggressive` worker flag unreachable from MCP.
 2. **Draft** — Prefer editing `draftPlaybookJson` when present; otherwise write playbook JSON from candidates (selectors, interaction steps, schema hooks).
-3. **`occam_playbook_lint(playbook_json)`** — Structural/advisory checks. **Different parser from save/resolve**—lint passing does not guarantee save acceptance.
-4. **`occam_playbook_save(..., verify:true)`** — Runs save-time gate (`verify.score`, `passesGate`, noise leakage). Signs on success.
+3. **`occam_playbook_lint(playbook_json)`** — Structural/advisory checks via the same schema gate as save (hard errors = save would reject before verify). Warnings/infos are quality nudges only.
+4. **`occam_playbook_save(..., verify:true)`** — Re-checks the schema gate, then runs the live dry-run gate (`verify.score`, `passesGate`, noise leakage). Signs on success.
 
 Re-test with [Chapter 11](11-playbooks-resolution.md) comparison (`auto` vs prior `off`).
 
@@ -70,7 +70,7 @@ Heal emits skeleton + candidates and may attach a mechanical `draftPlaybookJson`
 ## Limitations
 
 - Playbooks can execute page JS—untrusted URLs + untrusted recipes = code execution risk ([trust-and-safety](../trust-and-safety.md)).
-- Lint vs save parser mismatch (EF-015)—always run save as final gate.
+- Schema gate is shared with save (missing selectors / secrets / non-1.x fail both). Live verify score is still save-only — lint never fetches.
 - Marketplace CI auto-merge is not trusted validation (OD-1).
 - Healing a `short_quality` page wastes resources and may harm good extracts.
 

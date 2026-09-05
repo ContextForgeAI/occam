@@ -68,6 +68,40 @@ public static class PlaybookLintUnitTests
         var d = PlaybookLinter.Lint(defaultOnly);
         assert("lint default knowledge class is not unrouted", d is { Grade: "ready" } && !d.Issues.Any(i => i.Code == "unrouted_class"));
 
+        // content_selectors snake_case alias (resolve/save accept it) must not be a hard error.
+        const string snake = """
+        {"schema_version":"1.0","id":"x.com","hosts":["x.com"],"meta":{"title":"t"},
+         "extract":{"content_selectors":["main"]},"agent_notes":"n"}
+        """;
+        var sn = PlaybookLinter.Lint(snake);
+        assert("lint accepts content_selectors snake_case", sn.AgentReady && !sn.Issues.Any(i => i.Field == "extract.contentSelectors" && i.Severity == "error"));
+        assert("save gate accepts content_selectors snake_case", PlaybookSchemaGate.IsSaveAcceptable(snake));
+        assert("TryParse accepts content_selectors snake_case", PlaybookDocument.TryParse(snake) is not null);
+
+        // http-then-browser alias matches OccamBackendPolicyParser (not a warning).
+        const string dashed = """
+        {"schema_version":"1.0","id":"x.com","hosts":["x.com"],"meta":{"title":"t"},
+         "routing":{"preferred_backend":"http-then-browser"},
+         "extract":{"contentSelectors":["main"]},"agent_notes":"n"}
+        """;
+        var dash = PlaybookLinter.Lint(dashed);
+        assert("lint accepts http-then-browser backend", dash is { Grade: "ready" } && !dash.Issues.Any(i => i.Code == "invalid_backend"));
+
+        // Forbidden secret keys are hard errors (same as save rejection).
+        const string secret = """
+        {"schema_version":"1.0","id":"x.com","hosts":["x.com"],
+         "extract":{"contentSelectors":["main"]},"cookie":"a=b"}
+        """;
+        var sec = PlaybookLinter.Lint(secret);
+        assert("lint flags forbidden secret key", sec is { AgentReady: false } && sec.Issues.Any(i => i.Code == "forbidden_secret_key"));
+        assert("save gate rejects forbidden secret key", !PlaybookSchemaGate.IsSaveAcceptable(secret));
+
+        // Missing contentSelectors: lint error AND save TryParse null (aligned).
+        const string noSel = """{"schema_version":"1.0","id":"x.com","hosts":["x.com"]}""";
+        var ns = PlaybookLinter.Lint(noSel);
+        assert("lint missing selectors is broken", !ns.AgentReady && ns.Issues.Any(i => i.Field == "extract.contentSelectors"));
+        assert("TryParse rejects missing selectors", PlaybookDocument.TryParse(noSel) is null);
+
         Console.WriteLine("L_LINT_OK");
     }
 }
