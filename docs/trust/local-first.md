@@ -18,12 +18,11 @@ Optional integrations send data to endpoints **you configure**:
 | Integration | What leaves |
 |-------------|-------------|
 | Web search (`OCCAM_SEARCH_*`) | Query + provider API traffic |
-| **Managed extract** (`OCCAM_MANAGED_*`) | Target URL and fetch parameters to Firecrawl, Jina, Spider, Scrapfly, Wayback (`archive`), local Donsetch, or your override base URL |
 | Translation (`OCCAM_TRANSLATE_URL`) | Text you send for translation |
 | Time anchor (`OCCAM_TSA_URL`) | Hash of signature bytes to your TSA |
 | HTTP(S) proxy (`OCCAM_HTTP_PROXY`, …) | Traffic routed through your proxy — not Occam cloud |
 
-Managed extract runs only after **both local backends fail** on `http_then_browser`, and only when you have configured a provider. It is **not** a default cloud middleman for ordinary reads.
+Acquisition stays on the **local** HTTP → browser ladder. There is no third-party scrape escalation rung.
 
 Fetched web content is **untrusted input**. Occam extracts text; it does not treat page JavaScript as trusted code beyond the browser sandbox used for rendering.
 

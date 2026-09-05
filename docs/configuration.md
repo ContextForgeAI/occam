@@ -126,26 +126,12 @@ Export profiles: `node scripts/occam-session.mjs export-state --profile <id>`.
 | `OCCAM_SEARCH_URL` | Required for SearXNG base URL |
 | `OCCAM_SEARCH_API_KEY` | Required for Brave/Tavily |
 | `OCCAM_SEARCH_TIMEOUT_MS` | Default `20000` (1k–120k) |
-| `OCCAM_DONSETCH_PATH` | Optional absolute path to a local `donsetch` binary (`OCCAM_SEARCH_PROVIDER=donsetch` or `OCCAM_MANAGED_PROVIDER=donsetch`). Otherwise `donsetch` must be on `PATH`. Never bundled (AGPL). |
+| `OCCAM_DONSETCH_PATH` | Optional absolute path to a local `donsetch` binary (`OCCAM_SEARCH_PROVIDER=donsetch`). Otherwise `donsetch` must be on `PATH`. Never bundled (AGPL). |
 
 Occam does not index the web. The DuckDuckGo default is disclosed discovery for
 first-run Research; operators who want a dedicated backend set SearXNG/Brave/Tavily
 (or `off` for air-gap). DuckDuckGo may soft-block automated egress with an anomaly
 challenge — Occam returns `search_http_202` and does not solve CAPTCHAs.
-
----
-
-## Managed providers (optional escalation)
-
-| Variable | Purpose |
-|----------|---------|
-| `OCCAM_MANAGED_PROVIDER` | `firecrawl` \| `jina` \| `spider` \| `scrapfly` \| `archive` \| `donsetch` |
-| `OCCAM_MANAGED_API_KEY` | Provider API key (not required for `jina`, `archive`, `donsetch`) |
-| `OCCAM_MANAGED_BASE_URL` | Override provider base URL (`archive` defaults to `https://archive.org`) |
-| `OCCAM_MANAGED_DOMAINS` | Comma-separated domain allowlist |
-| `OCCAM_MANAGED_TIMEOUT_MS` | Default `60000` (1k–180k) |
-
-`archive` recovers a Wayback snapshot (rough Markdown). `donsetch` spawns a local Donsetch CLI fetch — operator-installed only.
 
 ---
 

@@ -104,7 +104,7 @@ Does <strong>not</strong> invent page text from model memory.
 |---|------------|
 | **Honest read** | Live extract → Markdown, or typed refusal. `ok:false` = content **unknown**. |
 | **Token contract** | `occam_client_capabilities`, `max_tokens`, `fit_markdown` + `focus_query` — not an LLM summarizer. |
-| **Acquisition ladder** | HTTP → browser when needed → optional managed / archive. |
+| **Acquisition ladder** | HTTP → browser when needed → typed refusal. |
 | **One page / many** | `occam_transcode` · `occam_digest` · `occam_map` / `occam_search`. |
 | **Structure / diffs** | Opt-in blocks/tables/feeds · `if_none_match` / `diff_against`. |
 | **Integrity** | Optional Receipt v1 → `occam_verify` (integrity vs a key — not truth). |
@@ -330,8 +330,8 @@ agent and the public web.
 </div>
 
 Local-first is not an absolute “never cloud” claim. The origin website is a
-network source, and explicitly configured search, managed acquisition, proxy,
-or remote transport providers can change the boundary.
+network source, and explicitly configured search, proxy, or remote transport
+providers can change the boundary.
 
 Optional Receipt v1 artifacts can check returned-byte integrity against a
 supplied key. They do not prove truth, identity, or authentic origin.

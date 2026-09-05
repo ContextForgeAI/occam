@@ -142,10 +142,6 @@ markers. Source checkouts are recognized and preserved. It does not guess.
 - Do not commit profiles  
 - Do not put LLM API keys in Occam's environment  
 
-## Managed egress (optional)
-
-If you configure managed extract providers (`OCCAM_MANAGED_*`), page URLs and fetch parameters leave your machine to the provider you chose. That is separate from the default local HTTP/browser path. See [Configuration](../configuration.md) and [Trust: local-first](local-first.md).
-
 ## Next
 
 - [Install](../install.md)

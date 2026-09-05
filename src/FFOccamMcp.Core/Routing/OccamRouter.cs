@@ -43,9 +43,8 @@ public sealed class OccamRouter
 {
     private readonly IExtractBackend? _http;
     private readonly IExtractBackend? _browser;
-    private readonly Backends.IManagedExtractBackend? _managed;
 
-    public OccamRouter(IEnumerable<IExtractBackend> backends, Backends.IManagedExtractBackend? managed = null)
+    public OccamRouter(IEnumerable<IExtractBackend> backends)
     {
         foreach (var backend in backends)
         {
@@ -59,8 +58,6 @@ public sealed class OccamRouter
                     break;
             }
         }
-
-        _managed = managed;
     }
 
     public async ValueTask<TranscodeOutcome> TranscodeAsync(string url, OccamBackendPolicy policy, CancellationToken cancellationToken)
@@ -158,20 +155,6 @@ public sealed class OccamRouter
         if (IsSuccessfulExtract(browser))
         {
             return Finish(browser);
-        }
-
-        // Package 3: last-resort escalation to a managed provider (Firecrawl/Jina/…) when both
-        // local backends fail on an opted-in host. Off by default; never reached unless configured.
-        if (_managed is not null && _managed.ShouldAttempt(url))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var managed = Record(
-                await _managed.ExtractAsync(url, cancellationToken).ConfigureAwait(false),
-                EscalationReasonFor(browser));
-            if (IsSuccessfulExtract(managed))
-            {
-                return Finish(managed);
-            }
         }
 
         // Neither local attempt produced usable content. Choose by informativeness so a specific code

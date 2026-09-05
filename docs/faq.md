@@ -16,7 +16,7 @@ Optional features (web search, managed scraping APIs, LibreTranslate, time-stamp
 
 By default, only to **the URLs you ask Occam to fetch** (and your configured proxy, if any).
 
-Content also leaves your machine when you enable an outbound integration (`OCCAM_SEARCH_*`, `OCCAM_MANAGED_*`, `OCCAM_TRANSLATE_URL`, `OCCAM_TSA_URL`). Managed extract sends the target URL to the provider you configured — it is not a default path.
+Content also leaves your machine when you enable an outbound integration (`OCCAM_SEARCH_*`, `OCCAM_TRANSLATE_URL`, `OCCAM_TSA_URL`). Search sends the query to the configured SERP backend; translation/TSA are opt-in endpoints you set.
 
 Markdown and receipts in MCP responses stay on your machine unless your AI client logs them elsewhere.
 

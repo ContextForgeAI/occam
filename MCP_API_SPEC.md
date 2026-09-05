@@ -40,7 +40,7 @@ Local and remote WebSocket messages are text-only and capped at 4 MiB by default
 
 1. **Parseable output** — JSON envelope, not raw Markdown strings.
 2. **Honest failures** — typed `failure.code`; agents must not hallucinate page content.
-3. **Backend transparency** — success includes the winning extractor identifier (for example `node_readability_turndown`, `browser_playwright`, `npm_registry_package`, `crates_io_readme`, `pdf`, or `managed_<provider>`). This is not the request's abstract `backend_policy`.
+3. **Backend transparency** — success includes the winning extractor identifier (for example `node_readability_turndown`, `browser_playwright`, `npm_registry_package`, `crates_io_readme`, or `pdf`). This is not the request's abstract `backend_policy`.
 4. **Live extract by default** — every call fetches the page unless `cache_ttl_s > 0` returns a prior signed envelope (`cached: true`). No built-in HTML/Markdown disk cache in Core.
 5. **Token economy (L1a)** — optional `max_tokens`, `fit_markdown`, `focus_query`, `content_selectors`. Defaults preserve L0 full-markdown behavior.
 6. **Probe (L1b)** — cheap HTTP diagnosis before transcode; routing hints, no workers.
@@ -108,7 +108,7 @@ log(result.backend)   # transcode only — winning extractor identifier
 | `url.url` | string | URL you requested |
 | `url.finalUrl` | string \| null | URL that supplied the returned content after redirects or a sanctioned source adapter. npm package-page fallback identifies its public registry metadata URL; an exact crates.io `/crates/<name>` adaptation identifies the official `static.crates.io` rendered README URL. |
 | `markdown` | string | Extracted Markdown (after compile knobs) |
-| `backend` | string | Winning extractor identifier, such as `node_readability_turndown`, `browser_playwright`, `npm_registry_package`, `crates_io_readme`, `pdf`, `css_extract_http`, or `managed_<provider>` (for example `managed_firecrawl`). Do not compare this field to `backend_policy`. |
+| `backend` | string | Winning extractor identifier, such as `node_readability_turndown`, `browser_playwright`, `npm_registry_package`, `crates_io_readme`, `pdf`, or `css_extract_http`. Do not compare this field to `backend_policy`. |
 | `mediaRefs` | array? | Structured media handles (`url`, `kind`, `alt`, `contextHeading`, `selectorHint`) |
 | `meta` | object? | Always-on page metadata when found: `{ publishedAt, author, lang, canonical }` (og/meta/JSON-LD; each field omitted when absent). Useful for RAG freshness/citations |
 | `compile` | object? | Omitted when no token knobs were set; `tokenEstimator` identifies the heuristic behind `tokensEstimated` |

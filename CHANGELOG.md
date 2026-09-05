@@ -6,6 +6,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+### Removed
+
+- **Managed extract escalation** — third-party scrape adapters (Firecrawl, Jina, Spider, Scrapfly, Wayback `archive`, Donsetch-as-extract) and `OCCAM_MANAGED_*` are gone. Acquisition is local HTTP → browser → typed refusal only. `OCCAM_SEARCH_PROVIDER=donsetch` remains for search discovery.
+
 ## [1.0.1] — 2026-09-01
 
 npm-only patch — ships #32 + #33 without a new GitHub Release host cut. Guarded
