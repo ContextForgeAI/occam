@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * ff-occam — primary npm CLI (aliases: ff-occam, occam).
+ * ff-occam — primary npm MCP launcher (command name: ff-occam only).
  * Delegates to @ff-occam/mcp launcher (release download or OCCAM_HOME local build).
  *
  * Operator verbs (connect, doctor, …) are NOT supported here — refuse before
@@ -19,8 +19,8 @@ function resolveMcpEntry() {
   try {
     return require.resolve("@ff-occam/mcp/bin/occam-mcp.js");
   } catch {
-    // Monorepo dev: sibling package before npm link/publish.
-    return join(__dirname, "..", "occam-mcp", "bin", "occam-mcp.js");
+    // Monorepo: packages/ff-occam/bin → packages/occam-mcp
+    return join(__dirname, "..", "..", "occam-mcp", "bin", "occam-mcp.js");
   }
 }
 
@@ -28,7 +28,7 @@ function resolveOperatorGuard() {
   try {
     return require.resolve("@ff-occam/mcp/lib/operator-cli-guard.mjs");
   } catch {
-    return join(__dirname, "..", "occam-mcp", "lib", "operator-cli-guard.mjs");
+    return join(__dirname, "..", "..", "occam-mcp", "lib", "operator-cli-guard.mjs");
   }
 }
 
