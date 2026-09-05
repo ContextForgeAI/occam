@@ -480,6 +480,7 @@ internal static class L0InfraUnitTests
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "shared", "lib", "request-headers.selftest.mjs"), "request headers cross-origin strip selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "browser-extract", "lib", "browser-challenge-detect.selftest.mjs"), "browser challenge fail-fast selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "browser-extract", "lib", "browser-html-cap.selftest.mjs"), "browser html cap selftest");
+        RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "browser-extract", "lib", "dom-skeleton-prefer-content.selftest.mjs"), "dom skeleton prefer-content selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("scripts", "lib", "verify-community-manifest.mjs"), "verify community manifest");
         RunGoldenHostsAllowlist(assert, occamHome);
         RunPlaybookSeedResolver(assert);

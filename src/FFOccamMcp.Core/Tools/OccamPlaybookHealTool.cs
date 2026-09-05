@@ -10,7 +10,7 @@ namespace OccamMcp.Core.Tools;
 [McpServerToolType]
 public sealed class OccamPlaybookHealTool(PlaybookHealService healService)
 {
-    [McpServerTool(Name = "occam_playbook_heal"), Description("When a transcode fails on a hard site with no recipe, capture the page's DOM skeleton + selector candidates so you can draft a playbook for it (then save with occam_playbook_save). This gathers the evidence; you write the recipe JSON.")]
+    [McpServerTool(Name = "occam_playbook_heal"), Description("When a transcode fails on a hard site with no recipe, capture the page's DOM skeleton + selector candidates and a mechanical draftPlaybookJson stub (not LLM-written) so you can review, lint, then save with occam_playbook_save.")]
     public async Task<string> Heal(
         [Description("Absolute HTTP(S) URL to heal.")] string url,
         [Description("Prior failure.code from occam_transcode (e.g. thin_extract).")] string failure_reason,
@@ -68,7 +68,8 @@ internal static class OccamPlaybookHealResponseMapper
                 : new OccamHealAgentHintsInfo(
                     result.AgentHints.SuggestedNext,
                     result.AgentHints.DoNot,
-                    result.AgentHints.MaxVerifyRetries));
+                    result.AgentHints.MaxVerifyRetries),
+            result.DraftPlaybookJson);
 
     public static OccamPlaybookHealFailureResponse MapFailure(PlaybookHealResult result)
     {
@@ -135,7 +136,9 @@ public sealed record OccamPlaybookHealSuccessResponse(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     OccamHealAnchorsInfo? Anchors,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    OccamHealAgentHintsInfo? AgentHints);
+    OccamHealAgentHintsInfo? AgentHints,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? DraftPlaybookJson);
 
 public sealed record OccamPlaybookHealFailureResponse(
     bool Ok,

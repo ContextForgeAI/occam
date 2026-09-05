@@ -49,7 +49,33 @@ internal static class L3HealLearnUnitTests
         assert("heal max verify retries", PlaybookHealPolicy.MaxVerifyRetries == 3);
         assert("heal max lessons", PlaybookHealPolicy.MaxLessonsPerFile == 50);
 
+        RunHealDraft(assert);
         RunAppendLesson(assert);
+    }
+
+    private static void RunHealDraft(Action<string, bool> assert)
+    {
+        var anchors = new PlaybookHealAnchors(
+            ["main"],
+            [],
+            [
+                new MainCandidateAnchor("#content", "nginx documentation", 0.85),
+                new MainCandidateAnchor("main", "nginx documentation", 0.7),
+                new MainCandidateAnchor("#content", "dup", 0.9),
+            ]);
+
+        var draft = PlaybookHealDraftBuilder.TryBuildJson("https://www.nginx.org/en/docs/", anchors);
+        assert("heal draft non-null", draft is not null);
+        assert("heal draft schema_version", draft!.Contains("\"schema_version\":\"1.0\"", StringComparison.Ordinal));
+        assert("heal draft strips www", draft.Contains("\"id\":\"nginx.org\"", StringComparison.Ordinal));
+        assert("heal draft contentSelectors", draft.Contains("\"contentSelectors\":[\"#content\",\"main\"]", StringComparison.Ordinal)
+            || draft.Contains("#content", StringComparison.Ordinal));
+        assert("heal draft preferred browser", draft.Contains("\"preferred_backend\":\"browser\"", StringComparison.Ordinal));
+        assert("heal draft parses", PlaybookDocument.TryParse(draft) is not null);
+
+        assert(
+            "heal draft empty candidates",
+            PlaybookHealDraftBuilder.TryBuildJson("https://example.com/", new PlaybookHealAnchors([], [], [])) is null);
     }
 
     private static void RunAppendLesson(Action<string, bool> assert)
