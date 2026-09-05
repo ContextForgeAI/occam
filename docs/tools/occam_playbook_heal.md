@@ -31,7 +31,9 @@ Success envelope:
 - `domSkeleton` — `{root, stats: {nodeCount, maxDepth, interactiveCount}}`; each node is
   `{tag, id?, class[]?, role?, testId?, aria?, text?, interactive, children[]?}`
 - `anchors` — `{landmarks[], dataTestIds[], mainCandidates[]}`; each candidate is
-  `{selector, textAnchor?, score}` — the ranked guesses for the page's main content selector
+  `{selector, textAnchor?, score}` — the ranked guesses for the page's main content selector.
+  Capture prefers content landmarks (`main` / `article` / `#content`) over nav chrome so a
+  tight `max_skeleton_nodes` budget still surfaces usable candidates on docs SPAs.
 - `agentHints` — `{suggestedNext, doNot[], maxVerifyRetries}`
 
 Failure envelope: `ok: false`, `url`, `failureReason`, `failureCode`, `message`, `agentHints?`.
