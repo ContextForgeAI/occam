@@ -464,7 +464,8 @@ Gate: `L4_GENOME_OK` (PB4b rows) · Corpus: `corpora/l4-genome.jsonl`
 
 ## `occam_playbook_heal`
 
-DOM skeleton capture after a heal-eligible transcode failure. **Host drafts playbook JSON** — Core never LLM-drafts.
+DOM skeleton capture after a heal-eligible transcode failure. Core never LLM-drafts, but may emit a
+**mechanical** `draftPlaybookJson` stub from ranked `mainCandidates` for the agent to review → lint → save.
 
 ### Parameters
 
@@ -488,13 +489,16 @@ DOM skeleton capture after a heal-eligible transcode failure. **Host drafts play
     "dataTestIds": [],
     "mainCandidates": [{ "selector": "#content", "textAnchor": "nginx documentation", "score": 0.85 }]
   },
+  "draftPlaybookJson": "{\"schema_version\":\"1.0\",\"id\":\"nginx.org\",\"hosts\":[\"nginx.org\"],\"extract\":{\"contentSelectors\":[\"#content\"]},…}",
   "agentHints": {
     "suggestedNext": "occam_playbook_save",
-    "doNot": ["dump_raw_html", "retry_transcode_before_save"],
+    "doNot": ["dump_raw_html", "retry_transcode_before_save", "save_unreviewed_draft_without_lint"],
     "maxVerifyRetries": 3
   }
 }
 ```
+
+`draftPlaybookJson` is omitted when no usable `mainCandidates` exist. It is **not** a verified playbook — always lint/save with `verify:true`.
 
 ### Failure codes
 

@@ -3,8 +3,8 @@
 **Canonical tool:** `occam_playbook_heal`
 
 When a transcode fails on a hard site with no recipe: capture the page's DOM skeleton plus selector
-candidates so **you** can draft a playbook for it. This tool gathers evidence; it does not write a
-recipe.
+candidates and an optional **mechanical** `draftPlaybookJson` stub (selectors only — not LLM-written).
+Review the stub → lint → [`occam_playbook_save`](occam_playbook_save.md).
 
 ## When to use
 
@@ -34,6 +34,8 @@ Success envelope:
   `{selector, textAnchor?, score}` — the ranked guesses for the page's main content selector.
   Capture prefers content landmarks (`main` / `article` / `#content`) over nav chrome so a
   tight `max_skeleton_nodes` budget still surfaces usable candidates on docs SPAs.
+- `draftPlaybookJson?` — mechanical schema_version 1 stub with top `contentSelectors` from
+  `mainCandidates` (omitted when empty). Review before save; not a verified playbook.
 - `agentHints` — `{suggestedNext, doNot[], maxVerifyRetries}`
 
 Failure envelope: `ok: false`, `url`, `failureReason`, `failureCode`, `message`, `agentHints?`.

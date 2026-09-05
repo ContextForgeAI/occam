@@ -229,8 +229,11 @@ public sealed class DomSkeletonWorker(WorkerPaths paths, IBrowserPoolManager bro
                 "compare_skeleton_to_broken_selectors",
                 "dump_raw_html",
                 "retry_transcode_before_save",
+                "save_unreviewed_draft_without_lint",
                 $"max_verify_retries={PlaybookHealPolicy.MaxVerifyRetries}",
             ]);
+
+        var draftJson = PlaybookHealDraftBuilder.TryBuildJson(request.Url, anchors);
 
         return new PlaybookHealResult(
             true,
@@ -241,7 +244,8 @@ public sealed class DomSkeletonWorker(WorkerPaths paths, IBrowserPoolManager bro
             hints,
             null,
             null,
-            latencyMs);
+            latencyMs,
+            draftJson);
     }
 
     private static DomSkeletonNode MapNode(DomSkeletonWorkerNode node) =>

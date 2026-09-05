@@ -18,8 +18,8 @@ Only run this loop on **genuine extraction failures** (`thin_extract`, etc.)—n
 
 ### Heal → draft → lint → save
 
-1. **`occam_playbook_heal(url)`** — Browser-backed skeleton capture, candidate selectors, noise hints. Does not emit save-ready JSON. `--consent-aggressive` worker flag unreachable from MCP.
-2. **Draft** — Human or agent writes playbook JSON from candidates (selectors, interaction steps, schema hooks).
+1. **`occam_playbook_heal(url)`** — Browser-backed skeleton capture, candidate selectors, optional mechanical `draftPlaybookJson` stub. Does not LLM-author a recipe; review the stub (or write your own) before save. `--consent-aggressive` worker flag unreachable from MCP.
+2. **Draft** — Prefer editing `draftPlaybookJson` when present; otherwise write playbook JSON from candidates (selectors, interaction steps, schema hooks).
 3. **`occam_playbook_lint(playbook_json)`** — Structural/advisory checks. **Different parser from save/resolve**—lint passing does not guarantee save acceptance.
 4. **`occam_playbook_save(..., verify:true)`** — Runs save-time gate (`verify.score`, `passesGate`, noise leakage). Signs on success.
 
@@ -62,10 +62,9 @@ Also: editing unsigned `provenance.keyId` on v1 self-signed playbooks could down
 
 ## Common misconception
 
-**"Heal produces the playbook and save stores it."**
+**"Heal produces a finished playbook and save stores it."**
 
-Heal emits skeleton + candidates only. There is no automated playbook JSON emitter in the heal response.
-
+Heal emits skeleton + candidates and may attach a mechanical `draftPlaybookJson` stub. The stub is not verified — lint and `occam_playbook_save(verify:true)` remain the gate.
 ---
 
 ## Limitations

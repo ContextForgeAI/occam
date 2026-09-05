@@ -19,7 +19,8 @@ public sealed record PlaybookHealResult(
     PlaybookHealAgentHints? AgentHints,
     string? FailureCode,
     string? Message,
-    int LatencyMs);
+    int LatencyMs,
+    string? DraftPlaybookJson = null);
 
 public sealed record DomSkeletonPayload(
     DomSkeletonNode Root,
