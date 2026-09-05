@@ -28,7 +28,7 @@ occam_playbook_resolve(url)
 
 ## Session note
 
-`occam_extract_knowledge` is **Tier 3** for sessions: HTTP headers apply, but Playwright `storageState` is silently dropped. See [Guide: sessions](sessions.md).
+`occam_extract_knowledge` is **Tier 1** for sessions: HTTP headers and Playwright `storageState` both apply (browser fallback uses `storageState`). See [Guide: sessions](sessions.md).
 
 ## What can go wrong?
 

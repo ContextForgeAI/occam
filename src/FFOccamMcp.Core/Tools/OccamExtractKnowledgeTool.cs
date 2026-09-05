@@ -16,7 +16,7 @@ public sealed class OccamExtractKnowledgeTool(WorkerPaths workerPaths, Knowledge
     public string ExtractKnowledge(
         [Description("HTTP or HTTPS URL (same URL used with occam_playbook_resolve).")] string url,
         [Description("Backend policy: http, browser, or http_then_browser. Default from playbook routing or http_then_browser.")] string backend_policy = "http_then_browser",
-        [Description("Optional session profile id — loads headers from OCCAM_SESSIONS_ROOT/<id>.json.")] string? session_profile = null,
+        [Description("Optional session profile id — loads headers and Playwright storageState (browser fallback) from OCCAM_SESSIONS_ROOT/<id>.json.")] string? session_profile = null,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

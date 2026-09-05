@@ -92,6 +92,7 @@ public sealed class KnowledgeExtractService(
         using (preflight.HeadersScope)
         {
             var headersFile = preflight.ActiveHeadersFile;
+            var storageStateFile = preflight.ActiveStorageStatePath;
             var effectivePolicy = ResolveEffectiveBackendPolicy(backendPolicy, resolved.PreferredBackend);
             var browserFallback = effectivePolicy is OccamBackendPolicy.Browser or OccamBackendPolicy.HttpThenBrowser;
 
@@ -99,7 +100,8 @@ public sealed class KnowledgeExtractService(
                 url.Trim(),
                 plan,
                 browserFallback: false,
-                headersFile: headersFile);
+                headersFile: headersFile,
+                storageStateFile: storageStateFile);
 
             if (!extract.Ok
                 && browserFallback
@@ -110,7 +112,8 @@ public sealed class KnowledgeExtractService(
                     url.Trim(),
                     plan,
                     browserFallback: true,
-                    headersFile: headersFile);
+                    headersFile: headersFile,
+                    storageStateFile: storageStateFile);
             }
 
             if (!extract.Ok)

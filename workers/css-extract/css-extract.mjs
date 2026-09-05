@@ -22,10 +22,11 @@ const extraArgs = process.argv.slice(4);
 const htmlFileArg = extraArgs.find((arg) => arg.startsWith("--html-file="));
 const finalUrlArg = extraArgs.find((arg) => arg.startsWith("--final-url="));
 const headersFileArg = extraArgs.find((arg) => arg.startsWith("--headers-file="));
+const storageStateFileArg = extraArgs.find((arg) => arg.startsWith("--storage-state-file="));
 const browserFallback = extraArgs.includes("--browser-fallback");
 
 if (!url || !fieldsPath) {
-  console.error("Usage: node css-extract.mjs <url> <fields.json> [--html-file=path] [--final-url=url] [--headers-file=path] [--browser-fallback]");
+  console.error("Usage: node css-extract.mjs <url> <fields.json> [--html-file=path] [--final-url=url] [--headers-file=path] [--storage-state-file=path] [--browser-fallback]");
   process.exit(1);
 }
 
@@ -44,10 +45,11 @@ try {
       const filePath = htmlFileArg.slice("--html-file=".length).replace(/^"|"$/g, "");
       html = await readFile(filePath, "utf8");
     } else {
-      const headersFile = headersFileArg?.slice("--headers-file=".length);
+      const headersFile = headersFileArg?.slice("--headers-file=".length).replace(/^"|"$/g, "");
+      const storageStateFile = storageStateFileArg?.slice("--storage-state-file=".length).replace(/^"|"$/g, "") ?? null;
       let requestHeaders = {};
       if (headersFile) {
-        const raw = await readFile(headersFile.replace(/^"|"$/g, ""), "utf8");
+        const raw = await readFile(headersFile, "utf8");
         requestHeaders = JSON.parse(raw);
       }
 
@@ -73,7 +75,10 @@ try {
         await response.body?.cancel().catch(() => {});
         const blocked = response.status === 401 || response.status === 403 || response.status === 429;
         if (browserFallback && blocked) {
-          const browserHtml = await fetchHtmlViaBrowser(url);
+          const browserHtml = await fetchHtmlViaBrowser(url, {
+            headersFile: headersFile || null,
+            storageStateFile,
+          });
           if (!browserHtml?.html) {
             console.log(
               JSON.stringify({
@@ -204,17 +209,24 @@ function validateFinalUrl(candidate) {
   return null;
 }
 
-async function fetchHtmlViaBrowser(targetUrl) {
+/**
+ * @param {string} targetUrl
+ * @param {{ headersFile?: string | null, storageStateFile?: string | null }} [session]
+ */
+async function fetchHtmlViaBrowser(targetUrl, session = {}) {
   try {
     const { createBrowserSession } = await import("../browser-extract/lib/browser-session.mjs");
-    const session = await createBrowserSession();
+    const sessionHandle = await createBrowserSession({
+      headersFile: session.headersFile ?? undefined,
+      storageStateFile: session.storageStateFile ?? undefined,
+    });
     try {
-      const page = await session.context.newPage();
+      const page = await sessionHandle.context.newPage();
       await page.goto(targetUrl, { waitUntil: "domcontentloaded", timeout: 45_000 });
       await page.waitForTimeout(1500);
       return { html: await page.content(), finalUrl: page.url() };
     } finally {
-      await session.close();
+      await sessionHandle.close();
     }
   } catch (error) {
     return {
