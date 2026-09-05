@@ -31,7 +31,7 @@ Compared to `occam_transcode` ([Chapter 4](04-request-path.md)):
 - No token budget (`max_tokens` ignored)
 - No Receipt v1 signing
 - Browser leg may spawn throwaway Playwright per call (no pool reuse on browser fallback)
-- **`session_profile` `storageState` silently dropped** on browser fallback leg (tier 3)
+- **`session_profile` `storageState`** is applied on the CSS extract browser-fallback leg (same as transcode).
 
 ### Row mode
 

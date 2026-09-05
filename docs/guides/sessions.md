@@ -10,14 +10,13 @@ Pass a local **session profile** (cookies, headers, and optionally Playwright `s
 
 | Tier | What is applied | Typical tools |
 |------|-----------------|---------------|
-| **1 — Full browser + headers** | HTTP headers **and** Playwright `storageState` (cookies + localStorage) | `occam_transcode`, `occam_digest`, `occam_claim_check`, `occam_attest`, `occam_dataset_export`, `occam_playbook_heal`, opt-in batch/watch/crosscheck |
+| **1 — Full browser + headers** | HTTP headers **and** Playwright `storageState` (cookies + localStorage) | `occam_transcode`, `occam_digest`, `occam_claim_check`, `occam_attest`, `occam_dataset_export`, `occam_playbook_heal`, `occam_extract_knowledge`, opt-in batch/watch/crosscheck |
 | **2 — Headers only (HTTP path)** | Cookie/header bag for HTTP workers; **no** `storageState` | `occam_probe`, `occam_map` |
-| **3 — Headers only (browser path, storageState dropped)** | HTTP headers forwarded; **`storageState` is silently ignored** | `occam_extract_knowledge` |
 
 **Headers-only vs `storageState`:** a profile can store auth in two shapes:
 
-- **Header/cookie bag** — works on Tier 1–3 for HTTP header injection.
-- **`storageState` file** — Playwright cookie jar + localStorage; required for many SPAs and client-side auth walls. Loaded by Tier 1 tools (including heal). On Tier 2/3, the file is not read — no error is returned, so check the tier before you debug a failed login.
+- **Header/cookie bag** — works on Tier 1–2 for HTTP header injection.
+- **`storageState` file** — Playwright cookie jar + localStorage; required for many SPAs and client-side auth walls. Loaded by Tier 1 tools (including heal and extract_knowledge browser fallback). On Tier 2, the file is not read — no error is returned, so check the tier before you debug a failed login.
 
 See also: [Sessions overview](../sessions.md) · [Configuration — session profiles](../configuration.md#session-profiles)
 
@@ -68,10 +67,10 @@ Same as a normal transcode when the session is valid **and** the tool tier match
 
 | Symptom | Likely cause |
 |---------|--------------|
-| Still `requires_login` | Expired cookies, wrong profile id, or Tier 2/3 tool with `storageState`-only auth |
+| Still `requires_login` | Expired cookies, wrong profile id, or Tier 2 tool (`probe`/`map`) with `storageState`-only auth |
 | `session_profile_not_found` | Id missing under `OCCAM_SESSIONS_ROOT` |
 | `captcha_or_challenge` | CAPTCHA or bot wall — Occam does **not** solve CAPTCHAs; sessions carry *your* state only |
-| Silent auth failure on heal/extract | Tier 3 dropped `storageState`; use transcode first or ensure cookie headers are enough |
+| Auth works on transcode but not probe/map | Expected — Tier 2 never loads `storageState` |
 
 ## Next
 

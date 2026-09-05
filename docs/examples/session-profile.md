@@ -48,7 +48,7 @@ Use `backend_policy=browser` when auth or content is client-side (SPA).
 
 Probe never loads `storageState`. If auth lives only in localStorage, probe may still look anonymous even when transcode works.
 
-## Extract knowledge (Tier 3 — headers only, storageState dropped)
+## Extract knowledge (Tier 1 — headers + storageState)
 
 ```json
 {
@@ -60,7 +60,7 @@ Probe never loads `storageState`. If auth lives only in localStorage, probe may 
 }
 ```
 
-If the wall needs `storageState`, run `occam_transcode` first or ensure cookie headers in the profile are sufficient.
+Browser fallback loads `storageState` from the profile when HTTP alone cannot reach the fields.
 
 ## Expected
 

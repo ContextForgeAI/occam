@@ -12,7 +12,8 @@ public sealed class CssExtractWorker(WorkerPaths paths)
         FieldExtractionPlan plan,
         int timeoutMs = 45_000,
         bool browserFallback = false,
-        string? headersFile = null)
+        string? headersFile = null,
+        string? storageStateFile = null)
     {
         var script = paths.CssExtractScript;
         if (string.IsNullOrWhiteSpace(script) || !File.Exists(script))
@@ -44,6 +45,11 @@ public sealed class CssExtractWorker(WorkerPaths paths)
             if (!string.IsNullOrWhiteSpace(headersFile) && File.Exists(headersFile))
             {
                 args += $" --headers-file=\"{headersFile}\"";
+            }
+
+            if (!string.IsNullOrWhiteSpace(storageStateFile) && File.Exists(storageStateFile))
+            {
+                args += $" --storage-state-file=\"{storageStateFile}\"";
             }
 
             if (browserFallback)
