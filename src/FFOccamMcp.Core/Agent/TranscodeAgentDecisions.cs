@@ -37,8 +37,13 @@ public static class TranscodeAgentDecisions
             [
                 new ProbeDecision(
                     "configure_session_profile",
-                    "Login wall — host operator exports cookies via occam-session.mjs export-state; retry with session_profile on transcode.",
+                    "Login / access wall — host operator exports cookies via occam-session.mjs export-state (or occam session export-state); retry transcode with session_profile.",
                     Parameter: "session_profile"),
+                new ProbeDecision(
+                    "retry_transcode",
+                    "If cookies alone are not enough, retry once with backend_policy=browser (local Playwright) using the same session_profile when available. Do not escalate to third-party scrape APIs.",
+                    Tool: "occam_transcode",
+                    Parameter: "backend_policy=browser"),
                 new ProbeDecision(
                     "stop",
                     "Do not summarize page content from memory until session is configured."),
@@ -158,8 +163,17 @@ public static class TranscodeAgentDecisions
             return
             [
                 new ProbeDecision(
+                    "configure_session_profile",
+                    "Anti-bot challenge — Occam has no CAPTCHA solver. Operator may export a warm browser session via occam-session.mjs export-state and retry with session_profile (sometimes clears JS challenges).",
+                    Parameter: "session_profile"),
+                new ProbeDecision(
+                    "retry_transcode",
+                    "Retry once with backend_policy=browser on the local Playwright path (with session_profile when available). Do not call third-party scrape APIs.",
+                    Tool: "occam_transcode",
+                    Parameter: "backend_policy=browser"),
+                new ProbeDecision(
                     "inform_user",
-                    "Anti-bot challenge detected. This MCP has no CAPTCHA solver."),
+                    "If session + browser still fail, stop — access is unknown; do not invent page content."),
                 new ProbeDecision(
                     "stop",
                     "Do not invent article content from challenge pages."),

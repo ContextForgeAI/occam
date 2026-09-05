@@ -85,9 +85,12 @@ internal static class L1FailureTaxonomyUnitTests
         assert("failure decision 404 stop", notFound.Any(d => d.Action == "stop"));
 
         var challenge = TranscodeAgentDecisions.ForFailure("captcha_or_challenge");
+        assert("failure challenge session", challenge.Any(d => d.Action == "configure_session_profile"));
+        assert("failure challenge retry browser", challenge.Any(d => d.Action == "retry_transcode" && d.Parameter?.Contains("browser") == true));
         assert("failure challenge inform", challenge.Any(d => d.Action == "inform_user"));
         assert("failure challenge stop", challenge.Any(d => d.Action == "stop"));
         assert("failure challenge no alternate url", !challenge.Any(d => d.Action == "use_alternate_url"));
+        assert("failure challenge first is session", challenge[0].Action == "configure_session_profile");
 
         var thin = TranscodeAgentDecisions.ForFailure("thin_extract");
         assert("failure thin retry browser", thin.Any(d => d.Action == "retry_transcode" && d.Parameter?.Contains("browser") == true));
@@ -116,6 +119,11 @@ internal static class L1FailureTaxonomyUnitTests
 
         var login = TranscodeAgentDecisions.ForFailure("requires_login");
         assert("failure requires_login session", login.Any(d => d.Action == "configure_session_profile"));
+        assert("failure requires_login browser", login.Any(d => d.Action == "retry_transcode" && d.Parameter?.Contains("browser") == true));
+
+        var forbidden = TranscodeAgentDecisions.ForFailure("http_403");
+        assert("failure http_403 session", forbidden.Any(d => d.Action == "configure_session_profile"));
+        assert("failure http_403 browser", forbidden.Any(d => d.Action == "retry_transcode" && d.Parameter?.Contains("browser") == true));
 
         var workers = TranscodeAgentDecisions.ForFailure("workers_unavailable");
         assert("failure workers run_doctor", workers.Any(d => d.Action == "run_doctor"));
@@ -235,7 +243,8 @@ internal static class L1FailureTaxonomyUnitTests
         using var forbiddenDoc = JsonDocument.Parse(forbiddenJson);
         assert("403 stays http_403", FailureCode(forbiddenDoc.RootElement) == "http_403");
         assert("403 not retryable true", FailureRetryable(forbiddenDoc.RootElement) != true);
-        assert("403 does not retry browser", !HasDecision(forbiddenDoc.RootElement, "retry_transcode", "browser"));
+        assert("403 retries local browser", HasDecision(forbiddenDoc.RootElement, "retry_transcode", "browser"));
+        assert("403 leads with session", HasDecision(forbiddenDoc.RootElement, "configure_session_profile"));
     }
 
     private static void AssertExhaustedEnvelope(Action<string, bool> assert, string id, string json)

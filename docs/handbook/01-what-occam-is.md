@@ -22,7 +22,7 @@ Occam exposes web content to agents through a reference path and several paralle
 
 Mechanisms, in order of user impact:
 
-1. **Acquisition** — A gated ladder tries HTTP extraction first, Playwright Chromium when HTTP is unusable, and an operator-configured third-party provider only after both local backends fail under `http_then_browser`. The ladder has exits (404/410, public-reference pages); it is not an unconditional cascade.
+1. **Acquisition** — A gated ladder tries HTTP extraction first, then Playwright Chromium when HTTP is unusable under `http_then_browser`. Operator `session_profile` cookies stay on that local path. The ladder has exits (404/410, public-reference pages); it is not an unconditional cascade.
 2. **Classification** — Post-processors can downgrade apparent success to typed failures: `thin_extract`, `captcha_or_challenge`, `requires_login`, and others.
 3. **Materialization** — Surviving content is compiled to markdown under a whole-response token budget (ambient default: 20% of declared client context, clamped 512–16384 tokens).
 4. **Honesty** — `ok:false` means content is **unknown**. Failures carry `failure.code`, `recovery[]`, and `agentMeta.decisions`.

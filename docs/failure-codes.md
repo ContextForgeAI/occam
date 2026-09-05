@@ -15,8 +15,8 @@
 | `network_error` | Connection reset, refused | Yes | Retry once |
 | `dns_error` | Host does not resolve | Yes | Check URL spelling / DNS |
 | `tls_error` | Certificate invalid or expired | No | Inform user; do not bypass TLS |
-| `http_401` | Unauthorized | No | Configure `session_profile` |
-| `http_403` | Forbidden | No | Try `session_profile` or `backend_policy=browser` |
+| `http_401` | Unauthorized | No | `session_profile` via occam-session export-state; optional local `backend_policy=browser` |
+| `http_403` | Forbidden | No | `session_profile` then local `backend_policy=browser` |
 | `http_404` | Not found | No | Fix or remove URL |
 | `http_410` | Gone | No | Remove URL |
 | `http_429` | Rate limited | Yes | Back off and retry |
@@ -26,8 +26,8 @@
 | `extraction_failed` | Worker could not produce markdown | Sometimes | Read message; try browser |
 | `action_failed` | A step in `occam_browser_interact` failed (selector miss, timeout, invalid step) | No | Read `failedIndex` / redacted `actionTrace`; revise the plan — do not invent page content |
 | `content_selectors_miss` | `content_selectors` matched nothing | No | Widen selectors or drop them |
-| `captcha_or_challenge` | Anti-bot / Cloudflare challenge page | No | Stop; no CAPTCHA solver |
-| `requires_login` | Direct access-control evidence, no session | No | Add `session_profile` |
+| `captcha_or_challenge` | Anti-bot / Cloudflare challenge page | No | No CAPTCHA solver — try `session_profile` + local browser; then stop |
+| `requires_login` | Direct access-control evidence, no session | No | Add `session_profile`; optional local browser retry |
 | `session_profile_not_found` | Profile id missing on disk | No | Create profile under `OCCAM_SESSIONS_ROOT` |
 | `invalid_session_profile` | Bad profile id format | No | Fix profile name |
 | `private_url_blocked` | RFC1918 / localhost blocked | No | Use public URL or maintainer `OCCAM_ALLOW_PRIVATE_URLS` |

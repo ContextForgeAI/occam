@@ -6,6 +6,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+### Changed
+
+- **Own-ladder agentHints** — `captcha_or_challenge` / `http_401` / `http_403` / `requires_login` decisions now lead with `session_profile` (occam-session export-state) and local `backend_policy=browser`. Probe maps `session_cookies` challenge class to the same path. No third-party scrape guidance.
+
 ### Fixed
 
 - **Install UX honesty** — README and the docs hero no longer advertise

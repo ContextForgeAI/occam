@@ -29,7 +29,7 @@ A teachable spine—not an API dump. Parameter tables live in [tools-reference.m
 
 ### Canonical one-sentence definition
 
-> Occam is a locally run host process that turns a URL into content an LLM agent can use: it acquires the page through a gated HTTP→browser→(optional third-party) ladder, compiles the result into a token-bounded representation, returns `ok:false` when content is unknown rather than guessed, and can sign what it produced so the exact bytes can be checked for tampering against a key the recipient obtains out of band.
+> Occam is a locally run host process that turns a URL into content an LLM agent can use: it acquires the page through a gated HTTP→browser ladder, compiles the result into a token-bounded representation, returns `ok:false` when content is unknown rather than guessed, and can sign what it produced so the exact bytes can be checked for tampering against a key the recipient obtains out of band.
 
 ---
 
