@@ -108,6 +108,11 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
         working-directory: workers
 
+      - name: Validate PDF/OCR capability eval
+        # extractPdfMarkdown imports unpdf from the workers workspace. Do not run
+        # this from docs-check — that job has no npm ci.
+        run: node scripts/lib/operator/pdf-ocr-eval.selftest.mjs
+
       # Place OccamMcp.Core at OCCAM_HOME root — first candidate in ResolvePublishedHostExecutable /
       # scripts/lib/resolve-host-binary.mjs (live tools/list public MCP contract).
       - name: Download published host
@@ -204,7 +209,6 @@ jobs:
           node scripts/lib/operator/occam-cite.selftest.mjs
           node scripts/lib/operator/occam-data-cli.selftest.mjs
           node scripts/lib/operator/discovery-rank.selftest.mjs
-          node scripts/lib/operator/pdf-ocr-eval.selftest.mjs
 
   operator-safety:
     name: Operator safety (${{ matrix.os }})

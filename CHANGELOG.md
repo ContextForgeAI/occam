@@ -6,6 +6,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+### Fixed
+
+- **CI docs-check** — `pdf-ocr-eval.selftest` needs `unpdf` from the workers
+  workspace. It now runs on `gate-fast` after `npm ci`, not on the bare
+  docs-check job.
+
 ## [1.1.1] — 2026-09-07
 
 Acceptance patch for the 1.1.0 growth-plan cut. Guarded install default is
