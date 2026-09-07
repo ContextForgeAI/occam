@@ -2,9 +2,44 @@
 
 All notable changes to **FFOccamMCP** (L0 core) are documented here.
 
-Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1`…`1.0.0-rc.5` were release candidates; **`1.0.0` was first GA**; current public default is **`1.1.0`**.
+Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1`…`1.0.0-rc.5` were release candidates; **`1.0.0` was first GA**; current public default is **`1.1.1`**.
 
 ## [Unreleased]
+
+## [1.1.1] — 2026-09-07
+
+Acceptance patch for the 1.1.0 growth-plan cut. Guarded install default is
+GitHub Release **v1.1.1** (Cosign `required-cosign-v1`). Experimental npm
+**1.1.1** downloads this host (`HOST_RELEASE_VERSION`). Goldens, packs,
+research, brief, and cite examples stay named workspace `ff-occam/1.0.0-rc.2`
+until recapture — do not cite them as byte-identical to this Release.
+
+### Fixed
+
+- **`occam research` resume** — checkpoints now persist per-page markdown in
+  `pages.json` (atomic writes). `--resume` restores that content; a later
+  discovery failure does not erase a prior report. `--max-bytes` is kept
+  extracted markdown (UTF-8 output bytes): a response that would exceed the
+  remaining allowance is omitted, not stored. Remaining `--deadline-ms` is
+  passed to each MCP call.
+- **`occam pack` total budget** — `--budget` is the model-consumable total
+  (`excerpts.txt` + wrapper JSON). Wrapper cost is reserved first; the
+  remainder is split across sources. Overflow is not truncated: the pack is
+  written with `ok:false` / `budget.overBudget` and exit 1. A wrapper that
+  alone exceeds `--budget` fails before fetch.
+- **Release/CI contract drift** — bootstrap selftests now assert
+  `PUBLIC_DEFAULT_RELEASE_VERSION` (1.1.1), not a stale 1.0.0 pin. Pack and
+  research whole-command regressions run in CI and on the release workflow
+  before publish.
+- **Public schema fingerprint** — corpus updated to the live `tools/list`
+  hash after the U2 default `include_media_refs=false` (and related opt-in
+  types). Descriptions are not part of the hash; this is the intentional
+  property/default contract, not a silent regen.
+- **Agent MVP popular-hosts** — `parseToolJson` now reads typed `ok:false`
+  JSON even when the host sets MCP `isError:true`. CI `FAIL_BUG` on Reddit,
+  Stack Overflow, Amazon, and HN item was the runner dropping honest
+  `http_403` / `thin_extract` / `http_429` bodies — not a page-content bug
+  and not a corpus relabel.
 
 ## [1.1.0] — 2026-09-07
 

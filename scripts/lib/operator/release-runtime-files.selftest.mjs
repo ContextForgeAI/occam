@@ -17,6 +17,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
+import { PUBLIC_DEFAULT_RELEASE_VERSION } from "../bootstrap-release-contract.mjs";
 import { RELEASE_RUNTIME_FILES, validateReleaseRoot } from "./install-user-cli.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -103,8 +104,9 @@ function testBootstrapsUseBundledHelpers() {
   const psReplace = ps1.indexOf("Replace-OccamInstallTree -TargetDir $InstallDir -StagedDir $staged");
   assert.ok(shCheck >= 0 && shCheck < shReplace, "shell runtime check must precede install swap");
   assert.ok(psCheck >= 0 && psCheck < psReplace, "PowerShell runtime check must precede install swap");
-  assert.match(sh, /OCCAM_VERSION:-\s*1\.0\.0|OCCAM_VERSION:-1\.0\.0/);
-  assert.match(ps1, /1\.0\.0/);
+  const defaultVersion = PUBLIC_DEFAULT_RELEASE_VERSION.replace(/\./g, "\\.");
+  assert.match(sh, new RegExp(`OCCAM_VERSION:-\\s*${defaultVersion}|OCCAM_VERSION:-${defaultVersion}`));
+  assert.match(ps1, new RegExp(defaultVersion));
   console.log("ok: sh/ps1 dual-contract bootstrap (legacy overlay + self-contained no-overlay)");
 }
 

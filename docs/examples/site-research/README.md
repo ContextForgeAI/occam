@@ -29,7 +29,17 @@ occam research --seed https://nginx.org/en/docs/ \
   --out tmp/research
 ```
 
-`--resume` continues the same `--out` folder. Ctrl+C records `stop.reason=cancelled`.
+`--resume` continues the same `--out` folder and restores per-page markdown
+from `pages.json` (or `excerpts.txt` on older folders). Two consecutive
+resumes keep every previously successful page. A discovery failure during
+resume updates `stop.reason` and does **not** erase the prior report.
+
+`--max-bytes` counts UTF-8 bytes of **kept extracted markdown** (output),
+not HTTP download size. A page that would exceed the remaining allowance is
+listed under `extraction.omitted` and is not stored. Remaining
+`--deadline-ms` bounds each MCP call. Ctrl+C records `stop.reason=cancelled`
+and keeps the last checkpoint.
+
 If a page fails, the folder is still written; do not fill gaps from memory.
 
 Ranking used to order discovered URLs is the A1 spike — it does **not** change

@@ -11,13 +11,18 @@ import {
   assemblePack,
   packFiles,
   parsePackArgs,
+  planPackBudget,
   searchHitUrls,
 } from "./occam-pack.mjs";
 
 export const PACK_USAGE = `usage: occam pack --task TEXT (--url URL... | --search Q | --from-json FILE) [--budget N] [--focus Q] [--out DIR] [--json]
 Build a context pack (manifest, sources, excerpts, omissions) from existing Occam tools.
-Not a new MCP tool. Exit 0 when the pack is written and every source succeeded,
-1 when the host failed or a source failed, 2 on usage.`;
+--budget is the total model-consumable size (excerpts.txt + wrapper JSON). Wrapper
+cost is reserved first; the remainder is split across sources as max_tokens /
+per_url_max_tokens. Overflow is not truncated: the pack is written and exit 1.
+Not a new MCP tool. Exit 0 when every source succeeded and the pack fits --budget;
+1 when a source failed, the total exceeds --budget, or the wrapper alone cannot fit;
+2 on usage.`;
 
 function resolveOccamHome() {
   const fromEnv = process.env.OCCAM_HOME?.trim();
@@ -60,12 +65,33 @@ export async function collectResponses(flags, callTool) {
   const responses = [];
   const backend = flags.backend ? flags.backend.replaceAll("-", "_") : undefined;
   let urls = [...flags.urls];
+  /** @type {ReturnType<typeof planPackBudget> | null} */
+  let allocation = null;
 
   if (flags.search) {
     const searchArgs = { query: flags.search, max_results: flags.maxSources };
     const search = await callTool("occam_search", searchArgs);
     responses.push({ tool: "occam_search", payload: search });
     urls = searchHitUrls(search).slice(0, flags.maxSources);
+  }
+
+  if (flags.budget != null && urls.length > 0) {
+    allocation = planPackBudget({
+      declared: flags.budget,
+      task: flags.task,
+      settings: {
+        budget: flags.budget,
+        focus: flags.focus,
+        backend: flags.backend || undefined,
+        search: flags.search || undefined,
+        urls,
+        maxSources: flags.search ? flags.maxSources : undefined,
+      },
+      urls,
+    });
+    if (!allocation.possible) {
+      return { responses, allocation };
+    }
   }
 
   if (urls.length === 1) {
@@ -76,7 +102,8 @@ export async function collectResponses(flags, callTool) {
       arguments_.focus_query = flags.focus;
       arguments_.fit_markdown = true;
     }
-    if (flags.budget != null) arguments_.max_tokens = flags.budget;
+    if (allocation) arguments_.max_tokens = allocation.perSource;
+    else if (flags.budget != null) arguments_.max_tokens = flags.budget;
     responses.push({ tool: "occam_transcode", payload: await callTool("occam_transcode", arguments_) });
   } else if (urls.length > 1) {
     /** @type {Record<string, unknown>} */
@@ -86,11 +113,12 @@ export async function collectResponses(flags, callTool) {
       arguments_.focus_query = flags.focus;
       arguments_.fit_markdown = true;
     }
-    if (flags.budget != null) arguments_.per_url_max_tokens = flags.budget;
+    if (allocation) arguments_.per_url_max_tokens = allocation.perSource;
+    else if (flags.budget != null) arguments_.per_url_max_tokens = flags.budget;
     responses.push({ tool: "occam_digest", payload: await callTool("occam_digest", arguments_) });
   }
 
-  return responses;
+  return { responses, allocation };
 }
 
 /**
@@ -113,6 +141,8 @@ export async function runPackCommand(argv, hooks = {}) {
   }
 
   let responses;
+  /** @type {ReturnType<typeof planPackBudget> | null} */
+  let allocation = null;
   let toolchain = "ff-occam";
   let createdAt = hooks.now;
   try {
@@ -123,7 +153,9 @@ export async function runPackCommand(argv, hooks = {}) {
       if (typeof raw.createdAt === "string" && !createdAt) createdAt = raw.createdAt;
       if (!flags.task && typeof raw.task === "string") flags.task = raw.task;
     } else {
-      responses = await collectResponses(flags, hooks.callTool ?? invokeMcpTool);
+      const collected = await collectResponses(flags, hooks.callTool ?? invokeMcpTool);
+      responses = collected.responses;
+      allocation = collected.allocation;
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -145,6 +177,8 @@ export async function runPackCommand(argv, hooks = {}) {
       maxSources: flags.search ? flags.maxSources : undefined,
     },
     responses,
+    inability: allocation && !allocation.possible ? { reason: allocation.reason } : null,
+    allocatedPerSource: allocation?.perSource ?? null,
   });
 
   if (flags.out) {

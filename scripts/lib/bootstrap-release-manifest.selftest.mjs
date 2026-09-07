@@ -10,6 +10,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { PUBLIC_DEFAULT_RELEASE_VERSION } from "./bootstrap-release-contract.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, "..", "..");
@@ -165,7 +166,11 @@ function testPowerShellSourceGuards() {
     assert.ok(index >= 0, `PowerShell bootstrap is missing ${label} manifest validation`);
     assert.ok(index < archiveDownload, `PowerShell ${label} validation must precede archive download`);
   }
-  assert.match(ps1, /1\.0\.0/, "public default release must be published 1.0.0");
+  assert.match(
+    ps1,
+    new RegExp(PUBLIC_DEFAULT_RELEASE_VERSION.replace(/\./g, "\\.")),
+    `public default release must be published ${PUBLIC_DEFAULT_RELEASE_VERSION}`,
+  );
   console.log("ok: PowerShell source guards cover identity/layout/sha before download");
 }
 

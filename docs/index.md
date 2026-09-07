@@ -84,7 +84,7 @@ Does <strong>not</strong> invent page text from model memory.
         >curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash</code>
         <button type="button" class="oc-signal-copy" data-oc-copy-command aria-label="Copy install command" aria-live="polite">Copy</button>
       </div>
-      <span class="oc-signal-command__note">Windows, Linux, and macOS — see <a href="install/">Install</a>. Experimental MCP-only (no <code>occam connect</code>): <code>npx ff-occam@1.1.0</code>.</span>
+      <span class="oc-signal-command__note">Windows, Linux, and macOS — see <a href="install/">Install</a>. Experimental MCP-only (no <code>occam connect</code>): <code>npx ff-occam@1.1.1</code>.</span>
     </div>
     <p class="oc-hero-actions">
       <a class="oc-btn oc-btn--primary" href="quick-start/">Get your first result</a>

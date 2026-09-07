@@ -4,7 +4,7 @@
 
 If you still need install: [Quick Start](quick-start.md) · canonical reference [Install](install.md) · root [`INSTALL.md`](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md).
 
-Published `v1.1.0` installs verify archive SHA-256 against the release
+Published `v1.1.1` installs verify archive SHA-256 against the release
 manifest, run archive-member preflight before extract, and verify Cosign when
 the manifest declares `signaturePolicy=required-cosign-v1` (requires the
 `cosign` CLI on PATH). Self-contained runtime closure
@@ -94,8 +94,8 @@ directory to `PATH`.
 | `occam read <url>` | One live page as Markdown (`occam_transcode`) |
 | `occam search <query>` | Open-web search (DuckDuckGo default) |
 | `occam digest <url…>` | Several pages in one call (`occam_digest`) |
-| `occam pack --task …` | Context pack folder (excerpts, sources, omissions, budget including wrapper) |
-| `occam research --seed …` | Bounded site research (map then transcode; URL/page/time/byte budgets; resume) |
+| `occam pack --task …` | Context pack folder (excerpts, sources, omissions; `--budget` is content + wrapper) |
+| `occam research --seed …` | Bounded site research (map then transcode; URL/page/time/output-byte budgets; resume keeps pages) |
 | `occam brief --url …` | Docs change brief (unchanged vs changed vs failed) |
 | `occam cite --claim … --url …` | Citation inspector (retrieved blocks; you judge support) |
 

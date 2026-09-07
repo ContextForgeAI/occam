@@ -11,11 +11,11 @@ or an explicit typed failure.
 
 ```bash
 # MCP-only trial (stdio). Does not provide `occam connect`.
-npx ff-occam@1.1.0
+npx ff-occam@1.1.1
 
 # Optional global MCP launcher. Command name is `ff-occam`, not `occam`.
 # On Windows, `npm bin -g` must be on PATH or PowerShell will not see it.
-npm install -g ff-occam@1.1.0
+npm install -g ff-occam@1.1.1
 ff-occam --help
 ```
 

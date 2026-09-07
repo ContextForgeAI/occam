@@ -6,7 +6,7 @@ import {
 } from "../lib/host-release-version.mjs";
 
 test("HOST_RELEASE_VERSION is pinned for npm wrapper patches", () => {
-  assert.equal(HOST_RELEASE_VERSION, "1.1.0");
+  assert.equal(HOST_RELEASE_VERSION, "1.1.1");
 });
 
 test("resolveHostReleaseVersion honors OCCAM_HOST_RELEASE_VERSION", () => {

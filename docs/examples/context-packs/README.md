@@ -32,6 +32,14 @@ occam pack --task "Show how function scope and closures work" \
   --out tmp/pack
 ```
 
+`--budget` is a **total** for the written pack: `excerpts.txt` plus wrapper
+JSON (`manifest` / `sources` / `omissions` without the computed budget
+block). Wrapper cost is reserved first; the remainder is split across
+sources as `max_tokens` / `per_url_max_tokens`. If the assembled total still
+exceeds `--budget`, the pack is written, `manifest.ok` is false, and the
+command exits 1 — excerpts are not truncated to force the counter. If the
+wrapper alone cannot fit, Occam does not fetch.
+
 If a source fails, the pack is still written and the failure stays in
 `sources.json`. Do not fill gaps from memory.
 

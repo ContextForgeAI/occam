@@ -260,8 +260,11 @@ occam pack --task "Show how function scope and closures work" \
   --out tmp/pack
 ```
 
-**Expect:** `manifest.json` with `budget.total = content + wrapper`,
-`sources.json` (failures kept), `omissions.json`, `excerpts.txt`.
+**Expect:** `manifest.json` with `budget.total = content + wrapper`.
+`--budget` is that total, not a per-URL allowance. Overflow sets
+`ok:false` and exit 1; text is not truncated to pass the counter.
+`sources.json` keeps failures, `omissions.json` names drops, `excerpts.txt`
+is the model-consumable body.
 Recorded examples: [context packs](examples/context-packs/).
 
 ---
@@ -280,8 +283,10 @@ occam research --seed https://nginx.org/en/docs/ \
 ```
 
 **Expect:** `discovery.json` and `extraction.json` as separate reports,
-`research-state.json` with `stop.reason`, `excerpts.txt`. Off-scope URLs
-are named, not fetched. Recorded example: [site research](examples/site-research/).
+`research-state.json` with `stop.reason`, `pages.json` (per-page markdown
+for resume), `excerpts.txt`. `--max-bytes` is kept markdown output bytes.
+Off-scope URLs are named, not fetched. Recorded example:
+[site research](examples/site-research/).
 
 ---
 

@@ -1,10 +1,16 @@
 /**
  * Bounded site research planner — no second crawler.
  * Discovery (map/search links) and extraction (transcode/digest) stay separate.
+ *
+ * `--max-bytes` is kept extracted markdown (UTF-8 output bytes), not HTTP
+ * download size. Time remaining is applied to each MCP call.
  */
+import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { rankHits } from "./discovery-rank.mjs";
 
 export const RESEARCH_SCHEMA = "occam.site-research.v1";
+export const PAGES_SCHEMA = "occam.site-research.pages.v1";
 
 export const DEFAULT_BUDGETS = {
   maxUrls: 16,
@@ -164,6 +170,7 @@ export function dedupeUrls(urls) {
  *   startedAt?: number,
  *   now?: number,
  *   cancelled?: boolean,
+ *   halt?: string | null,
  * }} input
  */
 export function planResearch(input) {
@@ -172,7 +179,10 @@ export function planResearch(input) {
   const sameDomain = input.sameDomain !== false;
   const extracted = input.extracted ?? [];
   const extractedKeys = new Set(extracted.map((row) => canonicalizeUrl(row.url)).filter(Boolean));
-  const bytesUsed = extracted.reduce((sum, row) => sum + (Number(row.bytes) || 0), 0);
+  const bytesUsed = extracted.reduce((sum, row) => {
+    if (row.ok === false) return sum;
+    return sum + (Number(row.bytes) || 0);
+  }, 0);
   const now = input.now ?? Date.now();
   const startedAt = input.startedAt ?? now;
 
@@ -198,7 +208,8 @@ export function planResearch(input) {
   const pending = ranked.filter((hit) => !extractedKeys.has(hit.url)).map((hit) => hit.url);
 
   let stop = null;
-  if (input.cancelled) stop = "cancelled";
+  if (input.halt) stop = input.halt;
+  else if (input.cancelled) stop = "cancelled";
   else if (now - startedAt >= budgets.deadlineMs) stop = "budget_time";
   else if (bytesUsed >= budgets.maxBytes) stop = "budget_bytes";
   else if (extracted.length >= budgets.maxPages) stop = "budget_pages";
@@ -257,6 +268,7 @@ export function assembleResearch(input) {
         failureCode: row.failureCode ?? null,
         bytes: Number(row.bytes) || 0,
       })),
+      omitted: Array.isArray(input.omitted) ? input.omitted : [],
     },
     stop: {
       reason: plan.stop ?? "in_progress",
@@ -269,11 +281,151 @@ export function assembleResearch(input) {
   };
 }
 
-export function researchFiles(report, excerpts = "") {
+export function researchFiles(report, excerpts = "", pages = []) {
   return {
     "research-state.json": `${JSON.stringify(report, null, 2)}\n`,
     "discovery.json": `${JSON.stringify(report.discovery, null, 2)}\n`,
     "extraction.json": `${JSON.stringify(report.extraction, null, 2)}\n`,
+    "pages.json": `${JSON.stringify({ schema: PAGES_SCHEMA, pages }, null, 2)}\n`,
     "excerpts.txt": excerpts.endsWith("\n") ? excerpts : `${excerpts}\n`,
   };
+}
+
+/**
+ * Split excerpts.txt `## url` sections. Used when resuming a folder that
+ * predates pages.json.
+ * @param {string} text
+ * @returns {Array<[string, string]>}
+ */
+export function parseExcerptSections(text) {
+  /** @type {Array<[string, string]>} */
+  const out = [];
+  for (const part of String(text ?? "").split(/^## /m).slice(1)) {
+    const nl = part.indexOf("\n");
+    const heading = (nl === -1 ? part : part.slice(0, nl)).trim();
+    const body = nl === -1 ? "" : part.slice(nl + 1).replace(/^\n/, "").replace(/\s+$/u, "");
+    if (!heading || heading === "Omissions" || heading === "Site research") continue;
+    out.push([heading, body]);
+  }
+  return out;
+}
+
+/**
+ * Restore per-page markdown from pages.json, then excerpts.txt, then metadata.
+ * @param {{
+ *   urls?: Array<{ url: string, ok?: boolean, bytes?: number, failureCode?: string, markdown?: string }>,
+ *   pages?: Array<{ url: string, ok?: boolean, bytes?: number, failureCode?: string, markdown?: string, fetchedAt?: string }>,
+ *   excerpts?: string,
+ * }} input
+ */
+export function restoreExtractedPages(input) {
+  const byKey = new Map();
+  const order = [];
+  const remember = (row) => {
+    const key = canonicalizeUrl(row.url) || String(row.url ?? "");
+    if (!key) return;
+    if (!byKey.has(key)) order.push(key);
+    const prev = byKey.get(key) ?? { url: row.url || key };
+    byKey.set(key, {
+      url: prev.url || row.url || key,
+      ok: row.ok ?? prev.ok,
+      bytes: row.bytes ?? prev.bytes ?? 0,
+      failureCode: row.failureCode ?? prev.failureCode ?? null,
+      markdown: row.markdown != null && row.markdown !== "" ? row.markdown : (prev.markdown ?? ""),
+      fetchedAt: row.fetchedAt ?? prev.fetchedAt ?? null,
+    });
+  };
+  for (const row of input.urls ?? []) remember(row);
+  for (const row of input.pages ?? []) remember(row);
+  for (const [url, markdown] of parseExcerptSections(input.excerpts ?? "")) {
+    const key = canonicalizeUrl(url) || url;
+    const prev = byKey.get(key);
+    if (prev && !prev.markdown) prev.markdown = markdown;
+    else if (!prev && markdown) remember({ url, ok: true, bytes: Buffer.byteLength(markdown, "utf8"), markdown });
+  }
+  return order.map((key) => byKey.get(key)).filter(Boolean);
+}
+
+/**
+ * @param {string} outDir
+ */
+export function loadResearchCheckpoint(outDir) {
+  const statePath = join(outDir, "research-state.json");
+  if (!existsSync(statePath)) return null;
+  const prior = JSON.parse(readFileSync(statePath, "utf8"));
+  const pagesPath = join(outDir, "pages.json");
+  const excerptsPath = join(outDir, "excerpts.txt");
+  const pagesRaw = existsSync(pagesPath) ? JSON.parse(readFileSync(pagesPath, "utf8")) : {};
+  const pages = Array.isArray(pagesRaw.pages) ? pagesRaw.pages : [];
+  const excerpts = existsSync(excerptsPath) ? readFileSync(excerptsPath, "utf8") : "";
+  const extracted = restoreExtractedPages({
+    urls: prior.extraction?.urls ?? [],
+    pages,
+    excerpts,
+  });
+  const discovered = Array.isArray(prior.discovery?.urls)
+    ? prior.discovery.urls.map((url) => ({ url }))
+    : [];
+  return {
+    prior,
+    seed: prior.seed ?? null,
+    focus: prior.focus ?? null,
+    toolchain: prior.toolchain ?? null,
+    createdAt: prior.createdAt ?? null,
+    discovered,
+    extracted,
+    omitted: Array.isArray(prior.extraction?.omitted) ? prior.extraction.omitted : [],
+  };
+}
+
+/**
+ * @param {string} filePath
+ * @param {string} body
+ */
+export function writeAtomicFile(filePath, body) {
+  mkdirSync(dirname(filePath), { recursive: true });
+  const tmp = `${filePath}.${process.pid}.tmp`;
+  writeFileSync(tmp, body);
+  try {
+    renameSync(tmp, filePath);
+  } catch {
+    if (existsSync(filePath)) unlinkSync(filePath);
+    renameSync(tmp, filePath);
+  }
+}
+
+/**
+ * @param {string} seed
+ * @param {Array<{ url: string, ok?: boolean, markdown?: string, failureCode?: string }>} extracted
+ * @param {Array<{ url: string, reason?: string, bytes?: number }>} [omitted]
+ */
+export function buildResearchExcerpts(seed, extracted, omitted = []) {
+  const parts = ["# Site research\n", `Seed: ${seed}\n`];
+  for (const row of extracted) {
+    const body = row.ok === false
+      ? `ok:false ${row.failureCode ?? ""}\n`
+      : `${row.markdown ?? ""}\n`;
+    parts.push(`## ${row.url}\n\n${body}`);
+  }
+  if (omitted.length) {
+    parts.push("## Omissions\n");
+    for (const row of omitted) {
+      parts.push(`- ${row.url}: ${row.reason ?? "omitted"} (${Number(row.bytes) || 0} output bytes not kept)\n`);
+    }
+  }
+  return parts.join("\n");
+}
+
+/**
+ * @param {Array<{ url: string, ok?: boolean, bytes?: number, failureCode?: string, markdown?: string, fetchedAt?: string }>} extracted
+ */
+export function pageRecords(extracted) {
+  return extracted.map((row) => ({
+    url: row.url,
+    ok: row.ok !== false,
+    bytes: Number(row.bytes) || 0,
+    failureCode: row.failureCode ?? null,
+    markdown: row.markdown ?? "",
+    fetchedAt: row.fetchedAt ?? null,
+  }));
 }

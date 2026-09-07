@@ -30,7 +30,7 @@ its `settings.json` on whatever host you have, then compare the new
 workspace capture as "Release v1.0.0 did this."
 
 `occam pack`, `occam research`, `occam brief`, and `occam cite` ship in GitHub
-Release host `1.1.0`. Recorded example rows remain workspace
+Release host `1.1.1`. Recorded example rows remain workspace
 `ff-occam/1.0.0-rc.2` until recapture; do not set `publicBuild=true` on them yet.
 
 Gallery: [Workflow gallery](gallery.md). Missed content:

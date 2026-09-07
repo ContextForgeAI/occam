@@ -189,9 +189,35 @@ jobs:
           compression-level: 0
           retention-days: 7
 
+  cli-contracts:
+    name: CLI contract selftests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+
+      - name: Pack/research/brief/cite/data contracts
+        run: |
+          node scripts/lib/mcp-tool-json.selftest.mjs
+          node scripts/lib/operator/occam-pack.selftest.mjs
+          node scripts/lib/operator/occam-research.selftest.mjs
+          node scripts/lib/operator/occam-brief.selftest.mjs
+          node scripts/lib/operator/occam-cite.selftest.mjs
+          node scripts/lib/operator/occam-data-cli.selftest.mjs
+          node scripts/lib/operator/release-runtime-files.selftest.mjs
+          node scripts/lib/bootstrap-release-manifest.selftest.mjs
+
   publish-release:
     name: Sign and publish exact release
-    needs: [build-linux, build-macos, build-windows]
+    needs: [build-linux, build-macos, build-windows, cli-contracts]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     timeout-minutes: 30

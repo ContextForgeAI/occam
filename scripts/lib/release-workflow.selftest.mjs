@@ -96,7 +96,8 @@ for (const [id, runner, rid] of [
 }
 
 const publish = jobBlock(release, "publish-release");
-assert.match(publish, /needs: \[build-linux, build-macos, build-windows\]/);
+assert.match(jobBlock(release, "cli-contracts"), /occam-research\.selftest\.mjs/);
+assert.match(publish, /needs: \[build-linux, build-macos, build-windows, cli-contracts\]/);
 assert.match(
   publish,
   /if: github\.event_name == 'push' && startsWith\(github\.ref, 'refs\/tags\/v'\)/,

@@ -14,6 +14,74 @@ export function estimateTokens(text) {
 }
 
 /**
+ * Model-consumable pack serialization:
+ * - content = excerpts.txt (the text a model reads)
+ * - wrapper = pretty-printed task/settings/sources/omissions JSON
+ *   (the sidecar files minus computed budget fields)
+ * @param {{
+ *   task: string,
+ *   settings?: Record<string, unknown>,
+ *   sources?: unknown[],
+ *   omissions?: unknown[],
+ * }} input
+ */
+export function estimatePackWrapperTokens(input) {
+  return estimateTokens(JSON.stringify({
+    schema: PACK_SCHEMA,
+    task: input.task,
+    settings: input.settings ?? {},
+    sources: input.sources ?? [],
+    omissions: input.omissions ?? [],
+  }, null, 2));
+}
+
+/**
+ * Reserve wrapper cost, then split the remaining declared budget across sources.
+ * Does not truncate excerpts. Impossible when wrapper alone exceeds --budget.
+ * @param {{
+ *   declared: number,
+ *   task: string,
+ *   settings?: Record<string, unknown>,
+ *   urls?: string[],
+ *   sourceCount?: number,
+ * }} input
+ */
+export function planPackBudget(input) {
+  const urls = Array.isArray(input.urls) ? input.urls.filter(Boolean) : [];
+  const n = Math.max(urls.length, Number(input.sourceCount) || 0, 1);
+  const stubSources = (urls.length ? urls : Array.from({ length: n }, () => "")).map((url, i) => ({
+    kind: "page",
+    url: url || `pending://${i + 1}`,
+    ok: true,
+  }));
+  const wrapper = estimatePackWrapperTokens({
+    task: input.task,
+    settings: input.settings ?? {},
+    sources: stubSources,
+    omissions: [],
+  });
+  const remaining = input.declared - wrapper;
+  if (remaining <= 0) {
+    return {
+      possible: false,
+      declared: input.declared,
+      wrapper,
+      content: 0,
+      perSource: 0,
+      reason: "wrapper_exceeds_budget",
+    };
+  }
+  return {
+    possible: true,
+    declared: input.declared,
+    wrapper,
+    content: remaining,
+    perSource: Math.max(1, Math.floor(remaining / n)),
+    reason: null,
+  };
+}
+
+/**
  * @param {string[]} argv
  */
 export function parsePackArgs(argv) {
@@ -121,6 +189,8 @@ export function parsePackArgs(argv) {
  *   toolchain?: string,
  *   createdAt?: string,
  *   responses: Array<{ tool: string, payload: unknown }>,
+ *   inability?: { reason?: string } | null,
+ *   allocatedPerSource?: number | null,
  * }} input
  */
 export function assemblePack(input) {
@@ -151,17 +221,19 @@ export function assemblePack(input) {
   const settings = input.settings && typeof input.settings === "object" ? input.settings : {};
   const declared = Number(settings.budget) > 0 ? Number(settings.budget) : null;
   const contentTokens = estimateTokens(excerpts);
-  const wrapperPreview = JSON.stringify({
-    schema: PACK_SCHEMA,
+  const wrapperTokens = estimatePackWrapperTokens({
     task: input.task,
     settings,
     sources,
     omissions,
   });
-  const wrapperTokens = estimateTokens(wrapperPreview);
   const total = contentTokens + wrapperTokens;
   const failed = sources.filter((s) => s.ok === false).length;
   const succeeded = sources.filter((s) => s.ok === true).length;
+  const inability = input.inability && typeof input.inability === "object" ? input.inability : null;
+  const overBudget = declared != null ? total > declared : false;
+  const reason = inability?.reason
+    ?? (overBudget ? "over_budget" : null);
 
   return {
     manifest: {
@@ -180,9 +252,11 @@ export function assemblePack(input) {
         wrapper: wrapperTokens,
         total,
         estimator: TOKEN_ESTIMATOR,
-        overBudget: declared != null ? total > declared : false,
+        overBudget,
+        allocatedPerSource: input.allocatedPerSource ?? null,
+        reason,
       },
-      ok: failed === 0 && succeeded > 0,
+      ok: failed === 0 && succeeded > 0 && !overBudget && !inability,
     },
     sources,
     omissions,

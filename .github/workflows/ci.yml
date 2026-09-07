@@ -195,6 +195,17 @@ jobs:
       - name: Validate friend first-use acceptance scenarios
         run: node scripts/lib/operator/friend-first-use.selftest.mjs
 
+      - name: Validate pack/research/brief/cite/data CLI contracts
+        run: |
+          node scripts/lib/mcp-tool-json.selftest.mjs
+          node scripts/lib/operator/occam-pack.selftest.mjs
+          node scripts/lib/operator/occam-research.selftest.mjs
+          node scripts/lib/operator/occam-brief.selftest.mjs
+          node scripts/lib/operator/occam-cite.selftest.mjs
+          node scripts/lib/operator/occam-data-cli.selftest.mjs
+          node scripts/lib/operator/discovery-rank.selftest.mjs
+          node scripts/lib/operator/pdf-ocr-eval.selftest.mjs
+
   operator-safety:
     name: Operator safety (${{ matrix.os }})
     runs-on: ${{ matrix.os }}

@@ -8,6 +8,7 @@ import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseToolJson } from "./lib/mcp-tool-json.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = process.env.OCCAM_HOME?.trim() || join(scriptDir, "..");
@@ -140,20 +141,6 @@ class McpStdioClient {
 
   close() {
     this.#proc.stdin.end();
-  }
-}
-
-function parseToolJson(result) {
-  if (result?.isError) {
-    const text = result?.content?.find((c) => c.type === "text")?.text ?? "tool error";
-    return { raw: text, parsed: null, isError: true };
-  }
-  const text = result?.content?.find((c) => c.type === "text")?.text;
-  if (!text) return { raw: result, parsed: null, isError: false };
-  try {
-    return { raw: text, parsed: JSON.parse(text), isError: false };
-  } catch {
-    return { raw: text, parsed: null, isError: false };
   }
 }
 

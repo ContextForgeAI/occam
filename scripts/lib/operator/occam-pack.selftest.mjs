@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { assemblePack, estimateTokens, parsePackArgs, searchHitUrls } from "./occam-pack.mjs";
+import { assemblePack, estimateTokens, parsePackArgs, planPackBudget, searchHitUrls } from "./occam-pack.mjs";
 import { runPackCommand } from "./occam-pack-cli.mjs";
 
 const parsed = parsePackArgs([
@@ -165,7 +165,15 @@ try {
       callTool: async (tool, args) => {
         assert.equal(tool, "occam_transcode");
         assert.equal(args.url, "https://example.com/doc");
-        assert.equal(args.max_tokens, 256);
+        const planned = planPackBudget({
+          declared: 256,
+          task: "Show closures",
+          settings: { budget: 256, focus: "closures", urls: ["https://example.com/doc"] },
+          urls: ["https://example.com/doc"],
+        });
+        assert.equal(planned.possible, true);
+        assert.equal(args.max_tokens, planned.perSource);
+        assert.ok(args.max_tokens < 256);
         assert.equal(args.fit_markdown, true);
         return {
           ok: true,
@@ -221,6 +229,109 @@ try {
   assert.deepEqual(calls, ["occam_search", "occam_digest"]);
 } finally {
   rmSync(searchDir, { recursive: true, force: true });
+}
+
+const overflow = assemblePack({
+  task: "Two short excerpts still overflow a tiny total",
+  settings: { budget: 128 },
+  responses: [
+    {
+      tool: "occam_digest",
+      payload: {
+        ok: true,
+        items: [
+          { url: "https://a.example/", ok: true, excerpt: "alpha ".repeat(40) },
+          { url: "https://b.example/", ok: true, excerpt: "bravo ".repeat(40) },
+        ],
+      },
+    },
+  ],
+});
+assert.equal(overflow.manifest.budget.overBudget, true);
+assert.equal(overflow.manifest.ok, false);
+assert.equal(overflow.manifest.budget.reason, "over_budget");
+assert.match(overflow.excerpts, /alpha/);
+assert.match(overflow.excerpts, /bravo/);
+
+const manyDir = mkdtempSync(join(tmpdir(), "occam-pack-many-"));
+try {
+  const seen = [];
+  const exit = await runPackCommand(
+    [
+      "--task",
+      "Two sources",
+      "--url",
+      "https://a.example/",
+      "--url",
+      "https://b.example/",
+      "--budget=128",
+      "--out",
+      manyDir,
+      "--json",
+    ],
+    {
+      callTool: async (tool, args) => {
+        seen.push({ tool, perUrl: args.per_url_max_tokens });
+        assert.equal(tool, "occam_digest");
+        assert.ok(args.per_url_max_tokens < 128);
+        return {
+          ok: true,
+          items: [
+            { url: "https://a.example/", ok: true, excerpt: `FIRST_MARK ${"alpha ".repeat(40)}` },
+            { url: "https://b.example/", ok: true, excerpt: `SECOND_MARK ${"bravo ".repeat(40)}` },
+          ],
+        };
+      },
+    },
+  );
+  assert.equal(exit, 1);
+  const manifest = JSON.parse(readFileSync(join(manyDir, "manifest.json"), "utf8"));
+  assert.equal(manifest.ok, false);
+  assert.equal(manifest.budget.overBudget, true);
+  assert.ok(manifest.budget.allocatedPerSource < 128);
+  const excerpts = readFileSync(join(manyDir, "excerpts.txt"), "utf8");
+  assert.match(excerpts, /FIRST_MARK/);
+  assert.match(excerpts, /SECOND_MARK/);
+} finally {
+  rmSync(manyDir, { recursive: true, force: true });
+}
+
+const wrapPlan = planPackBudget({
+  declared: 128,
+  task: "W".repeat(2000),
+  urls: ["https://a.example/"],
+});
+assert.equal(wrapPlan.possible, false);
+assert.equal(wrapPlan.reason, "wrapper_exceeds_budget");
+
+const wrapDir = mkdtempSync(join(tmpdir(), "occam-pack-wrap-"));
+try {
+  let fetched = false;
+  const exit = await runPackCommand(
+    [
+      "--task",
+      "W".repeat(2000),
+      "--url",
+      "https://a.example/",
+      "--budget=128",
+      "--out",
+      wrapDir,
+      "--json",
+    ],
+    {
+      callTool: async () => {
+        fetched = true;
+        return { ok: true, url: { url: "https://a.example/" }, markdown: "should-not-fetch" };
+      },
+    },
+  );
+  assert.equal(fetched, false);
+  assert.equal(exit, 1);
+  const manifest = JSON.parse(readFileSync(join(wrapDir, "manifest.json"), "utf8"));
+  assert.equal(manifest.ok, false);
+  assert.equal(manifest.budget.reason, "wrapper_exceeds_budget");
+} finally {
+  rmSync(wrapDir, { recursive: true, force: true });
 }
 
 console.log("occam-pack.selftest: OK");
