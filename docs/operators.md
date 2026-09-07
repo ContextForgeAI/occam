@@ -1,7 +1,7 @@
 # Operators
 
 Use this page to keep an Occam release install connected, healthy, current, and
-removable. Occam Core `1.0.0` is **GA**. npm remains an experimental shortcut — use GitHub Release bootstrap for the guarded install path.
+removable. Occam Core `1.1.0` is **GA**. npm remains an experimental shortcut — use GitHub Release bootstrap for the guarded install path.
 
 ## What you run
 

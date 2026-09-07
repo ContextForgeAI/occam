@@ -4,12 +4,13 @@
 
 | Version | Supported |
 |---------|-----------|
-| 1.0.0 (GA) | Yes |
+| 1.1.0 (GA) | Yes |
+| 1.0.0 | Yes (previous GA) |
 | 1.0.0-rc.5 | Yes (previous RC) |
 | 1.0.0-rc.3 | Yes |
 | 1.0.0-rc.2 | Yes (legacy Level B channel) |
-| 0.9.x | No — upgrade to `1.0.0` |
-| < 0.9 | No — upgrade to `1.0.0` or later |
+| 0.9.x | No — upgrade to `1.1.0` |
+| < 0.9 | No — upgrade to `1.1.0` or later |
 
 Support is limited to the rows marked above. There is no long-term backport
 program for pre-GA lines.

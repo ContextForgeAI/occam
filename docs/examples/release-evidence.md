@@ -29,9 +29,9 @@ its `settings.json` on whatever host you have, then compare the new
 `receipt.toolchain` (or `occam --help` version) to this table. Do not cite a
 workspace capture as "Release v1.0.0 did this."
 
-`occam pack`, `occam research`, `occam brief`, and `occam cite` are Unreleased
-CLI in this tree. They are **not** in GitHub Release host `1.0.0`. A later host
-cut must include them before any of those rows can be `publicBuild=true`.
+`occam pack`, `occam research`, `occam brief`, and `occam cite` ship in GitHub
+Release host `1.1.0`. Recorded example rows remain workspace
+`ff-occam/1.0.0-rc.2` until recapture; do not set `publicBuild=true` on them yet.
 
 Gallery: [Workflow gallery](gallery.md). Missed content:
 [feedback template](feedback.md).

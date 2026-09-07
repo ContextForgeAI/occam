@@ -61,7 +61,7 @@ GitHub Release binary matches it line-for-line.
 
 ## Install
 
-One recommended route: the signed GitHub Release bootstrap (**host 1.0.0**).
+One recommended route: the signed GitHub Release bootstrap (**host 1.1.0**).
 It installs the host, puts `occam` on your PATH, and runs `occam connect`.
 
 <details>
@@ -92,8 +92,8 @@ Success is cited Markdown **or** a typed `ok:false` — never a guessed page.
 
 | Channel | What you get | Status |
 |---------|--------------|--------|
-| GitHub Release bootstrap | Host + `occam` CLI + Cosign verify | **Recommended (GA host 1.0.0)** |
-| `npx ff-occam@1.0.1` | MCP host only — no `connect` / `doctor` | Experimental |
+| GitHub Release bootstrap | Host + `occam` CLI + Cosign verify | **Recommended (GA host 1.1.0)** |
+| `npx ff-occam@1.1.0` | MCP host only — no `connect` / `doctor` | Experimental |
 
 Published RIDs: `win-x64`, `linux-x64`, `osx-arm64`.
 [INSTALL.md](INSTALL.md) ·
@@ -167,7 +167,7 @@ reproduction: [`scripts/bench/README.md`](scripts/bench/README.md).
 | `ok:false` | Content **unknown** — never substitute training memory |
 | Receipts | Integrity **relative to a key** — not truth or trusted time |
 | Smaller output | Not automatically a better answer |
-| npm | Experimental package **1.0.1** — not the GA host channel |
+| npm | Experimental package **1.1.0** — not the GA host channel |
 | Cosign | Release authenticity — not page-content truth |
 | CAPTCHA | Detected — **not** solved |
 

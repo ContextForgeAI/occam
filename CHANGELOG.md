@@ -2,16 +2,24 @@
 
 All notable changes to **FFOccamMCP** (L0 core) are documented here.
 
-Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1`…`1.0.0-rc.5` were release candidates; **`1.0.0` is GA**.
+Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1`…`1.0.0-rc.5` were release candidates; **`1.0.0` was first GA**; current public default is **`1.1.0`**.
 
 ## [Unreleased]
+
+## [1.1.0] — 2026-09-07
+
+Host + operator CLI cut. Guarded install default is GitHub Release **v1.1.0**
+(Cosign `required-cosign-v1`). Experimental npm **1.1.0** downloads this host
+(`HOST_RELEASE_VERSION`). Recorded goldens, packs, research, brief, and cite
+examples stay named workspace `ff-occam/1.0.0-rc.2` until recapture — do not
+cite them as byte-identical to this Release.
 
 ### Docs
 
 - **README first-use** — lead with the job, a captured documentation question
   (MDN Functions, budget + visible omissions), one recommended GA install
-  channel, and three recorded workflows. npm stays experimental (`1.0.1`);
-  the GA host channel stays GitHub Release `1.0.0`. Product name is Occam;
+  channel, and three recorded workflows. npm stays experimental (`1.1.0`);
+  the GA host channel is GitHub Release `1.1.0`. Product name is Occam;
   package identity stays `ff-occam`.
 - **Search default honesty** — user-facing docs, `llms.txt`, and the skill
   now match the code: unset `OCCAM_SEARCH_PROVIDER` is keyless DuckDuckGo,
@@ -24,19 +32,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 - **G1 gallery and onboarding** — [workflow gallery](docs/examples/gallery.md)
   (three jobs + first useful prompt), [host onboarding](docs/onboarding/index.md)
   for live-validated MCP hosts, and a [release-evidence ledger](docs/examples/release-evidence.md)
-  that names each demonstration’s toolchain. Public-build rows are only
-  `ff-occam/1.0.0`. Workspace/RC captures stay labeled as such.
+  that names each demonstration’s toolchain. Public-build rows remain the
+  `ff-occam/1.0.0` current-proof captures until recapture on this host.
+  Workspace/RC captures stay labeled as such.
   Feedback template asks for task + expected content + redacted diagnostics.
-  Golden trio recaptured 2026-09-07 on the same workspace MCP
+  Golden trio recaptured 2026-09-07 on workspace MCP
   (`ff-occam/1.0.0-rc.2`); MDN hashes unchanged; nginx excerpts refreshed.
-  Still not Release `v1.0.0`.
 - **Q2 competitor arm** — DonSeTch 3.6.7 fetch-only WRB vs Occam on the same
   pin: 42/48 vs 36/48. Gap is gated T2/T3 acquisition (SO, Indeed, Reuters),
   not Tier-1 docs. No parity. Decision:
   [Q2 WRB](docs/examples/capability-eval/q2-wrb/).
 - **GitHub About** — public `ContextForgeAI/occam` description, docs homepage,
   and topics now match the README job statement. Package identity stays
-  `ff-occam`. Not a host Release.
+  `ff-occam`.
 
 ### Added
 
@@ -83,6 +91,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Changed
 
+- **Tree version `1.1.0`** — `VERSION` + npm manifests + `server.json` bumped.
+- **Public install default → published `1.1.0`** — bootstrap (`get-ff-occam.sh` /
+  `.ps1`), `PUBLIC_DEFAULT_RELEASE_VERSION`, `HOST_RELEASE_VERSION`, and install
+  docs track GitHub Release `v1.1.0` (Cosign `required-cosign-v1`).
 - **Model-visible schema (U2)** — shorter MCP `instructions` and tool/parameter
   `[Description]` text. No tools removed; `reader` / `full` profiles unchanged.
   `occam_transcode` still leads with “default page reader”.

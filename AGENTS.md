@@ -346,7 +346,7 @@ Report drafts: `artifacts/quality-audit/YYYY-MM-DD-….md` (gitignored). Public 
 
 ## 10. Session start checklist
 
-**Current product track:** **v1.0.0** GA on GitHub Releases (public install default). Foundation includes MCP 2.2, Streamable HTTP, wire enrichments, `ff-occam`, browser interact, profiles, keyless DuckDuckGo search default. Live L3–L9 soak passed on `main` (2026-08-30); rc.5 published-channel smoke on macOS/Linux before GA. npm remains experimental (not the guarded GA install path). Public release identity: `https://github.com/ContextForgeAI/occam`.
+**Current product track:** **v1.1.0** GA on GitHub Releases (public install default). Foundation includes MCP 2.2, Streamable HTTP, wire enrichments, `ff-occam`, browser interact, profiles, keyless DuckDuckGo search default. npm remains experimental (not the guarded GA install path). Public release identity: `https://github.com/ContextForgeAI/occam`.
 
 1. Read **this file** and [docs/index.md](docs/index.md) for current priorities. For a one-page product flashcard (advantages + knobs), read [docs/why-occam.md](docs/why-occam.md) first — agents often miss it.
 2. Confirm **Cursor rules** active: [.cursor/rules/README.md](.cursor/rules/README.md) (6 `.mdc` files).
