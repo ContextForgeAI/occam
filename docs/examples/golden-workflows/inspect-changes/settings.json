@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "tool": "occam_transcode",
+  "firstRead": {
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions",
+    "backend_policy": "http",
+    "fit_markdown": true,
+    "focus_query": "function scope closures",
+    "max_tokens": 800
+  },
+  "secondRead": {
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions",
+    "backend_policy": "http",
+    "fit_markdown": true,
+    "focus_query": "function scope closures",
+    "max_tokens": 800,
+    "if_none_match": "bda66461b52d3d0aea8541e47706ebdbe09c242cc5ba2d537c3cb0293517a738"
+  },
+  "notes": [
+    "if_none_match is the prior contentHash (bare hex).",
+    "materializationKey must match: same URL + focus + budget + fit.",
+    "diff_against is optional and is not used in this capture.",
+    "occam_digest only supports if_none_match on combined markdown — use transcode for a page-level re-read."
+  ]
+}

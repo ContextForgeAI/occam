@@ -1,0 +1,10 @@
+{
+  "claim": "The page describes an install command.",
+  "url": "https://example.com/",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "createdAt": "2026-09-07T14:08:00Z",
+  "payload": {
+    "ok": false,
+    "failure": { "code": "timeout", "message": "extract timed out" }
+  }
+}

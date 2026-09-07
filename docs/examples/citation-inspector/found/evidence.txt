@@ -1,0 +1,15 @@
+# Citation inspect
+
+Claim: A closure is any piece of source code that refers to some variables and remembers these variables even when the scope in which these variables were declared has exited.
+
+URL: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions
+
+found:true  verdict:not_evaluated  matches:1
+
+confirm or reject whether the retrieved passage supports the claim
+Occam does not decide support vs refute; verdict is not_evaluated
+
+## score 51.4634
+selector: #content > div:nth-of-type(2) > section:nth-of-type(9) > p:nth-of-type(1)
+We also refer to the function body as a closure. A closure is any piece of source code (most commonly, a function) that refers to some variables, and the closure "remembers" these variables even when the scope in which these variables were declared has exited.
+

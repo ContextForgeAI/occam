@@ -1,11 +1,12 @@
 using OccamMcp.Core.Compile;
+using OccamMcp.Core.Handles;
 using OccamMcp.Core.Probe;
 using OccamMcp.Core.Routing;
 using OccamMcp.Core.Session;
 
 namespace OccamMcp.Core.Services;
 
-public sealed class MapService(HttpProbeFetcher fetcher)
+public sealed class MapService(HttpProbeFetcher fetcher, SourceHandleStore sourceHandles)
 {
     public const int MaxLinksCap = 64;
     public const int DefaultMaxLinks = 32;
@@ -25,6 +26,12 @@ public sealed class MapService(HttpProbeFetcher fetcher)
         string? sessionProfile = null,
         CancellationToken cancellationToken = default)
     {
+        if (!sourceHandles.TryBind(url, out var boundUrl, out var bindCode, out var bindMessage))
+        {
+            return MapAnalysis.Failed(url, null, bindCode!, 0, message: bindMessage);
+        }
+
+        url = boundUrl;
         if (string.IsNullOrWhiteSpace(url) || !Uri.TryCreate(url, UriKind.Absolute, out _))
         {
             return MapAnalysis.Failed(url, null, "invalid_url", 0);
@@ -449,6 +456,7 @@ public sealed class MapAnalysis
     public int FilteredCount { get; init; }
     public string? FocusQuery { get; init; }
     public string? FailureCode { get; init; }
+    public string? FailureMessage { get; init; }
     public int? FailureStatusCode { get; init; }
     public bool Partial { get; init; }
 
@@ -460,13 +468,15 @@ public sealed class MapAnalysis
         string? finalUrl,
         string failureCode,
         int latencyMs,
-        int statusCode = 0) =>
+        int statusCode = 0,
+        string? message = null) =>
         new()
         {
             Ok = false,
             Url = url,
             FinalUrl = finalUrl,
             FailureCode = failureCode,
+            FailureMessage = message,
             LatencyMs = latencyMs,
             FailureStatusCode = statusCode > 0 ? statusCode : null,
         };

@@ -1,23 +1,24 @@
 using System.ComponentModel;
 using System.Text.Json;
+using OccamMcp.Core.Handles;
 using OccamMcp.Core.Services;
 using ModelContextProtocol.Server;
 
 namespace OccamMcp.Core.Tools;
 
 [McpServerToolType]
-public sealed class OccamSearchTool(ISearchService searchService, ProbeService probeService)
+public sealed class OccamSearchTool(ISearchService searchService, ProbeService probeService, SourceHandleStore sourceHandles)
 {
     private const int DefaultMaxResults = 8;
     private const int MaxResultsCap = 20;
     private const int RerankProbeTimeoutMs = 6_000;
     private const int RerankMaxParallel = 5;
 
-    [McpServerTool(Name = "occam_search"), Description("Open-web search (query -> result URLs). Default keyless backend is DuckDuckGo HTML (provider=duckduckgo disclosed); override with OCCAM_SEARCH_PROVIDER=searxng|brave|tavily|donsetch, or off to disable. Your discovery step when you don't have URLs yet - feed result urls into probe/transcode/digest. Each hit gets a label id S1..Sn (notes only; Occam does not resolve handles). Returns { id, title, url, snippet, provider }. Occam does not index the web.")]
+    [McpServerTool(Name = "occam_search"), Description("Open-web search → result URLs. Default keyless DuckDuckGo (override OCCAM_SEARCH_PROVIDER). No URLs yet → search, then pass result.handle or url to probe/transcode/digest. S1 is latest-search only; H… survives later searches. Returns {id, handle, title, url, snippet}. Does not index the web.")]
     public async Task<string> Search(
         [Description("Search query.")] string query,
         [Description("Max results to return (1-20). Default 8.")] int max_results = DefaultMaxResults,
-        [Description("Rerank results by extractability: cheaply probes each hit and reorders so clean HTTP-extractable pages rank above paywalls, anti-bot walls, JS stubs and dead links. Adds extractability (0-1) + recommendedBackend per result. Opt-in (extra probe latency); off by default.")] bool rerank = false,
+        [Description("Rerank by extractability (extra probe latency). Adds extractability + recommendedBackend. Opt-in.")] bool rerank = false,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -52,17 +53,32 @@ public sealed class OccamSearchTool(ISearchService searchService, ProbeService p
 
         // Assign S1…Sn after final order so labels match what the agent sees.
         results = AssignResultIds(results);
+        var remembered = sourceHandles.RememberSearch(
+            query.Trim(),
+            results.Select(r => (r.Title, r.Url)).ToArray());
+        for (var i = 0; i < results.Length && i < remembered.Count; i++)
+        {
+            results[i] = results[i] with { Handle = remembered[i].Handle };
+        }
 
         var suggested = results.Length > 0
-            ? "Pass a result url to occam_transcode (one page) or occam_digest (several). Labels S1…Sn are for your notes only — Occam does not resolve handles server-side."
+            ? "Pass result.handle or url to occam_transcode (one page) or occam_digest (several). S1 is the latest search only; H… survives later searches until TTL."
             : "refine query or try another provider";
         if (rerank && results.Length > 0)
         {
-            suggested = "Results reranked by extractability — prefer top urls for transcode. Labels S1…Sn are notes only; always pass the url field.";
+            suggested = "Results reranked by extractability — prefer top handle/url for transcode. S1 is latest-search only.";
         }
 
         return JsonSerializer.Serialize(
-            new OccamSearchSuccessResponse(true, query.Trim(), outcome.Provider, results.Length, results, new OccamSearchAgentHintsInfo(suggested)),
+            new OccamSearchSuccessResponse(
+                true,
+                query.Trim(),
+                outcome.Provider,
+                results.Length,
+                results,
+                new OccamSearchAgentHintsInfo(suggested),
+                HandleTtlS: (int)SourceHandleStore.DefaultTtl.TotalSeconds,
+                HandleScope: "process"),
             OccamSearchJsonContext.Default.OccamSearchSuccessResponse);
     }
 
@@ -124,7 +140,7 @@ public sealed class OccamSearchTool(ISearchService searchService, ProbeService p
             .Select(s => s.Result)];
     }
 
-    /// <summary>Stable <c>S1</c>… labels after ranking. Not a server-side handle store.</summary>
+    /// <summary>Latest-search shorthand <c>S1</c>… after ranking. Durable identity is <c>handle</c>.</summary>
     internal static OccamSearchResultInfo[] AssignResultIds(OccamSearchResultInfo[] results)
     {
         var labeled = new OccamSearchResultInfo[results.Length];

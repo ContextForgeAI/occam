@@ -147,6 +147,16 @@ public static class TranscodeAgentDecisions
             ];
         }
 
+        if (failureCode is "stale_handle" or "unknown_handle")
+        {
+            return
+            [
+                new ProbeDecision(
+                    "stop",
+                    "Handle is unknown or expired — pass result.handle or the raw url; S1 is latest-search only."),
+            ];
+        }
+
         if (failureCode == "digest_failed")
         {
             return

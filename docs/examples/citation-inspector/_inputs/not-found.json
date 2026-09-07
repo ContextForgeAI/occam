@@ -1,0 +1,14 @@
+{
+  "claim": "JavaScript closures require a cloud API key issued by Mozilla before they work in browsers.",
+  "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "createdAt": "2026-09-07T14:08:19Z",
+  "payload": {
+    "ok": true,
+    "found": false,
+    "retrieved": false,
+    "verdict": "not_evaluated",
+    "proven": true,
+    "matches": []
+  }
+}

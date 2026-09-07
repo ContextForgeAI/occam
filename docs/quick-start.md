@@ -20,6 +20,10 @@ This proves the tool call works. The page is deliberately small.
 This is a stable public documentation page used in Occam’s smoke corpus — useful
 enough to show compact, source-linked content without relying on a flaky site.
 
+The recorded first useful job (MDN Functions, budget + listed omissions) is in
+the [workflow gallery](examples/gallery.md). Host-specific where-to-type:
+[onboarding](onboarding/index.md).
+
 </div>
 
 ## Choose your path

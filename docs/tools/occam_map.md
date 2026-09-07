@@ -16,7 +16,7 @@ Discover a site's same-domain links from its homepage, sitemap, or robots.txt �
 
 | Parameter | Type | Default | Required | Description |
 |---|---|---|---|---|
-| `url` | string | — | **yes** | HTTP or HTTPS seed URL |
+| `url` | string | — | **yes** | HTTP(S) seed URL or search handle (`S1` / `H…`) |
 | `source` | string | `homepage` | no | `homepage`, `sitemap`, or `robots` |
 | `max_links` | int | `32` | no | 1–64 |
 | `same_domain` | bool | `true` | no | Drop off-origin links |

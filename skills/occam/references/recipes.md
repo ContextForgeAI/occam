@@ -26,7 +26,7 @@ Optional probe first. Add token savings:
 
 ## Research a topic (search → digest)
 
-Requires `OCCAM_SEARCH_PROVIDER`.
+Search defaults to keyless DuckDuckGo. Set `OCCAM_SEARCH_PROVIDER=off` for air-gap.
 
 ```
 occam_search({ query: "nginx reverse proxy", max_results: 5 })

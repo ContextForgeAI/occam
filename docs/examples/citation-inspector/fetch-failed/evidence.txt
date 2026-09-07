@@ -1,0 +1,11 @@
+# Citation inspect
+
+Claim: The page describes an install command.
+
+URL: https://example.com/
+
+ok:false timeout
+
+confirm or reject whether the retrieved passage supports the claim
+Occam does not decide support vs refute; verdict is not_evaluated
+

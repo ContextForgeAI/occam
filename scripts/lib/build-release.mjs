@@ -123,6 +123,14 @@ function stageReleaseTree(version, rid, publishedBinary, stageExeName) {
     "occam-wrapper.sh",
     // Experimental local chat (occam chat) — friend Ollama path; not stable 1.0 API.
     "occam-chat.mjs",
+    "occam-data.mjs",
+    "occam-read.mjs",
+    "occam-search.mjs",
+    "occam-digest.mjs",
+    "occam-pack.mjs",
+    "occam-research.mjs",
+    "occam-brief.mjs",
+    "occam-cite.mjs",
     "build-release.sh",
     "build-release.ps1",
   ];

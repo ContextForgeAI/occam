@@ -27,6 +27,11 @@ internal static class L2DigestUnitTests
             out _,
             out _));
 
+        assert("digest parser accepts search handle", DigestUrlParser.TryParse(
+            "[\"S1\",\"H00000001\"]",
+            out var handleEntries,
+            out _) && handleEntries.Count == 2);
+
         assert("digest max_urls cap", DigestService.MaxUrlsCap == 8);
 
         // urls / source_url MCP input contract (schema: neither is required alone; at least one needed).

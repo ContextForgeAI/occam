@@ -31,7 +31,7 @@ Default one-page call: **`occam_transcode` with only `url`**. Everything else is
 5. **Receipts & evidence** — signed extract integrity; claim_check / attest for citation workflows (heuristic — not crypto truth).  
 6. **Playbooks** — per-site recipes (resolve / heal / lint / save) without rewriting the host.  
 7. **Local-first** — host runs with you; SSRF/private URL blocks; Cosign on *releases* ≠ page truth.  
-8. **Discovery before spend** — probe extractability, map links, search (when configured), then digest many URLs once.
+8. **Discovery before spend** — probe extractability, map links, search (keyless DuckDuckGo by default), then digest many URLs once.
 
 ---
 
@@ -47,7 +47,7 @@ There is **no** public MCP parameter to pick a knowledge codec (`compact-markdow
 | `max_tokens` / `per_url_max_tokens` | transcode / digest | Hard whole-response / per-URL cap |
 | `fit_markdown` + `focus_query` | transcode (off by default) / digest (**on** by default) | BM25 paragraph prune |
 | `toc` / `section` / `must_contain` | transcode | Structural / needle focus |
-| `compact_links` / `compact_block_links` / `include_media_refs` | transcode | Strip link destinations / media noise |
+| `compact_links` / `compact_block_links` / `include_media_refs` | transcode | Strip link destinations; set `include_media_refs:true` for image/video URLs |
 
 ### Structure and change
 
@@ -66,8 +66,8 @@ There is **no** public MCP parameter to pick a knowledge codec (`compact-markdow
 | `backend_policy` | Force `http` / `browser` / `http_then_browser` |
 | `session_profile` | Operator cookies for login walls (no CAPTCHA solve) |
 | `playbook_policy` / playbook tools | Site recipe overlay / authoring |
-| `occam_search` | Needs `OCCAM_SEARCH_PROVIDER` (incl. optional local Donsetch) |
-| PDF OCR | Operator env — see [configuration](configuration.md) · [experimental](experimental.md) |
+| `occam_search` | Default keyless DuckDuckGo; override or `off` via `OCCAM_SEARCH_PROVIDER` |
+| PDF OCR | Operator env — see [configuration](configuration.md) · [capability decision](examples/capability-eval/pdf-ocr/) |
 
 ---
 

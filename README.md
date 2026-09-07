@@ -1,198 +1,189 @@
-# FF-Occam
+# Occam
 
-**Live web → compact, source-linked, verifiable context for AI agents.**
+Stop filling your agent's context with webpage noise.
 
-Occam reads current web pages on your machine, removes interface noise, fits
-the useful content to an agent's context window, and returns either clean
-Markdown or an explicit reason why the content is unknown.
+Occam reads live pages and returns context focused on your task, with source
+links, a token budget, and explicit omissions. Read documentation and compare
+sources from a local MCP server.
 
 [![CI](https://github.com/ContextForgeAI/occam/actions/workflows/ci.yml/badge.svg)](https://github.com/ContextForgeAI/occam/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/ff-occam?label=npm)](https://www.npmjs.com/package/ff-occam)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 
-```powershell
-# Windows
-irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
-```
-
-```bash
-# Linux x64 / macOS Apple Silicon
-curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
-```
-
-That one command installs the host, puts `occam` on your PATH, and runs
-`occam connect`. Then open a new conversation in your MCP client:
-
-```text
-Use Occam to read https://example.com/ and tell me what it says.
-Include the source. If the read fails, report the reason instead of guessing.
-```
-
-> Current release: **1.0.0 (GA)**. Experimental MCP-only trial:
-> `npx ff-occam@1.0.1` — this does **not** install the `occam` operator CLI
-> (`connect`, `doctor`, …). Prefer the bootstrap above.
-> Details: [Install safely](#install-safely).
+- **Task-focused Markdown** from a live URL — chrome and navigation stripped.
+- **A declared budget** and a machine-readable record of what was omitted.
+- **Typed `ok:false`** when the page is unknown. Never a silent empty shell.
 
 ![A webpage reduced to source-linked Markdown](docs/assets/occam-proof-before-after-rc4.png)
 
-## Three jobs
+One inspectable fixture (2026-08-28): 5,297 HTML bytes become 1,736 Markdown
+bytes. Not an average and not a token claim.
+[Input](https://contextforgeai.github.io/occam/examples/current-proof/representative-input.html)
+· [Output](docs/examples/current-proof/representative-output.md)
+· [Method](docs/examples/current-proof/representative-measurement.json)
 
-| Need | Use Occam to | Start with |
-|------|--------------|------------|
-| **Read** | Turn one live URL into clean Markdown | `occam_transcode(url)` |
-| **Research** | Focus and combine several known sources | `occam_digest(urls, focus_query)` |
-| **Verify** | Check extract integrity and portable citation proofs | `occam_verify(receipt, markdown)` |
+## A real documentation question
 
-Open-web discovery works out of the box through `occam_search` (keyless DuckDuckGo
-HTML, `provider` disclosed). Override with SearXNG/Brave/Tavily, or set
-`OCCAM_SEARCH_PROVIDER=off` for air-gap.
+**Prompt**
 
-## Why not a generic fetch?
-
-| Generic fetch | FF-Occam |
-|---------------|----------|
-| Raw HTML, page chrome, or a silent empty shell | Compact Markdown or typed `ok:false` |
-| Output can consume the whole context window | Explicit budget, focus, sections, and deltas |
-| One acquisition method | HTTP → browser → disclosed public/managed adapters |
-| No evidence for later citation checks | Optional signed receipt and block proofs |
-| Missing content invites a model-memory guess | `ok:false` means **unknown** |
-
-## Measured live baseline
-
-One pinned 48-URL run on 2026-08-30. These are live observations from one
-machine and network, not universal success or latency claims.
-
-| Fetch metric | FF-Occam |
-|--------------|---------:|
-| Tier 1 retrieval | 100.0% |
-| Tier 2 retrieval | 75.0% |
-| Tier 3 retrieval | 38.5% |
-| Overall retrieval | 75.0% (36/48) |
-| False-positive rate | 0.0% |
-| Successful fetch p50 | 630 ms |
-| Successful fetch p90 | 1,973 ms |
-
-Method, pinned revision, runner, limitations, and reproduction commands:
-[`scripts/bench/README.md`](scripts/bench/README.md). Treat this as
-reproducible baseline evidence, not independent certification.
-
----
-
-## Install safely
-
-For production-oriented installs, use the signed GitHub Release bootstrap:
-
-```bash
-# Linux x64 / macOS Apple Silicon
-curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+```text
+Use Occam to read https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions
+Show how function scope and closures work. Include the syntax I need, any
+conditions, and source links. Tell me if relevant content was omitted.
 ```
 
+**Captured result** (2026-09-05, `fit_markdown:true`, `focus_query:"function scope closures"`, `max_tokens:800`, host toolchain `ff-occam/1.0.0-rc.2`):
+
+```text
+We also refer to the function body as a closure. A closure is any piece of
+source code (most commonly, a function) that refers to some variables, and
+the closure "remembers" these variables even when the scope in which these
+variables were declared has exited.
+
+## Function scopes and closures
+Functions form a scope for variables — variables defined inside a function
+cannot be accessed from anywhere outside the function. …
+
+function multiply() {
+  return num1 * num2;
+}
+
+<!-- SNIP: 18 unchosen (reason: budget_exceeded) -->
+```
+
+`ok:true`, `focus:hit`, `completeness:incomplete` (`focus_body_truncated`),
+`compile.omitted.tokensDropped:5504`. The host kept the on-topic definition
+and example, then said what it dropped instead of inventing the rest.
+Settings, hashes, and both budget outcomes:
+[Understand a documentation instruction](docs/examples/golden-workflows/understand-instruction/).
+
+This capture is from the connected local MCP host, not a promise that every
+GitHub Release binary matches it line-for-line.
+
+## Install
+
+One recommended route: the signed GitHub Release bootstrap (**host 1.0.0**).
+It installs the host, puts `occam` on your PATH, and runs `occam connect`.
+
+<details>
+<summary>Windows</summary>
+
 ```powershell
-# Windows x64
 irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
 ```
 
-Published RIDs: `win-x64`, `linux-x64`, `osx-arm64`. The bootstrap verifies
-the archive binding and required Cosign bundle before installing. Details:
+</details>
+
+<details>
+<summary>Linux x64 / macOS Apple Silicon</summary>
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+```
+
+</details>
+
+Then open a new conversation and use the prompt above, or from a terminal:
+
+```bash
+occam read https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions --focus "function scope closures" --fit --max-tokens 800
+```
+
+Success is cited Markdown **or** a typed `ok:false` — never a guessed page.
+
+| Channel | What you get | Status |
+|---------|--------------|--------|
+| GitHub Release bootstrap | Host + `occam` CLI + Cosign verify | **Recommended (GA host 1.0.0)** |
+| `npx ff-occam@1.0.1` | MCP host only — no `connect` / `doctor` | Experimental |
+
+Published RIDs: `win-x64`, `linux-x64`, `osx-arm64`.
 [INSTALL.md](INSTALL.md) ·
 [installation safety](docs/trust/installation-safety.md).
 
----
+## Three recipes
 
-## Use it
+1. **Understand a documentation instruction** — one
+   [`occam_transcode`](docs/tools/occam_transcode.md) call with `focus_query`
+   and a budget. Ask for the command, steps, conditions, citations, and
+   omissions. [Recorded run](docs/examples/golden-workflows/understand-instruction/).
+2. **Compare known sources** — one
+   [`occam_digest`](docs/tools/occam_digest.md) over several URLs, not N
+   separate reads. [Recorded run](docs/examples/golden-workflows/compare-sources/).
+3. **Inspect changes since a previous read** — store `contentHash`, pass it as
+   `if_none_match` (optional: `diff_against` for a block delta).
+   [Recorded run](docs/examples/golden-workflows/inspect-changes/).
 
-### MCP (AI agents — Cursor, Claude, Hermes, …)
+Gallery (prompts + named builds):
+[workflow gallery](docs/examples/gallery.md) ·
+[release evidence](docs/examples/release-evidence.md).
+The same three jobs as folders (excerpts, sources, omissions, wrapper
+budget): [`occam pack`](docs/examples/context-packs/) — CLI over existing
+tools, not a new MCP tool.
+Missed a command or citation? [Feedback template](docs/examples/feedback.md).
 
-After `occam connect`, Cursor, Claude, Hermes, and other MCP clients can call
-Occam. The default `reader` profile exposes the everyday reading tools; use
-`full` only for playbook authoring and advanced evidence workflows.
+Open-web discovery works without extra config:
+[`occam_search`](docs/tools/occam_search.md) defaults to keyless DuckDuckGo
+HTML and discloses `provider`. Set `OCCAM_SEARCH_PROVIDER=off` for air-gap.
 
-Agent map: [`llms.txt`](llms.txt) → start with [Why Occam](docs/why-occam.md).
+## Why Occam
 
-### CLI (humans / scripts)
+- **Budget control** — `max_tokens` or an ambient client window; omitted
+  regions are listed, not silently deleted.
+- **Structured materialization** — same extract, different shapes (focus,
+  tables, blocks, deltas).
+- **Source-linked evidence** — URLs, optional signed receipts, claim checks.
+  Integrity relative to a key is **not** the same as truth.
+- **Local execution** — HTTP, then browser if needed; typed refusal when both
+  fail. No third-party scrape escalation.
+- **Explicit failure** — `ok:false` means the page is unknown.
 
-```bash
-occam doctor          # runtime health
-occam connect         # wire a supported MCP host
-occam --help
-```
+## Measured results
 
-Ad-hoc extract from a checkout (dev):
+One pinned 48-URL WRB **fetch** run on 2026-08-30, one machine and network.
+WRB assigns its own difficulty tiers (n = 19 / 16 / 13). Not a universal
+success rate.
 
-```bash
-dotnet run --project benchmarks/l0-gate -- --url=https://example.com
-```
+| WRB fetch observation | Occam |
+|-----------------------|------:|
+| Tier 1 retrieval | 100.0% (19/19) |
+| Tier 2 retrieval | 75.0% (12/16) |
+| Tier 3 retrieval | 38.5% (5/13) |
+| Overall retrieval | 36/48 (75.0%) |
+| False-positive rate | 0.0% |
+| Successful fetch p50 / p90 | 630 ms / 1,973 ms |
 
----
+A 2026-09-05 fetch-only re-check on the same pin kept **36/48** and 0%
+false positives; success-conditioned p50/p90 were slower (2141 / 4359 ms).
+A 2026-09-07 DonSeTch 3.6.7 fetch-only arm on the same machine scored
+**42/48**. The six-URL gap is gated T2/T3 acquisition, not Tier-1 docs.
+No parity claim. Decision:
+[Q2 WRB](docs/examples/capability-eval/q2-wrb/).
+Pin, adapter limits (`chars/4`, crawl = map discovery proxy), misses, and
+reproduction: [`scripts/bench/README.md`](scripts/bench/README.md).
 
-## Tools by task
-
-| Goal | Tool |
-|------|------|
-| Size later reads to your model window | `occam_client_capabilities` |
-| Is this URL worth fetching? | `occam_probe` |
-| Read **one** page | `occam_transcode` |
-| Read **several** URLs | `occam_digest` (not N× transcode) |
-| List site links | `occam_map` |
-| Search the open web | `occam_search` (default DuckDuckGo; override/off via env) |
-| Typed fields from a playbook | `occam_extract_knowledge` |
-| Prove a receipt / check a claim | `occam_verify` · `occam_claim_check` · `occam_attest` |
-
-Opt-in (env-gated): batch, watch, crosscheck, failure atlas, browser interact — [experimental](docs/experimental.md).
-
----
-
-## Spend fewer context tokens
-
-Live output is Markdown, not an opaque summary. Shape it with:
-
-| Knob | Effect |
-|------|--------|
-| `occam_client_capabilities(context_tokens=…)` | Ambient ~20% output budget |
-| `max_tokens` / `fit_markdown` + `focus_query` | Cap / BM25 prune |
-| `compact_links` / `include_media_refs` | Less link/media noise |
-| `json_blocks` + `rank_blocks` | Citation spans + salience |
-| `if_none_match` / `diff_against` | Skip unchanged / send deltas |
-
----
-
-## Inspect the controlled demo
-
-The hero image uses one inspectable fixture: 5,297 UTF-8 HTML bytes become
-1,736 Markdown bytes while preserving the article structure. This is a
-reproducible example, not an average reduction or token claim.
-
-[Input](https://contextforgeai.github.io/occam/examples/current-proof/representative-input.html) · [Output](docs/examples/current-proof/representative-output.md) · [Method](docs/examples/current-proof/representative-measurement.json)
-
----
-
-## Trust limits (do not overclaim)
+## Trust limits
 
 | Claim | Reality |
 |-------|---------|
 | `ok:false` | Content **unknown** — never substitute training memory |
-| Receipts | Integrity **relative to a key** — not truth / identity / trusted time |
-| Crosscheck | Comparison — **not** consensus proof |
-| npm | Experimental RC — **not** GA |
-| Cosign | Release authenticity under policy — **not** page-content truth |
+| Receipts | Integrity **relative to a key** — not truth or trusted time |
+| Smaller output | Not automatically a better answer |
+| npm | Experimental package **1.0.1** — not the GA host channel |
+| Cosign | Release authenticity — not page-content truth |
 | CAPTCHA | Detected — **not** solved |
 
 [Trust & Safety](docs/trust-and-safety.md)
 
----
-
 ## Go deeper
 
-| Link | For |
-|------|-----|
-| [Why Occam](docs/why-occam.md) | Advantages + every common knob |
-| [Documentation hub](docs/index.md) | Site entry / landing |
-| [Quick Start](docs/quick-start.md) | Install → connect → first read |
-| [Choosing a tool](docs/choosing-a-tool.md) | Task → tool table |
-| [Tools reference](docs/tools-reference.md) | Compact param tables |
-| [MCP API](MCP_API_SPEC.md) | Normative response contract |
-| [Configuration](docs/configuration.md) | Env vars |
-| [Troubleshooting](docs/troubleshooting.md) | Symptom → fix |
-| [AGENTS.md](AGENTS.md) | Contributor / agent repo rules |
+[Why Occam](docs/why-occam.md) ·
+[Documentation hub](docs/index.md) ·
+[Quick Start](docs/quick-start.md) ·
+[Choosing a tool](docs/choosing-a-tool.md) ·
+[MCP API](MCP_API_SPEC.md) ·
+[llms.txt](llms.txt) ·
+[AGENTS.md](AGENTS.md)
+
+The product name is **Occam**. Package and MCP server identity stay
+`ff-occam`.
 
 License: [AGPL-3.0-or-later](LICENSE).

@@ -160,6 +160,8 @@ public static class FailureCodeStrings
             "network_error" => "Network error while probing the URL.",
             "unsupported_content_type" => "URL is not HTML or PDF.",
             "invalid_url" => "URL is not valid.",
+            "stale_handle" => "Search handle expired or evicted. Pass the raw url.",
+            "unknown_handle" => "Unknown search handle. Pass result.handle or the raw url.",
             _ => "Probe could not classify the URL.",
         };
     }
@@ -207,6 +209,8 @@ public static class FailureCodeStrings
             "knowledge_schema_missing" => "Playbook has no knowledge_schema block — call occam_playbook_resolve first.",
             "page_class_unmatched" => "URL did not match any page_class and no default schema exists.",
             "knowledge_schema_empty" => "Matched page class has zero schema fields.",
+            "stale_handle" => workerRaw ?? "Search handle expired or evicted. Pass the raw url.",
+            "unknown_handle" => workerRaw ?? "Unknown search handle. Pass result.handle or the raw url.",
             _ => workerRaw is not null
                 ? $"Occam extract failed: {workerRaw}."
                 : "Occam transcode failed.",

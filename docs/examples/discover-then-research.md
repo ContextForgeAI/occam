@@ -38,6 +38,9 @@ Or skip map and let digest discover:
 
 If map returns `sitemap_not_found`, retry with `"source": "homepage"`.
 
+For a bounded, resumable operator pass with separate discovery and
+extraction reports, use `occam research` — [site research](site-research/).
+
 ## Next
 
 - [Research several URLs](research-several.md)

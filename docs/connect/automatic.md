@@ -23,5 +23,6 @@ Details: [Supported hosts](../mcp-hosts.md) · [Installation safety](../trust/in
 
 ## Next
 
+- [Host onboarding](../onboarding/index.md)
 - [Explicit `--only` hosts](explicit-only.md)
 - [After install](after-install.md)

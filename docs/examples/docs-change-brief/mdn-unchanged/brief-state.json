@@ -1,0 +1,28 @@
+{
+  "schema": "occam.docs-change-brief.v1",
+  "createdAt": "2026-09-07T14:08:00Z",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "focus": "function scope closures",
+  "pages": [
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions",
+      "ok": true,
+      "unchanged": true,
+      "contentHash": "bda66461b52d3d0aea8541e47706ebdbe09c242cc5ba2d537c3cb0293517a738",
+      "failureCode": null,
+      "significance": "none",
+      "bytes": 0
+    }
+  ],
+  "summary": {
+    "requested": 1,
+    "changed": 0,
+    "unchanged": 1,
+    "failed": 0,
+    "significant": 0
+  },
+  "stop": {
+    "reason": "complete"
+  },
+  "ok": true
+}

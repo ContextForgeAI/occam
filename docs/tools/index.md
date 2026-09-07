@@ -18,7 +18,7 @@ intent, outputs, and recovery behavior.
 | Decide whether a page is worth fetching | [`occam_probe`](occam_probe.md) | Cheap classify: extractability 0–1, recommended backend |
 | Research several pages at once | [`occam_digest`](occam_digest.md) | Up to 8 URLs → per-page excerpts + combined Markdown |
 | Find pages on a site when you have no URLs | [`occam_map`](occam_map.md) | Same-domain links from homepage/sitemap/robots |
-| Search the open web for URLs | [`occam_search`](occam_search.md) | Needs `OCCAM_SEARCH_PROVIDER` configured |
+| Search the open web for URLs | [`occam_search`](occam_search.md) | Keyless DuckDuckGo by default; override or `off` via env |
 | Extract typed fields (title/price/author…) | [`occam_extract_knowledge`](occam_extract_knowledge.md) | Needs a playbook `knowledge_schema` for the host |
 | Look up a site's saved extraction recipe | [`occam_playbook_resolve`](occam_playbook_resolve.md) | Read-only |
 | Draft a recipe for a hard site | [`occam_playbook_heal`](occam_playbook_heal.md) | Captures DOM skeleton + selector candidates |

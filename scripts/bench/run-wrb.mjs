@@ -105,7 +105,7 @@ console.error(`Runner:         ${custom.runner}`);
 if (custom.runner === "occam") {
   console.error("Crawl mapping:  occam_map URL-discovery proxy (not resumable content crawl)");
   console.error(
-    `Search provider: ${process.env.OCCAM_SEARCH_PROVIDER || "unconfigured (expected honest failure)"}`,
+    `Search provider: ${process.env.OCCAM_SEARCH_PROVIDER || "unset → duckduckgo (keyless default)"}`,
   );
 }
 
@@ -165,7 +165,7 @@ try {
     occamRevision,
     runner: custom.runner,
     searchProvider: custom.runner === "occam"
-      ? (process.env.OCCAM_SEARCH_PROVIDER || null)
+      ? (process.env.OCCAM_SEARCH_PROVIDER || "duckduckgo")
       : null,
     crawlMapping: custom.runner === "occam" ? "occam_map_proxy" : "native",
   };

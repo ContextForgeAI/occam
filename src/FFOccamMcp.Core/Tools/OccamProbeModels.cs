@@ -154,7 +154,9 @@ internal static class OccamProbeResponseMapper
             Ok: false,
             Url: new OccamProbeUrlInfo(analysis.Url, analysis.FinalUrl),
             FailureCode: code,
-            Message: FailureCodeStrings.FormatProbeMessage(analysis.FailureCode, analysis.StatusCode),
+            Message: !string.IsNullOrWhiteSpace(analysis.FailureMessage)
+                ? analysis.FailureMessage
+                : FailureCodeStrings.FormatProbeMessage(analysis.FailureCode, analysis.StatusCode),
             Policy: new OccamProbePolicyInfo(MapPrivacy(analysis.Privacy.Mode)),
             StatusCode: analysis.StatusCode,
             RedirectChain: analysis.RedirectChain,

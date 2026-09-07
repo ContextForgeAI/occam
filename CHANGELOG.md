@@ -6,8 +6,90 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+### Docs
+
+- **README first-use** — lead with the job, a captured documentation question
+  (MDN Functions, budget + visible omissions), one recommended GA install
+  channel, and three recorded workflows. npm stays experimental (`1.0.1`);
+  the GA host channel stays GitHub Release `1.0.0`. Product name is Occam;
+  package identity stays `ff-occam`.
+- **Search default honesty** — user-facing docs, `llms.txt`, and the skill
+  now match the code: unset `OCCAM_SEARCH_PROVIDER` is keyless DuckDuckGo,
+  not a closed tool.
+- **Acquisition ladder** — managed extract escalation removed from the
+  public acquisition story (HTTP → browser → typed refusal).
+- **Golden workflows** — three inspectable captures under
+  `docs/examples/golden-workflows/` (understand / compare / re-read), each
+  stamped with host toolchain and settings.
+- **G1 gallery and onboarding** — [workflow gallery](docs/examples/gallery.md)
+  (three jobs + first useful prompt), [host onboarding](docs/onboarding/index.md)
+  for live-validated MCP hosts, and a [release-evidence ledger](docs/examples/release-evidence.md)
+  that names each demonstration’s toolchain. Public-build rows are only
+  `ff-occam/1.0.0`. Workspace/RC captures stay labeled as such.
+  Feedback template asks for task + expected content + redacted diagnostics.
+  Golden trio recaptured 2026-09-07 on the same workspace MCP
+  (`ff-occam/1.0.0-rc.2`); MDN hashes unchanged; nginx excerpts refreshed.
+  Still not Release `v1.0.0`.
+- **Q2 competitor arm** — DonSeTch 3.6.7 fetch-only WRB vs Occam on the same
+  pin: 42/48 vs 36/48. Gap is gated T2/T3 acquisition (SO, Indeed, Reuters),
+  not Tier-1 docs. No parity. Decision:
+  [Q2 WRB](docs/examples/capability-eval/q2-wrb/).
+- **GitHub About** — public `ContextForgeAI/occam` description, docs homepage,
+  and topics now match the README job statement. Package identity stays
+  `ff-occam`. Not a host Release.
+
+### Added
+
+- **Human data CLI** — `occam read`, `occam search`, and `occam digest` are
+  thin wrappers over the existing MCP tools (not new MCP tools). `--json`,
+  `--focus`, `--max-tokens`, usable `ok:false` errors, exit 0/1/2.
+- **Context Pack CLI** — `occam pack` writes a task folder (`manifest.json`,
+  `sources.json`, `omissions.json`, `excerpts.txt`) from existing
+  transcode/digest/search tools. Wrapper tokens are counted in
+  `budget.total`. Not a new MCP tool. Three recorded packs live under
+  `docs/examples/context-packs/`.
+- **Bounded site research CLI** — `occam research` maps then transcodes under
+  URL/page/time/byte budgets, with scope, dedup, `--resume`, SIGINT cancel,
+  and an honest `stop.reason`. Discovery and extraction are separate
+  reports. Not a new MCP tool. Recorded example:
+  `docs/examples/site-research/`.
+- **Discovery ranking spike (A1)** — lexical + extractability ranker used by
+  `occam research` only. Held-out P@3 / R@3 / time-to-useful-source improve;
+  `occam_search` default order is unchanged. Provider identity stays on the
+  hit. See `docs/examples/capability-eval/`.
+- **PDF/OCR capability decision (A2)** — evaluation only. Text-layer PDF
+  stays on `unpdf`; OCR remains opt-in operator binary; no bundled engine.
+  Scores and day estimates:
+  `docs/examples/capability-eval/pdf-ocr/`.
+- **Docs Change Brief CLI** — `occam brief` re-reads URLs with
+  `if_none_match` and writes unchanged / changed / failed. Keyword
+  heuristic for “significant”. Not `occam_watch`. Recorded examples:
+  `docs/examples/docs-change-brief/`.
+- **Citation Inspector CLI** — `occam cite` wraps `occam_claim_check`.
+  You judge support vs refute. `found:false` is not a fetch failure.
+  Recorded examples: `docs/examples/citation-inspector/`.
+- **Search source handles** — `occam_search` results carry a process-local
+  `handle` (`H…`, 60 min / 64 LRU) plus latest-search `S1`…`Sn`. Fetch tools
+  resolve the token to the stored URL, then run the existing SSRF/preflight
+  path. Stale or unknown tokens return `stale_handle` / `unknown_handle`.
+  Not a new MCP tool.
+- **Semantic materialization fixtures** — frozen local cases in
+  `benchmarks/l0-gate/fixtures/semantic/` (instruction, negation, nested
+  steps, table units, code indentation, multilingual) with a pinned
+  manifest and transcode/digest parity in L1a.
+- **WRB retained compile diagnostics** — `OCCAM_WRB_RETAIN_COMPILE=1` keeps
+  `compile` / `completeness` / `focus` on the Occam adapter response. Q2
+  comparison protocol documented in `scripts/bench/README.md`.
+
 ### Changed
 
+- **Model-visible schema (U2)** — shorter MCP `instructions` and tool/parameter
+  `[Description]` text. No tools removed; `reader` / `full` profiles unchanged.
+  `occam_transcode` still leads with “default page reader”.
+- **Default response envelope** — `include_media_refs` defaults to `false`;
+  empty `mediaRefs` is omitted; unused `focus=not_requested` and
+  `verdict=not_evaluated` are omitted. Quality, completeness, contentHash,
+  and receipts stay when they carry evidence.
 - **Own-ladder agentHints** — `captcha_or_challenge` / `http_401` / `http_403` / `requires_login` decisions now lead with `session_profile` (occam-session export-state) and local `backend_policy=browser`. Probe maps `session_cookies` challenge class to the same path. No third-party scrape guidance.
 - **Heal forwards `storageState`** — `occam_playbook_heal` passes session-profile Playwright `storageState` on both daemon `/skeleton` and one-shot `dom-skeleton-capture` (same as transcode).
 - **Prefer-content DOM skeleton** — heal skeleton walk defers nav/header/footer/aside and seeds `mainCandidates` from content landmarks so a tight `maxNodes` budget still reaches `main`/`#content` on chrome-heavy docs pages.

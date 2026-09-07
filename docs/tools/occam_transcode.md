@@ -16,7 +16,7 @@ memory. Only `url` is required; everything else is opt-in.
 
 | Parameter | Type | Default | Required | Description |
 |---|---|---|---|---|
-| `url` | string | — | **yes** | HTTP or HTTPS URL to transcode |
+| `url` | string | — | **yes** | HTTP(S) URL or search handle (`S1` latest-search only; `H…` durable) |
 | `backend_policy` | string | `http_then_browser` | no | `http`, `browser`, or `http_then_browser` |
 | `max_tokens` | int? | null | no | Projected-payload token ceiling (min 128) shared by markdown + serialized sidecars + receipt. Unrequested fields cost zero; structural focus protects a minimum answer unit; the planner never silently expands it. See `compile.budget` |
 | `fit_markdown` | bool | `false` | no | BM25-style paragraph prune after extract |
@@ -43,7 +43,7 @@ memory. Only `url` is required; everything else is opt-in.
 | `must_contain` | string? | null | no | Needle probe → `mustContain` |
 | `deadline_ms` | int? | null | no | Overall call deadline (1s–300s) |
 | `compact_links` | bool | `false` | no | Strip markdown link destinations (keep text); changes `contentHash` |
-| `include_media_refs` | bool | `true` | no | Include `mediaRefs`; set `false` to omit |
+| `include_media_refs` | bool | `false` | no | Include `mediaRefs` (image/video URLs); off by default |
 | `compact_block_links` | bool | `false` | no | Clear `blocks[].links` when `json_blocks` is on |
 
 Removed: `auto_recover` — recovery is driven by `backend_policy` (`http_then_browser`), not a separate flag.
@@ -53,14 +53,14 @@ Removed: `auto_recover` — recovery is driven by `backend_policy` (`http_then_b
 Success envelope (key fields; null fields are omitted):
 
 - `ok: true`, `url: {url, finalUrl}`, `markdown`, `backend` (`http` / browser variant)
-- `mediaRefs[]` — `{url, kind, alt?, contextHeading?, selectorHint?}`
+- `mediaRefs[]` — `{url, kind, alt?, contextHeading?, selectorHint?}` when `include_media_refs:true` and media was found; omitted otherwise
 - `compile` — `{tokensEstimated, tokenEstimator, truncated, truncationStrategy?}` (present when a token control was used or truncation happened)
 - `session` — `{profileId, profileFound, headersApplied[]}` when `session_profile` was applied
 - `confidence` — extraction confidence from the extract quality model (omitted when 0)
 - `quality` — optional EQM breakdown `{ score, noise, contentDensity, semanticRichness, lengthPrior, verdict }` (`short_quality` \| `rich` \| `noisy` \| `thin`); length alone does not decide thin vs quality
 - `receipt` — `{tokensUsed, tokenEstimator, truncationStrategy, confidence, elapsedMs, signed?, blockLeaves?, timeAnchor?}`; `tokenEstimator` is the model-independent heuristic id, not an exact local-tokenizer claim; `signed` is the verifiable envelope when receipts are enabled — check it with [`occam_verify`](occam_verify.md)
 - `recovery[]` — per-backend attempts `{backend, ok, latencyMs, transportOk?, usable?, failureCode?, escalationReason?}` when the http→browser cascade ran. Legacy `ok` aliases transport completion; `usable` is independent
-- `access` / `focus` / `completeness` / `verdict` — additive semantic dimensions (do not overload `ok` / `confidence`)
+- `access` / `focus` / `completeness` — additive semantic dimensions when they carry a decision (unused `not_requested` / `not_evaluated` values are omitted)
 - `unchanged` — `true` when `if_none_match` matched (then `markdown` is empty and heavy sidecars are omitted)
 - `contentHash` / `materializationKey` — store as `materializationKey → contentHash` for conditional re-reads
 - `deltaOnly` — `true` when `delta_only` returned only `diff` + empty markdown

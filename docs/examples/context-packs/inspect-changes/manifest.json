@@ -1,0 +1,29 @@
+{
+  "schema": "occam.context-pack.v1",
+  "task": "Has the MDN Functions page changed since the stored hash?",
+  "createdAt": "2026-09-05T17:50:00Z",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "settings": {
+    "budget": 800,
+    "focus": "function scope closures",
+    "backend": "http",
+    "urls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions"
+    ]
+  },
+  "toolsUsed": [
+    "occam_transcode"
+  ],
+  "sourceCount": 1,
+  "succeeded": 1,
+  "failed": 0,
+  "budget": {
+    "declared": 800,
+    "content": 58,
+    "wrapper": 165,
+    "total": 223,
+    "estimator": "heuristic-unicode-v1",
+    "overBudget": false
+  },
+  "ok": true
+}

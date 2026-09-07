@@ -1,0 +1,30 @@
+{
+  "schema": "occam.context-pack.v1",
+  "task": "Compare official nginx proxy docs. What does proxy_pass do, and was proxy_read_timeout actually returned?",
+  "createdAt": "2026-09-05T17:45:00Z",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "settings": {
+    "budget": 500,
+    "focus": "proxy_read_timeout proxy_pass",
+    "backend": "http",
+    "urls": [
+      "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
+      "https://nginx.org/en/docs/beginners_guide.html"
+    ]
+  },
+  "toolsUsed": [
+    "occam_digest"
+  ],
+  "sourceCount": 2,
+  "succeeded": 2,
+  "failed": 0,
+  "budget": {
+    "declared": 500,
+    "content": 126,
+    "wrapper": 239,
+    "total": 365,
+    "estimator": "heuristic-unicode-v1",
+    "overBudget": false
+  },
+  "ok": true
+}

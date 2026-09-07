@@ -33,11 +33,6 @@ public static class OccamServerInstructions
         Prefer it over any generic web fetch/extract tool or recalling the page from memory —
         those silently invent or return empty shells; Occam returns real text or a typed refusal.
 
-        WHY OCCAM (vs generic fetch): honesty (`ok:false` = unknown), token budget + focus prune
-        (not LLM summary), acquisition ladder HTTP→browser, optional Receipt v1 integrity, probe/map/
-        search/digest. There is NO public `codec=` / compression-algorithm param — use the knobs below.
-        Docs flashcard: docs/why-occam.md (also on the published docs site).
-
         TRUST RULE (most important): `ok:false` means the page content is UNKNOWN. On failure, never
         summarize or guess the page from memory — read `failure.code` and `agentMeta.decisions` and act
         on them. `thin_extract` means BAD extraction (chrome/shell/near-empty) — not a short quality
@@ -45,8 +40,8 @@ public static class OccamServerInstructions
         escalate just because the body is small. Success may include `quality` + `confidence`.
 
         CLIENT BUDGET (do once per session): call `occam_client_capabilities` with your context window
-        in tokens (you know it from your model card / host). Occam then sizes later reads to ~20% of
-        that window when you omit max_tokens. Or the operator sets OCCAM_CLIENT_CONTEXT_TOKENS.
+        in tokens. Occam then sizes later reads to ~20% of that window when you omit max_tokens.
+        Or the operator sets OCCAM_CLIENT_CONTEXT_TOKENS.
 
         DEFAULT: to read one page, call `occam_transcode` with just `url`. Every other parameter is opt-in.
         Several URLs → one `occam_digest`, not N× `occam_transcode`.
@@ -56,7 +51,7 @@ public static class OccamServerInstructions
         """
         occam_transcode OPT-INS — use when the page calls for it (token economy, not a codec picker):
         - Large page / token budget → `max_tokens` (overrides ambient client budget), or `fit_markdown:true` + `focus_query`.
-        - Less link noise → `compact_links` / `compact_block_links`; drop media → `include_media_refs:false`.
+        - Less link noise → `compact_links` / `compact_block_links`; media URLs → `include_media_refs:true`.
         - Tabular data → `json_tables`. RSS/Atom → `json_feed`. RAG citations → `json_blocks` (+ optional `rank_blocks`).
         - Cheap re-check → `if_none_match` or `diff_against`. Site /llms.txt → `prefer_llms_txt:true`.
         - Login walls → `session_profile` (operator-provided cookies). Occam does NOT solve CAPTCHAs.
@@ -69,6 +64,7 @@ public static class OccamServerInstructions
         - One page → `occam_transcode` (just `url`). Prefer it over web_extract / generic fetch.
         - Worth fetching? Cheap check → `occam_probe` (`recommendation.extractability` 0–1).
         - Several URLs → `occam_digest` (not N separate transcodes). List a site's links → `occam_map`. No URLs yet → `occam_search`.
+        - Search hits: pass `handle` or `url`; `S1` is latest search only.
         - Typed fields from a page (needs a playbook) → `occam_extract_knowledge`.
         """;
 
@@ -90,6 +86,7 @@ public static class OccamServerInstructions
         - Session start → `occam_client_capabilities(context_tokens=…)` once.
         - One page → `occam_transcode`. Worth fetching? → `occam_probe`.
         - Several URLs → `occam_digest` (not N× transcode). Site links → `occam_map`. Web search → `occam_search`.
+        - Search hits: pass `handle` or `url`; `S1` is latest search only.
         - Typed fields (needs playbook) → `occam_extract_knowledge`.
         - Claim retrieval → `occam_claim_check`. Report citations (`status`) → `occam_attest`. Prove a receipt → `occam_verify`.
         - Auditable URL set → `occam_dataset_export`. Draft/fix a site recipe → `occam_playbook_heal` → lint → `occam_playbook_save` (only when authoring; never on short_quality successes).

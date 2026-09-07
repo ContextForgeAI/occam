@@ -1,0 +1,7 @@
+# Context pack
+
+Task: Has the MDN Functions page changed since the stored hash?
+
+## Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions
+
+Unchanged since the stored contentHash. Empty body is intentional.

@@ -1,0 +1,8 @@
+{"id":"tables-flattened-text","dimension":"tables","actual":"Timeout 10 ms\nRetries 3 count","expected":{"headers":["Setting","Value","Unit"],"rows":[["Timeout","10","ms"],["Retries","3","count"]],"requireMarkdownTable":true}}
+{"id":"units-in-text-stream","dimension":"units","actual":"proxy_read_timeout 10 ms; max body 16 MiB","expected":{"pairs":[{"value":"10","unit":"ms"},{"value":"16","unit":"MiB"}]}}
+{"id":"units-lost-in-drawing","dimension":"units","actual":"See diagram.","expected":{"pairs":[{"value":"10","unit":"ms"}]}}
+{"id":"page-refs-mentions","dimension":"page_refs","actual":"See page 3 for the table.\n\n---\n\nTable body","expected":{"expectSeparator":true,"mentions":["page 3"]}}
+{"id":"acquisition-empty-text-layer","dimension":"acquisition","observed":{"emptyTextLayer":true,"failureNote":"pdf_no_text_layer","ocrDefault":false},"expected":{"emptyTextLayer":true,"failureNote":"pdf_no_text_layer","ocrDefault":false}}
+{"id":"acquisition-map-drops-pdf","dimension":"acquisition","observed":{"mapDropsPdfExtension":true},"expected":{"mapDropsPdfExtension":true}}
+{"id":"acquisition-ocr-unconfigured","dimension":"acquisition","observed":{"ocrNote":"pdf_ocr_unconfigured"},"expected":{"ocrNote":"pdf_ocr_unconfigured"}}
+{"id":"acquisition-difficult-typed-wall","dimension":"acquisition","observed":{"typedRefusal":"captcha_or_challenge","inventedText":false},"expected":{"typedRefusal":"captcha_or_challenge","inventedText":false}}

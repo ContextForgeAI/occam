@@ -1,0 +1,37 @@
+{
+  "task": "Show how function scope and closures work. Include the syntax I need, any conditions, and source links. Tell me if relevant content was omitted.",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "createdAt": "2026-09-05T17:38:34Z",
+  "responses": [
+    {
+      "tool": "occam_transcode",
+      "payload": {
+        "ok": true,
+        "url": {
+          "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions"
+        },
+        "markdown": "We also refer to the function body as a _closure_. A closure is any piece of source code (most commonly, a function) that refers to some variables, and the closure \"remembers\" these variables even when the scope in which these variables were declared has exited.\n\n## Function scopes and closures\nFunctions form a scope for variables — variables defined inside a function cannot be accessed from anywhere outside the function.\n\nfunction multiply() {\n  return num1 * num2;\n}\n\n<!-- SNIP: 18 unchosen (reason: budget_exceeded) -->",
+        "backend": "http",
+        "contentHash": "bda66461b52d3d0aea8541e47706ebdbe09c242cc5ba2d537c3cb0293517a738",
+        "materializationKey": "sha256:abae5a7cc188bd4c1df5814d6586c9f7062ea08cd53efd9c2b0f88b2956e1e92",
+        "compile": {
+          "tokensEstimated": 447,
+          "truncated": true,
+          "truncationStrategy": "focus_window",
+          "omitted": {
+            "reason": "focus_window",
+            "tokensDropped": 5504,
+            "regions": ["unchosen"],
+            "sections": 18
+          }
+        },
+        "completeness": {
+          "status": "incomplete",
+          "incompleteReason": "focus_body_truncated",
+          "suggestedMinTokens": 264
+        },
+        "focus": { "status": "hit" }
+      }
+    }
+  ]
+}

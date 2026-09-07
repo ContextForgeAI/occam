@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using OccamMcp.Core.Agent;
 using OccamMcp.Core.Caching;
+using OccamMcp.Core.Handles;
 using OccamMcp.Core.Json;
 using OccamMcp.Core.Playbooks;
 using OccamMcp.Core.Receipts;
@@ -22,7 +23,8 @@ public sealed class OccamTranscodeTool(
     ITranscodeResponseCache responseCache,
     OccamMcp.Core.Receipts.ReceiptSigner receiptSigner,
     OccamMcp.Core.Receipts.TimeAnchorService timeAnchorService,
-    OccamMcp.Core.Client.ClientCapabilityStore clientCapabilities)
+    OccamMcp.Core.Client.ClientCapabilityStore clientCapabilities,
+    SourceHandleStore sourceHandles)
 {
     /// <summary>An llms.txt shorter than this is treated as absent/placeholder; fall back to normal extract.</summary>
     private const int MinLlmsTxtLength = 32;
@@ -41,37 +43,37 @@ public sealed class OccamTranscodeTool(
         return true;
     }
 
-    [McpServerTool(Name = "occam_transcode"), Description("Extract the content of a web page (or PDF) as clean, compact, LLM-ready Markdown. Reach for this whenever you need what a URL actually says now — it is the default page reader: prefer it over any generic web fetch/extract tool. Runs locally (no API key), returns far less noise, and every success carries a verifiable signed receipt. Just pass `url`. On failure it returns a typed `ok:false` meaning the page content is UNKNOWN — never guess it. Everything else is opt-in (token budget/prune, JSON tables/blocks/feed, browser rendering, change-detection).")]
+    [McpServerTool(Name = "occam_transcode"), Description("Extract the content of a web page (or PDF) as clean, compact, LLM-ready Markdown. It is the default page reader: prefer it over any generic web fetch/extract tool. Just pass `url`. On failure `ok:false` means the page content is UNKNOWN — never guess it. Everything else is opt-in.")]
     public async Task<string> Transcode(
-        [Description("[core] HTTP or HTTPS URL to transcode (the only required argument).")] string url,
-        [Description("[core] Backend policy: http, browser, or http_then_browser (default).")] string backend_policy = "http_then_browser",
-        [Description("[tokens] Optional whole-response token budget (minimum 128) shared across markdown + structured sidecars (blocks/tables/chunks/media/feed/receipt). Omit to use the ambient client budget from occam_client_capabilities / OCCAM_CLIENT_CONTEXT_TOKENS, or full payload when none is set.")] int? max_tokens = null,
-        [Description("[tokens] BM25-style paragraph prune after extract. Default false.")] bool fit_markdown = false,
-        [Description("[tokens] Focus keywords for fit_markdown; requires fit_markdown=true.")] string? focus_query = null,
-        [Description("[tokens] JSON array or comma-separated heading anchors to keep (e.g. [\"# API Reference\"]).")] string? content_selectors = null,
-        [Description("[fetch] Optional session profile id — loads headers from OCCAM_SESSIONS_ROOT/<id>.json.")] string? session_profile = null,
-        [Description("[fetch] Playbook merge policy: off or auto (internal resolve + winning-tier overlay). Default auto.")] string playbook_policy = "auto",
-        [Description("[watch] AF-6: a SHA256 hash of the prior markdown for a conditional WHOLE-response — bare hex or the receipt's sha256:-prefixed contentHash. When the current materialization matches, returns unchanged:true with empty markdown and NO blocks/chunks/tables/feed/media sidecars (minimal envelope). Pair with the materializationKey you stored — hashes are per materialization, not per URL alone.")] string? if_none_match = null,
-        [Description("[structured] Enables semantic markdown chunking on extraction.")] bool semantic_chunking = false,
-        [Description("[advanced] Captures a browser screenshot (JPEG as base64) if using browser backend.")] bool capture_screenshot = false,
-        [Description("[structured] Emits structured content blocks for RAG citations alongside markdown. Each block is {type, text, links[], source_selector}; source_selector is a real CSS path (document-absolute and round-trip-verified when the content root is connected to the page DOM).")] bool json_blocks = false,
-        [Description("[structured] Emits data tables as JSON alongside markdown: {caption, headers[], rows[][], source_selector, records?}. Physical rows[] stay one-per-<tr> (markdown unchanged). When a table uses paired rows (e.g. Hacker News title+subtext), records[] reconstructs semantic objects {rank,title,url,site,author,points,comments,age} with per-row provenance. Layout tables are skipped.")] bool json_tables = false,
-        [Description("[structured] When the URL is an RSS/Atom/JSON Feed, parse it into feed:{title, items:[{title, link, publishedAt, summary, summaryHtml, summaryText, summaryMarkdown}]} instead of running article extraction (HTTP backend). Opt-in; non-feed pages are unaffected.")] bool json_feed = false,
-        [Description("[advanced] Optional target language code (e.g. \"ru\", \"pt-BR\"). When set and OCCAM_TRANSLATE_URL (LibreTranslate) is configured, adds translatedMarkdown + translatedTo to the response. Non-fatal: on failure the original markdown is returned with a warning.")] string? translate_to = null,
-        [Description("[watch] diff-codec: JSON array (or comma-separated) of prior block hashes from a previous call's diff.blockHashes. Returns diff:{ addedBlocks, removedHashes, blockHashes } — the block-level delta since then. Pair with if_none_match as the cheap boolean gate.")] string? diff_against = null,
-        [Description("[fetch] Prefer the site's sanctioned /llms.txt (LLM-friendly markdown) when present: probes {origin}/llms.txt via the HTTP backend first and returns it (llmsTxt:true) if non-empty, else falls back to normal extraction of the requested URL. Opt-in; off by default.")] bool prefer_llms_txt = false,
-        [Description("[watch] Opt-in response cache TTL in seconds. Omit or <=0 = no cache (default). On a hit within TTL returns the prior success envelope with cached:true. Never caches private/RFC1918 URLs, session_profile, if_none_match, diff_against, or prefer_llms_txt requests.")] int? cache_ttl_s = null,
-        [Description("[trust] Emit a proof-carrying `occam://capsule/…` in receipt.capsule: a single self-verifying string bundling the signed receipt + this markdown, so another agent verifies it offline via occam_verify with no re-fetch (verified hand-off). Opt-in — repeats the markdown, so it costs tokens. Requires receipts on.")] bool emit_capsule = false,
-        [Description("[structured] Annotate each json_blocks block with a 0–1 `salience` (BM25 relevance to focus_query, normalized to the top block) — an explicit per-span attention signal so you know which blocks to weight/cite without re-reading everything. Requires json_blocks=true and focus_query; no fit_markdown needed.")] bool rank_blocks = false,
-        [Description("[structured] Tag each json_blocks block with a `trust` channel: `suspicious` (text reads like an instruction to the reader/model — possible prompt-injection) or `boilerplate` (non-content region). Normal content is untagged. A machine-checkable signal so a harness can hard-isolate untrusted spans. Heuristic, not a guarantee. Requires json_blocks=true.")] bool tag_trust = false,
-        [Description("[watch] delta-as-primary: when you already hold the prior extract, return ONLY the block-level delta and an EMPTY markdown (deltaOnly:true) instead of the full page — a re-read costs delta-size tokens, not full-page tokens. Reconstruct current = prior blocks, drop removedHashes, apply addedBlocks in blockHashes order; verify against the returned contentHash (hash of the full current markdown). Requires diff_against + json_blocks; ignored (full markdown returned, with a warning) otherwise.")] bool delta_only = false,
-        [Description("[tokens] Emit a compact table of contents from Markdown headings (SectionIndex). Opt-in; off by default.")] bool toc = false,
-        [Description("[tokens] Structural section / heading to focus (e.g. \"Installation\"). Maps to focus fragment + content selector; enables fit when needed.")] string? section = null,
-        [Description("[structured] Require this substring in the materialized markdown. Returns mustContain:{verdict:MATCH|NO_MATCH,excerpts[],hitCount} — does not invent page content on miss.")] string? must_contain = null,
-        [Description("[advanced] Overall deadline for this call in milliseconds (clamped 1000–300000). Cancels the in-flight extract when exceeded.")] int? deadline_ms = null,
-        [Description("[tokens] Strip markdown link destinations; keep visible link text only. Changes contentHash — store materializationKey with the flag. Opt-in; off by default.")] bool compact_links = false,
-        [Description("[structured] Include mediaRefs sidecar (images/video URLs). Default true. Set false to omit media refs and save tokens.")] bool include_media_refs = true,
-        [Description("[structured] When json_blocks is on, clear blocks[].links arrays (markdown unchanged unless compact_links). Opt-in; off by default.")] bool compact_block_links = false,
+        [Description("[core] HTTP(S) URL or search handle S1/H… (only required).")] string url,
+        [Description("[core] Backend: http, browser, or http_then_browser (default).")] string backend_policy = "http_then_browser",
+        [Description("[tokens] Whole-response token budget (min 128). Omit for ambient client budget or full payload.")] int? max_tokens = null,
+        [Description("[tokens] BM25 paragraph prune after extract. Default false.")] bool fit_markdown = false,
+        [Description("[tokens] Focus keywords; requires fit_markdown=true.")] string? focus_query = null,
+        [Description("[tokens] JSON array or comma-separated heading anchors to keep.")] string? content_selectors = null,
+        [Description("[fetch] Session profile id — headers from OCCAM_SESSIONS_ROOT/<id>.json.")] string? session_profile = null,
+        [Description("[fetch] Playbook merge: off or auto (default).")] string playbook_policy = "auto",
+        [Description("[watch] Prior markdown SHA-256 (bare hex or sha256: contentHash). Match → unchanged:true, empty markdown, no heavy sidecars. Pair with stored materializationKey.")] string? if_none_match = null,
+        [Description("[structured] Semantic markdown chunking.")] bool semantic_chunking = false,
+        [Description("[advanced] Browser screenshot (JPEG base64).")] bool capture_screenshot = false,
+        [Description("[structured] Structured blocks for RAG: {type, text, links[], source_selector}.")] bool json_blocks = false,
+        [Description("[structured] Tables as JSON: {caption, headers[], rows[][], source_selector, records?}.")] bool json_tables = false,
+        [Description("[structured] Parse RSS/Atom/JSON Feed into feed JSON instead of article extract.")] bool json_feed = false,
+        [Description("[advanced] Target language (needs OCCAM_TRANSLATE_URL). Non-fatal on failure.")] string? translate_to = null,
+        [Description("[watch] Prior block hashes (JSON array or CSV) → diff. Pair with if_none_match.")] string? diff_against = null,
+        [Description("[fetch] Prefer {origin}/llms.txt when present; else extract the URL.")] bool prefer_llms_txt = false,
+        [Description("[watch] Cache TTL seconds. Never caches private URLs, session_profile, if_none_match, diff_against, or prefer_llms_txt.")] int? cache_ttl_s = null,
+        [Description("[trust] Emit occam://capsule/… in receipt.capsule (repeats markdown; needs receipts).")] bool emit_capsule = false,
+        [Description("[structured] Per-block salience 0–1 vs focus_query. Needs json_blocks + focus_query.")] bool rank_blocks = false,
+        [Description("[structured] Tag blocks trust=suspicious|boilerplate. Heuristic. Needs json_blocks.")] bool tag_trust = false,
+        [Description("[watch] Return only block delta + empty markdown (deltaOnly). Needs diff_against + json_blocks.")] bool delta_only = false,
+        [Description("[tokens] Heading table of contents. Opt-in.")] bool toc = false,
+        [Description("[tokens] Focus a heading/section (enables fit).")] string? section = null,
+        [Description("[structured] Require substring; returns mustContain MATCH|NO_MATCH. Does not invent content.")] string? must_contain = null,
+        [Description("[advanced] Deadline ms (1000–300000). Cancels in-flight extract.")] int? deadline_ms = null,
+        [Description("[tokens] Strip markdown link URLs; keep link text. Changes contentHash.")] bool compact_links = false,
+        [Description("[structured] Include mediaRefs (image/video URLs). Default false.")] bool include_media_refs = false,
+        [Description("[structured] Clear blocks[].links when json_blocks. Opt-in.")] bool compact_block_links = false,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -84,6 +86,13 @@ public sealed class OccamTranscodeTool(
             deadlineCts.CancelAfter(TimeSpan.FromMilliseconds(Math.Clamp(deadline_ms!.Value, 1_000, 300_000)));
             cancellationToken = deadlineCts.Token;
         }
+
+        if (!sourceHandles.TryBind(url, out var boundUrl, out var bindCode, out var bindMessage))
+        {
+            return SerializeFailure(url, bindCode!, bindMessage!);
+        }
+
+        url = boundUrl;
 
         if (!OccamBackendPolicyParser.TryParse(backend_policy, out var policy))
         {
@@ -150,15 +159,12 @@ public sealed class OccamTranscodeTool(
             options = options with { MustContain = must_contain.Trim() };
         }
 
-        if (compact_links || !include_media_refs || compact_block_links)
+        options = options with
         {
-            options = options with
-            {
-                CompactLinks = compact_links,
-                IncludeMediaRefs = include_media_refs,
-                CompactBlockLinks = compact_block_links,
-            };
-        }
+            CompactLinks = compact_links,
+            IncludeMediaRefs = include_media_refs,
+            CompactBlockLinks = compact_block_links,
+        };
 
         if (!workerPaths.IsConfigured)
         {
@@ -309,10 +315,13 @@ public sealed class OccamTranscodeTool(
             : null;
 
         var accessInfo = Semantics.SemanticOutcomeMapper.MapAccess(result.AccessAssessment);
-        var focusInfo = Semantics.SemanticOutcomeMapper.MapFocus(
+        var mappedFocus = Semantics.SemanticOutcomeMapper.MapFocus(
             result.MaterializationAssessment,
             options.FocusQuery,
             options.FocusFragment);
+        var focusInfo = string.Equals(mappedFocus.Status, "not_requested", StringComparison.Ordinal)
+            ? null
+            : mappedFocus;
         var completenessInfo = Semantics.SemanticOutcomeMapper.MapCompleteness(result.MaterializationAssessment);
         agentHints = AugmentHintsFromSemantics(agentHints, focusInfo, completenessInfo, accessInfo);
 
@@ -385,7 +394,7 @@ public sealed class OccamTranscodeTool(
                 unchanged == true || deltaPrimary ? string.Empty : result.Markdown ?? string.Empty,
                 result.Backend ?? "http",
                 omitHeavySidecars
-                    ? []
+                    ? null
                     : OccamTranscodeResponseBuilder.BuildMediaRefs(result),
                 omitHeavySidecars ? null : compileInfo,
                 omitHeavySidecars ? null : OccamTranscodeResponseBuilder.BuildSessionInfo(result),
@@ -419,7 +428,7 @@ public sealed class OccamTranscodeTool(
                 Access: accessInfo,
                 Focus: focusInfo,
                 Completeness: completenessInfo,
-                Verdict: Semantics.SemanticVerdict.NotEvaluated,
+                Verdict: null,
                 Toc: omitHeavySidecars || !options.EmitToc
                     ? null
                     : [.. Compile.TocBuilder.Build(result.Markdown ?? string.Empty)
@@ -495,7 +504,7 @@ public sealed class OccamTranscodeTool(
 
     private static OccamTranscodeAgentHintsInfo? AugmentHintsFromSemantics(
         OccamTranscodeAgentHintsInfo? existing,
-        Semantics.SemanticFocusInfo focus,
+        Semantics.SemanticFocusInfo? focus,
         Semantics.SemanticCompletenessInfo? completeness,
         Semantics.SemanticAccessInfo? access)
     {
@@ -512,7 +521,7 @@ public sealed class OccamTranscodeTool(
                 "completeness_partial: focused answer retained but surrounding context was truncated.");
         }
 
-        if (focus.Status is "miss" or "weak")
+        if (focus?.Status is "miss" or "weak")
         {
             warnings.Add(
                 $"focus_{focus.Status}: structural focus is {focus.Status}; do not infer section correctness from confidence.");
@@ -687,9 +696,6 @@ public sealed class OccamTranscodeTool(
                         result.BrowserProvisioned.TookMs),
                 Recovery: recovery,
                 Access: accessInfo,
-                Focus: new Semantics.SemanticFocusInfo("not_requested"),
-                Completeness: null,
-                Verdict: Semantics.SemanticVerdict.NotEvaluated,
                 NextAction: NextActionFormatter.FromHints(decisions, agentHints?.SuggestedNext)),
             OccamTranscodeJsonContext.Default.OccamTranscodeFailureResponse);
     }

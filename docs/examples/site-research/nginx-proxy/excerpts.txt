@@ -1,0 +1,19 @@
+# Site research
+
+Seed: https://nginx.org/en/docs/
+
+## https://nginx.org/en/docs/http/ngx_http_proxy_module.html
+
+proxy_pass appears in embedded-variable prose; proxy_read_timeout did not land in the excerpt.
+
+
+## https://nginx.org/en/docs/beginners_guide.html
+
+One of the frequent uses of nginx is setting it up as a proxy server.
+
+server {
+    location / {
+        proxy_pass http://localhost:8080;
+    }
+}
+

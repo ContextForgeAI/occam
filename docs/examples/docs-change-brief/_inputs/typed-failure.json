@@ -1,0 +1,13 @@
+{
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "createdAt": "2026-09-07T14:08:00Z",
+  "pages": [
+    {
+      "url": "https://example.com/",
+      "ok": false,
+      "unchanged": false,
+      "failureCode": "captcha_or_challenge",
+      "markdown": ""
+    }
+  ]
+}

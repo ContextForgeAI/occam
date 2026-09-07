@@ -1,0 +1,15 @@
+{
+  "tool": "occam_map",
+  "provider": "fixture",
+  "urls": [
+    "https://other.example/offsite",
+    "https://nginx.org/en/docs/",
+    "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
+    "https://nginx.org/en/docs/beginners_guide.html"
+  ],
+  "ranked": 3,
+  "outOfScope": [
+    "https://other.example/offsite"
+  ],
+  "omitted": []
+}

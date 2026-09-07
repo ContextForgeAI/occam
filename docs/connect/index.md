@@ -41,6 +41,7 @@ Full host table: [Supported hosts](../mcp-hosts.md)
 
 ## In this section
 
+- [Host onboarding](../onboarding/index.md) — first prompts per live-validated host
 - [Automatic connection](automatic.md)
 - [Explicit `--only` hosts](explicit-only.md)
 - [Manual / generic MCP](manual.md)

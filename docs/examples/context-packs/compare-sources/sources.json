@@ -1,0 +1,18 @@
+[
+  {
+    "kind": "page",
+    "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
+    "ok": true,
+    "tokensEstimated": 320,
+    "focus": "weak",
+    "completeness": "incomplete"
+  },
+  {
+    "kind": "page",
+    "url": "https://nginx.org/en/docs/beginners_guide.html",
+    "ok": true,
+    "tokensEstimated": 457,
+    "focus": "weak",
+    "completeness": "partial"
+  }
+]

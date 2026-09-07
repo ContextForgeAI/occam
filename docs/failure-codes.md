@@ -52,6 +52,8 @@
 | `search_timeout` | Search backend slow | Yes | Retry or raise timeout |
 | `search_http_<status>` | Search backend returned an HTTP error (`<status>`) | Depends on status | Check endpoint/API key; DuckDuckGo soft-blocks may need retry or another provider |
 | `search_error` | Empty/blocked SERP, parse miss, or other backend failure | Sometimes | Retry, refine query, or set SearXNG/Brave/Tavily |
+| `stale_handle` | Search handle expired (60 min) or evicted (64-cap LRU) | No | Pass the raw `url` from the search hit; do not invent a page |
+| `unknown_handle` | `S1`… not in the current search, or a handle this process never issued | No | Pass `result.handle` or the raw `url`; `S1` is latest-search only |
 
 HTTP codes may appear as `http_<status>` (e.g. `http_418`).
 

@@ -1,0 +1,23 @@
+{
+  "ok": true,
+  "max_tokens": 128,
+  "focus": "hit",
+  "completeness": {
+    "status": "incomplete",
+    "incompleteReason": "focus_body_truncated",
+    "suggestedMinTokens": 264
+  },
+  "compile": {
+    "tokensEstimated": 128,
+    "truncated": true,
+    "omitted": {
+      "reason": "focus_window",
+      "tokensDropped": 5780,
+      "regions": ["unchosen"],
+      "sections": 18
+    }
+  },
+  "contentHash": "5f92895ab86835886d378a45577c073f152c8a2e92cac5a4c79b87ab4c7de56a",
+  "retainedLead": "Closure definition plus the Function scopes and closures heading; example function multiply() did not fit.",
+  "markdown": "We also refer to the function body as a _closure_. A closure is any piece of source code (most commonly, a function) that refers to some variables, and the closure \"remembers\" these variables even when the scope in which these variables were declared has exited.\n\n## [Function scopes and closures](#function_scopes_and_closures)\n\nFunctions form a [scope](/en-US/docs/Glossary/Scope) for variables—this means variables defined inside a function cannot\n\n<!-- SNIP: tail (reason: head_safe) -->"
+}

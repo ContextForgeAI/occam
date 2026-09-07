@@ -35,7 +35,7 @@ A disagreement is **first a book bug** until re-reading the cited source decides
 | 6 | LOCAL | Same session_profile: transcode vs probe storageState |
 | 7 | NETWORK | Two `max_tokens` → different `contentHash` + `compile.omitted` |
 | 8 | NETWORK | `cache_ttl_s`: fragment `#a` vs `#b` collision risk |
-| 9 | NETWORK | search without provider fails closed; map ≤64 links |
+| 9 | NETWORK | search default is DuckDuckGo; `off` fails closed; map ≤64 links |
 | 10 | NETWORK | Digest with one 404 — per-item failure, reduced receipt |
 | 11 | NETWORK | playbook auto vs off diff |
 | 12 | LOCAL | Edit unsigned v1 `provenance.verify.score` — still "verifies" |

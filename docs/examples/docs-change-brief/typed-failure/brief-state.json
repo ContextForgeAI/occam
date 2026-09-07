@@ -1,0 +1,28 @@
+{
+  "schema": "occam.docs-change-brief.v1",
+  "createdAt": "2026-09-07T14:08:00Z",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "focus": null,
+  "pages": [
+    {
+      "url": "https://example.com/",
+      "ok": false,
+      "unchanged": false,
+      "contentHash": null,
+      "failureCode": "captcha_or_challenge",
+      "significance": "unknown",
+      "bytes": 0
+    }
+  ],
+  "summary": {
+    "requested": 1,
+    "changed": 0,
+    "unchanged": 0,
+    "failed": 1,
+    "significant": 0
+  },
+  "stop": {
+    "reason": "extract_failed"
+  },
+  "ok": false
+}

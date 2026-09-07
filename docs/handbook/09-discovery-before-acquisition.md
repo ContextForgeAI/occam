@@ -35,8 +35,8 @@ Never compare them as interchangeable scores. Discovery tools cheaply answer *wh
 
 ### `occam_search`
 
-- Registered core tool but **fails closed** without `OCCAM_SEARCH_PROVIDER`.
-- Proxies operator-configured provider (Tavily, etc.)—not Occam's index.
+- Registered core tool. Unset `OCCAM_SEARCH_PROVIDER` uses keyless DuckDuckGo HTML (`provider` disclosed). `off` / `none` fails closed as `search_unconfigured`.
+- Proxies a named provider (DuckDuckGo default; SearXNG/Brave/Tavily/Donsetch override)—not Occam's index.
 - Optional `rerank` can fire many live probes (up to ~20) ordering by **extractability**, not relevance.
 - Results are pointers + hints, not page content.
 
@@ -44,7 +44,7 @@ Never compare them as interchangeable scores. Discovery tools cheaply answer *wh
 
 1. Probe docs index—cheap extractability read.
 2. Map with `source:"sitemap"` to enumerate reference URLs under cap.
-3. If site unknown, search with configured provider—then transcode chosen URLs.
+3. If site unknown, search (DuckDuckGo default)—then transcode chosen URLs.
 
 Workflow: discover → acquire ([Chapter 5](05-acquisition-ladder.md)), not discover instead of honesty ([Chapter 2](02-honesty-contract.md)).
 

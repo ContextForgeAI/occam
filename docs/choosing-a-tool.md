@@ -8,12 +8,17 @@
 
 | I want to… | Call | Notes |
 |------------|------|-------|
-| **Connect Occam to my AI** | `occam connect` (CLI) | Detect hosts; auto-connect live-validated ones — [MCP hosts](mcp-hosts.md) |
+| **Connect Occam to my AI** | `occam connect` (CLI) | Detect hosts; auto-connect live-validated ones — [onboarding](onboarding/index.md) · [MCP hosts](mcp-hosts.md) |
+| **See a recorded first job** | [Workflow gallery](examples/gallery.md) | Named host builds; not a global quality score |
+| **Save one task as a cited folder** | `occam pack` (CLI) | Orchestrates existing tools; not a new MCP tool — [context packs](examples/context-packs/) |
+| **Research one site under budgets** | `occam research` (CLI) | Map then transcode; resume/cancel; not a new MCP tool — [site research](examples/site-research/) |
+| **Re-read docs for command/default changes** | `occam brief` (CLI) | `if_none_match`; not `occam_watch` — [docs change brief](examples/docs-change-brief/) |
+| **Inspect whether a page backs a sentence** | `occam cite` (CLI) | Wraps `occam_claim_check`; you judge support — [citation inspector](examples/citation-inspector/) |
 | **Read one page as Markdown** | `occam_transcode` | Only `url` is required; add `focus_query` + `fit_markdown` to save tokens |
 | **Check if a URL is worth fetching** | `occam_probe` | Cheap; returns extractability score and recommended backend |
 | **Research several pages** | `occam_digest` | Up to 8 URLs; use `focus_query` for synthesis |
 | **Find URLs on a site I don't know yet** | `occam_map` → `occam_digest` | Map discovers links; digest reads them |
-| **Search the web for URLs** | `occam_search` → probe/transcode | Default DuckDuckGo; override/off via env |
+| **Search the web for URLs** | `occam_search` → probe/transcode | Default DuckDuckGo; pass `handle` or `url` (`S1` is latest-search only) |
 | **Get structured fields (price, author, …)** | `occam_playbook_resolve` → `occam_extract_knowledge` | Needs a playbook with `knowledge_schema` |
 | **Use a site's tuned extract recipe** | `occam_playbook_resolve` → `occam_transcode` | `playbook_policy=auto` (default) |
 | **Fix a hard site (draft a playbook)** | `occam_transcode` fails → `occam_playbook_heal` → edit JSON → `occam_playbook_lint` → `occam_playbook_save` | Local only |
@@ -56,7 +61,7 @@ the normal acquisition ladder rather than being guessed or rewritten.
 ### Multi-source research
 
 ```
-occam_search(query)       # optional — needs search provider
+occam_search(query)       # optional — keyless DuckDuckGo by default
 occam_digest(urls, focus_query="…")
 ```
 

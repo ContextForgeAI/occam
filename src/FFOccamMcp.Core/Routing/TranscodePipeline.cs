@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using OccamMcp.Core.Abstractions;
 using OccamMcp.Core.Codecs;
+using OccamMcp.Core.Handles;
 using OccamMcp.Core.Knowledge;
 using OccamMcp.Core.Knowledge.Extraction;
 using OccamMcp.Core.Playbooks;
@@ -17,7 +18,8 @@ public sealed class TranscodePipeline(
     PlaybookSeedResolver playbookSeedResolver,
     Services.IRobotsThrottleService robotsThrottle,
     KnowledgeCodecRegistry codecRegistry,
-    MaterializationPlanner materializationPlanner)
+    MaterializationPlanner materializationPlanner,
+    SourceHandleStore sourceHandles)
 {
     private readonly ITranscodePostProcessor[] _postProcessors =
         postProcessors.OrderBy(p => p.Order).ToArray();
@@ -31,6 +33,19 @@ public sealed class TranscodePipeline(
         OccamTranscodeOptions options,
         CancellationToken cancellationToken)
     {
+        if (!sourceHandles.TryBind(url, out var boundUrl, out var bindCode, out var bindMessage))
+        {
+            return new TranscodeOutcome(
+                false,
+                null,
+                null,
+                null,
+                bindCode,
+                bindMessage,
+                0);
+        }
+
+        url = boundUrl;
         var featuresList = new List<string>();
         if (options.SemanticChunking)
         {

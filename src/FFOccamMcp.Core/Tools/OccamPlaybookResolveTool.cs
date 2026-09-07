@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Text.Json;
+using OccamMcp.Core.Handles;
 using OccamMcp.Core.Playbooks;
 using OccamMcp.Core.Receipts;
 using ModelContextProtocol.Server;
@@ -7,11 +8,14 @@ using ModelContextProtocol.Server;
 namespace OccamMcp.Core.Tools;
 
 [McpServerToolType]
-public sealed class OccamPlaybookResolveTool(PlaybookSeedResolver playbookSeedResolver, ReceiptSigner localSigner)
+public sealed class OccamPlaybookResolveTool(
+    PlaybookSeedResolver playbookSeedResolver,
+    ReceiptSigner localSigner,
+    SourceHandleStore sourceHandles)
 {
     [McpServerTool(Name = "occam_playbook_resolve"), Description("Look up the saved extraction recipe (playbook/genome) for a URL or host: content selectors, knowledge_schema, agent_notes, and a signature trust status. Read-only - call before transcode/extract on a known site to use its tuned recipe.")]
     public string Resolve(
-        [Description("HTTP or HTTPS URL, or bare hostname (e.g. nginx.org).")] string url,
+        [Description("HTTP(S) URL, search handle, or bare hostname (e.g. nginx.org).")] string url,
         [Description("Playbook schema version to negotiate (default 1.0).")] string schema_version = "1.0",
         [Description("Export lessons[] from local tier only (max 10).")] bool include_lessons = false,
         [Description("Fetch https://{host}/.well-known/agent-genome.v1.json (default false).")] bool fetch_site_genome = false,
@@ -19,6 +23,27 @@ public sealed class OccamPlaybookResolveTool(PlaybookSeedResolver playbookSeedRe
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        if (!sourceHandles.TryBind(url, out var boundUrl, out var bindCode, out var bindMessage))
+        {
+            return JsonSerializer.Serialize(
+                OccamPlaybookResolveResponseMapper.MapFailure(
+                    new PlaybookSeedResolveResult(
+                        false,
+                        url,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        bindCode,
+                        bindMessage)),
+                OccamPlaybookResolveJsonContext.Default.OccamPlaybookResolveFailureResponse);
+        }
+
+        url = boundUrl;
         var options = new PlaybookResolveOptions(
             url,
             string.IsNullOrWhiteSpace(schema_version) ? "1.0" : schema_version.Trim(),

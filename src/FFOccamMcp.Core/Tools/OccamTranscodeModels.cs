@@ -218,7 +218,8 @@ public sealed record OccamTranscodeSuccessResponse(
     OccamTranscodeUrlInfo Url,
     string Markdown,
     string Backend,
-    OccamTranscodeMediaRefInfo[] MediaRefs,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    OccamTranscodeMediaRefInfo[]? MediaRefs = null,
     OccamTranscodeCompileInfo? Compile = null,
     OccamTranscodeSessionInfo? Session = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -482,11 +483,11 @@ internal static class OccamTranscodeResponseBuilder
             result.Session.HeadersApplied);
     }
 
-    public static OccamTranscodeMediaRefInfo[] BuildMediaRefs(TranscodeOutcome result)
+    public static OccamTranscodeMediaRefInfo[]? BuildMediaRefs(TranscodeOutcome result)
     {
         if (result.MediaRefs is null || result.MediaRefs.Count == 0)
         {
-            return [];
+            return null;
         }
 
         var source = result.MediaRefs;

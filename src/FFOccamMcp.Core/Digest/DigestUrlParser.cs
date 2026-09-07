@@ -1,4 +1,5 @@
 using System.Text.Json;
+using OccamMcp.Core.Handles;
 
 namespace OccamMcp.Core.Digest;
 
@@ -114,7 +115,16 @@ public static class DigestUrlParser
             return true;
         }
 
-        if (!Uri.TryCreate(rawUrl.Trim(), UriKind.Absolute, out var uri)
+        var trimmedUrl = rawUrl.Trim();
+        if (SourceHandleSyntax.IsHandle(trimmedUrl))
+        {
+            entries.Add(new DigestUrlEntry(
+                SourceHandleSyntax.Normalize(trimmedUrl),
+                string.IsNullOrWhiteSpace(focusQuery) ? null : focusQuery.Trim()));
+            return true;
+        }
+
+        if (!Uri.TryCreate(trimmedUrl, UriKind.Absolute, out var uri)
             || uri.Scheme is not ("http" or "https"))
         {
             error = $"Invalid URL: {rawUrl}";

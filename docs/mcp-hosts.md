@@ -1,5 +1,7 @@
 # MCP hosts — what connects automatically
 
+First prompts and where to type after connect: [Host onboarding](onboarding/index.md).
+
 `occam connect` finds the AI tools installed on your machine and registers Occam
 as an MCP server with the ones it can configure safely. It never guesses: a host
 is only auto-configured when we have run the whole cycle — detect, write,

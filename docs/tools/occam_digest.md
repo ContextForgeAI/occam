@@ -18,7 +18,7 @@ time; different hosts may fan out (see `OCCAM_DIGEST_MAX_PARALLEL`).
 
 | Parameter | Type | Default | Required | Description |
 |---|---|---|---|---|
-| `urls` | array<string> \| string? | null | no* | Preferred: native URL string array. Deprecated compatibility: JSON-encoded string/object entries or newline/comma-separated string. *Required only when `source_url` is omitted |
+| `urls` | array<string> \| string? | null | no* | Preferred: native URL or search-handle array. Deprecated compatibility: JSON-encoded string/object entries or newline/comma-separated string. *Required only when `source_url` is omitted |
 | `backend_policy` | string | `http_then_browser` | no | Applied to each URL |
 | `max_urls` | int | `8` | no | 1–8; extra URLs are dropped |
 | `per_url_max_tokens` | int? | null | no | Per-URL token budget (min 128) |
@@ -26,7 +26,7 @@ time; different hosts may fan out (see `OCCAM_DIGEST_MAX_PARALLEL`).
 | `fit_markdown` | bool | `true` | no | Paragraph prune per URL (note: default **true** here, unlike transcode) |
 | `include_combined` | bool | `true` | no | Include the combined markdown block with `##` titles |
 | `session_profile` | string? | null | no | Applied to every URL in the batch |
-| `source_url` | string? | null | no | Auto-discover links; when set, **`urls` is ignored**. With `focus_query`: homepage (+ hub expand) ∪ sitemap → shared ranker → `max_links`. Without focus: lighter sitemap → HTML path |
+| `source_url` | string? | null | no | Auto-discover links (URL or search handle); when set, **`urls` is ignored**. With `focus_query`: homepage (+ hub expand) ∪ sitemap → shared ranker → `max_links`. Without focus: lighter sitemap → HTML path |
 | `max_links` | int | `8` | no | Max links to discover from `source_url` (1–8) |
 | `if_none_match` | string? | null | no | SHA-256 of prior combined (bare hex or receipt `sha256:` contentHash); returns `unchanged:true` when matched |
 
@@ -63,7 +63,8 @@ URLs were attempted. `ok:false` (or a per-item `ok:false`) = that content is unk
 ## Failure codes
 
 Digest-level: `invalid_arguments` (neither input; malformed/empty/mixed/oversized `urls`; bad
-policy/budget), `invalid_urls` (`source_url` discovery empty), `digest_failed` (all URLs failed).
+policy/budget), `invalid_urls` (`source_url` discovery empty), `stale_handle` / `unknown_handle`
+(a search handle expired or is not live), `digest_failed` (all URLs failed).
 Per-item `failure.code` uses the transcode taxonomy (`timeout`, `http_*`, `thin_extract`,
 `captcha_or_challenge`, …). See [failure codes](../failure-codes.md).
 

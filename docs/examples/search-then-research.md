@@ -1,6 +1,6 @@
 # Example: Search then research
 
-**Prerequisite:** `OCCAM_SEARCH_PROVIDER` configured ([Configuration](../configuration.md)).
+**Prerequisite:** none for search — keyless DuckDuckGo is the default ([Configuration](../configuration.md)). Set `OCCAM_SEARCH_PROVIDER=off` for air-gap.
 
 ```json
 {
@@ -25,7 +25,7 @@ Then:
 }
 ```
 
-Replace the URL list with search hits from the first call.
+Replace the URL list with search hits from the first call (`url` or `handle`; `S1` is the latest search only).
 
 ## Next
 

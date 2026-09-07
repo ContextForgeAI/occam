@@ -27,8 +27,8 @@ public sealed record OccamTranscodeOptions
     public string? MustContain { get; init; }
     /// <summary>When true, strip markdown link destinations (keep visible text).</summary>
     public bool CompactLinks { get; init; }
-    /// <summary>When false, omit mediaRefs sidecar (default true = current behavior).</summary>
-    public bool IncludeMediaRefs { get; init; } = true;
+    /// <summary>When true, include mediaRefs sidecar (default false — image/video URLs are opt-in).</summary>
+    public bool IncludeMediaRefs { get; init; }
     /// <summary>When true with json_blocks, clear blocks[].links arrays.</summary>
     public bool CompactBlockLinks { get; init; }
 

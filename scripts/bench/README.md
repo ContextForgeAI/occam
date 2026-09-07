@@ -81,6 +81,9 @@ maps to focused `occam_map` (sitemap first, then homepage fallback), so it
 measures URL discovery and exposes the resumable-crawl gap; it must not be
 reported as full crawl parity. The fetch adapter also retains `backend`,
 `final_url`, and `failure_code` in its runner response for direct diagnostics.
+Set `OCCAM_WRB_RETAIN_COMPILE=1` to also keep `compile`, `completeness`, and
+`focus` from the MCP payload (raw JSON only; the WRB scorecard still drops
+extra fields).
 On failures, `backend` comes from the signed negative receipt because the
 top-level failure payload has no successful-content backend.
 The pinned WRB report currently discards those extra fields, so preserve the
@@ -112,6 +115,66 @@ agent-answer-quality score.
   content feeds and APIs are authenticated or unavailable. Mapping the request
   to the sitemap or unrelated AI news would be a false benchmark success.
   Remains an honest miss.
+
+## README historical fetch table (2026-08-30)
+
+The root README cites one pinned WRB **fetch** run: overall **36/48**, plus
+WRB-assigned tier rates and success-conditioned latency. Those tiers are
+**WRB's**, not Occam's document classes. Corpus denominators (same 48-URL
+WRB fetch set): Tier 1 **19**, Tier 2 **16**, Tier 3 **13**.
+
+Do not treat 75% as a product-wide success headline. Do not mix WRB crawl
+scores with extract quality: crawl is an `occam_map` discovery proxy.
+
+### Fresh fetch-only arm (2026-09-05)
+
+Same WRB pin `52025c30…`, Occam tree `6bc19e5`, one long-lived MCP host,
+`--fetch-only`, `OCCAM_WRB_RETAIN_COMPILE=1`. Result:
+`artifacts/wrb/52025c304f6c/results/occam.json`.
+
+| Observation | 2026-08-30 README | 2026-09-05 re-check |
+|-------------|------------------:|--------------------:|
+| Overall retrieval | 36/48 | 36/48 |
+| Tier 1 / 2 / 3 | 100% / 75% / 38.5% | 100% (19/19) / 75% (12/16) / 38.5% (5/13) |
+| False-positive rate | 0.0% | 0.0% (36 TP, 12 TN) |
+| Successful fetch p50 | 630 ms | **2141 ms** |
+| Successful fetch p90 | 1,973 ms | 4,359 ms |
+
+Honest misses unchanged in kind on the Occam arm: Stack Overflow (T2),
+Crunchbase, Kayak, Indeed, Reuters, Etsy, Target. LeBonCoin succeeded with
+system Chrome. Search/crawl arms were not run. Latency is
+success-conditioned; do not hide the p50/p90 rise in an overall average.
+Investigate before treating the August speed line as current.
+
+A 2026-09-07 Occam refresh on the same pin still reads **36/48** (p50 2109 ms,
+p90 4313 ms). DonSeTch 3.6.7 fetch-only on the same machine is **42/48**.
+See the Q2 decision below.
+
+## Q2 scoped comparison protocol
+
+Reuse this harness. Do not add a second dashboard.
+
+1. Pin Occam, WRB (`52025c304f6cdd242eb6d3fef2f0cb3700838fbd`), browser, and
+   tokenizer. Record cold vs warm separately.
+2. Fetch-only arm first (`--fetch-only`). Keep native keyless search as a
+   **separate** arm. Never set `OCCAM_SEARCH_PROVIDER=donsetch` in a
+   head-to-head discovery comparison.
+3. Count tokens with the same tokenizer on both sides. Preserve wall and
+   challenge failures; report success-conditioned latency and failure rate
+   apart from task completion.
+4. Semantic retention is gated in `benchmarks/l0-gate` frozen fixtures
+   (`fixtures/semantic/`), not in WRB substring checks.
+5. After a fresh run, decide the target segment from the raw artifacts —
+   do not pre-declare parity.
+
+**2026-09-07:** competitor fetch-only arm ran (DonSeTch **3.6.7**, git
+`24e6ee8`). Occam 36/48 vs DonSeTch 42/48. Do not declare parity. The six-URL
+gap is gated acquisition (four Stack Overflow pages, Indeed, Reuters), not
+Tier-1 documentation extract. Search and crawl were not measured. On Windows
+the WRB DonSeTch runner prepends `~/.npm-global/bin` (Unix); set
+`DONSETCH_PATH` to the npm `donsetch.exe` if `donsetch` is not on `PATH`.
+Do not set `OCCAM_SEARCH_PROVIDER=donsetch`. Decision:
+[docs/examples/capability-eval/q2-wrb/](../../docs/examples/capability-eval/q2-wrb/).
 
 ## Method notes (honesty rules — see HANDOFF §5c)
 

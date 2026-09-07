@@ -67,7 +67,7 @@ Never invent markdown for a failed URL. Never bypass `captcha_or_challenge` or `
 | Cheap pre-check | `occam_probe` | Extractability score + backend hint |
 | Several pages | `occam_digest` | ≤8 URLs; `focus_query` for synthesis |
 | Discover URLs | `occam_map` → `occam_digest` | `source=sitemap` then `homepage` fallback |
-| Web search → fetch | `occam_search` → transcode/digest | Needs `OCCAM_SEARCH_PROVIDER` |
+| Web search → fetch | `occam_search` → transcode/digest | Keyless DuckDuckGo; pass `handle` or `url` (`S1` latest-search only) |
 | Structured fields | `occam_playbook_resolve` → `occam_extract_knowledge` | Schema required in playbook |
 | Site-tuned extract | `occam_playbook_resolve` → `occam_transcode` | `playbook_policy=auto` (default) |
 | Fix hard site | heal → lint → save | Local playbooks only |

@@ -66,7 +66,9 @@ node scripts/bench/run-wrb.mjs --fetch-only --verbose
 See the
 [`scripts/bench/README.md` benchmark guide](https://github.com/ContextForgeAI/occam/blob/main/scripts/bench/README.md)
 for the full
-Occam-vs-DonSeTch run and scorecard commands. The adapter maps WRB fetch to
+Occam-vs-DonSeTch run and scorecard commands. A 2026-09-07 fetch-only
+head-to-head (DonSeTch 3.6.7) is recorded at
+[Q2 WRB](examples/capability-eval/q2-wrb/). The adapter maps WRB fetch to
 `occam_transcode`, search to `occam_search`, and the crawl slot to focused
 `occam_map`. The last mapping measures URL discovery only; it is explicit
 capability-gap evidence, not a claim that Occam ships resumable content crawl.

@@ -11,10 +11,13 @@ public sealed record OccamSearchResultInfo(
     double? Extractability = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? RecommendedBackend = null,
-    /// <summary>Stable label <c>S1</c>…<c>Sn</c> after ranking — agent notes only; pass <see cref="Url"/> to fetch tools.</summary>
+    /// <summary>Latest-search shorthand <c>S1</c>…<c>Sn</c> after ranking. Pass <see cref="Handle"/> or <see cref="Url"/> to fetch tools.</summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [property: JsonPropertyOrder(-1)]
-    string? Id = null);
+    string? Id = null,
+    /// <summary>Process-local durable handle <c>Hxxxxxxxx</c>; survives later searches until TTL/LRU.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Handle = null);
 
 public sealed record OccamSearchSuccessResponse(
     bool Ok,
@@ -23,7 +26,11 @@ public sealed record OccamSearchSuccessResponse(
     int Count,
     OccamSearchResultInfo[] Results,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    OccamSearchAgentHintsInfo? AgentHints = null);
+    OccamSearchAgentHintsInfo? AgentHints = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    int? HandleTtlS = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? HandleScope = null);
 
 public sealed record OccamSearchAgentHintsInfo(string SuggestedNext);
 

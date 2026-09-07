@@ -1,0 +1,28 @@
+{
+  "seed": "https://nginx.org/en/docs/",
+  "focus": "proxy_pass proxy_read_timeout",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "createdAt": "2026-09-06T21:00:00Z",
+  "provider": "fixture",
+  "discoveryTool": "occam_map",
+  "discovered": [
+    { "url": "https://other.example/offsite", "title": "offsite" },
+    { "url": "https://nginx.org/en/docs/", "title": "docs home" },
+    { "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html", "title": "proxy module" },
+    { "url": "https://nginx.org/en/docs/beginners_guide.html", "title": "beginners guide" }
+  ],
+  "extracted": [
+    {
+      "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
+      "ok": true,
+      "bytes": 80,
+      "markdown": "proxy_pass appears in embedded-variable prose; proxy_read_timeout did not land in the excerpt.\n"
+    },
+    {
+      "url": "https://nginx.org/en/docs/beginners_guide.html",
+      "ok": true,
+      "bytes": 140,
+      "markdown": "One of the frequent uses of nginx is setting it up as a proxy server.\n\nserver {\n    location / {\n        proxy_pass http://localhost:8080;\n    }\n}\n"
+    }
+  ]
+}

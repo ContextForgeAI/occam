@@ -15,7 +15,7 @@ test("matchOperatorCliVerb catches connect and aliases", () => {
 });
 
 test("OPERATOR_CLI_VERBS includes core operator surface", () => {
-  for (const verb of ["connect", "doctor", "disconnect", "onboard", "help", "status"]) {
+  for (const verb of ["connect", "doctor", "disconnect", "onboard", "help", "status", "research", "brief", "cite"]) {
     assert.ok(OPERATOR_CLI_VERBS.has(verb), verb);
   }
 });

@@ -36,12 +36,24 @@ def _fetch_provenance(payload: dict[str, Any]) -> dict[str, Any]:
     receipt_backend = receipt.get("backend") if isinstance(receipt, dict) else None
     failure = payload.get("failure")
     failure_code = failure.get("code") if isinstance(failure, dict) else failure
-    return {
+    provenance = {
         "backend": payload.get("backend")
         or (receipt_backend if isinstance(receipt_backend, str) else "unknown"),
         "final_url": final_url if isinstance(final_url, str) else None,
         "failure_code": failure_code if isinstance(failure_code, str) else None,
     }
+    retain = os.environ.get("OCCAM_WRB_RETAIN_COMPILE", "").strip().lower()
+    if retain in {"1", "true", "yes"}:
+        compile_info = payload.get("compile")
+        if isinstance(compile_info, dict):
+            provenance["compile"] = compile_info
+        completeness = payload.get("completeness")
+        if isinstance(completeness, dict):
+            provenance["completeness"] = completeness
+        focus = payload.get("focus")
+        if isinstance(focus, dict):
+            provenance["focus"] = focus
+    return provenance
 
 
 class _McpClient:

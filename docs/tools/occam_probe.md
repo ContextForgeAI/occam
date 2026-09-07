@@ -15,7 +15,7 @@ extractability score (0–1), and the recommended backend for `occam_transcode`.
 
 | Parameter | Type | Default | Required | Description |
 |---|---|---|---|---|
-| `url` | string | — | **yes** | HTTP or HTTPS URL to probe |
+| `url` | string | — | **yes** | HTTP(S) URL or search handle (`S1` / `H…`) |
 | `timeout_ms` | int | `10000` | no | Probe timeout in milliseconds |
 | `include_social_meta` | bool | `false` | no | Extract OpenGraph/Twitter meta from the HTML head |
 | `session_profile` | string? | null | no | Headers profile id under `OCCAM_SESSIONS_ROOT/<id>.json` |

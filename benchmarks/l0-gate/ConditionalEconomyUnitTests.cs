@@ -84,11 +84,11 @@ internal static class ConditionalEconomyUnitTests
             "http_then_browser",
             baseOpts with { CompactLinks = true });
         assert("mat key: compact_links changes key", compactOn != k1);
-        var mediaOff = MaterializationKey.Compute(
+        var mediaOn = MaterializationKey.Compute(
             "https://docs.python.org/3/library/asyncio.html",
             "http_then_browser",
-            baseOpts with { IncludeMediaRefs = false });
-        assert("mat key: include_media_refs changes key", mediaOff != k1);
+            baseOpts with { IncludeMediaRefs = true });
+        assert("mat key: include_media_refs changes key", mediaOn != k1);
 
         assert("compact links strips destinations",
             MarkdownLinkCompactor.Compact("See [docs](https://example.com/a) and [here](https://x.test).")

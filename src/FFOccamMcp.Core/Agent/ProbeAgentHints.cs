@@ -109,7 +109,8 @@ public static class ProbeAgentHints
         var next = failureCode.StartsWith("http_404", StringComparison.Ordinal) || failureCode == "http_410"
             ? "none"
             : "occam_transcode";
-        if (failureCode is "workers_unavailable" or "invalid_url" or "invalid_arguments")
+        if (failureCode is "workers_unavailable" or "invalid_url" or "invalid_arguments"
+            or "stale_handle" or "unknown_handle")
         {
             next = "none";
         }

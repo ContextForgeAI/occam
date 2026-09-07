@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "tool": "occam_digest",
+  "arguments": {
+    "urls": [
+      "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
+      "https://nginx.org/en/docs/beginners_guide.html"
+    ],
+    "backend_policy": "http",
+    "fit_markdown": true,
+    "focus_query": "proxy_read_timeout proxy_pass",
+    "per_url_max_tokens": 500,
+    "include_combined": true
+  }
+}

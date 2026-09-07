@@ -12,9 +12,10 @@ Override with `OCCAM_SEARCH_PROVIDER=searxng` \| `brave` \| `tavily` \| `donsetc
 
 ## When to use
 
-- No URLs yet → search, then feed **result urls** into probe / transcode / digest.
-- Each hit includes `id` (`S1`…`Sn`) after ranking — labels for your notes only; Occam does
-  not resolve handles server-side.
+- No URLs yet → search, then feed **`handle` or `url`** into probe / transcode / digest.
+- Each hit includes `id` (`S1`…`Sn`, latest-search shorthand) and `handle` (`H…`, durable in
+  this MCP process for 60 minutes / 64 entries). A later search remaps `S1` — keep `handle`
+  or the raw `url` to retain a hit.
 - Discovering pages within one known site → [`occam_map`](occam_map.md) is cheaper.
 - `rerank=true` probes every hit and reorders so clean, HTTP-extractable pages rank above
   paywalls/anti-bot walls/JS stubs — worth the extra latency when you will transcode the winners.
@@ -32,9 +33,10 @@ Override with `OCCAM_SEARCH_PROVIDER=searxng` \| `brave` \| `tavily` \| `donsetc
 Success envelope:
 
 - `ok: true`, `query`, `provider`, `count`
-- `results[]` — `{id, title, url, snippet?}`; with `rerank=true` also `extractability` and
+- `results[]` — `{id, handle, title, url, snippet?}`; with `rerank=true` also `extractability` and
   `recommendedBackend` (a hit whose probe failed keeps a mid-low score and no backend annotation)
-- `agentHints.suggestedNext` — what to do with the results (always pass `url`, not the label alone)
+- `handleTtlS` (3600) and `handleScope` (`process`) — once per success envelope
+- `agentHints.suggestedNext` — pass `handle` or `url`; `S1` is the latest search only
 
 Failure envelope: `ok: false`, `query`, `failure: {code, message}`.
 
@@ -61,9 +63,11 @@ Trimmed response:
   "provider": "duckduckgo",
   "count": 5,
   "results": [
-    { "id": "S1", "title": "Rate Limiting with NGINX", "url": "https://blog.nginx.org/…", "snippet": "…" }
+    { "id": "S1", "handle": "H00000001", "title": "Rate Limiting with NGINX", "url": "https://blog.nginx.org/…", "snippet": "…" }
   ],
-  "agentHints": { "suggestedNext": "Pass a result url to occam_transcode…" }
+  "handleTtlS": 3600,
+  "handleScope": "process",
+  "agentHints": { "suggestedNext": "Pass result.handle or url to occam_transcode…" }
 }
 ```
 

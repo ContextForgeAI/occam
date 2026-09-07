@@ -115,7 +115,8 @@ async function main() {
     process.exit(1);
   }
 
-  const code = dispatchSubcommand(sub, defaultHome, passthrough);
+  const forwarded = json ? ["--json", ...passthrough] : passthrough;
+  const code = dispatchSubcommand(sub, defaultHome, forwarded);
   process.exit(code);
 }
 

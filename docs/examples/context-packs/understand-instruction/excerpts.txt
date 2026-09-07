@@ -1,0 +1,16 @@
+# Context pack
+
+Task: Show how function scope and closures work. Include the syntax I need, any conditions, and source links. Tell me if relevant content was omitted.
+
+## Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions
+
+We also refer to the function body as a _closure_. A closure is any piece of source code (most commonly, a function) that refers to some variables, and the closure "remembers" these variables even when the scope in which these variables were declared has exited.
+
+## Function scopes and closures
+Functions form a scope for variables — variables defined inside a function cannot be accessed from anywhere outside the function.
+
+function multiply() {
+  return num1 * num2;
+}
+
+<!-- SNIP: 18 unchosen (reason: budget_exceeded) -->

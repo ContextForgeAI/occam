@@ -14,11 +14,9 @@ namespace OccamMcp.Core.Tools;
 public sealed class OccamClientCapabilitiesTool(ClientCapabilityStore store)
 {
     [McpServerTool(Name = "occam_client_capabilities"), Description(
-        "Declare this LLM's context window so Occam sizes extracts to what you can hold. " +
-        "MCP hosts do not tell servers your context size — call this once at session start with " +
-        "context_tokens (you know it from your model card / host settings). " +
-        "Afterwards, occam_transcode/occam_digest without max_tokens use ~20% of that window " +
-        "(clamped 512–16384). Omit args to read the current budget; clear=true resets.")]
+        "Declare this LLM's context window so Occam sizes later reads. Call once at session start " +
+        "with context_tokens. Later transcode/digest calls without max_tokens use ~20% of that window " +
+        "(clamped 512–16384). Omit args to inspect; clear=true resets.")]
     public string ClientCapabilities(
         [Description("Your context window in tokens (e.g. 8192, 128000). Required to configure; omit to inspect.")]
         int? context_tokens = null,

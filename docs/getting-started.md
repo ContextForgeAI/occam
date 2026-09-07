@@ -62,6 +62,10 @@ Or invoke:
 - `ok: false` → read `failure.code` → [Failure codes](failure-codes.md)  
 - Do **not** invent page content from memory  
 
+After `example.com` works, run the recorded documentation job in the
+[workflow gallery](examples/gallery.md) (MDN Functions, omissions listed).
+Where to type on your host: [onboarding](onboarding/index.md).
+
 Optional session budget (once per chat):
 
 ```json
@@ -87,6 +91,13 @@ directory to `PATH`.
 | `occam status` | Install / onboarding state |
 | `occam session` | Session profiles |
 | `occam skill` | Portable agent skill |
+| `occam read <url>` | One live page as Markdown (`occam_transcode`) |
+| `occam search <query>` | Open-web search (DuckDuckGo default) |
+| `occam digest <url…>` | Several pages in one call (`occam_digest`) |
+| `occam pack --task …` | Context pack folder (excerpts, sources, omissions, budget including wrapper) |
+| `occam research --seed …` | Bounded site research (map then transcode; URL/page/time/byte budgets; resume) |
+| `occam brief --url …` | Docs change brief (unchanged vs changed vs failed) |
+| `occam cite --claim … --url …` | Citation inspector (retrieved blocks; you judge support) |
 
 ---
 

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using OccamMcp.Core.Extract;
+using OccamMcp.Core.Handles;
 using OccamMcp.Core.Playbooks;
 using OccamMcp.Core.Routing;
 using OccamMcp.Core.Session;
@@ -10,7 +11,8 @@ namespace OccamMcp.Core.Services;
 public sealed class KnowledgeExtractService(
     PlaybookSeedResolver playbookSeedResolver,
     CssExtractWorker cssExtractWorker,
-    WorkerPaths workerPaths)
+    WorkerPaths workerPaths,
+    SourceHandleStore sourceHandles)
 {
     public KnowledgeExtractResult Extract(
         string url,
@@ -25,6 +27,12 @@ public sealed class KnowledgeExtractService(
             return KnowledgeExtractResult.Failed(url ?? string.Empty, "invalid_arguments", "url is required.");
         }
 
+        if (!sourceHandles.TryBind(url, out var boundUrl, out var bindCode, out var bindMessage))
+        {
+            return KnowledgeExtractResult.Failed(url.Trim(), bindCode!, bindMessage!);
+        }
+
+        url = boundUrl;
         var preflight = FetchPreflight.Prepare(url.Trim(), sessionProfile);
         if (!preflight.Ok)
         {

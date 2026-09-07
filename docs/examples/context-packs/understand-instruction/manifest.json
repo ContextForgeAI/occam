@@ -1,0 +1,29 @@
+{
+  "schema": "occam.context-pack.v1",
+  "task": "Show how function scope and closures work. Include the syntax I need, any conditions, and source links. Tell me if relevant content was omitted.",
+  "createdAt": "2026-09-05T17:38:34Z",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "settings": {
+    "budget": 800,
+    "focus": "function scope closures",
+    "backend": "http",
+    "urls": [
+      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions"
+    ]
+  },
+  "toolsUsed": [
+    "occam_transcode"
+  ],
+  "sourceCount": 1,
+  "succeeded": 1,
+  "failed": 0,
+  "budget": {
+    "declared": 800,
+    "content": 195,
+    "wrapper": 232,
+    "total": 427,
+    "estimator": "heuristic-unicode-v1",
+    "overBudget": false
+  },
+  "ok": true
+}

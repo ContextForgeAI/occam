@@ -56,7 +56,8 @@ public sealed class DigestService(
     TranscodePipeline pipeline,
     HttpProbeFetcher fetcher,
     ReceiptSigner signer,
-    MapService mapService)
+    MapService mapService,
+    OccamMcp.Core.Handles.SourceHandleStore sourceHandles)
 {
     public const int MaxUrlsCap = 8;
     private const int MinTokenBudget = 128;
@@ -80,6 +81,12 @@ public sealed class DigestService(
         IReadOnlyList<string>? discoveredLinks = null;
         if (!string.IsNullOrWhiteSpace(sourceUrl))
         {
+            if (!sourceHandles.TryBind(sourceUrl, out var boundSource, out var sourceCode, out var sourceMessage))
+            {
+                return DigestAnalysis.CreateFailed(sourceCode!, sourceMessage!);
+            }
+
+            sourceUrl = boundSource;
             // Tool default max_links=8; callers that omit still get MaxUrlsCap via coalesce.
             discoveredLinks = await DiscoverLinksFromSourceAsync(
                 sourceUrl,
@@ -107,6 +114,19 @@ public sealed class DigestService(
         {
             entries = entries.Take(maxUrls).ToList();
         }
+
+        var boundEntries = new List<DigestUrlEntry>(entries.Count);
+        foreach (var entry in entries)
+        {
+            if (!sourceHandles.TryBind(entry.Url, out var boundUrl, out var bindCode, out var bindMessage))
+            {
+                return DigestAnalysis.CreateFailed(bindCode!, bindMessage!);
+            }
+
+            boundEntries.Add(entry with { Url = boundUrl });
+        }
+
+        entries = boundEntries;
 
         foreach (var entry in entries)
         {

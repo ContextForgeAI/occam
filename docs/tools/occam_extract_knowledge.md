@@ -15,7 +15,7 @@ site's playbook `knowledge_schema`.
 
 | Parameter | Type | Default | Required | Description |
 |---|---|---|---|---|
-| `url` | string | — | **yes** | HTTP or HTTPS URL (same URL you'd pass to resolve) |
+| `url` | string | — | **yes** | HTTP(S) URL or search handle (same host you'd pass to resolve) |
 | `backend_policy` | string | `http_then_browser` | no | `http`, `browser`, or `http_then_browser` |
 | `session_profile` | string? | null | no | Headers profile id |
 

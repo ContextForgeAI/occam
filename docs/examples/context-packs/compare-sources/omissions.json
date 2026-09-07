@@ -1,0 +1,14 @@
+[
+  {
+    "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
+    "reason": "focus_body_truncated",
+    "tokensDropped": null,
+    "suggestedMinTokens": 470
+  },
+  {
+    "url": "https://nginx.org/en/docs/beginners_guide.html",
+    "reason": "context_truncated",
+    "tokensDropped": null,
+    "suggestedMinTokens": null
+  }
+]

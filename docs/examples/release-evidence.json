@@ -1,0 +1,151 @@
+{
+  "schema": "occam.release-evidence.v1",
+  "updated": "2026-09-07",
+  "note": "Every public demonstration names its host. publicBuild=true only when the recorded toolchain is the published GitHub Release identity ff-occam/1.0.0. Workspace MCP captures stay named and are not Release certifications.",
+  "items": [
+    {
+      "id": "current-proof-example-com",
+      "title": "Minimal live smoke (example.com)",
+      "kind": "proof",
+      "path": "docs/examples/current-proof/success-result.json",
+      "capturedAt": "2026-08-28T18:47:26Z",
+      "toolchain": "ff-occam/1.0.0",
+      "hostSource": "mcp-stdio",
+      "publicBuild": true,
+      "publicBuildName": "GitHub Release host identity ff-occam/1.0.0",
+      "reproduce": "docs/examples/current-proof/README.md"
+    },
+    {
+      "id": "current-proof-failure",
+      "title": "Controlled private-URL refusal",
+      "kind": "proof",
+      "path": "docs/examples/current-proof/failure-result.json",
+      "capturedAt": "2026-08-28T18:47:26Z",
+      "toolchain": "ff-occam/1.0.0",
+      "hostSource": "mcp-stdio",
+      "publicBuild": true,
+      "publicBuildName": "GitHub Release host identity ff-occam/1.0.0",
+      "reproduce": "docs/examples/current-proof/README.md"
+    },
+    {
+      "id": "current-proof-representative",
+      "title": "Representative chrome fixture",
+      "kind": "proof",
+      "path": "docs/examples/current-proof/representative-measurement.json",
+      "capturedAt": "2026-08-28T18:47:26Z",
+      "toolchain": "source-revision/b3c212c6d9e193619b6e8663148bd53932a0acc0",
+      "hostSource": "local-fixture",
+      "publicBuild": false,
+      "hostNote": "Named source revision of a controlled HTML fixture, not a live-site average and not a GitHub Release certification of that page.",
+      "reproduce": "docs/examples/current-proof/README.md"
+    },
+    {
+      "id": "golden-understand-instruction",
+      "title": "Understand a documentation instruction",
+      "kind": "workflow",
+      "path": "docs/examples/golden-workflows/understand-instruction/input-metadata.json",
+      "capturedAt": "2026-09-07T14:07:53Z",
+      "toolchain": "ff-occam/1.0.0-rc.2",
+      "hostSource": "workspace-mcp",
+      "publicBuild": false,
+      "hostNote": "Recaptured 2026-09-07 via workspace MCP. contentHash matched 2026-09-05. Not a GitHub Release v1.0.0 certification.",
+      "reproduce": "docs/examples/golden-workflows/understand-instruction/settings.json"
+    },
+    {
+      "id": "golden-compare-sources",
+      "title": "Compare known sources",
+      "kind": "workflow",
+      "path": "docs/examples/golden-workflows/compare-sources/input-metadata.json",
+      "capturedAt": "2026-09-07T14:07:55Z",
+      "toolchain": "ff-occam/1.0.0-rc.2",
+      "hostSource": "workspace-mcp",
+      "publicBuild": false,
+      "hostNote": "Recaptured 2026-09-07 via workspace MCP. Excerpts refreshed; focusMatched stayed false. Not a GitHub Release v1.0.0 certification.",
+      "reproduce": "docs/examples/golden-workflows/compare-sources/settings.json"
+    },
+    {
+      "id": "golden-inspect-changes",
+      "title": "Inspect changes since a previous read",
+      "kind": "workflow",
+      "path": "docs/examples/golden-workflows/inspect-changes/input-metadata.json",
+      "capturedAt": "2026-09-07T14:08:00Z",
+      "toolchain": "ff-occam/1.0.0-rc.2",
+      "hostSource": "workspace-mcp",
+      "publicBuild": false,
+      "hostNote": "Recaptured 2026-09-07: if_none_match still unchanged:true. Not a GitHub Release v1.0.0 certification.",
+      "reproduce": "docs/examples/golden-workflows/inspect-changes/settings.json"
+    },
+    {
+      "id": "pack-understand-instruction",
+      "title": "Context pack: understand instruction",
+      "kind": "pack",
+      "path": "docs/examples/context-packs/understand-instruction/manifest.json",
+      "capturedAt": "2026-09-05T17:38:34Z",
+      "toolchain": "ff-occam/1.0.0-rc.2",
+      "hostSource": "workspace-mcp",
+      "publicBuild": false,
+      "hostNote": "Assembled from the golden understand capture. Not a GitHub Release v1.0.0 certification.",
+      "reproduce": "docs/examples/context-packs/README.md"
+    },
+    {
+      "id": "pack-compare-sources",
+      "title": "Context pack: compare sources",
+      "kind": "pack",
+      "path": "docs/examples/context-packs/compare-sources/manifest.json",
+      "capturedAt": "2026-09-05T17:38:57Z",
+      "toolchain": "ff-occam/1.0.0-rc.2",
+      "hostSource": "workspace-mcp",
+      "publicBuild": false,
+      "hostNote": "Assembled from the golden compare capture. Not a GitHub Release v1.0.0 certification.",
+      "reproduce": "docs/examples/context-packs/README.md"
+    },
+    {
+      "id": "pack-inspect-changes",
+      "title": "Context pack: inspect changes",
+      "kind": "pack",
+      "path": "docs/examples/context-packs/inspect-changes/manifest.json",
+      "capturedAt": "2026-09-05T17:38:55Z",
+      "toolchain": "ff-occam/1.0.0-rc.2",
+      "hostSource": "workspace-mcp",
+      "publicBuild": false,
+      "hostNote": "Assembled from the golden inspect-changes capture. Not a GitHub Release v1.0.0 certification.",
+      "reproduce": "docs/examples/context-packs/README.md"
+    },
+    {
+      "id": "research-nginx-proxy",
+      "title": "Bounded site research: nginx proxy docs",
+      "kind": "research",
+      "path": "docs/examples/site-research/nginx-proxy/research-state.json",
+      "capturedAt": "2026-09-06T21:00:00Z",
+      "toolchain": "ff-occam/1.0.0-rc.2",
+      "hostSource": "workspace-mcp",
+      "publicBuild": false,
+      "hostNote": "Assembled from the golden compare-sources excerpts via --from-json. Not a GitHub Release v1.0.0 certification.",
+      "reproduce": "docs/examples/site-research/README.md"
+    },
+    {
+      "id": "brief-mdn-unchanged",
+      "title": "Docs change brief: MDN unchanged",
+      "kind": "brief",
+      "path": "docs/examples/docs-change-brief/mdn-unchanged/brief-state.json",
+      "capturedAt": "2026-09-07T14:08:00Z",
+      "toolchain": "ff-occam/1.0.0-rc.2",
+      "hostSource": "workspace-mcp",
+      "publicBuild": false,
+      "hostNote": "Assembled from the 2026-09-07 inspect-changes recapture via --from-json. Not a GitHub Release v1.0.0 certification.",
+      "reproduce": "docs/examples/docs-change-brief/README.md"
+    },
+    {
+      "id": "cite-found",
+      "title": "Citation inspector: MDN closure claim found",
+      "kind": "cite",
+      "path": "docs/examples/citation-inspector/found/inspect.json",
+      "capturedAt": "2026-09-07T14:08:06Z",
+      "toolchain": "ff-occam/1.0.0-rc.2",
+      "hostSource": "workspace-mcp",
+      "publicBuild": false,
+      "hostNote": "Live occam_claim_check 2026-09-07. Not a GitHub Release v1.0.0 certification. Not a truth judgment.",
+      "reproduce": "docs/examples/citation-inspector/README.md"
+    }
+  ]
+}

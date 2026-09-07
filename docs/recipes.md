@@ -31,7 +31,7 @@ occam_transcode({ url: "https://developer.mozilla.org/en-US/docs/Web/HTTP" })
 
 **Goal:** Multi-source summary with focused excerpts.
 
-**Prerequisites:** `OCCAM_SEARCH_PROVIDER` configured.
+**Prerequisites:** none for search — keyless DuckDuckGo is the default. Set `OCCAM_SEARCH_PROVIDER=off` for air-gap.
 
 ```
 occam_search({ query: "nginx reverse proxy setup", max_results: 5 })
@@ -42,7 +42,7 @@ occam_digest({
 })
 ```
 
-**Expect:** `ok: true`, `items[]` per URL, `combined` when `include_combined: true` (default).
+**Expect:** `ok: true`, `items[]` per URL, `combined` when `include_combined: true` (default). Digest `urls` may be search `handle` values or raw `url`s (`S1` is the latest search only).
 
 ---
 
@@ -243,6 +243,81 @@ occam_transcode({
 ```
 
 **Expect:** `deltaOnly: true`, empty `markdown`, `diff` with added/removed blocks, `contentHash` of the **full** current materialization for reconstruction verify. Falls back to full markdown with `delta_only_ignored_*` when no valid base.
+
+---
+
+## Build a context pack (CLI)
+
+**Goal:** one folder for a task — excerpts, source list, omissions, and a
+budget that includes wrapper JSON.
+
+This is `occam pack`, not a new MCP tool.
+
+```bash
+occam pack --task "Show how function scope and closures work" \
+  --url https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions \
+  --focus "function scope closures" --budget 800 \
+  --out tmp/pack
+```
+
+**Expect:** `manifest.json` with `budget.total = content + wrapper`,
+`sources.json` (failures kept), `omissions.json`, `excerpts.txt`.
+Recorded examples: [context packs](examples/context-packs/).
+
+---
+
+## Bounded site research (CLI)
+
+**Goal:** discover links on one site, then extract a few pages under
+explicit URL/page/time/byte budgets. Stop honestly. Resume later.
+
+This is `occam research`, not a new MCP tool and not a second crawler.
+
+```bash
+occam research --seed https://nginx.org/en/docs/ \
+  --focus "proxy_pass proxy_read_timeout" \
+  --max-pages 4 --out tmp/research
+```
+
+**Expect:** `discovery.json` and `extraction.json` as separate reports,
+`research-state.json` with `stop.reason`, `excerpts.txt`. Off-scope URLs
+are named, not fetched. Recorded example: [site research](examples/site-research/).
+
+---
+
+## Docs change brief (CLI)
+
+**Goal:** re-read chosen documentation URLs and list what is unchanged,
+what changed, and what failed.
+
+This is `occam brief`, not `occam_watch` and not a new MCP tool.
+
+```bash
+occam brief --url https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions \
+  --against <prior-contentHash> --out tmp/brief
+```
+
+**Expect:** `brief-state.json` + `brief.md`. Significant hits are a keyword
+heuristic. Recorded examples: [docs change brief](examples/docs-change-brief/).
+
+---
+
+## Citation inspector (CLI)
+
+**Goal:** retrieve the page blocks that match a sentence. You decide whether
+they support the claim.
+
+This is `occam cite` over `occam_claim_check`. `verdict` is always
+`not_evaluated`.
+
+```bash
+occam cite --claim "A closure remembers variables after its parent scope exits." \
+  --url https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions \
+  --out tmp/cite
+```
+
+**Expect:** `inspect.json` + `evidence.txt`. `found:false` is not a fetch
+failure. Recorded examples: [citation inspector](examples/citation-inspector/).
 
 ---
 

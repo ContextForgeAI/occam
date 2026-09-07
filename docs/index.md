@@ -170,7 +170,11 @@ Runtime source revision
 `b3c212c6d9e193619b6e8663148bd53932a0acc0`.
 Full method, complete input/output, the minimal live smoke proof, controlled
 failure, and reproduction scripts:
-[current proof bundle](examples/current-proof/README.md).
+[current proof bundle](examples/current-proof/README.md)
+and three recorded jobs in
+[golden workflows](examples/golden-workflows/)
+[context packs](examples/context-packs/),
+and [site research](examples/site-research/).
 
 </details>
 
@@ -255,6 +259,8 @@ prompt.
 </div>
 
 [Choose a detailed path and get the exact first prompt](quick-start.md) ·
+[Host onboarding](onboarding/index.md) ·
+[Workflow gallery](examples/gallery.md) ·
 [See host validation tiers](mcp-hosts.md)
 
 ## How Occam works
@@ -360,7 +366,8 @@ finish with a real page read.
 
 ## Explore deeper
 
-[**Why Occam**](why-occam.md) · [Task router](choosing-a-tool.md) · [Examples](examples/index.md) ·
+[**Why Occam**](why-occam.md) · [Task router](choosing-a-tool.md) ·
+[Workflow gallery](examples/gallery.md) · [Examples](examples/index.md) ·
 [Recipes](recipes.md) · [Tools](tools/index.md) ·
 [Tools reference](tools-reference.md) · [MCP API](reference/mcp-api.md) ·
 [Handbook](handbook/index.md) · [Experimental](experimental.md) ·

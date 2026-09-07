@@ -1,0 +1,58 @@
+{
+  "schema": "occam.site-research.v1",
+  "seed": "https://nginx.org/en/docs/",
+  "focus": "proxy_pass proxy_read_timeout",
+  "createdAt": "2026-09-06T21:00:00Z",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "scope": {
+    "sameDomain": true,
+    "host": "nginx.org"
+  },
+  "budgets": {
+    "maxUrls": 8,
+    "maxPages": 2,
+    "deadlineMs": 60000,
+    "maxBytes": 1000000
+  },
+  "discovery": {
+    "tool": "occam_map",
+    "provider": "fixture",
+    "urls": [
+      "https://other.example/offsite",
+      "https://nginx.org/en/docs/",
+      "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
+      "https://nginx.org/en/docs/beginners_guide.html"
+    ],
+    "ranked": 3,
+    "outOfScope": [
+      "https://other.example/offsite"
+    ],
+    "omitted": []
+  },
+  "extraction": {
+    "tool": "occam_transcode",
+    "pages": 2,
+    "succeeded": 2,
+    "failed": 0,
+    "bytes": 220,
+    "urls": [
+      {
+        "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
+        "ok": true,
+        "failureCode": null,
+        "bytes": 80
+      },
+      {
+        "url": "https://nginx.org/en/docs/beginners_guide.html",
+        "ok": true,
+        "failureCode": null,
+        "bytes": 140
+      }
+    ]
+  },
+  "stop": {
+    "reason": "budget_pages",
+    "nextUrl": null
+  },
+  "ok": true
+}

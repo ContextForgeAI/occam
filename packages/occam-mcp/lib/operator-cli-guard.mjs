@@ -26,6 +26,16 @@ export const OPERATOR_CLI_VERBS = Object.freeze(
     "skill",
     "control",
     "status",
+    "contract",
+    "version-surface",
+    "chat",
+    "read",
+    "search",
+    "digest",
+    "pack",
+    "research",
+    "brief",
+    "cite",
   ]),
 );
 

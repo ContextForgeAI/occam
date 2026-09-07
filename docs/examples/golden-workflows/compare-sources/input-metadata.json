@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-07T14:07:55Z",
+  "productVersionFile": "1.0.1",
+  "gitSha": "6bc19e5c7c26d788a6aeb823984d0ebb25b58166",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "hostSource": "workspace-mcp",
+  "hostNote": "Recaptured 2026-09-07 via the connected local MCP host. Excerpts refreshed; focusMatched stayed false. Not a GitHub Release v1.0.0 certification.",
+  "qualification": "Two live nginx documentation pages. focusMatched stayed false on both items; that is a recorded honesty signal, not a hidden success."
+}

@@ -15,4 +15,7 @@
       <Properties>OccamGateBuild=true</Properties>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="fixtures\semantic\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

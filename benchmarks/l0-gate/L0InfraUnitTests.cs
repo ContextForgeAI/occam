@@ -47,6 +47,7 @@ internal static class L0InfraUnitTests
     public static void Run(WorkerPaths paths, Action<string, bool> assert)
     {
         RunUtf8WorkerProbe(assert);
+        SourceHandleUnitTests.Run(assert);
         RunWorkerProcessLifecycle(assert);
         RunOccamLogger(assert, paths);
         RunExtractQuality(assert);
@@ -3512,6 +3513,17 @@ internal static class L0InfraUnitTests
         assert("search response round-trips url", rt?.Results is { Length: 1 } && rt.Results[0].Url == "https://e.com/a");
         assert("search response camelCase", ok.Contains("\"results\"") && ok.Contains("\"snippet\""));
         assert("search response includes id", ok.Contains("\"id\":\"S1\"") && rt?.Results[0].Id == "S1");
+        var withHandle = JsonSerializer.Serialize(
+            new OccamSearchSuccessResponse(true, "q", "searxng", 1,
+                [new OccamSearchResultInfo("T", "https://e.com/a", "snip", Id: "S1", Handle: "H00000001")],
+                HandleTtlS: 3600,
+                HandleScope: "process"),
+            OccamSearchJsonContext.Default.OccamSearchSuccessResponse);
+        assert(
+            "search response includes handle",
+            withHandle.Contains("\"handle\":\"H00000001\"", StringComparison.Ordinal)
+            && withHandle.Contains("\"handleTtlS\":3600", StringComparison.Ordinal)
+            && withHandle.Contains("\"handleScope\":\"process\"", StringComparison.Ordinal));
 
         var labeled = OccamSearchTool.AssignResultIds(
         [

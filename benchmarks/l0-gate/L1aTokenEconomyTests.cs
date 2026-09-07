@@ -11,6 +11,8 @@ internal static class L1aTokenEconomyTests
         RunTokenBudget(assert);
         SectionIndexUnitTests.Run(assert);
         FocusedInstructionUnitTests.Run(assert);
+        SemanticMaterializationUnitTests.Run(assert);
+        SchemaOverheadUnitTests.Run(assert);
         RunFitMarkdown(assert);
         RunContentSelectors(assert);
         RunTranscodeCompiler(assert);

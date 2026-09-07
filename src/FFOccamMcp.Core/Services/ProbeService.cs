@@ -1,10 +1,11 @@
+using OccamMcp.Core.Handles;
 using OccamMcp.Core.Probe;
 using OccamMcp.Core.Routing;
 using OccamMcp.Core.Session;
 
 namespace OccamMcp.Core.Services;
 
-public sealed class ProbeService(HttpProbeFetcher fetcher)
+public sealed class ProbeService(HttpProbeFetcher fetcher, SourceHandleStore sourceHandles)
 {
     public async Task<ProbeAnalysis> AnalyzeAsync(
         string url,
@@ -13,6 +14,20 @@ public sealed class ProbeService(HttpProbeFetcher fetcher)
         string? sessionProfile = null,
         CancellationToken cancellationToken = default)
     {
+        if (!sourceHandles.TryBind(url, out var boundUrl, out var bindCode, out var bindMessage))
+        {
+            return new ProbeAnalysis
+            {
+                Ok = false,
+                Url = url,
+                Privacy = new PrivacyClassification { Mode = PrivacyMode.LocalPublic },
+                FailureCode = bindCode,
+                FailureMessage = bindMessage,
+                LatencyMs = 0,
+            };
+        }
+
+        url = boundUrl;
         var preflight = FetchPreflight.Prepare(url, sessionProfile);
         if (!preflight.Ok)
         {
@@ -247,6 +262,7 @@ public sealed class ProbeAnalysis
     public int StatusCode { get; init; }
     public string? ContentType { get; init; }
     public string? FailureCode { get; init; }
+    public string? FailureMessage { get; init; }
     public string? DomainTier { get; init; }
     public SocialMeta? SocialMeta { get; init; }
     public string[]? RedirectChain { get; init; }

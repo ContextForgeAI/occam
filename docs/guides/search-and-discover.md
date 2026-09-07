@@ -27,6 +27,11 @@ Then pass URLs into `occam_digest`.
 
 Or let digest discover from a `source_url` (see digest tool page).
 
+For a bounded, resumable pass (URL/page/time/byte budgets, honest stop),
+use the operator CLI `occam research` — it calls `occam_map` then
+`occam_transcode`. It is not a new MCP tool. Example:
+[site research](../examples/site-research/).
+
 ## Expected result
 
 Search/map return candidate links — not full page bodies. Follow with digest/transcode.

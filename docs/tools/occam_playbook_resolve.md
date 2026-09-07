@@ -21,7 +21,7 @@ See [Playbooks](../playbooks.md) for resolution order and v1 vs v2 semantics.
 
 | Parameter | Type | Default | Required | Description |
 |---|---|---|---|---|
-| `url` | string | — | **yes** | HTTP/HTTPS URL, or bare hostname |
+| `url` | string | — | **yes** | HTTP(S) URL, search handle, or bare hostname |
 | `schema_version` | string | `1.0` | no | Playbook schema version |
 | `include_lessons` | bool | `false` | no | Export `lessons[]` from local tier (max 10) |
 | `fetch_site_genome` | bool | `false` | no | Fetch `https://{host}/.well-known/agent-genome.v1.json` |

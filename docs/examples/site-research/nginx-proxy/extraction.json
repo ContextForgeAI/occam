@@ -1,0 +1,21 @@
+{
+  "tool": "occam_transcode",
+  "pages": 2,
+  "succeeded": 2,
+  "failed": 0,
+  "bytes": 220,
+  "urls": [
+    {
+      "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
+      "ok": true,
+      "failureCode": null,
+      "bytes": 80
+    },
+    {
+      "url": "https://nginx.org/en/docs/beginners_guide.html",
+      "ok": true,
+      "failureCode": null,
+      "bytes": 140
+    }
+  ]
+}

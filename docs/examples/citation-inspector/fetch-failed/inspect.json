@@ -1,0 +1,19 @@
+{
+  "schema": "occam.citation-inspect.v1",
+  "createdAt": "2026-09-07T14:08:00Z",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "claim": "The page describes an install command.",
+  "url": "https://example.com/",
+  "ok": false,
+  "found": null,
+  "retrieved": null,
+  "verdict": null,
+  "proven": null,
+  "failureCode": "timeout",
+  "matchCount": 0,
+  "matches": [],
+  "reviewer": {
+    "action": "confirm or reject whether the retrieved passage supports the claim",
+    "not": "Occam does not decide support vs refute; verdict is not_evaluated"
+  }
+}

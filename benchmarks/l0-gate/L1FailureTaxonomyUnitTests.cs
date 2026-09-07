@@ -59,6 +59,14 @@ internal static class L1FailureTaxonomyUnitTests
         assert("failure normalize action_failed identity", FailureCodeStrings.Normalize("action_failed") == "action_failed");
         assert("failure resolve action_failed", FailureCodeStrings.ResolveTranscodeFailure("action_failed", 0) == "action_failed");
         assert("failure not retryable action_failed", !FailureCodeStrings.IsRetryable("action_failed"));
+        assert("failure not retryable stale_handle", !FailureCodeStrings.IsRetryable("stale_handle"));
+        assert("failure not retryable unknown_handle", !FailureCodeStrings.IsRetryable("unknown_handle"));
+        assert(
+            "failure format stale_handle",
+            FailureCodeStrings.FormatTranscodeMessage("stale_handle", 0).Contains("raw url", StringComparison.Ordinal));
+        assert(
+            "failure format unknown_handle",
+            FailureCodeStrings.FormatTranscodeMessage("unknown_handle", 0).Contains("handle", StringComparison.OrdinalIgnoreCase));
         assert("failure format action_failed",
             FailureCodeStrings.FormatTranscodeMessage("action_failed", 0).Contains("action", StringComparison.OrdinalIgnoreCase));
         assert("failure parse status from code", FailureCodeStrings.TryParseHttpStatusCode("http_404") == 404);

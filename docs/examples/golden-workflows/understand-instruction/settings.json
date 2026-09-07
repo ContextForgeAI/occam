@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "tool": "occam_transcode",
+  "arguments": {
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions",
+    "backend_policy": "http",
+    "fit_markdown": true,
+    "focus_query": "function scope closures",
+    "max_tokens": 800
+  },
+  "constrainedArguments": {
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions",
+    "backend_policy": "http",
+    "fit_markdown": true,
+    "focus_query": "function scope closures",
+    "max_tokens": 128
+  }
+}

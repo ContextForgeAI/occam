@@ -9,7 +9,7 @@ removable. Occam Core `1.0.0` is **GA**. npm remains an experimental shortcut �
 |---------|------|
 | **Install / bootstrap** | `get-ff-occam.*` → release tarball → SHA-256 verify → doctor → connect |
 | **Doctor** | Workers, Playwright, host sanity |
-| **`occam` CLI wrapper** | Connect/disconnect, reversible uninstall, session, verify, refresh/control/update helpers |
+| **`occam` CLI wrapper** | Connect/disconnect, uninstall, session, `read`/`search`/`digest` (MCP adapters), `pack` / `research` / `brief` / `cite` (orchestrators, not MCP tools), refresh/control/update |
 | **MCP host process** | stdio (default), optional WebSocket / remote / batch server |
 | **Connect platform** | detect → classify → backup → configure → verify → restart/action → rollback (limits apply) |
 

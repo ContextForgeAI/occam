@@ -14,7 +14,7 @@ public sealed class OccamExtractKnowledgeTool(WorkerPaths workerPaths, Knowledge
 {
     [McpServerTool(Name = "occam_extract_knowledge"), Description("Extract typed structured fields from a page (e.g. title, price, author) as facts[], driven by the site's playbook knowledge_schema. Use when you need specific data points, not prose; requires a resolvable schema for the host (check with occam_playbook_resolve).")]
     public string ExtractKnowledge(
-        [Description("HTTP or HTTPS URL (same URL used with occam_playbook_resolve).")] string url,
+        [Description("HTTP(S) URL or search handle (same host as occam_playbook_resolve).")] string url,
         [Description("Backend policy: http, browser, or http_then_browser. Default from playbook routing or http_then_browser.")] string backend_policy = "http_then_browser",
         [Description("Optional session profile id — loads headers and Playwright storageState (browser fallback) from OCCAM_SESSIONS_ROOT/<id>.json.")] string? session_profile = null,
         CancellationToken cancellationToken = default)

@@ -1,0 +1,28 @@
+{
+  "schema": "occam.docs-change-brief.v1",
+  "createdAt": "2026-09-07T14:08:00Z",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "focus": "proxy_pass",
+  "pages": [
+    {
+      "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
+      "ok": true,
+      "unchanged": false,
+      "contentHash": "77ab8d088696e0b182569a4989b0accf868f7e9bdf7a716693eea92ec6e77260",
+      "failureCode": null,
+      "significance": "significant",
+      "bytes": 72
+    }
+  ],
+  "summary": {
+    "requested": 1,
+    "changed": 1,
+    "unchanged": 0,
+    "failed": 0,
+    "significant": 1
+  },
+  "stop": {
+    "reason": "complete"
+  },
+  "ok": true
+}

@@ -25,5 +25,7 @@ Add `$OCCAM_HOME/scripts` to your `PATH` so `occam` works in a new terminal. Def
 
 ## Next
 
-- [Quick Start](../quick-start.md) step 4 — first web read  
+- [Host onboarding](../onboarding/index.md) — connect command, where to type, first prompts
+- [Workflow gallery](../examples/gallery.md) — first useful job after `example.com`
+- [Quick Start](../quick-start.md) — path cards for Cursor, Hermes, Ollama
 - [Supported hosts](../mcp-hosts.md)

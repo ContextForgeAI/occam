@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using OccamMcp.Core.Caching;
+using OccamMcp.Core.Handles;
 using OccamMcp.Core.Routing;
 using OccamMcp.Core.Services;
 using OccamMcp.Core.Tools;
@@ -104,7 +105,7 @@ internal static class VisualMatrixRunner
         }
 
         var probeTool = new OccamProbeTool(probeService);
-        var transcodeTool = new OccamTranscodeTool(paths, pipeline, new FeatureDiscoveryService(paths), new NoOpTranslationService(), new FileTranscodeResponseCache(), OccamMcp.Core.Receipts.ReceiptSigner.CreateEphemeral(), new OccamMcp.Core.Receipts.TimeAnchorService(new StubHttpClientFactory()), new OccamMcp.Core.Client.ClientCapabilityStore());
+        var transcodeTool = new OccamTranscodeTool(paths, pipeline, new FeatureDiscoveryService(paths), new NoOpTranslationService(), new FileTranscodeResponseCache(), OccamMcp.Core.Receipts.ReceiptSigner.CreateEphemeral(), new OccamMcp.Core.Receipts.TimeAnchorService(new StubHttpClientFactory()), new OccamMcp.Core.Client.ClientCapabilityStore(), new SourceHandleStore());
         var runDir = VisualMatrixWriter.CreateRunDirectory();
         var results = new List<VisualMatrixCaseResult>();
 

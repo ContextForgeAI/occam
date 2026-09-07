@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-07T14:08:00Z",
+  "productVersionFile": "1.0.1",
+  "gitSha": "6bc19e5c7c26d788a6aeb823984d0ebb25b58166",
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "hostSource": "workspace-mcp",
+  "priorContentHash": "bda66461b52d3d0aea8541e47706ebdbe09c242cc5ba2d537c3cb0293517a738",
+  "materializationKey": "sha256:abae5a7cc188bd4c1df5814d6586c9f7062ea08cd53efd9c2b0f88b2956e1e92",
+  "hostNote": "Recaptured 2026-09-07: if_none_match still returned unchanged:true. Not a GitHub Release v1.0.0 certification. Optional configuration: if_none_match (required for this recipe), diff_against (not used)."
+}

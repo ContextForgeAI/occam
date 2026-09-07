@@ -4,7 +4,8 @@ Task-oriented map of Occam’s **MCP tools** and supporting reference pages.
 Friendly names below are for navigation; the canonical identifier is always the
 ``occam_*`` tool name on each page and in runtime `tools/list`.
 
-For a learning path (not schemas), use [Guides](guides/read-a-page.md) or
+For a learning path (not schemas), use [Guides](guides/read-a-page.md),
+the [workflow gallery](examples/gallery.md), or
 [Examples](examples/index.md). For capability domains (not tools), see
 [Capabilities](capabilities/index.md). For a one-page advantages + knobs flashcard,
 see [Why Occam](why-occam.md).

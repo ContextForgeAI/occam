@@ -2,7 +2,7 @@
 
 How Occam obtains a page. This documents the **locked** acquisition contract (EF-056). Older “always HTTP→browser→managed” stories are obsolete.
 
-**Status:** STABLE (core ladder) · managed path LIMITED / EXPERIMENTAL depending on operator config
+**Status:** STABLE (core ladder) · managed extract escalation **removed**
 
 ## The ladder (`http_then_browser`)
 
@@ -13,16 +13,12 @@ HTTP extract
    │
    ├─ usable success ─────────────────────────────► done (stop)
    ├─ configured public source adapter succeeds ──► done (source disclosed)
-   ├─ 404 / 410 ──────────────────────────────────► fail (no browser, no managed)
+   ├─ 404 / 410 ──────────────────────────────────► fail (no browser)
    ├─ public-reference short-circuit (failed HTTP) ► fail (no browser)
    ├─ thin / short challenge / other escalate ────► Browser extract
    │                                                      │
    │                              ├─ usable success ────► done
-   │                              └─ fail ──────────────► dual-fail ranking
-   │                                                          │
-   └─ (optional) Managed provider only after BOTH locals fail
-                      ├─ managed success may surface
-                      └─ managed failure NEVER becomes the user-facing result
+   │                              └─ fail ──────────────► dual-fail ranking / typed refusal
 ```
 
 </div>
@@ -35,12 +31,11 @@ HTTP extract
 | Public source adapters are explicit | A bundled playbook may map a presentation page to a sanctioned public source. npm package permalinks can use latest-version metadata from `registry.npmjs.org`. Exact crates.io `/crates/<name>` permalinks resolve the latest non-yanked version through the sparse index, then use the official rendered README. `backend` and `url.finalUrl` disclose the actual source |
 | Thin / challenge may escalate | Bad extraction or short challenge-like body can open the browser rung |
 | Browser escalation is conditional | Not every failure escalates; terminal HTTP failures do not |
-| 404 / 410 short-circuit | No browser chase; no managed |
+| 404 / 410 short-circuit | No browser chase |
 | Public-reference short-circuit | Some well-known public-reference hosts: failed HTTP ends the ladder |
 | Dual failure uses `FailureRanking` | Surfaces the more informative local attempt — **not** “whichever had denser markdown” |
-| Managed only after local failure | Only on the cascade policy; **not** a `backend_policy` enum value |
-| Managed failure never surfaces | Recorded; the caller still sees a local failure outcome |
-| No CAPTCHA solving | Walls become typed failures; use sessions / browser / operator-configured provider |
+| No third-party extract escalation | After both local backends fail the caller sees a typed local refusal |
+| No CAPTCHA solving | Walls become typed failures; use sessions / browser |
 | No browser-bypass claim | The npm metadata adapter does not bypass Cloudflare and does not promise the package README; unsupported routes keep the honest original failure |
 | Private-IP protections | Apply on specific paths (HTTP/browser/CSS workers with guards); scope is not universal across every helper client |
 
@@ -48,7 +43,7 @@ HTTP extract
 
 Public values: `http` | `browser` | `http_then_browser` (default on most read tools).
 
-There is **no** `managed` policy value. Managed acquisition is a separate, operator-configured escalation after both local backends fail on the cascade.
+There is **no** `managed` policy value. Third-party scrape adapters were removed; acquisition is local HTTP → browser → typed refusal.
 
 ## What agents should do
 

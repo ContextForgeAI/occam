@@ -92,7 +92,6 @@ log(result.backend)   # transcode only — winning extractor identifier
   },
   "markdown": "# Title\n\nBody text…",
   "backend": "http",
-  "mediaRefs": [],
   "compile": {
     "tokensEstimated": 512,
     "tokenEstimator": "heuristic-unicode-v1",
@@ -170,7 +169,7 @@ no block root (digest does not request `json_blocks`). Omitted under `OCCAM_RECE
 
 | Name | Type | Default | Notes |
 |------|------|---------|-------|
-| `urls` | array<string> \| string? | omit | Preferred: native URL string array. Deprecated compatibility: a JSON-array/object string or delimited URL string. Optional when `source_url` is set |
+| `urls` | array<string> \| string? | omit | Preferred: native URL or search-handle string array. Deprecated compatibility: a JSON-array/object string or delimited URL string. Optional when `source_url` is set |
 | `backend_policy` | string | `http_then_browser` | Per-URL policy |
 | `max_urls` | int | `8` | Cap **8** |
 | `per_url_max_tokens` | int? | omit | Min **128** when set |
@@ -178,7 +177,7 @@ no block root (digest does not request `json_blocks`). Omitted under `OCCAM_RECE
 | `fit_markdown` | bool | `true` | BM25 prune per URL |
 | `include_combined` | bool | `true` | Combined `## Title` markdown |
 | `session_profile` | string? | omit | One profile for **all** URLs in the batch |
-| `source_url` | string? | omit | AF-5: auto-discover links from sitemap/HTML. When set, **`urls` is ignored** |
+| `source_url` | string? | omit | AF-5: auto-discover links from sitemap/HTML (URL or search handle). When set, **`urls` is ignored** |
 | `max_links` | int | `8` | AF-5: cap on discovered links (1–8) |
 | `if_none_match` | string? | omit | AF-6: SHA-256 of prior combined (bare hex or `sha256:` receipt form). Returns `unchanged: true` on match |
 
@@ -262,6 +261,8 @@ Top-level `failureCode` + `message`. Partial per-URL failures still allow `ok: t
 |------|---------|
 | `invalid_arguments` | Neither `urls` nor `source_url`; bad policy or token budget |
 | `invalid_urls` | Parse error, empty URL list, or `source_url` discovery yielded no links |
+| `stale_handle` | A `urls` / `source_url` search handle expired or was evicted |
+| `unknown_handle` | A `urls` / `source_url` token is not a live search handle |
 | `workers_unavailable` | Workers missing |
 | `digest_failed` | All URLs failed |
 
@@ -285,7 +286,7 @@ Live same-domain link discovery (HTTP only). Returns ranked links — not markdo
 
 | Name | Type | Default | Notes |
 |------|------|---------|-------|
-| `url` | string | **required** | HTTP(S) seed URL |
+| `url` | string | **required** | HTTP(S) seed URL or search handle (`S1` / `H…`) |
 | `source` | string | `homepage` | `homepage` \| `sitemap` \| `robots` |
 | `max_links` | int | `32` | Cap **64** |
 | `same_domain` | bool | `true` | Drop off-origin links |
@@ -328,6 +329,8 @@ Top-level `failureCode` + `message`. Optional `statusCode` for HTTP errors.
 | Code | Meaning |
 |------|---------|
 | `invalid_url` | Bad URL |
+| `stale_handle` | Search handle expired or evicted — pass the raw `url` |
+| `unknown_handle` | Search handle not in this process / not the latest `S1` — pass `handle` or `url` |
 | `invalid_arguments` | Bad `source`, `max_links`, or `timeout_ms` |
 | `private_url_blocked` | Localhost / private IP (stub v1) |
 | `timeout` | Fetch timed out |
@@ -357,7 +360,7 @@ Read-only lookup of playbook JSON for a URL or hostname. Resolver order: **local
 
 | Name | Type | Default | Notes |
 |------|------|---------|-------|
-| `url` | string | **required** | Absolute HTTP(S) URL or bare hostname (e.g. `nginx.org`) |
+| `url` | string | **required** | Absolute HTTP(S) URL, search handle, or bare hostname (e.g. `nginx.org`) |
 | `schema_version` | string | `"1.0"` | Negotiation warn on unsupported minor; major mismatch → `schemaVersionWarning` |
 | `include_lessons` | bool | `false` | Export `lessons[]` from **local tier only** (max 10); redacts token-like `host` fields |
 | `fetch_site_genome` | bool | `false` | `GET https://{host}/.well-known/agent-genome.v1.json` (8s, 32 KiB cap) |
@@ -415,7 +418,7 @@ Recipe D structured facts from playbook `knowledge_schema`. **Requires** resolva
 
 | Name | Type | Default | Notes |
 |------|------|---------|-------|
-| `url` | string | **required** | Same URL as resolve |
+| `url` | string | **required** | Same URL or search handle as resolve |
 | `backend_policy` | string | `http_then_browser` | Default from playbook `routing.preferred_backend` when policy is `http_then_browser` |
 | `session_profile` | string? | omit | Same as `occam_transcode` |
 
@@ -448,6 +451,8 @@ Recipe D structured facts from playbook `knowledge_schema`. **Requires** resolva
 | Code | Meaning |
 |------|---------|
 | `invalid_arguments` | Empty URL or bad `backend_policy` |
+| `stale_handle` | Search handle expired or evicted — pass the raw `url` |
+| `unknown_handle` | Search handle not in this process — pass `handle` or `url` |
 | `playbook_not_found` | No playbook for host |
 | `knowledge_schema_missing` | Playbook has no `knowledge_schema` block |
 | `page_class_unmatched` | No pattern match and no `default` schema |
@@ -574,7 +579,7 @@ Cheap diagnosis without full transcode. HTTP fetch only.
 
 | Name | Type | Default | Notes |
 |------|------|---------|-------|
-| `url` | string | **required** | HTTP/HTTPS |
+| `url` | string | **required** | HTTP/HTTPS or search handle (`S1` / `H…`) |
 | `timeout_ms` | int | `10000` | 1000–120000 ms |
 | `include_social_meta` | bool | `false` | OpenGraph/Twitter `socialMeta` block |
 | `session_profile` | string? | omit | Optional session headers for probe fetch |
@@ -635,7 +640,7 @@ Converts one HTTP(S) URL to Markdown. **Always live extract.**
 
 | Name | Type | Default | Notes |
 |------|------|---------|-------|
-| `url` | string | **required** | HTTP/HTTPS |
+| `url` | string | **required** | HTTP/HTTPS or search handle (`S1` latest-search only; `H…` durable) |
 | `backend_policy` | string | `http_then_browser` | `http` \| `browser` \| `http_then_browser` (also `http-then-browser`) |
 | `max_tokens` | int? | omit | **Whole-response projected-payload** token budget (min **128**) shared across markdown and sidecars eligible for serialization (`blocks` / `tables` / `chunks` / `mediaRefs` / `feed` / receipt). Unrequested fields cost zero. Markdown keeps a ≥50% floor of the pool; leftovers fill requested structured fields greedily. The planner receives only the surface share, protects a minimum answer unit, and never auto-expands the budget. `compile.budget` reports the allocation. Omit = no cap (L0 behavior). |
 | `fit_markdown` | bool | `false` | BM25 paragraph prune; strips boilerplate; with `focus_query`, retains locally coupled commands, procedural lists, and adjacent explanations. Independent list/TOC navigation links remain filterable by anchor text |
@@ -654,6 +659,7 @@ Converts one HTTP(S) URL to Markdown. **Always live extract.**
 | `delta_only` | bool | `false` | **delta-as-primary.** When you already hold the prior extract, return only the `diff` and an **empty** `markdown` (`deltaOnly:true`) — a re-read costs delta-size tokens, not full-page tokens. Reconstruct `current = prior blocks, drop removedHashes, apply addedBlocks in blockHashes order`, then verify against the returned `contentHash` (hash of the full current markdown). Requires `diff_against` + `json_blocks`; otherwise the full markdown is returned with a `delta_only_ignored_*` warning. On success, heavy sidecars (`blocks`/`chunks`/…) are omitted — the delta is the transport |
 | `prefer_llms_txt` | bool | `false` | Probe `{origin}/llms.txt` (sanctioned LLM-friendly markdown) via the HTTP backend first; return it with `llmsTxt:true` (and `finalUrl` = the llms.txt URL) when present and non-empty, else fall back to normal extraction. Opt-in; never cached |
 | `cache_ttl_s` | int? | omit | **Opt-in** response cache TTL in seconds. Omit or `<=0` = no cache (default; behavior unchanged). On a hit within TTL the prior success envelope is returned with `cached: true` + `cacheAgeS`. **Never** caches private/RFC1918/localhost URLs, `session_profile` requests, or `if_none_match` calls. Stored under `OCCAM_CACHE_DIR`. |
+| `include_media_refs` | bool | `false` | Include `mediaRefs` (image/video URLs). Off by default so ordinary reads do not ship unused media handles. Empty `mediaRefs` is omitted even when requested. |
 | `emit_capsule` | bool | `false` | **Opt-in.** Adds `receipt.capsule` — a proof-carrying `occam://capsule/…` string bundling the signed receipt + this markdown, so another agent verifies it offline via `occam_verify` with **no re-fetch** (verified hand-off). Repeats the markdown → costs tokens. Requires receipts on (`OCCAM_RECEIPTS`). |
 | `rank_blocks` | bool | `false` | **Opt-in.** Annotates each `blocks[]` entry with a `salience` (0–1) = its BM25 relevance to `focus_query`, normalized to the top block — an explicit per-span attention signal so a consuming LLM weights/cites the right spans without re-reading everything. Requires `json_blocks=true` + `focus_query`; no `fit_markdown` needed. |
 | `tag_trust` | bool | `false` | **Opt-in.** Tags each `blocks[]` entry with a `trust` channel: `suspicious` (the text reads like an instruction to the reader/model — a prompt-injection shape) or `boilerplate` (a non-content region: nav/footer/aside/comment). Normal content is untagged. A machine-checkable signal so a harness can hard-isolate untrusted spans instead of trusting all extracted text equally. Heuristic — a signal, not a guarantee. Requires `json_blocks=true`. |
@@ -749,7 +755,7 @@ Converts one HTTP(S) URL to Markdown. **Always live extract.**
 | `cached` | boolean? | Present (`true`) only when the response was served from the opt-in cache (`cache_ttl_s`). Absent on live extracts. Real prior content — not a trust-model violation |
 | `cacheAgeS` | number? | Age of the cached entry in seconds; present only alongside `cached: true` |
 
-`mediaRefs` omitted when no media/download links found in main content (max **32** per page). Host may fetch URLs separately; Occam does not return binary bodies.
+`mediaRefs` omitted unless `include_media_refs:true` and media/download links were found in main content (max **32** per page). Host may fetch URLs separately; Occam does not return binary bodies. Unused `focus=not_requested` and `verdict=not_evaluated` fields are omitted.
 
 `session` is omitted when `session_profile` was not passed. **Never** includes header values — names only.
 
@@ -890,13 +896,15 @@ Config (env): `OCCAM_SEARCH_PROVIDER` (unset → `duckduckgo`; `off`\|`none`\|`d
   "provider": "duckduckgo",
   "count": 2,
   "results": [
-    { "id": "S1", "title": "…", "url": "https://…", "snippet": "…" }
+    { "id": "S1", "handle": "H00000001", "title": "…", "url": "https://…", "snippet": "…" }
   ],
-  "agentHints": { "suggestedNext": "Pass a result url to occam_transcode (one page) or occam_digest (several). Labels S1…Sn are for your notes only — Occam does not resolve handles server-side." }
+  "handleTtlS": 3600,
+  "handleScope": "process",
+  "agentHints": { "suggestedNext": "Pass result.handle or url to occam_transcode (one page) or occam_digest (several). S1 is the latest search only; H… survives later searches until TTL." }
 }
 ```
 
-`id` values `S1`…`Sn` are assigned **after** final ranking. They are agent-side labels only — always pass `url` to `occam_transcode` / `occam_digest` / `occam_probe`. Occam does not store or resolve handles.
+`id` values `S1`…`Sn` are assigned **after** final ranking and are **latest-search shorthand** only — a later `occam_search` remaps `S1`. `handle` (`H` + 8 hex) is the process-local durable id (TTL 60 minutes, cap 64, LRU). Pass `handle` or the raw `url` to `occam_transcode` / `occam_digest` / `occam_probe` / `occam_map` / `occam_extract_knowledge`. Handles never skip SSRF: the host resolves to the stored URL, then the existing `FetchPreflight` / privacy classifier run. Stale or unknown tokens return `stale_handle` / `unknown_handle` (pass the raw `url`). No new MCP tool; storage is in-process only (one MCP stdio session).
 
 With `rerank=true`, `results` are ordered by `extractability` (desc) and each also carries `extractability` (0–1) + `recommendedBackend` (e.g. `"extractability": 0.9, "recommendedBackend": "http"`).
 
@@ -1151,7 +1159,7 @@ Optional per-call session headers (`Cookie`, `Authorization`, `User-Agent`, …)
 
 Merge precedence: `OCCAM_REQUEST_HEADERS_FILE` < session profile. Temp merged headers file per worker call — delete retries on cleanup and emits warning metadata on failure; header values are **never** logged or echoed in MCP JSON.
 
-**Private URLs / SSRF:** `private_url_blocked` on all fetch tools (RFC1918, loopback, link-local `169.254.0.0/16`, `localhost`, `*.local`, `*.internal`, non-HTTP(S)). The worker also **resolves the host across both IPv4 and IPv6 and blocks any private answer** (e.g. `::1`, `fc00::/7`) — so a public hostname pointing at an internal address is rejected, not just literal-IP URLs. On the http backend the connection is **pinned to the validated IP** to defeat DNS-rebinding (TOCTOU). `session_profile` does **not** bypass. The worker emits the raw codes `private_ip_blocked` / `dns_resolution_failed`, canonicalized by the host to `private_url_blocked` / `dns_error`.
+**Private URLs / SSRF:** `private_url_blocked` on all fetch tools (RFC1918, loopback, link-local `169.254.0.0/16`, `localhost`, `*.local`, `*.internal`, non-HTTP(S)). Search handles (`S1` / `H…`) are resolved to the stored raw URL **before** this check — a handle is never a bypass. The worker also **resolves the host across both IPv4 and IPv6 and blocks any private answer** (e.g. `::1`, `fc00::/7`) — so a public hostname pointing at an internal address is rejected, not just literal-IP URLs. On the http backend the connection is **pinned to the validated IP** to defeat DNS-rebinding (TOCTOU). `session_profile` does **not** bypass. The worker emits the raw codes `private_ip_blocked` / `dns_resolution_failed`, canonicalized by the host to `private_url_blocked` / `dns_error`.
 
 Gate: `L2_SESSION_OK` · Corpus: `corpora/l2-session.jsonl` · Operator CLI: `scripts/occam-session.mjs` · Guide: [docs/configuration.md#session-profiles](docs/configuration.md#session-profiles)
 

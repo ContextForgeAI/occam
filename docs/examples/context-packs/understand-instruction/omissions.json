@@ -1,0 +1,12 @@
+[
+  {
+    "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions",
+    "reason": "focus_window",
+    "tokensDropped": 5504,
+    "regions": [
+      "unchosen"
+    ],
+    "sections": 18,
+    "suggestedMinTokens": 264
+  }
+]

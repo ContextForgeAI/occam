@@ -35,7 +35,7 @@ Read one web page → clean, compact LLM-ready Markdown (live extract, not model
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `url` | string | **required** | HTTP or HTTPS URL |
+| `url` | string | **required** | HTTP(S) URL or search handle (`S1` / `H…`) |
 | `backend_policy` | string | `http_then_browser` | `http`, `browser`, or `http_then_browser` |
 | `max_tokens` | int? | null | Projected-payload token ceiling (min 128) across markdown + serialized sidecars. Unrequested fields cost zero; focused output protects a minimum answer unit; never auto-expands |
 | `fit_markdown` | bool | `false` | BM25-style prune with local instruction dependencies; see [materialization](materialization.md) for omission semantics |
@@ -62,7 +62,7 @@ Read one web page → clean, compact LLM-ready Markdown (live extract, not model
 | `must_contain` | string | — | Probe needle → `mustContain.verdict` `MATCH`/`NO_MATCH` + up to 3 excerpts |
 | `deadline_ms` | int | — | Overall call deadline (1s–300s); cancels in-flight extract |
 | `compact_links` | bool | `false` | Keep markdown link text; strip destinations (changes `contentHash`) |
-| `include_media_refs` | bool | `true` | Include `mediaRefs` sidecar; set `false` to omit |
+| `include_media_refs` | bool | `false` | Include `mediaRefs` sidecar (image/video URLs); omit by default |
 | `compact_block_links` | bool | `false` | With `json_blocks`, clear `blocks[].links` (markdown unchanged unless `compact_links`) |
 
 ### Success response (key fields)
@@ -96,7 +96,7 @@ Cheaply diagnose a URL before a full fetch: page class, risks, extractability (0
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `url` | string | **required** | HTTP or HTTPS URL |
+| `url` | string | **required** | HTTP(S) URL or search handle (`S1` / `H…`) |
 | `timeout_ms` | int | `10000` | Probe timeout |
 | `include_social_meta` | bool | `false` | OpenGraph/Twitter meta |
 | `session_profile` | string? | null | Session profile id |
@@ -126,7 +126,7 @@ set, **`urls` is ignored**. Empty discovery returns typed `invalid_urls` (no fal
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `urls` | array<string> \| string? | null | Preferred native URL string array; deprecated legacy JSON/delimited string (legacy object entries may carry `focus_query`). Optional with `source_url`; normalization cap 256 entries / 65,536 characters |
+| `urls` | array<string> \| string? | null | Preferred native URL or search-handle array; deprecated legacy JSON/delimited string (legacy object entries may carry `focus_query`). Optional with `source_url`; normalization cap 256 entries / 65,536 characters |
 | `backend_policy` | string | `http_then_browser` | Per-URL backend |
 | `max_urls` | int | `8` | Max URLs (1–8) |
 | `per_url_max_tokens` | int? | null | Per-URL token budget (min 128) |
@@ -134,7 +134,7 @@ set, **`urls` is ignored**. Empty discovery returns typed `invalid_urls` (no fal
 | `fit_markdown` | bool | `true` | Prune per URL (default **true**, unlike transcode) |
 | `include_combined` | bool | `true` | Combined markdown with `##` titles |
 | `session_profile` | string? | null | Applied to every URL |
-| `source_url` | string? | null | Auto-discover URLs from sitemap/links (**ignores `urls`**) |
+| `source_url` | string? | null | Auto-discover URLs from sitemap/links (URL or search handle; **ignores `urls`**) |
 | `max_links` | int | `8` | Max links from `source_url` (1–8) |
 | `if_none_match` | string? | null | Prior combined hash (bare hex or `sha256:`); `unchanged: true` on match |
 
@@ -175,7 +175,7 @@ Discover same-domain links (HTTP-only, up to 64).
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `url` | string | **required** | Seed URL |
+| `url` | string | **required** | Seed URL or search handle (`S1` / `H…`) |
 | `source` | string | `homepage` | `homepage`, `sitemap`, or `robots` |
 | `max_links` | int | `32` | Max links (1–64) |
 | `same_domain` | bool | `true` | Drop off-origin links |
@@ -233,7 +233,7 @@ Extract typed `facts[]` driven by playbook `knowledge_schema`.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `url` | string | **required** | Same URL used with resolve |
+| `url` | string | **required** | Same URL or search handle used with resolve |
 | `backend_policy` | string | `http_then_browser` | Extract backend |
 | `session_profile` | string? | null | Session profile |
 
@@ -258,7 +258,7 @@ override or disable via `OCCAM_SEARCH_PROVIDER`.
 
 ### Success response
 
-`ok`, `results[]` with `id` (`S1`…`Sn`, notes only), `title`, `url`, `snippet`; optional `extractability`, `recommendedBackend` when `rerank=true`. Always pass `url` to fetch tools.
+`ok`, `results[]` with `id` (`S1`…`Sn`, latest-search shorthand), `handle` (`H…`, process-local, 60 min / 64 cap), `title`, `url`, `snippet`; optional `extractability`, `recommendedBackend` when `rerank=true`. Pass `handle` or `url` to fetch tools. `S1` remaps on the next search.
 
 ---
 

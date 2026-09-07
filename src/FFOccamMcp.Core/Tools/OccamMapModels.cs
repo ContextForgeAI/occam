@@ -93,7 +93,9 @@ internal static class OccamMapResponseMapper
         return new(
             Ok: false,
             FailureCode: code,
-            Message: FormatMapMessage(analysis.FailureCode ?? "extraction_failed", analysis.FailureStatusCode),
+            Message: !string.IsNullOrWhiteSpace(analysis.FailureMessage)
+                ? analysis.FailureMessage
+                : FormatMapMessage(analysis.FailureCode ?? "extraction_failed", analysis.FailureStatusCode),
             Url: analysis.Url,
             FinalUrl: analysis.FinalUrl,
             StatusCode: analysis.FailureStatusCode,
@@ -110,6 +112,8 @@ internal static class OccamMapResponseMapper
             "sitemap_not_found" => "Sitemap/robots discovery found no links.",
             "thin_extract" => "Homepage HTML had no extractable same-domain links after filtering.",
             "invalid_url" => "URL is not a valid absolute HTTP or HTTPS URL.",
+            "stale_handle" => "Search handle expired or evicted. Pass the raw url.",
+            "unknown_handle" => "Unknown search handle. Pass result.handle or the raw url.",
             "invalid_arguments" => "Invalid map arguments (source, max_links, or timeout_ms).",
             "private_url_blocked" => "Private or local URLs are blocked in map v1.",
             "timeout" => "Map HTTP fetch timed out.",

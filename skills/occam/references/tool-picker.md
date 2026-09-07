@@ -12,7 +12,7 @@ Always-on core MCP tools. Opt-in tools need env flags (see bottom).
 | Check if URL is worth fetching | `occam_probe` | Cheap; extractability + backend hint |
 | Research several pages | `occam_digest` | Up to 8 URLs; `focus_query` |
 | Find URLs on a site | `occam_map` → `occam_digest` | Map discovers; digest reads |
-| Search the web | `occam_search` → transcode/digest | Needs `OCCAM_SEARCH_PROVIDER` |
+| Search the web | `occam_search` → transcode/digest | Keyless DuckDuckGo by default; pass `handle` or `url` (`S1` is latest-search only) |
 | Structured fields | resolve → `occam_extract_knowledge` | Needs `knowledge_schema` in playbook |
 | Tuned site extract | resolve → `occam_transcode` | `playbook_policy=auto` |
 | Draft/fix playbook | transcode fail → heal → lint → save | Local only |

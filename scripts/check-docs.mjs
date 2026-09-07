@@ -13,6 +13,7 @@ import { basename, dirname, extname, join, relative, resolve, sep } from "node:p
 import { fileURLToPath } from "node:url";
 import { checkDiscoverability } from "./check-docs-discoverability.mjs";
 import { checkHonesty } from "./check-docs-honesty.mjs";
+import { checkReleaseEvidence } from "./check-docs-release-evidence.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const docsRoot = join(repoRoot, "docs");
@@ -469,6 +470,9 @@ errors.push(...discErrors);
 const honestyErrors = checkHonesty(repoRoot);
 errors.push(...honestyErrors);
 
+const evidenceErrors = checkReleaseEvidence(repoRoot);
+errors.push(...evidenceErrors);
+
 if (errors.length > 0) {
   console.error(`docs-check: FAILED (${errors.length} issue${errors.length === 1 ? "" : "s"})`);
   for (const error of errors) console.error(`  - ${error}`);
@@ -477,5 +481,5 @@ if (errors.length > 0) {
 
 console.log(
   `docs-check: OK — ${linkDocuments.length} documents, ${linksChecked} local links, ` +
-    `${anchorsChecked} anchors, ${coreTools.length} core tools, discoverability + honesty gates`,
+    `${anchorsChecked} anchors, ${coreTools.length} core tools, discoverability + honesty + release-evidence gates`,
 );

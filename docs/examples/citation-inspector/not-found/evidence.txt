@@ -1,0 +1,11 @@
+# Citation inspect
+
+Claim: JavaScript closures require a cloud API key issued by Mozilla before they work in browsers.
+
+URL: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions
+
+found:false  verdict:not_evaluated  matches:0
+
+confirm or reject whether the retrieved passage supports the claim
+Occam does not decide support vs refute; verdict is not_evaluated
+

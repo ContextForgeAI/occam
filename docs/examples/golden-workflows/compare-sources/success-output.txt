@@ -1,0 +1,21 @@
+## Setting Up a Simple Proxy Server
+
+One of the frequent uses of nginx is setting it up as a proxy server, which means a server that receives requests, passes them to the proxied servers, retrieves responses from them, and sends them to the clients.
+
+```
+server {
+    location / {
+        proxy_pass http://localhost:8080;
+    }
+
+    location /images/ {
+        root /data;
+    }
+}
+```
+
+Source: https://nginx.org/en/docs/beginners_guide.html
+
+The module page excerpt mentioned `proxy_pass` in embedded-variable text.
+`focusMatched` was false on both items. Prefer `items[].excerpt`. Do not cite
+`combined` as a focused answer. Do not invent `proxy_read_timeout`.

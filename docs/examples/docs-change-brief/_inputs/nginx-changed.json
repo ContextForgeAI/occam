@@ -1,0 +1,16 @@
+{
+  "toolchain": "ff-occam/1.0.0-rc.2",
+  "createdAt": "2026-09-07T14:08:00Z",
+  "focus": "proxy_pass",
+  "constructed": true,
+  "note": "Markdown is constructed to exercise the significant heuristic. Not a live nginx.org extract.",
+  "pages": [
+    {
+      "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
+      "ok": true,
+      "unchanged": false,
+      "contentHash": "77ab8d088696e0b182569a4989b0accf868f7e9bdf7a716693eea92ec6e77260",
+      "markdown": "proxy_buffers default changed in 1.27. The previous size is deprecated.\n"
+    }
+  ]
+}

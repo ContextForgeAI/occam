@@ -23,6 +23,7 @@ public static class OccamServiceCollectionExtensions
         services.AddSingleton(_ => OccamMcp.Core.Receipts.ReceiptSigner.LoadOrCreate());
         // LLM client context budget — agent declares via occam_client_capabilities or OCCAM_CLIENT_CONTEXT_TOKENS.
         services.AddSingleton<OccamMcp.Core.Client.ClientCapabilityStore>();
+        services.AddSingleton<OccamMcp.Core.Handles.SourceHandleStore>();
         // SI-15 time-anchor producer — self-gates on OCCAM_TIME_ANCHOR + OCCAM_TSA_URL (off by default).
         services.AddSingleton<OccamMcp.Core.Receipts.TimeAnchorService>();
         services.AddSingleton<IHttpExtractRunner, HttpExtractRunner>();

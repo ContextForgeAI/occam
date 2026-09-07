@@ -147,6 +147,8 @@ Off by default. After `pdf_no_text_layer`, the HTTP worker may call a local help
 | `OCCAM_PDF_OCR_TIMEOUT_MS` | Default `60000` (1k–300k) |
 
 Honest notes on failure: `pdf_ocr_unconfigured`, `pdf_ocr_timeout`, `pdf_ocr_failed`, `pdf_ocr_empty`. Occam does not ship an OCR engine.
+Evaluation and implementation-budget decision:
+[PDF/OCR capability eval](examples/capability-eval/pdf-ocr/).
 
 ---
 

@@ -11,14 +11,13 @@ Features that ship but are **not** default product promises. Experimental ≠ in
 | **Batch** | `OCCAM_BATCH_MCP=1` | Queue many URLs | No Receipt v1 on the batch envelope; store races; retention limits | Operator/server mode; not a casual agent default |
 | **Failure atlas** | `OCCAM_ATLAS_MCP=1` | Session-local failure telemetry | Not proof a host is a “dead end” | Diagnostic, not a trust layer |
 | **Browser interact** | `OCCAM_BROWSER_ACTIONS_MCP=1` | Declarative click/type/scroll then materialize | Max 16 steps; typed text redacted; no raw page JS; never cached | Automation surface; keep off unless needed |
-| **Managed acquisition** | Operator-configured providers | Third-party or archive fetch after local failure | Privacy (URL may leave the machine except local `donsetch`); not a `backend_policy` value; failure never surfaces as the result | Opt-in cost/privacy; local-first default |
-| **Resumable crawl MCP** | — | Not shipped | Use `occam_map` + `occam_digest` (+ opt-in batch) | Frontier/resume is a separate product surface |
+| **Resumable crawl MCP** | — | Not shipped | Use `occam_map` + `occam_digest`, or the operator CLI `occam research` (budgets, resume, cancel; not a new MCP tool) | A universal crawler is a separate product surface |
 
 ## Forbidden readings
 
 - Crosscheck agreement is **not** proof of correctness (“consensus proof” forbidden).  
 - Watch `history_verified` requires **every** entry signed and verified; hash-chain integrity alone is a different signal.  
-- Managed success may help you read a wall; it does **not** make Occam a CAPTCHA bypass.
+- A typed wall is not a CAPTCHA bypass. Use a session profile or accept `ok:false`.
 
 ## Related
 
