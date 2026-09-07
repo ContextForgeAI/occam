@@ -16,6 +16,7 @@ server {
 
 Source: https://nginx.org/en/docs/beginners_guide.html
 
-The module page excerpt mentioned `proxy_pass` in embedded-variable text.
-`focusMatched` was false on both items. Prefer `items[].excerpt`. Do not cite
-`combined` as a focused answer. Do not invent `proxy_read_timeout`.
+The module page listed `proxy_pass` and `proxy_read_timeout` (`focusMatched:true`,
+`focus:weak`). The beginner page was `focusMatched:false`. Prefer
+`items[].excerpt`. Do not cite `combined` as a focused answer. Do not invent
+`proxy_read_timeout` values.

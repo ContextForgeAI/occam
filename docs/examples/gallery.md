@@ -9,9 +9,9 @@ where-to-type notes: [Host onboarding](../onboarding/index.md).
 
 | Job | What you ask | What the capture shows | Named build |
 |-----|--------------|------------------------|-------------|
-| [Understand an instruction](golden-workflows/understand-instruction/) | MDN Functions: scope, closures, syntax, conditions, citations, omissions | `ok:true`, `focus:hit`, 18 named omitted sections | `ff-occam/1.0.0-rc.2` workspace MCP, recaptured 2026-09-07 — [ledger](release-evidence.md) |
-| [Compare known sources](golden-workflows/compare-sources/) | Two official nginx pages; do not invent `proxy_read_timeout` | Both URLs ok; focus weak; host said so | same named host, not Release `v1.0.0` |
-| [Inspect changes](golden-workflows/inspect-changes/) | Same MDN URL + stored `contentHash` as `if_none_match` | `unchanged:true`, empty body | same named host, not Release `v1.0.0` |
+| [Understand an instruction](golden-workflows/understand-instruction/) | MDN Functions: scope, closures, syntax, conditions, citations, omissions | `ok:true`, `focus:hit`, 18 omitted sections | `ff-occam/1.1.1` GitHub Release v1.1.1, recaptured 2026-09-07 — [ledger](release-evidence.md) |
+| [Compare known sources](golden-workflows/compare-sources/) | Two official nginx pages; do not invent `proxy_read_timeout` | Both URLs ok; module focusMatched true/weak; beginner false | same Release host; public-build id is still `1.0.0` |
+| [Inspect changes](golden-workflows/inspect-changes/) | Same MDN URL + stored `contentHash` as `if_none_match` | `unchanged:true`, empty body | same Release host; public-build id is still `1.0.0` |
 
 The same three jobs as folders (`manifest.json`, excerpts, omissions, wrapper
 budget): [Context packs](context-packs/). Operator CLIs for a docs delta and

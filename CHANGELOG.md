@@ -6,6 +6,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+### Changed
+
+- **Golden workflows** — three README lead recipes recaptured on published
+  GitHub Release **v1.1.1** (`ff-occam/1.1.1`). The tiny-budget MDN case
+  stays a separate artifact. Pack/research/brief/cite examples are still
+  workspace `1.0.0-rc.2`.
+
 ### Fixed
 
 - **CI docs-check** — `pdf-ocr-eval.selftest` needs `unpdf` from the workers

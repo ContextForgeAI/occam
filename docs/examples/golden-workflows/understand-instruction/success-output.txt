@@ -4,6 +4,8 @@ We also refer to the function body as a _closure_. A closure is any piece of sou
 
 Functions form a [scope](/en-US/docs/Glossary/Scope) for variables—this means variables defined inside a function cannot be accessed from anywhere outside the function. The function scope inherits from all the upper scopes. For example, a function defined in the global scope can access all variables defined in the global scope. A function defined inside another function can also access all variables defined in its parent function, and any other variables to which the parent function has access. On the other hand, the parent function (and any other parent scope) does _not_ have access to the variables and functions defined inside the inner function. This provides a sort of encapsulation for the variables in the inner function.
 
+js
+
 ```
 // The following variables are defined in the global scope
 const num1 = 20;
@@ -32,4 +34,4 @@ function getScore() {
 console.log(getScore()); // "Chamakh scored 5"
 ```
 
-<!-- SNIP: 18 unchosen (reason: budget_exceeded) -->
+<!-- SNIP: 16 unchosen (reason: budget_exceeded) -->

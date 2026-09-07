@@ -14,7 +14,7 @@
     "fit_markdown": true,
     "focus_query": "function scope closures",
     "max_tokens": 800,
-    "if_none_match": "bda66461b52d3d0aea8541e47706ebdbe09c242cc5ba2d537c3cb0293517a738"
+    "if_none_match": "3c10ec86156c7d9c0ff82df4aef86441287b9941a90a8ceb97d77216576e24eb"
   },
   "notes": [
     "if_none_match is the prior contentHash (bare hex).",

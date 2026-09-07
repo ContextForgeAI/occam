@@ -13,9 +13,9 @@ just not a Release certification.
 | `current-proof-example-com` | [success-result.json](current-proof/success-result.json) | 2026-08-28 | `ff-occam/1.0.0` | Yes |
 | `current-proof-failure` | [failure-result.json](current-proof/failure-result.json) | 2026-08-28 | `ff-occam/1.0.0` | Yes |
 | `current-proof-representative` | [representative-measurement.json](current-proof/representative-measurement.json) | 2026-08-28 | source revision `b3c212c6…` | No — controlled fixture |
-| `golden-understand-instruction` | [input-metadata.json](golden-workflows/understand-instruction/input-metadata.json) | 2026-09-07 | `ff-occam/1.0.0-rc.2` | No — workspace MCP |
-| `golden-compare-sources` | [input-metadata.json](golden-workflows/compare-sources/input-metadata.json) | 2026-09-07 | `ff-occam/1.0.0-rc.2` | No — workspace MCP |
-| `golden-inspect-changes` | [input-metadata.json](golden-workflows/inspect-changes/input-metadata.json) | 2026-09-07 | `ff-occam/1.0.0-rc.2` | No — workspace MCP |
+| `golden-understand-instruction` | [input-metadata.json](golden-workflows/understand-instruction/input-metadata.json) | 2026-09-07 | `ff-occam/1.1.1` | No — Release capture; public-build id is still `1.0.0` |
+| `golden-compare-sources` | [input-metadata.json](golden-workflows/compare-sources/input-metadata.json) | 2026-09-07 | `ff-occam/1.1.1` | No — Release capture; public-build id is still `1.0.0` |
+| `golden-inspect-changes` | [input-metadata.json](golden-workflows/inspect-changes/input-metadata.json) | 2026-09-07 | `ff-occam/1.1.1` | No — Release capture; public-build id is still `1.0.0` |
 | `pack-understand-instruction` | [manifest.json](context-packs/understand-instruction/manifest.json) | 2026-09-05 | `ff-occam/1.0.0-rc.2` | No — assembled from golden |
 | `pack-compare-sources` | [manifest.json](context-packs/compare-sources/manifest.json) | 2026-09-05 | `ff-occam/1.0.0-rc.2` | No — assembled from golden |
 | `pack-inspect-changes` | [manifest.json](context-packs/inspect-changes/manifest.json) | 2026-09-05 | `ff-occam/1.0.0-rc.2` | No — assembled from golden |
@@ -30,8 +30,11 @@ its `settings.json` on whatever host you have, then compare the new
 workspace capture as "Release v1.0.0 did this."
 
 `occam pack`, `occam research`, `occam brief`, and `occam cite` ship in GitHub
-Release host `1.1.1`. Recorded example rows remain workspace
-`ff-occam/1.0.0-rc.2` until recapture; do not set `publicBuild=true` on them yet.
+Release host `1.1.1`. The three golden workflows were recaptured on that
+Release (`ff-occam/1.1.1`). Pack, research, brief, and cite example rows
+remain workspace `ff-occam/1.0.0-rc.2` until recapture; do not set
+`publicBuild=true` on them. The ledger's `publicBuild=true` identity stays
+`ff-occam/1.0.0`.
 
 Gallery: [Workflow gallery](gallery.md). Missed content:
 [feedback template](feedback.md).

@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-09-07T14:07:55Z",
-  "productVersionFile": "1.0.1",
-  "gitSha": "6bc19e5c7c26d788a6aeb823984d0ebb25b58166",
-  "toolchain": "ff-occam/1.0.0-rc.2",
-  "hostSource": "workspace-mcp",
-  "hostNote": "Recaptured 2026-09-07 via the connected local MCP host. Excerpts refreshed; focusMatched stayed false. Not a GitHub Release v1.0.0 certification.",
-  "qualification": "Two live nginx documentation pages. focusMatched stayed false on both items; that is a recorded honesty signal, not a hidden success."
+  "capturedAt": "2026-09-07T18:26:31Z",
+  "productVersionFile": "1.1.1",
+  "gitSha": "a27c52359364ced670c5c4af0a857d610246d485",
+  "toolchain": "ff-occam/1.1.1",
+  "hostSource": "github-release",
+  "hostNote": "Recaptured 2026-09-07 from GitHub Release v1.1.1 (win-x64 tarball, SHA a27c523). Module page focusMatched=true with weak focus; beginner page stayed false. publicBuild remains false because the ledger's public-build identity is still ff-occam/1.0.0.",
+  "qualification": "Two live nginx documentation pages. A weak or missing focus match is a recorded honesty signal, not a hidden success."
 }

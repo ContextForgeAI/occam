@@ -2,23 +2,22 @@
   "ok": true,
   "focus": "hit",
   "completeness": {
-    "status": "incomplete",
-    "incompleteReason": "focus_body_truncated",
-    "suggestedMinTokens": 264
+    "status": "partial",
+    "incompleteReason": "context_truncated"
   },
   "compile": {
-    "tokensEstimated": 447,
+    "tokensEstimated": 448,
     "truncated": true,
     "truncationStrategy": "focus_window",
     "omitted": {
-      "reason": "focus_window",
-      "tokensDropped": 5504,
-      "regions": ["unchosen"],
+      "reason": "focus_filtered_and_budget",
+      "tokensDropped": 6172,
+      "regions": ["filtered"],
       "sections": 18
     }
   },
-  "contentHash": "bda66461b52d3d0aea8541e47706ebdbe09c242cc5ba2d537c3cb0293517a738",
-  "materializationKey": "sha256:abae5a7cc188bd4c1df5814d6586c9f7062ea08cd53efd9c2b0f88b2956e1e92",
-  "toolchain": "ff-occam/1.0.0-rc.2",
-  "whatToDoIfIncomplete": "Raise max_tokens above suggestedMinTokens (264) or drop fit_markdown to read omitted sections. Do not invent the dropped 18 sections."
+  "contentHash": "3c10ec86156c7d9c0ff82df4aef86441287b9941a90a8ceb97d77216576e24eb",
+  "materializationKey": "sha256:ecc8a0905b2b1c8f6deceade505c6fdde9c094e5621dd52765ac4047a98e343f",
+  "toolchain": "ff-occam/1.1.1",
+  "whatToDoIfIncomplete": "Raise max_tokens or drop fit_markdown to read omitted sections. Do not invent the dropped sections."
 }

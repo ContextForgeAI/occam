@@ -5,19 +5,19 @@
   "completeness": {
     "status": "incomplete",
     "incompleteReason": "focus_body_truncated",
-    "suggestedMinTokens": 264
+    "suggestedMinTokens": 129
   },
   "compile": {
     "tokensEstimated": 128,
     "truncated": true,
     "omitted": {
-      "reason": "focus_window",
-      "tokensDropped": 5780,
-      "regions": ["unchosen"],
+      "reason": "focus_filtered_and_budget",
+      "tokensDropped": 6454,
+      "regions": ["filtered"],
       "sections": 18
     }
   },
-  "contentHash": "5f92895ab86835886d378a45577c073f152c8a2e92cac5a4c79b87ab4c7de56a",
-  "retainedLead": "Closure definition plus the Function scopes and closures heading; example function multiply() did not fit.",
-  "markdown": "We also refer to the function body as a _closure_. A closure is any piece of source code (most commonly, a function) that refers to some variables, and the closure \"remembers\" these variables even when the scope in which these variables were declared has exited.\n\n## [Function scopes and closures](#function_scopes_and_closures)\n\nFunctions form a [scope](/en-US/docs/Glossary/Scope) for variables—this means variables defined inside a function cannot\n\n<!-- SNIP: tail (reason: head_safe) -->"
+  "contentHash": "55063e0903692d3481fe893bba56a358ecd226bcbab9fc09b0543dcd0756fd6b",
+  "retainedLead": "Closure definition plus the Function scopes and closures heading; the multiply() example did not fit.",
+  "markdown": "We also refer to the function body as a _closure_. A closure is any piece of source code (most commonly, a function) that refers to some variables, and the closure \"remembers\" these variables even when the scope in which these variables were declared has exited.\n\n## [Function scopes and closures](#function_scopes_and_closures)\n\njs\n\n```\n// The following variables are defined in the global scope\nconst num1 = 20;\nconst num2 = 3;\n\n<!-- SNIP: tail (reason: head_safe) -->"
 }

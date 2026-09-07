@@ -31,10 +31,13 @@ Show how function scope and closures work. Include the syntax I need, any
 conditions, and source links. Tell me if relevant content was omitted.
 ```
 
-**Captured result** (2026-09-05, `fit_markdown:true`, `focus_query:"function scope closures"`, `max_tokens:800`, host toolchain `ff-occam/1.0.0-rc.2`):
+**Captured result** (2026-09-07, GitHub Release **v1.1.1**,
+`occam_transcode` with `backend_policy:http`, `fit_markdown:true`,
+`focus_query:"function scope closures"`, `max_tokens:800`,
+toolchain `ff-occam/1.1.1`):
 
 ```text
-We also refer to the function body as a closure. A closure is any piece of
+We also refer to the function body as a _closure_. A closure is any piece of
 source code (most commonly, a function) that refers to some variables, and
 the closure "remembers" these variables even when the scope in which these
 variables were declared has exited.
@@ -47,17 +50,32 @@ function multiply() {
   return num1 * num2;
 }
 
-<!-- SNIP: 18 unchosen (reason: budget_exceeded) -->
+console.log(multiply()); // 60
+
+function getScore() {
+  const num1 = 2;
+  const num2 = 3;
+  function add() {
+    return `${name} scored ${num1 + num2}`;
+  }
+  return add();
+}
+
+<!-- SNIP: 16 unchosen (reason: budget_exceeded) -->
 ```
 
-`ok:true`, `focus:hit`, `completeness:incomplete` (`focus_body_truncated`),
-`compile.omitted.tokensDropped:5504`. The host kept the on-topic definition
-and example, then said what it dropped instead of inventing the rest.
+Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions
+
+`ok:true`, `focus:hit`, `completeness:partial` (`context_truncated`),
+`compile.omitted.tokensDropped:6172` (18 sections). The host kept the
+on-topic definition and example, then said what it dropped instead of
+inventing the rest. The same prompt at `max_tokens:128` is recorded
+separately — the `multiply()` example does not fit.
 Settings, hashes, and both budget outcomes:
 [Understand a documentation instruction](docs/examples/golden-workflows/understand-instruction/).
 
-This capture is from the connected local MCP host, not a promise that every
-GitHub Release binary matches it line-for-line.
+This capture is the published **v1.1.1** win-x64 host, not a claim that
+every later Release is byte-identical.
 
 ## Install
 

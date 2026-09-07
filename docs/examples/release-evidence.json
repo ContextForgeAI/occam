@@ -1,7 +1,7 @@
 {
   "schema": "occam.release-evidence.v1",
   "updated": "2026-09-07",
-  "note": "Every public demonstration names its host. publicBuild=true only when the recorded toolchain is the published GitHub Release identity ff-occam/1.0.0. Workspace MCP captures stay named and are not Release certifications.",
+  "note": "Every public demonstration names its host. publicBuild=true only when the recorded toolchain is the published GitHub Release identity ff-occam/1.0.0. Golden workflows recaptured on v1.1.1 stay named ff-occam/1.1.1 with publicBuild=false.",
   "items": [
     {
       "id": "current-proof-example-com",
@@ -44,11 +44,11 @@
       "title": "Understand a documentation instruction",
       "kind": "workflow",
       "path": "docs/examples/golden-workflows/understand-instruction/input-metadata.json",
-      "capturedAt": "2026-09-07T14:07:53Z",
-      "toolchain": "ff-occam/1.0.0-rc.2",
-      "hostSource": "workspace-mcp",
+      "capturedAt": "2026-09-07T18:26:25Z",
+      "toolchain": "ff-occam/1.1.1",
+      "hostSource": "github-release",
       "publicBuild": false,
-      "hostNote": "Recaptured 2026-09-07 via workspace MCP. contentHash matched 2026-09-05. Not a GitHub Release v1.0.0 certification.",
+      "hostNote": "Recaptured 2026-09-07 from GitHub Release v1.1.1 (win-x64, a27c523). publicBuild stays false because the ledger identity is ff-occam/1.0.0.",
       "reproduce": "docs/examples/golden-workflows/understand-instruction/settings.json"
     },
     {
@@ -56,11 +56,11 @@
       "title": "Compare known sources",
       "kind": "workflow",
       "path": "docs/examples/golden-workflows/compare-sources/input-metadata.json",
-      "capturedAt": "2026-09-07T14:07:55Z",
-      "toolchain": "ff-occam/1.0.0-rc.2",
-      "hostSource": "workspace-mcp",
+      "capturedAt": "2026-09-07T18:26:31Z",
+      "toolchain": "ff-occam/1.1.1",
+      "hostSource": "github-release",
       "publicBuild": false,
-      "hostNote": "Recaptured 2026-09-07 via workspace MCP. Excerpts refreshed; focusMatched stayed false. Not a GitHub Release v1.0.0 certification.",
+      "hostNote": "Recaptured 2026-09-07 from GitHub Release v1.1.1. Module page focusMatched=true/weak; beginner page false.",
       "reproduce": "docs/examples/golden-workflows/compare-sources/settings.json"
     },
     {
@@ -68,11 +68,11 @@
       "title": "Inspect changes since a previous read",
       "kind": "workflow",
       "path": "docs/examples/golden-workflows/inspect-changes/input-metadata.json",
-      "capturedAt": "2026-09-07T14:08:00Z",
-      "toolchain": "ff-occam/1.0.0-rc.2",
-      "hostSource": "workspace-mcp",
+      "capturedAt": "2026-09-07T18:26:32Z",
+      "toolchain": "ff-occam/1.1.1",
+      "hostSource": "github-release",
       "publicBuild": false,
-      "hostNote": "Recaptured 2026-09-07: if_none_match still unchanged:true. Not a GitHub Release v1.0.0 certification.",
+      "hostNote": "Recaptured 2026-09-07 from GitHub Release v1.1.1: if_none_match against the same-session first-read hash returned unchanged:true.",
       "reproduce": "docs/examples/golden-workflows/inspect-changes/settings.json"
     },
     {

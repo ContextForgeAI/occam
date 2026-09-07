@@ -2,9 +2,10 @@
   "ok": true,
   "unchanged": true,
   "markdown": "",
-  "contentHash": "bda66461b52d3d0aea8541e47706ebdbe09c242cc5ba2d537c3cb0293517a738",
-  "materializationKey": "sha256:abae5a7cc188bd4c1df5814d6586c9f7062ea08cd53efd9c2b0f88b2956e1e92",
+  "contentHash": "3c10ec86156c7d9c0ff82df4aef86441287b9941a90a8ceb97d77216576e24eb",
+  "materializationKey": "sha256:ecc8a0905b2b1c8f6deceade505c6fdde9c094e5621dd52765ac4047a98e343f",
   "compile": null,
-  "whatHappened": "Same materialization as the stored hash. The host returned an empty body and unchanged:true instead of repeating the page.",
+  "toolchain": "ff-occam/1.1.1",
+  "whatHappened": "Same materialization as the stored hash from the v1.1.1 first read. The host returned an empty body and unchanged:true instead of repeating the page.",
   "whatToDoIfChanged": "If unchanged is absent, read the new markdown (or use diff_against + json_blocks for a block delta). If materializationKey differs, the settings drifted — do not treat hashes as URL-only."
 }

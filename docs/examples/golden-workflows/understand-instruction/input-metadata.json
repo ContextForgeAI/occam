@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-09-07T14:07:53Z",
-  "productVersionFile": "1.0.1",
-  "gitSha": "6bc19e5c7c26d788a6aeb823984d0ebb25b58166",
-  "toolchain": "ff-occam/1.0.0-rc.2",
-  "hostSource": "workspace-mcp",
-  "hostNote": "Recaptured 2026-09-07 via the connected local MCP host. contentHash matched the 2026-09-05 recording. Not a GitHub Release v1.0.0 certification.",
+  "capturedAt": "2026-09-07T18:26:25Z",
+  "productVersionFile": "1.1.1",
+  "gitSha": "a27c52359364ced670c5c4af0a857d610246d485",
+  "toolchain": "ff-occam/1.1.1",
+  "hostSource": "github-release",
+  "hostNote": "Recaptured 2026-09-07 from GitHub Release v1.1.1 (win-x64 tarball, SHA a27c523). publicBuild remains false because the ledger's public-build identity is still ff-occam/1.0.0.",
   "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions",
   "qualification": "Single live documentation page on one machine and network. Not an average retention rate."
 }

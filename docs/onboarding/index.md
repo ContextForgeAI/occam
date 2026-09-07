@@ -45,7 +45,8 @@ Published-build smoke for this URL: [current proof](../examples/current-proof/).
 **2. First useful job** — after the test works, open another new conversation
 and use the [gallery](../examples/gallery.md) prompt (MDN Functions, scope and
 closures, omissions). That capture is stamped
-`ff-occam/1.0.0-rc.2` workspace MCP, not GitHub Release `v1.0.0`.
+`ff-occam/1.1.1` on GitHub Release **v1.1.1**. The ledger's `publicBuild`
+identity remains `ff-occam/1.0.0`.
 
 ## Host notes
 

@@ -1,11 +1,12 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-09-07T14:08:00Z",
-  "productVersionFile": "1.0.1",
-  "gitSha": "6bc19e5c7c26d788a6aeb823984d0ebb25b58166",
-  "toolchain": "ff-occam/1.0.0-rc.2",
-  "hostSource": "workspace-mcp",
-  "priorContentHash": "bda66461b52d3d0aea8541e47706ebdbe09c242cc5ba2d537c3cb0293517a738",
-  "materializationKey": "sha256:abae5a7cc188bd4c1df5814d6586c9f7062ea08cd53efd9c2b0f88b2956e1e92",
-  "hostNote": "Recaptured 2026-09-07: if_none_match still returned unchanged:true. Not a GitHub Release v1.0.0 certification. Optional configuration: if_none_match (required for this recipe), diff_against (not used)."
+  "capturedAt": "2026-09-07T18:26:32Z",
+  "productVersionFile": "1.1.1",
+  "gitSha": "a27c52359364ced670c5c4af0a857d610246d485",
+  "toolchain": "ff-occam/1.1.1",
+  "hostSource": "github-release",
+  "priorContentHash": "3c10ec86156c7d9c0ff82df4aef86441287b9941a90a8ceb97d77216576e24eb",
+  "materializationKey": "sha256:ecc8a0905b2b1c8f6deceade505c6fdde9c094e5621dd52765ac4047a98e343f",
+  "hostNote": "Recaptured 2026-09-07 from GitHub Release v1.1.1: if_none_match against the same-session first-read hash returned unchanged:true. publicBuild remains false because the ledger's public-build identity is still ff-occam/1.0.0.",
+  "qualification": "Same URL and materialization settings as understand-instruction. Not a claim that the live MDN page is frozen."
 }

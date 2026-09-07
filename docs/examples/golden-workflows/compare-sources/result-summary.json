@@ -1,16 +1,16 @@
 {
   "ok": true,
   "digestId": "7d4938d13e5e060c",
-  "stats": { "requested": 2, "succeeded": 2, "failed": 0, "totalTokensEstimated": 777 },
+  "stats": { "requested": 2, "succeeded": 2, "failed": 0, "totalTokensEstimated": 951 },
   "items": [
     {
       "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
       "ok": true,
-      "focusMatched": false,
+      "focusMatched": true,
       "focus": "weak",
-      "completeness": { "status": "incomplete", "incompleteReason": "focus_body_truncated", "suggestedMinTokens": 470 },
-      "tokensEstimated": 320,
-      "retained": "Embedded-variable / cache excerpt; proxy_pass appears; proxy_read_timeout did not land in the excerpt."
+      "completeness": { "status": "incomplete", "incompleteReason": "focus_body_truncated", "suggestedMinTokens": 518 },
+      "tokensEstimated": 494,
+      "retained": "Cache-path excerpt; proxy_pass and proxy_read_timeout appear in the directive list. Body of proxy_read_timeout did not land."
     },
     {
       "url": "https://nginx.org/en/docs/beginners_guide.html",
@@ -24,10 +24,10 @@
   ],
   "agentHints": {
     "warnings": [
-      "check_items_before_combined: 2 URL(s) weak focus match — prefer items[].excerpt over combined.",
-      "focus_not_found: every ok item has focusMatched=false — treat this digest as unfocused; do not cite combined as a focused answer."
+      "check_items_before_combined: 1 URL(s) weak focus match — prefer items[].excerpt over combined.",
+      "hub_in_digest: index/TOC excerpts may mislead technical focus — read focusMatched per URL."
     ]
   },
-  "toolchain": "ff-occam/1.0.0-rc.2",
+  "toolchain": "ff-occam/1.1.1",
   "whatToDoIfIncomplete": "Read items[].excerpt, not combined. Narrow focus_query to a single directive name, or raise per_url_max_tokens. Do not invent proxy_read_timeout values that were not returned."
 }
