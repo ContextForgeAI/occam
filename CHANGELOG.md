@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to **FFOccamMCP** (L0 core) are documented here.
 
@@ -128,6 +128,10 @@ results are **not** claimed.
   the cascade tool (`occam`); transport prefix allows bare `occam`.
 - **Canary options env test** — clears `OCCAM_CANARY_*` so local research env
   pollution cannot flake CI.
+- **SourceLink NuGet audit** — bump `Microsoft.SourceLink.GitHub` /
+  `Microsoft.Build.Tasks.Git` to 10.0.401 (clears NU1902 GHSA-23fw-v26w-5fgq
+  that blocked CI `dotnet publish` restore under TreatWarningsAsErrors).
+
 
 ## [1.1.1] — 2026-09-07
 
