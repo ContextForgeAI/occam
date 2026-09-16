@@ -7,8 +7,10 @@ Friendly names below are for navigation; the canonical identifier is always the
 For a learning path (not schemas), use [Guides](guides/read-a-page.md),
 the [workflow gallery](examples/gallery.md), or
 [Examples](examples/index.md). For capability domains (not tools), see
-[Capabilities](capabilities/index.md). For a one-page advantages + knobs flashcard,
-see [Why Occam](why-occam.md).
+[Capabilities](capabilities/index.md). Feature status table:
+[CAPABILITIES](CAPABILITIES.md). Topic hubs: [TRUST](TRUST.md),
+[CASCADE](CASCADE.md), [SEARCH](SEARCH.md). For a one-page advantages + knobs
+flashcard, see [Why Occam](why-occam.md).
 
 ## Which tool should I use?
 

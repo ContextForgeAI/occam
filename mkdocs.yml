@@ -162,6 +162,9 @@ nav:
           - More recipes: recipes.md
   - Capabilities:
       - Overview: capabilities/index.md
+      - Feature inventory: CAPABILITIES.md
+      - Cascade hub: CASCADE.md
+      - Search hub: SEARCH.md
       - Why Occam (flashcard): why-occam.md
       - Web access:
           - Acquisition: acquisition.md
@@ -175,6 +178,7 @@ nav:
       - Experimental: experimental.md
   - Trust and security:
       - Overview: trust-and-safety.md
+      - TRUST hub: TRUST.md
       - Local-first model: trust/local-first.md
       - Honest failures: trust/honest-failures.md
       - Security policy: trust/security-policy.md

@@ -4,6 +4,11 @@ Capability docs describe **what Occam can do** as product areas — not individu
 MCP tools. For tool pickers and schemas, start at the
 [Reference overview](../documentation-map.md) or [Tool index](../tools/index.md).
 
+**Feature inventory (status table):** [CAPABILITIES.md](../CAPABILITIES.md) —
+22 shipped capabilities with code pointers and status.
+
+**Topic hubs:** [TRUST](../TRUST.md) · [CASCADE](../CASCADE.md) · [SEARCH](../SEARCH.md).
+
 **Start here (human + agent):** [Why Occam — advantages and knobs](../why-occam.md) —
 one page that contrasts Occam with generic fetch and lists the knobs that matter.
 

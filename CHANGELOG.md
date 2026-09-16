@@ -8,7 +8,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Added
 
+- Docs hubs: [CAPABILITIES](docs/CAPABILITIES.md), [TRUST](docs/TRUST.md),
+  [CASCADE](docs/CASCADE.md), [SEARCH](docs/SEARCH.md) — link maps over existing
+  ADRs/tool pages (no contract duplication).
+
 ### Changed
+
+- Root [README.md](README.md) restructured around five blocks (hero, inventory,
+  algorithms, MCP map, configuration) from recon PHASE1/PHASE2; honesty markers
+  for canary CLI-only, exam beta, donsetch experimental.
 
 ### Fixed
 

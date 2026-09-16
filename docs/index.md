@@ -348,6 +348,10 @@ supplied key. They do not prove truth, identity, or authentic origin.
 
 [Trust and security](trust-and-safety.md) ·
 [Capabilities](capabilities/index.md) ·
+[Feature inventory](CAPABILITIES.md) ·
+[TRUST hub](TRUST.md) ·
+[CASCADE hub](CASCADE.md) ·
+[SEARCH hub](SEARCH.md) ·
 [Reference overview](documentation-map.md) ·
 [Installation safety](trust/installation-safety.md) ·
 [Receipts](receipts.md)
@@ -398,6 +402,6 @@ status is that the instrument is built and verified while **no experiment has be
 
 Compact index (gate + scanning). Narrative map: [Reference overview](documentation-map.md).
 
-[acquisition](acquisition.md) · [ask-ai](ask-ai.md) · [choosing-a-tool](choosing-a-tool.md) · [concepts](concepts.md) · [configuration](configuration.md) · [datasets](datasets.md) · [documentation-map](documentation-map.md) · [experimental](experimental.md) · [failure-codes](failure-codes.md) · [faq](faq.md) · [getting-started](getting-started.md) · [how-occam-works](how-occam-works.md) · [install](install.md) · [materialization](materialization.md) · [mcp-hosts](mcp-hosts.md) · [networking](networking.md) · [operators](operators.md) · [playbooks](playbooks.md) · [quality-baseline](quality-baseline.md) · [quick-start](quick-start.md) · [receipt_verification](receipt_verification.md) · [receipts](receipts.md) · [recipes](recipes.md) · [roadmap](roadmap.md) · [sessions](sessions.md) · [tools-reference](tools-reference.md) · [transports](transports.md) · [troubleshooting](troubleshooting.md) · [trust-and-safety](trust-and-safety.md) · [what-is-occam](what-is-occam.md) · [why-occam](why-occam.md)
+[acquisition](acquisition.md) · [ask-ai](ask-ai.md) · [CAPABILITIES](CAPABILITIES.md) · [CASCADE](CASCADE.md) · [choosing-a-tool](choosing-a-tool.md) · [concepts](concepts.md) · [configuration](configuration.md) · [datasets](datasets.md) · [documentation-map](documentation-map.md) · [experimental](experimental.md) · [failure-codes](failure-codes.md) · [faq](faq.md) · [getting-started](getting-started.md) · [how-occam-works](how-occam-works.md) · [install](install.md) · [materialization](materialization.md) · [mcp-hosts](mcp-hosts.md) · [networking](networking.md) · [operators](operators.md) · [playbooks](playbooks.md) · [quality-baseline](quality-baseline.md) · [quick-start](quick-start.md) · [receipt_verification](receipt_verification.md) · [receipts](receipts.md) · [recipes](recipes.md) · [roadmap](roadmap.md) · [SEARCH](SEARCH.md) · [sessions](sessions.md) · [tools-reference](tools-reference.md) · [transports](transports.md) · [troubleshooting](troubleshooting.md) · [TRUST](TRUST.md) · [trust-and-safety](trust-and-safety.md) · [what-is-occam](what-is-occam.md) · [why-occam](why-occam.md)
 
 </div>
