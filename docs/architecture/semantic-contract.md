@@ -21,7 +21,7 @@ disagree, the code wins. Normative API shapes remain in [MCP_API_SPEC.md](https:
 | INV-6 | TOC entries must not outrank their corresponding body section merely because they occur earlier. |
 | INV-7 | Budget accounting applies to fields that are actually serialized. |
 | INV-8 | The planner preserves a minimum answer-bearing unit when it fits. |
-| INV-9 | Transport success, access, usability, focus, completeness, and verdict are separate semantic dimensions. |
+| INV-9 | Transport success, access, usability, focus, completeness, and verdict are separate semantic dimensions. HTTP 401/403 is an access signal, not a content verdict. |
 | INV-10 | Lifecycle operations are scoped to an explicit process/host identity. |
 
 ---
@@ -30,10 +30,11 @@ disagree, the code wins. Normative API shapes remain in [MCP_API_SPEC.md](https:
 
 One pure `AccessClassifier` owns the decision for both probe and transcode.
 
-- Output: `Open`, `Restricted`, or `Unknown`, with scoped confidence and evidence codes.
-- `Restricted` requires a **direct** signal: HTTP 401, authentication challenge header,
+- Output: `Open`, `Restricted`, `Unknown`, or `BlockedButContentAvailable`, with scoped confidence and evidence codes.
+- `Restricted` requires a **direct** signal: HTTP 401 **without** usable content, authentication challenge header,
   redirect to a dedicated login route, or blocking identity UI (password control plus
   identity/action context) without usable content.
+- HTTP 401/403 **with** a usable extracted document is `BlockedButContentAvailable` (`access.status=blocked-but-content-available`). That is not `open` and not `http_403` failure.
 - Authentication terminology, a password control without blocking context, a login-like
   path, or insufficient evidence produce `Unknown` — not an automatic `requires_login`.
 

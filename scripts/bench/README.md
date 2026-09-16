@@ -59,6 +59,11 @@ node scripts/bench/run-wrb.mjs --fetch-only --verbose
 node scripts/bench/run-wrb.mjs --verbose
 
 # Same WRB revision with the competitor's native runner (donsetch on PATH)
+# In-tree host (not the published AOT) + retain transcode debug fields:
+#   OCCAM_FORCE_DOTNET_RUN=1 OCCAM_WRB_RETAIN_COMPILE=1
+node scripts/bench/run-wrb.mjs --fetch-only --verbose --output occam-p1.json
+
+# DonSeTch live-only (scripts/bench/wrb/donsetch.py forces --archive off)
 node scripts/bench/run-wrb.mjs --runner=donsetch --verbose
 
 # Compare the two saved results

@@ -1,0 +1,42 @@
+{
+  "protocol": "occam-exam-grade-v1",
+  "subject": {
+    "clientInfo": "cursor-composer/agent-session",
+    "modelHint": "composer-agent",
+    "sessionId": "exam-composer-2026-09-16"
+  },
+  "score": 4,
+  "maxScore": 4,
+  "tier": "strong",
+  "profile": "full",
+  "toolCount": 16,
+  "source": "exam",
+  "gradedAt": "2026-09-16T16:36:50.6683494\u002B00:00",
+  "recommendedEnv": "OCCAM_PROFILE=full",
+  "selfReportTier": "strong",
+  "selfReportMatchesExam": true,
+  "staticMapTier": "medium",
+  "staticMapMatchesExam": false,
+  "outcomes": [
+    {
+      "task": "canary",
+      "passed": true,
+      "detail": "Sentinel verified as a current read."
+    },
+    {
+      "task": "basic_call",
+      "passed": true,
+      "detail": "Arguments bound to the schema."
+    },
+    {
+      "task": "focus_budget",
+      "passed": true,
+      "detail": "Focused request with an explicit 512-token budget."
+    },
+    {
+      "task": "chain",
+      "passed": true,
+      "detail": "Call 2 consumed the captured value via \u0060if_none_match\u0060."
+    }
+  ]
+}

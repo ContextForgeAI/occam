@@ -9,7 +9,10 @@ public sealed record SemanticAccessInfo(
     string Disposition,
     double Confidence,
     string[] EvidenceCodes,
-    string RecommendedAction);
+    string RecommendedAction,
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? Status = null);
 
 /// <summary>Public focus dimension: hit | weak | miss | not_requested.</summary>
 public sealed record SemanticFocusInfo(
@@ -50,14 +53,26 @@ public static class SemanticOutcomeMapper
             return null;
         }
 
+        var status = ToPublicAccessStatus(assessment.Disposition);
         return new SemanticAccessInfo(
-            Disposition: ToSnake(assessment.Disposition.ToString()),
+            Disposition: status,
             Confidence: Math.Round(assessment.Confidence, 2),
             EvidenceCodes: assessment.EvidenceCodes is { Count: > 0 }
                 ? assessment.EvidenceCodes.ToArray()
                 : [],
-            RecommendedAction: assessment.RecommendedAction);
+            RecommendedAction: assessment.RecommendedAction,
+            Status: status);
     }
+
+    internal static string ToPublicAccessStatus(AccessDisposition disposition) =>
+        disposition switch
+        {
+            AccessDisposition.Open => "open",
+            AccessDisposition.Restricted => "restricted",
+            AccessDisposition.Unknown => "unknown",
+            AccessDisposition.BlockedButContentAvailable => "blocked-but-content-available",
+            _ => "unknown",
+        };
 
     public static SemanticFocusInfo MapFocus(
         MaterializationAssessment? assessment,
@@ -122,17 +137,4 @@ public static class SemanticOutcomeMapper
         };
     }
 
-    private static string ToSnake(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            return value;
-        }
-
-        return string.Create(value.Length, value, static (span, src) =>
-        {
-            span[0] = char.ToLowerInvariant(src[0]);
-            src.AsSpan(1).CopyTo(span[1..]);
-        });
-    }
 }

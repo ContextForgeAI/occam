@@ -1,0 +1,47 @@
+### occam exam selftest
+[exam] ok   a complete submission scores 4
+[exam] ok   a score of 4 is strong
+[exam] ok   grading reports one outcome per task
+[exam] ok   an empty submission scores 0
+[exam] ok   a score of 0 is weak
+[exam] ok   a null submission grades without throwing
+[exam] ok   canary passes only on READ_VERIFIED
+[exam] ok   basic call rejects malformed JSON
+[exam] ok   basic call rejects a JSON array
+[exam] ok   basic call rejects a relative URL
+[exam] ok   basic call rejects a non-http scheme
+[exam] ok   basic call rejects a numeric url
+[exam] ok   focus+budget rejects a missing budget
+[exam] ok   focus+budget rejects an empty focus query
+[exam] ok   focus+budget rejects an implausible budget
+[exam] ok   focus+budget rejects a non-integer budget
+[exam] ok   chain rejects a single call
+[exam] ok   chain rejects a value that was never consumed
+[exam] ok   chain rejects a mismatched value
+[exam] ok   chain accepts diff_against as a consuming parameter
+[exam] ok   chain rejects consumption by the first call only
+[exam] ok   score 0 and 1 map to weak
+[exam] ok   score 2 and 3 map to medium
+[exam] ok   score 4 maps to strong
+[exam] ok   out-of-range scores clamp rather than throw
+[exam] ok   weak sees exactly one tool
+[exam] ok   medium sees exactly three tools
+[exam] ok   strong sees the whole catalogue
+[exam] ok   the one tool a weak agent gets is the page reader
+[exam] ok   a weak agent cannot reach playbook authoring
+[exam] ok   narrow profiles get their own instructions, not the full menu
+[exam] ok   the default tier is medium
+[exam] ok   the default result is marked as such
+[exam] ok   cached results expire and capacity is bounded
+[exam] ok   rolling scoring withholds judgement below the minimum sample
+[exam] ok   rolling scoring demotes a consistently failing caller
+[exam] ok   hysteresis suppresses a single-observation flip
+EXAM_SELFTEST_OK
+selftest_exit=0
+
+### occam exam tasks (catalogue must be LF-only and platform-identical)
+[exam.tasks] wrote /home/pavel/occam-test/results/linux-x64/exam-tasks.json
+tasks_exit=0
+tasks_sha256=157b4ba4542d4444c3a9be58bc0a41e6b677c8aad1d373a5ebad3a40786b2e53
+tasks_bytes=2024
+tasks_lf_only=yes

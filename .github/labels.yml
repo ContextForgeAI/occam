@@ -1,0 +1,64 @@
+# Label set for this repository. Apply with a label-sync action or `gh label create`.
+# Kept small on purpose: a label nobody filters by is noise.
+
+# --- Type ---
+- name: bug
+  color: d73a4a
+  description: Something behaves differently from its documented contract
+- name: enhancement
+  color: a2eeef
+  description: New capability or improvement to an existing one
+- name: documentation
+  color: 0075ca
+  description: Docs are wrong, missing, or contradict the code
+- name: research
+  color: 8b5cf6
+  description: Experiment, hypothesis challenge, or prior-art report
+- name: security
+  color: b60205
+  description: Security-relevant; see SECURITY.md before filing publicly
+
+# --- Area ---
+- name: "area: canary"
+  color: fbca04
+  description: Proof-of-read protocol and its implementation
+- name: "area: extraction"
+  color: fbca04
+  description: HTTP/browser workers, post-processors, failure taxonomy
+- name: "area: mcp"
+  color: fbca04
+  description: Tool surface, transports, protocol handshake
+- name: "area: receipts"
+  color: fbca04
+  description: Receipt v1, Merkle proofs, claim check, attest
+- name: "area: build"
+  color: fbca04
+  description: Build, packaging, Native AOT, release
+
+# --- Cross-cutting ---
+- name: cross-platform
+  color: 1d76db
+  description: Behaves differently on one OS or architecture than another
+- name: aot
+  color: 1d76db
+  description: Native AOT / trimming compatibility
+- name: needs-evidence
+  color: e99695
+  description: Claim in this issue or PR is not backed by a log, artefact or test
+- name: breaking-change
+  color: b60205
+  description: Changes a documented contract or wire format
+
+# --- Process ---
+- name: good first issue
+  color: 7057ff
+  description: Small, self-contained, with a clear definition of done
+- name: help wanted
+  color: 008672
+  description: Maintainer would like someone else to take this
+- name: blocked
+  color: 5319e7
+  description: Waiting on an upstream fix or an unanswered decision
+- name: wontfix
+  color: ffffff
+  description: Deliberate non-goal; the reason is recorded on the issue

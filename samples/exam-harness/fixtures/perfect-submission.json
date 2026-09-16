@@ -1,0 +1,16 @@
+{
+  "clientInfo": "exam-harness/demo",
+  "modelHint": "mock-strong",
+  "sessionId": "demo-perfect",
+  "selfReportTier": "strong",
+  "canaryVerdict": "READ_VERIFIED",
+  "basicCallArguments": { "url": "https://example.com" },
+  "focusBudgetArguments": { "task": "closures", "budget": 800 },
+  "chain": {
+    "calls": [
+      { "url": "https://example.com" },
+      { "url": "https://example.com", "if_none_match": "sha256:abc" }
+    ],
+    "producedValue": "sha256:abc"
+  }
+}

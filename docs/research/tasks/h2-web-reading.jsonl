@@ -1,0 +1,24 @@
+{"id":"h2-01","stratum":"well_known","url":"https://example.com","must_contain":["Example Domain"],"needs":["read"],"irrelevant_tools":["occam_playbook_heal","occam_playbook_save"]}
+{"id":"h2-02","stratum":"well_known","url":"https://nginx.org/","must_contain":["nginx"],"needs":["read"],"irrelevant_tools":["occam_playbook_heal","occam_attest"]}
+{"id":"h2-03","stratum":"well_known","url":"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404","must_contain":["404"],"needs":["read"],"irrelevant_tools":["occam_dataset_export"]}
+{"id":"h2-04","stratum":"well_known","url":"https://www.rfc-editor.org/rfc/rfc2616","must_contain":["HTTP"],"needs":["read"],"irrelevant_tools":["occam_playbook_heal"]}
+{"id":"h2-05","stratum":"well_known","url":"https://httpbin.org/html","must_contain":["Herman Melville"],"needs":["read"],"irrelevant_tools":["occam_claim_check"]}
+{"id":"h2-06","stratum":"well_known","url":"https://www.example.org/","must_contain":["Example Domain"],"needs":["read"],"irrelevant_tools":["occam_playbook_save"]}
+{"id":"h2-07","stratum":"well_known","url":"https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview","must_contain":["HTTP"],"needs":["read"],"irrelevant_tools":["occam_browser_interact"]}
+{"id":"h2-08","stratum":"well_known","url":"https://jsonplaceholder.typicode.com/","must_contain":["JSONPlaceholder"],"needs":["read"],"irrelevant_tools":["occam_playbook_heal"]}
+{"id":"h2-09","stratum":"multi","url":"https://example.com","must_contain":["Example Domain"],"needs":["digest"],"digest_urls":["https://example.com","https://nginx.org/"],"irrelevant_tools":["occam_playbook_heal"]}
+{"id":"h2-10","stratum":"multi","url":"https://nginx.org/","must_contain":["nginx"],"needs":["digest"],"digest_urls":["https://nginx.org/","https://example.com"],"irrelevant_tools":["occam_attest"]}
+{"id":"h2-11","stratum":"search","url":"https://example.com","must_contain":["Example"],"needs":["search"],"search_query":"example domain iana","irrelevant_tools":["occam_playbook_heal"]}
+{"id":"h2-12","stratum":"well_known","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","must_contain":["JavaScript"],"needs":["read"],"focus":"functions closures","budget":800,"irrelevant_tools":["occam_playbook_save"]}
+{"id":"h2-13","stratum":"well_known","url":"https://httpbin.org/json","must_contain":["slideshow"],"needs":["read"],"irrelevant_tools":["occam_playbook_heal"]}
+{"id":"h2-14","stratum":"well_known","url":"https://www.rfc-editor.org/rfc/rfc791","must_contain":["Internet"],"needs":["read"],"irrelevant_tools":["occam_attest"]}
+{"id":"h2-15","stratum":"well_known","url":"https://developer.mozilla.org/en-US/docs/Web/HTML","must_contain":["HTML"],"needs":["read"],"irrelevant_tools":["occam_playbook_save"]}
+{"id":"h2-16","stratum":"well_known","url":"https://developer.mozilla.org/en-US/docs/Web/CSS","must_contain":["CSS"],"needs":["read"],"irrelevant_tools":["occam_claim_check"]}
+{"id":"h2-17","stratum":"well_known","url":"https://www.example.net/","must_contain":["Example Domain"],"needs":["read"],"irrelevant_tools":["occam_dataset_export"]}
+{"id":"h2-18","stratum":"well_known","url":"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/200","must_contain":["200"],"needs":["read"],"irrelevant_tools":["occam_playbook_heal"]}
+{"id":"h2-19","stratum":"multi","url":"https://www.example.org/","must_contain":["Example Domain"],"needs":["digest"],"digest_urls":["https://www.example.org/","https://www.example.net/"],"irrelevant_tools":["occam_playbook_heal"]}
+{"id":"h2-20","stratum":"multi","url":"https://httpbin.org/html","must_contain":["Herman Melville"],"needs":["digest"],"digest_urls":["https://httpbin.org/html","https://example.com"],"irrelevant_tools":["occam_attest"]}
+{"id":"h2-21","stratum":"search","url":"https://nginx.org/","must_contain":["nginx"],"needs":["search"],"search_query":"nginx official documentation","irrelevant_tools":["occam_playbook_save"]}
+{"id":"h2-22","stratum":"well_known","url":"https://www.rfc-editor.org/rfc/rfc793","must_contain":["TRANSMISSION"],"needs":["read"],"irrelevant_tools":["occam_browser_interact"]}
+{"id":"h2-23","stratum":"well_known","url":"https://jsonplaceholder.typicode.com/users","must_contain":["username"],"needs":["read"],"irrelevant_tools":["occam_playbook_heal"]}
+{"id":"h2-24","stratum":"search","url":"https://developer.mozilla.org/","must_contain":["MDN"],"needs":["search"],"search_query":"MDN Web Docs HTTP","irrelevant_tools":["occam_playbook_heal"]}

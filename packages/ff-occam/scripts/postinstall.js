@@ -32,7 +32,7 @@ const lines = [
   "  Windows: irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex",
   "  Linux / macOS: curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash",
   "",
-  "MCP-only trial (no operator CLI): npx ff-occam@1.1.1",
+  "MCP-only trial (no operator CLI): npx ff-occam@1.2.0",
 ];
 
 const bin = globalBinDir();
@@ -40,7 +40,7 @@ if (bin) {
   lines.push("", `[ff-occam] Global bin: ${bin}  (command: ff-occam)`);
   if (!pathHas(bin)) {
     lines.push("[ff-occam] That directory is not on PATH in this shell.");
-    lines.push("[ff-occam] Use `npx ff-occam@1.1.1`, or add the directory and open a new terminal.");
+    lines.push("[ff-occam] Use `npx ff-occam@1.2.0`, or add the directory and open a new terminal.");
   }
 }
 

@@ -2,22 +2,132 @@
 
 All notable changes to **FFOccamMCP** (L0 core) are documented here.
 
-Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1`…`1.0.0-rc.5` were release candidates; **`1.0.0` was first GA**; current public default is **`1.1.1`**.
+Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1`…`1.0.0-rc.5` were release candidates; **`1.0.0` was first GA**; current public default is **`1.2.0`**.
 
 ## [Unreleased]
 
-### Changed
+### Added
 
-- **Golden workflows** — three README lead recipes recaptured on published
-  GitHub Release **v1.1.1** (`ff-occam/1.1.1`). The tiny-budget MDN case
-  stays a separate artifact. Pack/research/brief/cite examples are still
-  workspace `1.0.0-rc.2`.
+### Changed
 
 ### Fixed
 
+## [1.2.0] — 2026-09-16
+
+GitHub Release **v1.2.0** (Cosign `required-cosign-v1`). Experimental npm
+**1.2.0** downloads this host (`HOST_RELEASE_VERSION`). Research instruments
+(canary, exam, cascade, H2/H3 harness) ship; multi-model Experiment 1–3
+results are **not** claimed.
+
+### Added
+
+- **Search fan-out + provider health** — `OCCAM_SEARCH_PROVIDERS` (CSV) polls configured
+  backends in parallel (`Task.WhenAll`, per-arm timeout default 3s), dedupes by normalized
+  URL, ranks consensus hits first, and returns `provider=fanout` with `providersUsed[]`.
+  Process-local rate window + degrade-after-429/CAPTCHA/timeout skips unhealthy arms
+  (`OCCAM_SEARCH_DEGRADE_MINUTES`, `OCCAM_SEARCH_RATE_*`). AOT-safe (existing providers +
+  `SearchJsonContext`). SiteExplorer/robots still deferred to `occam_map`.
+- **Exam harness (offline administration)** — `occam exam grade --submission`
+  parses a behaviour record, emits tier + recommended `OCCAM_PROFILE`, optional
+  `--write-env`. `exam harness-selftest` proves parse→grade→profile and the H3
+  static model-name map. Sample: `samples/exam-harness/`. Research runners:
+  `scripts/research/run-h2-disclosure.mjs` (`H2_PIPELINE_OK`),
+  `run-h3-competence.mjs` (`H3_PIPELINE_OK`) — mock pipelines; live extract
+  arm `run-h2-live-reads.mjs` (`H2_LIVE_READS_OK`); strong-agent surface A/B
+  `run-h2-surface-ab.mjs` (`H2_SURFACE_AB_OK`, 24 tasks × minimal/basic/full);
+  Composer exam cell under `docs/research/results/` (not multi-model Experiment
+  2/3). Docs: `docs/research/exam-harness.md`.
+- **Cascade facade `occam(url, task?, budget?, mode?)`** — progressive page reader
+  (playbook → HTTP → browser → focus/budget → content-hash) with per-step timeouts,
+  `partial`+`omitted[]` on graceful degradation, MCP registration, and CLI
+  `cascade selftest|run`. Narrow profiles expose `occam` instead of
+  `occam_transcode`. ADR: `docs/adr/0017-cascade-facade.md`. Markers:
+  `CASCADE_SELFTEST_OK`, `CASCADE_LIVE_SMOKE_OK` (3 URLs × macOS/Linux/Windows).
+  Sample: `samples/cascade-demo/`. Scripts:
+  `scripts/testing/cascade-live-smoke.{ps1,sh}`.
+- **Capability exam engine (experimental)** — four checkable tasks (`canary`,
+  `basic_call`, `focus_budget`, `chain`), one point each, mapping a score to a
+  tool surface: 0–1 → `weak` → 1 tool, 2–3 → `medium` → 3 tools, 4 → `strong` →
+  all 16. Default for an unexamined client is `medium`. Includes TTL-bounded
+  result caching keyed by `{clientInfo, modelHint, sessionId}` and rolling
+  competence scoring with a five-observation minimum sample, three-observation
+  hysteresis, and a reported oscillation count. Grading is a pure function of a
+  submitted behaviour record — **the host does not administer the exam**, and the
+  tool surface is still fixed at process start. Scope and gaps:
+  `docs/adr/0016-capability-exam.md`.
+- **`occam exam` CLI verbs** — `selftest` (assertions over grading, tiering,
+  tier → surface, cache expiry and hysteresis) and `tasks --out` (task catalogue
+  as JSON, for an external harness). Marker: `EXAM_SELFTEST_OK`.
+- **Two narrow tool profiles** — `OCCAM_PROFILE=minimal` (1 tool: `occam`) and
+  `basic` (3 tools: `occam`, digest, search). Surfaces are nested, and each
+  profile has its own `instructions` text.
+- **`ManualClock`** (`OccamMcp.Core.Time`) — the settable `TimeProvider`
+  previously named `CanaryManualClock`, moved out of the canary namespace now
+  that the exam cache and rate limiter share it.
+- **Proof-of-read canary (experimental)** — a protocol for checking whether
+  fetched content actually reached an agent's context, rather than whether the
+  fetcher received it. A probe endpoint serves a document carrying a sentinel
+  `HMAC-SHA256(secret, bucket ‖ sessionId)` with `bucket = floor(unix/300)`;
+  reporting it resolves to `READ_VERIFIED`, `READ_STALE`, `REPLAY_SUSPECT` or
+  `HALLUCINATED`. The secret is per-process CSPRNG, never persisted, never
+  logged; HKDF splits it so the audit-log pepper cannot forge a sentinel.
+  Specification and threat model: `PROBE_PROTOCOL.md`. Rationale and rejected
+  alternatives: `docs/adr/0010-proof-of-read-canary.md`.
+  **No MCP tool surface changed** — the canary is CLI-only for now.
+- **`occam canary` CLI verbs** — `selftest` (17 assertions over the verdict
+  state machine), `vectors --emit|--verify` (cross-platform derivation
+  check), `smoke` (HTTP issue → read → verify → reject), `serve`. All run
+  without the Node worker tree, a browser or network, so the protocol can be
+  proven from the published binary on a bare machine. Markers:
+  `CANARY_SELFTEST_OK`, `CANARY_VECTORS_OK`, `CANARY_SMOKE_OK`.
+- **First unit-test project** — `tests/OccamMcp.Core.Tests` (xunit, FsCheck,
+  coverlet). Complements `benchmarks/l0-gate`; `docs/testing/README.md`
+  explains the split. Dependency rationale: `docs/adr/0011-test-stack.md`.
+- **Cross-platform verification evidence** — `docs/testing/` holds real
+  logs per platform (macOS arm64, Linux x64, Windows x64). Summary:
+  `docs/testing/RESULTS.md`. Policy: `docs/adr/0015-cross-platform-evidence-policy.md`.
+- **Research layer** — `docs/research/` states H1–H3 in falsifiable form with
+  a methodology written before data collection. Instruments verified; multi-model
+  experiments incomplete.
+- **Repository infrastructure** — `.editorconfig`, `global.json`,
+  `Directory.Packages.props`, `docs/adr/`, `.devcontainer/`, GitHub labels and
+  research issue template.
+- **CI** — `unit-tests` job on ubuntu/windows/macos matrix with warnings-as-errors
+  and canary verbs.
+
+### Changed
+
+- **Core catalog 15 → 16** (`occam` cascade); default **reader 8 → 9**. Exam
+  focus/budget task accepts cascade aliases `task`/`budget` as well as
+  `focus_query`/`max_tokens`. Public schema fingerprint refreshed to
+  `520bd00bcc42…` (`corpora/public-mcp-schema-fingerprint.txt`).
+- **`src/FFOccamMcp.Core` now builds with `TreatWarningsAsErrors` and zero
+  warnings**, including under `dotnet publish -r <rid>` (ADR-0013).
+- **No profile's `instructions` may name a tool it does not expose.** Narrow
+  profiles use a trust block with no tool menu; invariant asserted for all six
+  profiles.
+- **Browser cookie harvest + one HTTP retry** — After a browser navigation
+  the worker returns first-party cookies in-process only. The router replays
+  the same URL once over HTTP and keeps the better usable document.
+- **Browser 401/403 is not a content verdict** — Playwright navigation
+  401/403 no longer aborts before DOM extract when usable content is present.
+- **Golden workflows** — three README lead recipes recaptured on published
+  GitHub Release **v1.1.1** (`ff-occam/1.1.1`). Pack/research/brief/cite
+  examples may still be workspace captures until recapture on 1.2.0.
+
+### Fixed
+
+- **`canary vectors --emit` to stdout and `--emit --out` produced different
+  bytes** on Windows due to an extra `Environment.NewLine`.
+- **Emitted canary vector file was not byte-portable** — newline pinned to `\n`.
+- **`docs/testing/**/*.log` was covered by the global `*.log` ignore rule** —
+  targeted negation added.
 - **CI docs-check** — `pdf-ocr-eval.selftest` needs `unpdf` from the workers
-  workspace. It now runs on `gate-fast` after `npm ci`, not on the bare
-  docs-check job.
+  workspace; runs after `npm ci` on `gate-fast`.
+- **L0 gate profile counts** — reader/researcher/auditor assertions updated for
+  the cascade tool (`occam`); transport prefix allows bare `occam`.
+- **Canary options env test** — clears `OCCAM_CANARY_*` so local research env
+  pollution cannot flake CI.
 
 ## [1.1.1] — 2026-09-07
 

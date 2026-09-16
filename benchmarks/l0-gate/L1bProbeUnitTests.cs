@@ -3,6 +3,8 @@ using OccamMcp.Core.Abstractions;
 using OccamMcp.Core.PostProcessors;
 using OccamMcp.Core.Probe;
 using OccamMcp.Core.Routing;
+using OccamMcp.Core.Semantics;
+using OccamMcp.Core.Session;
 using OccamMcp.Core.Text;
 using OccamMcp.Core.Workers;
 
@@ -271,7 +273,53 @@ internal static class L1bProbeUnitTests
         assert("l1b error shell evidence code", errorShell.EvidenceCodes.Contains("error_shell", StringComparer.Ordinal));
         assert("l1b error shell confidence 0", errorShell.Confidence == 0);
 
+        var gatedArticle = AccessClassifier.Classify(AccessEvidenceAdapters.FromMarkdown(
+            "# How closures capture variables\n\n" +
+            "A closure is a function plus the lexical environment recorded when that function was created. " +
+            "The inner function can still read outer bindings after the outer function has returned. " +
+            "Declare the outer function and its locals, return an inner function that reads those locals, " +
+            "then call the inner function later and observe the captured values. This paragraph exists so " +
+            "the fixture stays above the usable-content floor while remaining a documentation article. " +
+            "The HTTP status may be 403 while the extracted article is still a real document with steps and a code sample.\n",
+            "https://example.test/q/1",
+            "https://example.test/q/1",
+            403));
+        assert("l1b 403 usable article is blocked-but-content", gatedArticle.Disposition == AccessDisposition.BlockedButContentAvailable);
+        assert("l1b 403 usable article is not login-required", !gatedArticle.RequiresLogin);
+        assert("l1b 403 usable article keeps http_403 evidence", gatedArticle.EvidenceCodes.Contains("http_403", StringComparer.Ordinal));
+        assert("l1b 403 usable article public status", SemanticOutcomeMapper.ToPublicAccessStatus(gatedArticle.Disposition) == "blocked-but-content-available");
+
+        var gatedShell = AccessClassifier.Classify(AccessEvidenceAdapters.FromMarkdown(
+            "Just a moment...\n\nChecking your browser.",
+            "https://example.test/q/1",
+            "https://example.test/q/1",
+            403));
+        assert("l1b 403 thin shell is not content-available", gatedShell.Disposition != AccessDisposition.BlockedButContentAvailable);
+        assert("l1b 403 thin shell is not restricted-from-status-alone", gatedShell.Disposition != AccessDisposition.Restricted);
+
         var processor = new RequiresLoginPostProcessor();
+        var gatedUrl = "https://example.test/q/1";
+        var gatedKeep = processor.Process(
+            new TranscodeOutcome(
+                true,
+                "# How closures capture variables\n\n" +
+                "A closure is a function plus the lexical environment recorded when that function was created. " +
+                "The inner function can still read outer bindings after the outer function has returned. " +
+                "Declare the outer function and its locals, return an inner function that reads those locals, " +
+                "then call the inner function later and observe the captured values. This paragraph exists so " +
+                "the fixture stays above the usable-content floor while remaining a documentation article. " +
+                "The HTTP status may be 403 while the extracted article is still a real document with steps and a code sample.\n",
+                gatedUrl,
+                "browser",
+                null,
+                null,
+                StatusCode: 403),
+            new TranscodeContext(gatedUrl, OccamBackendPolicy.HttpThenBrowser, new OccamTranscodeOptions()));
+        assert("l1b 403 usable article stays ok", gatedKeep.Ok);
+        assert("l1b 403 usable article keeps status", gatedKeep.StatusCode == 403);
+        assert("l1b 403 usable article access stays content-available",
+            gatedKeep.AccessAssessment?.Disposition == AccessDisposition.BlockedButContentAvailable);
+
         var context = new TranscodeContext(
             publicUrl,
             OccamBackendPolicy.HttpThenBrowser,
@@ -335,18 +383,74 @@ internal static class L1bProbeUnitTests
 
         assert("l1b http_then_browser spa escalates browser", spaHttp.CallCount == 1 && spaBrowser.CallCount == 1);
         assert("l1b http_then_browser spa ok", spaOutcome.Ok);
+
+        const string soUrl = "https://stackoverflow.com/questions/1";
+        const string soBrowserMd = "# How closures capture variables\n\n" +
+            "A closure is a function plus the lexical environment recorded when that function was created. " +
+            "The inner function can still read outer bindings after the outer function has returned. " +
+            "Declare the outer function and its locals, return an inner function that reads those locals, " +
+            "then call the inner function later and observe the captured values. This paragraph exists so " +
+            "the fixture stays above the usable-content floor while remaining a documentation article. " +
+            "The HTTP status may be 403 while the extracted article is still a real document with steps and a code sample.\n";
+        const string soHttpMd = soBrowserMd + "\nAccepted answer with additional explanation and a second code sample.\n";
+        var cookieHttp = new CountingStubBackend(
+            "http",
+            (_, n) => n == 1
+                ? new ExtractRunResult(false, null, "local_http", "http_403", 80, soUrl, false, StatusCode: 403)
+                : new ExtractRunResult(true, soHttpMd, "local_http", null, 90, soUrl, false, StatusCode: 200));
+        var cookieBrowser = new CountingStubBackend(
+            "browser",
+            _ => new ExtractRunResult(
+                true, soBrowserMd, "browser_playwright", null, 200, soUrl, false,
+                StatusCode: 403, HarvestedCookieHeader: "prov=abc"));
+        var cookieRouter = new OccamRouter([cookieHttp, cookieBrowser]);
+        var cookieOutcome = cookieRouter.Transcode(soUrl, OccamBackendPolicy.HttpThenBrowser, CancellationToken.None);
+        assert("l1b cookie retry calls http twice", cookieHttp.CallCount == 2 && cookieBrowser.CallCount == 1);
+        assert("l1b cookie retry prefers 200 http", cookieOutcome.Ok && cookieOutcome.StatusCode == 200);
+        assert("l1b cookie retry backend is http", cookieOutcome.Backend == "local_http");
+        assert("l1b cookie retry recovery reason",
+            cookieOutcome.Recovery?.Any(a => a.EscalationReason == "browser_cookie_retry") == true);
+
+        var noCookieHttp = new CountingStubBackend(
+            "http",
+            _ => new ExtractRunResult(false, null, "local_http", "http_403", 80, soUrl, false, StatusCode: 403));
+        var noCookieBrowser = new CountingStubBackend(
+            "browser",
+            _ => new ExtractRunResult(true, soBrowserMd, "browser_playwright", null, 200, soUrl, false, StatusCode: 403));
+        var noCookieRouter = new OccamRouter([noCookieHttp, noCookieBrowser]);
+        var noCookieOutcome = noCookieRouter.Transcode(soUrl, OccamBackendPolicy.HttpThenBrowser, CancellationToken.None);
+        assert("l1b no harvest skips http retry", noCookieHttp.CallCount == 1 && noCookieBrowser.CallCount == 1);
+        assert("l1b no harvest keeps browser", noCookieOutcome.Ok && noCookieOutcome.StatusCode == 403);
+        var mergedCookies = FetchHeadersScope.MergeCookieHeader("sid=old; theme=dark", "sid=new");
+        assert("l1b cookie merge harvested wins",
+            mergedCookies.Contains("sid=new", StringComparison.Ordinal)
+            && mergedCookies.Contains("theme=dark", StringComparison.Ordinal)
+            && !mergedCookies.Contains("sid=old", StringComparison.Ordinal));
     }
 
-    private sealed class CountingStubBackend(string name, Func<string, ExtractRunResult> extract) : IExtractBackend
+    private sealed class CountingStubBackend : IExtractBackend
     {
-        public string Name => name;
+        private readonly Func<string, int, ExtractRunResult> _extract;
+
+        public CountingStubBackend(string name, Func<string, ExtractRunResult> extract)
+            : this(name, (url, _) => extract(url))
+        {
+        }
+
+        public CountingStubBackend(string name, Func<string, int, ExtractRunResult> extract)
+        {
+            Name = name;
+            _extract = extract;
+        }
+
+        public string Name { get; }
         public bool IsReady => true;
         public int CallCount { get; private set; }
 
         public ValueTask<ExtractRunResult> ExtractAsync(string url, CancellationToken cancellationToken)
         {
             CallCount++;
-            return ValueTask.FromResult(extract(url));
+            return ValueTask.FromResult(_extract(url, CallCount));
         }
     }
 

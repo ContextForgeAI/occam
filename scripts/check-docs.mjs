@@ -313,9 +313,9 @@ const registryPath = join(
 );
 const registry = readFileSync(registryPath, "utf8");
 const registryBlock = registry.match(/OccamToolNames\s*=\s*\[(.*?)\];/s)?.[1] ?? "";
-const coreTools = [...registryBlock.matchAll(/"(occam_[a-z0-9_]+)"/g)].map((match) => match[1]);
-if (coreTools.length !== 15) {
-  fail(registryPath, `expected 15 tools in the full-profile core catalog; parsed ${coreTools.length}`);
+const coreTools = [...registryBlock.matchAll(/"(occam(?:_[a-z0-9_]+)?)"/g)].map((match) => match[1]);
+if (coreTools.length !== 16) {
+  fail(registryPath, `expected 16 tools in the full-profile core catalog; parsed ${coreTools.length}`);
 }
 
 const profilePath = join(
@@ -327,11 +327,11 @@ const profilePath = join(
 );
 const profileSource = readFileSync(profilePath, "utf8");
 const readerBlock = profileSource.match(/ReaderTools\s*=\s*\[(.*?)\];/s)?.[1] ?? "";
-const readerTools = [...readerBlock.matchAll(/"(occam_[a-z0-9_]+)"/g)].map(
+const readerTools = [...readerBlock.matchAll(/"(occam(?:_[a-z0-9_]+)?)"/g)].map(
   (match) => match[1],
 );
-if (readerTools.length !== 8) {
-  fail(profilePath, `expected 8 tools in the default reader profile; parsed ${readerTools.length}`);
+if (readerTools.length !== 9) {
+  fail(profilePath, `expected 9 tools in the default reader profile; parsed ${readerTools.length}`);
 }
 
 const version = readFileSync(join(repoRoot, "VERSION"), "utf8").trim();
@@ -368,14 +368,14 @@ for (const path of [
 ]) {
   const text = readFileSync(path, "utf8");
   const statesReaderCount =
-    /\breader\b[^\n]{0,80}\b8\b/i.test(text) || /\b8\b[^\n]{0,80}\breader\b/i.test(text);
+    /\breader\b[^\n]{0,80}\b9\b/i.test(text) || /\b9\b[^\n]{0,80}\breader\b/i.test(text);
   const statesFullCount =
-    /\bfull\b[^\n]{0,80}\b15\b/i.test(text) || /\b15\b[^\n]{0,80}\bfull\b/i.test(text);
+    /\bfull\b[^\n]{0,80}\b16\b/i.test(text) || /\b16\b[^\n]{0,80}\bfull\b/i.test(text);
   if (!statesReaderCount || !statesFullCount) {
-    fail(path, "profile-aware install/tool-count prose must state reader=8 and full=15");
+    fail(path, "profile-aware install/tool-count prose must state reader=9 and full=16");
   }
-  if (/(?:expect|showed)\s+\*\*15\*\*[^\n]*tools/i.test(text)) {
-    fail(path, "install/tool health must not hard-require the full-profile 15-tool count");
+  if (/(?:expect|showed)\s+\*\*16\*\*[^\n]*tools/i.test(text)) {
+    fail(path, "install/tool health must not hard-require the full-profile 16-tool count");
   }
 }
 
@@ -405,8 +405,8 @@ for (const path of publicMarkdown) {
   ) {
     fail(path, "npm is a public experimental RC channel; do not call it internal or non-public");
   }
-  if (/\b15(?:\/51)?\b[^\n]{0,80}\bdefault(?:\s+MCP)?\s+tools\b/i.test(text)) {
-    fail(path, "the default reader profile exposes 8 tools; 15 is the full-profile catalog");
+  if (/\b16(?:\/51)?\b[^\n]{0,80}\bdefault(?:\s+MCP)?\s+tools\b/i.test(text)) {
+    fail(path, "the default reader profile exposes 9 tools; 16 is the full-profile catalog");
   }
 }
 

@@ -1,0 +1,80 @@
+### AOT binary: canary selftest
+[canary.selftest] issued bucket=6000000 sentinelChars=43
+[canary] ok   determinism: same inputs derive the same sentinel
+[canary] ok   session isolation: a different session derives a different sentinel
+[canary] ok   time binding: the next bucket derives a different sentinel
+[canary] ok   READ_VERIFIED for a fresh, issued sentinel
+[canary] ok   READ_VERIFIED tolerates surrounding quotes and whitespace
+[canary] ok   HALLUCINATED for an invented value
+[canary] ok   HALLUCINATED for an empty claim
+[canary] ok   HALLUCINATED when the sentinel belongs to another session
+[canary] ok   REPLAY_SUSPECT for an authentic but unissued sentinel
+[canary] ok   READ_STALE once the fresh window has passed
+[canary] ok   READ_STALE reports a positive bucket distance
+[canary] ok   HALLUCINATED beyond the stale horizon
+[canary] ok   floor bucket arithmetic holds for pre-epoch instants
+[canary] ok   bucket arithmetic is exact on a bucket boundary
+[canary] ok   rate limiter refuses once the window is exhausted
+[canary] ok   session ids reject characters that would need HTML escaping
+[canary] ok   disposed secret refuses to derive
+CANARY_SELFTEST_OK
+aot_selftest_exit=0
+
+### AOT binary: canary vectors --verify
+[canary.vectors] checked=8 mismatches=0
+CANARY_VECTORS_OK checked=8
+aot_vectors_exit=0
+
+### AOT binary: canary smoke
+[canary.smoke] listening on http://127.0.0.1:34051
+[canary] ok   probe document returns 200
+[canary] ok   probe document is not cacheable
+[canary] ok   probe document carries an occam-sentinel meta tag
+[canary] ok   sentinel also appears in the document body
+[canary] ok   truthful claim verifies (got READ_VERIFIED)
+[canary] ok   invented claim is rejected (got HALLUCINATED)
+[canary.smoke] verify(truthful)={"ok":true,"verdict":"READ_VERIFIED","sessionId":"MdRN95EQ1c053NcQC5SY6Q","currentBucket":5965117,"matchedBucket":5965117,"bucketDistance":0,"detail":"Sentinel is authentic, was issued by this host, and is inside the fresh window."}
+[canary.smoke] verify(invented)={"ok":false,"verdict":"HALLUCINATED","sessionId":"MdRN95EQ1c053NcQC5SY6Q","currentBucket":5965117,"matchedBucket":null,"bucketDistance":null,"detail":"Reported sentinel matches no bucket within the recognised window (24 buckets back)."}
+CANARY_SMOKE_OK
+aot_smoke_exit=0
+
+### AOT binary: exam selftest
+[exam] ok   a complete submission scores 4
+[exam] ok   a score of 4 is strong
+[exam] ok   grading reports one outcome per task
+[exam] ok   an empty submission scores 0
+[exam] ok   a score of 0 is weak
+[exam] ok   a null submission grades without throwing
+[exam] ok   canary passes only on READ_VERIFIED
+[exam] ok   basic call rejects malformed JSON
+[exam] ok   basic call rejects a JSON array
+[exam] ok   basic call rejects a relative URL
+[exam] ok   basic call rejects a non-http scheme
+[exam] ok   basic call rejects a numeric url
+[exam] ok   focus+budget rejects a missing budget
+[exam] ok   focus+budget rejects an empty focus query
+[exam] ok   focus+budget rejects an implausible budget
+[exam] ok   focus+budget rejects a non-integer budget
+[exam] ok   chain rejects a single call
+[exam] ok   chain rejects a value that was never consumed
+[exam] ok   chain rejects a mismatched value
+[exam] ok   chain accepts diff_against as a consuming parameter
+[exam] ok   chain rejects consumption by the first call only
+[exam] ok   score 0 and 1 map to weak
+[exam] ok   score 2 and 3 map to medium
+[exam] ok   score 4 maps to strong
+[exam] ok   out-of-range scores clamp rather than throw
+[exam] ok   weak sees exactly one tool
+[exam] ok   medium sees exactly three tools
+[exam] ok   strong sees the whole catalogue
+[exam] ok   the one tool a weak agent gets is the page reader
+[exam] ok   a weak agent cannot reach playbook authoring
+[exam] ok   narrow profiles get their own instructions, not the full menu
+[exam] ok   the default tier is medium
+[exam] ok   the default result is marked as such
+[exam] ok   cached results expire and capacity is bounded
+[exam] ok   rolling scoring withholds judgement below the minimum sample
+[exam] ok   rolling scoring demotes a consistently failing caller
+[exam] ok   hysteresis suppresses a single-observation flip
+EXAM_SELFTEST_OK
+aot_exam_exit=0

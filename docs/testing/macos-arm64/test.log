@@ -1,0 +1,9 @@
+### dotnet test --collect:XPlat Code Coverage
+Test run for /Users/pavelbogatyrev/occam-test/occam/tests/OccamMcp.Core.Tests/bin/Release/net10.0/OccamMcp.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+Общее количество тестовых файлов (1), соответствующих указанному шаблону.
+
+Пройден!   : не пройдено     0, пройдено   314, пропущено     0, всего   314, длительность 621 ms. - OccamMcp.Core.Tests.dll (net10.0)
+
+Вложения:
+  /Users/pavelbogatyrev/occam-test/results/macos-arm64/TestResults/f29e3fba-5e03-4a50-b06d-58e1fda94cc2/coverage.cobertura.xml
+test_exit=0

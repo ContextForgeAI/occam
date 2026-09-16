@@ -19,7 +19,7 @@ Host-neutral steps for the public GitHub release tree (`https://github.com/Conte
 | MCP `env: {}` without `OCCAM_HOME` | Workers won't resolve — `workers_unavailable` |
 | `OPENROUTER_API_KEY` in Occam MCP `env` | Hermes LLM key — not the MCP host |
 
-Stack: **.NET 10 AOT host** + **Node 20+** workers. Expect **8** tools under default `OCCAM_PROFILE=reader`, or **15** under `OCCAM_PROFILE=full`, after smoke.
+Stack: **.NET 10 AOT host** + **Node 20+** workers. Expect **9** tools under default `OCCAM_PROFILE=reader`, or **16** under `OCCAM_PROFILE=full`, after smoke.
 
 ---
 
@@ -41,7 +41,7 @@ $env:OCCAM_HOME = if ($env:OCCAM_INSTALL_DIR) { $env:OCCAM_INSTALL_DIR } else { 
 node "$env:OCCAM_HOME\scripts\hermes-smoke.mjs"
 ```
 
-Expect **exit 0** and **15** tools. Full details: repo-root `INSTALL.md`.
+Expect **exit 0** and **16** tools. Full details: repo-root `INSTALL.md`.
 
 `npx @ff-occam/mcp` is **not** part of `1.0.0-rc.2`.
 

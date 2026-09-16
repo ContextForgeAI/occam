@@ -29,6 +29,66 @@ public sealed class FetchHeadersScope : IDisposable
         CurrentStorageStatePath.Value = storageStatePath;
     }
 
+    /// <summary>
+    /// One HTTP retry after browser cookie harvest. Merges into the current session headers
+    /// file when present. Harvested names win. Never log values.
+    /// </summary>
+    public static FetchHeadersScope CreateCookieRetryScope(string harvestedCookieHeader)
+    {
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (ActivePath is { Length: > 0 } path && File.Exists(path))
+        {
+            try
+            {
+                using var stream = File.OpenRead(path);
+                var existing = JsonSerializer.Deserialize(
+                    stream,
+                    FetchHeadersJsonContext.Default.DictionaryStringString);
+                if (existing is { Count: > 0 })
+                {
+                    foreach (var (name, value) in existing)
+                    {
+                        headers[name] = value;
+                    }
+                }
+            }
+            catch
+            {
+                // Fall through with harvested cookies only.
+            }
+        }
+
+        headers["Cookie"] = headers.TryGetValue("Cookie", out var prior)
+            ? MergeCookieHeader(prior, harvestedCookieHeader)
+            : harvestedCookieHeader;
+        return Create(headers, ActiveStorageStatePath);
+    }
+
+    internal static string MergeCookieHeader(string existing, string harvested)
+    {
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var header in new[] { existing, harvested })
+        {
+            if (string.IsNullOrWhiteSpace(header))
+            {
+                continue;
+            }
+
+            foreach (var part in header.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+            {
+                var eq = part.IndexOf('=');
+                if (eq <= 0)
+                {
+                    continue;
+                }
+
+                map[part[..eq].Trim()] = part[(eq + 1)..];
+            }
+        }
+
+        return string.Join("; ", map.Select(pair => $"{pair.Key}={pair.Value}"));
+    }
+
     public static FetchHeadersScope Create(
         IReadOnlyDictionary<string, string> headers,
         string? storageStatePath = null)

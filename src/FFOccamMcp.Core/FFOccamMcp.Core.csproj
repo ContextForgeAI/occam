@@ -18,6 +18,13 @@
     <StripSymbols>true</StripSymbols>
     <IsAotCompatible>true</IsAotCompatible>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <!--
+      ADR-0013: the flag follows the tests. Enabled once the last six warnings were fixed rather
+      than suppressed — four nullable ones via NotNullWhen annotations, and the IL2026/IL3050 pair
+      by replacing a reflection-based serializer call on a shipped AOT path with a source-generated
+      context, pinned output-neutral by PlaybookHealDraftBuilderTests.
+    -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>OccamMcp.Core</RootNamespace>
     <AssemblyName>OccamMcp.Core</AssemblyName>
     <!-- Version / InformationalVersion: Directory.Build.props ← VERSION -->
@@ -58,11 +65,12 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>Abr512</_Parameter1>
     </AssemblyAttribute>
-    <PackageReference Include="ModelContextProtocol" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
-    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+    <!-- Versions live in Directory.Packages.props (central package management, ADR-0012). -->
+    <PackageReference Include="ModelContextProtocol" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" />
     <!-- SI-15: RFC3161 time-stamp tokens (Rfc3161TimestampRequest/Token) for time-anchored receipts. -->
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.0" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 
 </Project>

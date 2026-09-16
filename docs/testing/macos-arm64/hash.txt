@@ -1,0 +1,1 @@
+b0a8801b0218d90523ae44a10006861d3c4150850f962a4be4aff93a4d107b15  /Users/pavelbogatyrev/occam-test/publish/macos-arm64/OccamMcp.Core

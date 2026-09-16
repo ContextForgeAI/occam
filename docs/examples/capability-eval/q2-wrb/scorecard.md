@@ -26,3 +26,12 @@ Do not set `OCCAM_SEARCH_PROVIDER=donsetch` in a discovery comparison.
 WRB uses substring probes and `chars / 4` token estimates. This is comparative
 evidence, not an agent-answer-quality benchmark and not a product-wide
 success headline.
+
+**P1 live re-run (2026-09-07, same WRB pin, archive policy aligned):**
+
+| Arm | Retrieval | T1 / T2 / T3 | FP | Notes |
+|---|---:|---|---:|---|
+| Occam in-tree (`OCCAM_FORCE_DOTNET_RUN=1`) | **36/48 = 75.0%** | 100 / 75.0 / 38.5 | 0 | `occam-p1.json`. Same six misses as the frozen run. |
+| DonSeTch 3.6.7 `archive=off` | **39/48 = 81.2%** | 100 / 81.2 / 53.8 | 0 | `donsetch-archive-off.json`. Down from frozen 42/48. |
+
+Fair live gap is **3 URL / 6.25 pp** (not 6 / 12.5). DonSeTch still retrieves one SO question, Indeed, and Reuters. Occam retrieves none of those three. Three other SO URLs missed on both arms this time (DonSeTch: two ~45–52s deadline, one instant fail). P0+P1 did not raise Occam's 36/48. False-positive rate stayed 0.

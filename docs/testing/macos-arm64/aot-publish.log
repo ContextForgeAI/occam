@@ -1,0 +1,8 @@
+### dotnet publish -c Release -r osx-arm64 (Native AOT)
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  FFOccamMcp.Core -> /Users/pavelbogatyrev/occam-test/occam/src/FFOccamMcp.Core/bin/Release/net10.0/osx-arm64/OccamMcp.Core.dll
+  Generating native code
+  FFOccamMcp.Core -> /Users/pavelbogatyrev/occam-test/publish/macos-arm64/
+publish_exit=0
+publish_wall_seconds=49

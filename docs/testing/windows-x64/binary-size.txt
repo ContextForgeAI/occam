@@ -1,0 +1,3 @@
+binary=C:\PROJECTS\FFOccamMCP\artifacts\xplat\publish\windows-x64\OccamMcp.Core.exe
+size_bytes=40055296
+file_type=PE32+ executable (win-x64, Native AOT)

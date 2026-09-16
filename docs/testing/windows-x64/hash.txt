@@ -1,0 +1,1 @@
+d3b786f2d0450982a9ebcc36ad9c9a80778364dc7c458802bf7de73ef570f37d  C:\PROJECTS\FFOccamMCP\artifacts\xplat\publish\windows-x64\OccamMcp.Core.exe

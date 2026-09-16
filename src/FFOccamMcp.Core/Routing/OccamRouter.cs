@@ -1,5 +1,6 @@
 using OccamMcp.Core.Abstractions;
 using OccamMcp.Core.PostProcessors;
+using OccamMcp.Core.Session;
 using OccamMcp.Core.Workers;
 
 namespace OccamMcp.Core.Routing;
@@ -80,7 +81,7 @@ public sealed class OccamRouter
             OccamBackendPolicy.Http =>
                 TranscodeOutcomeMapper.FromExtractRun(await _http!.ExtractAsync(url, cancellationToken).ConfigureAwait(false)),
             OccamBackendPolicy.Browser =>
-                TranscodeOutcomeMapper.FromExtractRun(await _browser!.ExtractAsync(url, cancellationToken).ConfigureAwait(false)),
+                await TranscodeBrowserThenCookieHttpAsync(url, cancellationToken).ConfigureAwait(false),
             OccamBackendPolicy.HttpThenBrowser =>
                 await TranscodeHttpThenBrowserAsync(url, cancellationToken).ConfigureAwait(false),
             _ => new TranscodeOutcome(false, null, null, null, "invalid_policy", "Unknown backend policy."),
@@ -152,6 +153,14 @@ public sealed class OccamRouter
         var browser = Record(
             await _browser!.ExtractAsync(url, cancellationToken).ConfigureAwait(false),
             EscalationReasonFor(http));
+
+        var retry = await TryCookieHttpRetryAsync(url, browser, cancellationToken).ConfigureAwait(false);
+        if (retry is not null)
+        {
+            Record(retry, "browser_cookie_retry");
+            return Finish(ChooseBestOf(http, browser, retry));
+        }
+
         if (IsSuccessfulExtract(browser))
         {
             return Finish(browser);
@@ -163,6 +172,106 @@ public sealed class OccamRouter
         // (whose backend=browser must surface so the tool's browser-exhausted-thin STOP fires instead of
         // handing the agent a retry-browser hint for a browser it already tried).
         return Finish(ChooseRawFallback(http, browser));
+    }
+
+    private async ValueTask<TranscodeOutcome> TranscodeBrowserThenCookieHttpAsync(
+        string url,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var attempts = new List<TranscodeAttempt>();
+        WorkerBrowserProvisionedInfo? provisioned = null;
+        ExtractRunResult Record(ExtractRunResult r, string? escalationReason = null)
+        {
+            provisioned ??= r.BrowserProvisioned;
+            var usable = IsSuccessfulExtract(r);
+            attempts.Add(new TranscodeAttempt(
+                Backend: r.Backend ?? "browser",
+                Ok: r.Ok,
+                LatencyMs: r.LatencyMs,
+                TransportOk: r.Ok,
+                Usable: usable,
+                FailureCode: usable ? null : ResolveAttemptFailure(r),
+                EscalationReason: escalationReason));
+            return r;
+        }
+
+        TranscodeOutcome Finish(ExtractRunResult r) =>
+            TranscodeOutcomeMapper.FromExtractRun(r) with
+            {
+                Recovery = attempts.Count > 1 ? attempts.ToArray() : null,
+                BrowserProvisioned = r.BrowserProvisioned ?? provisioned,
+            };
+
+        var browser = Record(await _browser!.ExtractAsync(url, cancellationToken).ConfigureAwait(false));
+        var retry = await TryCookieHttpRetryAsync(url, browser, cancellationToken).ConfigureAwait(false);
+        if (retry is not null)
+        {
+            Record(retry, "browser_cookie_retry");
+            return Finish(ChooseBestUsable(browser, retry));
+        }
+
+        return Finish(browser);
+    }
+
+    private async ValueTask<ExtractRunResult?> TryCookieHttpRetryAsync(
+        string url,
+        ExtractRunResult browser,
+        CancellationToken cancellationToken)
+    {
+        if (_http is not { IsReady: true }
+            || string.IsNullOrWhiteSpace(browser.HarvestedCookieHeader))
+        {
+            return null;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        using var scope = FetchHeadersScope.CreateCookieRetryScope(browser.HarvestedCookieHeader);
+        return await _http.ExtractAsync(url, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static ExtractRunResult ChooseBestOf(
+        ExtractRunResult http,
+        ExtractRunResult browser,
+        ExtractRunResult retry)
+    {
+        if (IsSuccessfulExtract(browser) || IsSuccessfulExtract(retry))
+        {
+            return ChooseBestUsable(browser, retry);
+        }
+
+        return ChooseRawFallback(ChooseRawFallback(http, browser), retry);
+    }
+
+    internal static ExtractRunResult ChooseBestUsable(ExtractRunResult left, ExtractRunResult right)
+    {
+        var leftOk = IsSuccessfulExtract(left);
+        var rightOk = IsSuccessfulExtract(right);
+        if (leftOk && !rightOk)
+        {
+            return left;
+        }
+
+        if (rightOk && !leftOk)
+        {
+            return right;
+        }
+
+        if (!leftOk && !rightOk)
+        {
+            return ChooseRawFallback(left, right);
+        }
+
+        var leftGranted = left.StatusCode is > 0 and < 400;
+        var rightGranted = right.StatusCode is > 0 and < 400;
+        if (leftGranted != rightGranted)
+        {
+            return rightGranted ? right : left;
+        }
+
+        var leftLen = left.Markdown?.Length ?? 0;
+        var rightLen = right.Markdown?.Length ?? 0;
+        return rightLen > leftLen ? right : left;
     }
 
     // Above this much extracted markdown the page is real content, so skip the keyword challenge check — a

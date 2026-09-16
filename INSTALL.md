@@ -11,8 +11,8 @@
 **Requirements:** Node.js **20+** (installer also checks Homebrew locations `/opt/homebrew/bin` and `/usr/local/bin` when `node` is not already on `PATH`). No .NET SDK on the install machine.  
 **Cosign:** required when the release manifest declares `signaturePolicy=required-cosign-v1` (published `v1.0.0-rc.3`+). Install from [Sigstore Cosign docs](https://docs.sigstore.dev/cosign/system_config/installation/) before bootstrap if Cosign is not already on `PATH`. Authenticity ≠ page-content truth.
 
-**Published release:** `1.1.1` (GitHub Release tag `v1.1.1`).
-**Public install default** (unset `OCCAM_VERSION`): **`1.1.1`**.
+**Published release:** `1.2.0` (GitHub Release tag `v1.2.0`).
+**Public install default** (unset `OCCAM_VERSION`): **`1.2.0`**.
 
 ---
 
@@ -59,14 +59,14 @@ Install behavior follows the **release manifest contract** (not the version stri
 | `runtimeLayout=self-contained-v1` (published `v1.0.0-rc.3`+) | Self-contained — SHA-256 + archive preflight + runtime closure; **no** executable helper overlay; Cosign when `signaturePolicy=required-cosign-v1` |
 | unknown `runtimeLayout` / unknown `signaturePolicy` | Fail closed |
 
-**Public default** (unset `OCCAM_VERSION`): **`1.1.1`**. Set `OCCAM_VERSION=1.1.0`, `1.0.0`, `1.0.0-rc.5`, `1.0.0-rc.4`, `1.0.0-rc.3`, or `1.0.0-rc.2` only when you intentionally need an older channel.
+**Public default** (unset `OCCAM_VERSION`): **`1.2.0`**. Set `OCCAM_VERSION=1.1.0`, `1.0.0`, `1.0.0-rc.5`, `1.0.0-rc.4`, `1.0.0-rc.3`, or `1.0.0-rc.2` only when you intentionally need an older channel.
 
 1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases (or `OCCAM_RELEASE_BASE`)
 2. Requires the manifest version, RID, and tarball name to match the requested release, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). For self-contained manifests, archive-member preflight runs **before** extract
 3. Extracts to staging. Self-contained installs check the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR` (default `~/.local/share/ff-occam`). An existing target must itself be a consistent Occam release for the current RID (inner `layout: level-b` markers); source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
 4. **Self-contained:** uses only helpers inside that verified archive (no mutable post-install executable helper overlay). **Legacy Level B:** may refresh operator CLI helpers from the repository overlay. Bootstrap **script** delivery from the mutable `main` raw URL remains a separate T4 concern
 5. Runs **doctor** (`--skip-build`) — npm workers + Playwright (quiet by default)
-6. Verifies the Occam host (`verify-install` + smoke) — expect the profile's required tool identities (default `reader` = **8**; `full` = **15**)
+6. Verifies the Occam host (`verify-install` + smoke) — expect the profile's required tool identities (default `reader` = **9**; `full` = **16**)
 7. Writes operator defaults to `~/.occam/onboard.json` (no second `OCCAM_HOME` prompt)
 8. Installs a user-scoped **`occam`** launcher (`~/.local/bin`; Windows: `occam.cmd` + `occam.ps1`) and prepends that directory to the **User** PATH (and the current shell PATH) so `occam` resolves immediately after install. Existing launchers are replaced only when they exactly match an Occam-generated current or previous-release launcher; unrelated same-named files stop the install, and multi-file launcher updates roll back as one transaction
 9. Runs **`occam connect`** — detects AI/MCP hosts; one host auto-connects; multiple hosts confirm first (or `OCCAM_CONNECT_ALL=1` for automation)
@@ -89,7 +89,7 @@ Optional env (compatibility — same on all platforms):
 | `OCCAM_VERBOSE` | unset | `1` — show doctor/smoke/connect internals during install |
 | `OCCAM_HOST` | (none) | Legacy preference for the **fallback** connection snippet only (`hermes` or `cursor`) — not a phantom pre-selected host |
 | `OCCAM_INSTALL_DIR` | `~/.local/share/ff-occam` | Install root |
-| `OCCAM_VERSION` | `1.1.1` (public default; published GitHub Release) | Release version; set an older tag only for a legacy channel |
+| `OCCAM_VERSION` | `1.2.0` (public default; published GitHub Release) | Release version; set an older tag only for a legacy channel |
 | `OCCAM_RID` | detected | Published RID override: `win-x64` \| `linux-x64` \| `osx-arm64` only |
 
 `OCCAM_HOST` does **not** replace `occam connect`. Prefer letting connect detect and configure validated hosts.
@@ -111,7 +111,7 @@ occam smoke
 occam smoke
 ```
 
-Expect **exit 0**. Tool count follows `OCCAM_PROFILE` (default `reader` = **8**; `full` = **15**).
+Expect **exit 0**. Tool count follows `OCCAM_PROFILE` (default `reader` = **9**; `full` = **16**).
 
 Re-run host connection any time:
 

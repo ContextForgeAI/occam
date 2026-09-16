@@ -17,6 +17,8 @@ import { resolveBrowserLaunchOptions, STEALTH_INIT_SCRIPT, classifyBrowserLaunch
 import { provisionChromium, autoInstallEnabled } from "./browser-provision.mjs";
 import { isUrlAllowed, shouldSkipPrivateIpCheck, resolveAndValidateHost, SsrfBlockedError } from "../../shared/lib/private-ip.mjs";
 import { isLoginRoute } from "../../shared/lib/access-evidence.mjs";
+import { GATED_CONTENT_FLOOR, classifyGatedNavResult, shouldContinueAfterNavStatus } from "./gated-nav-extract.mjs";
+import { harvestCookiesForRetry } from "./harvest-cookies.mjs";
 
 /**
  * Validates a URL after navigation in browser context
@@ -458,6 +460,11 @@ export async function renderAndExtract(context, url, options = {}) {
   const consentAggressive = recipe?.consentAggressive === true || optionConsentAggressive;
   let cookiesInjected = false;
   let sessionCookiesAdded = 0;
+  let outgoing = null;
+  const done = (payload) => {
+    outgoing = payload;
+    return payload;
+  };
 
   try {
     const renderStart = performance.now();
@@ -481,7 +488,7 @@ export async function renderAndExtract(context, url, options = {}) {
       try {
         await resolveAndValidateHost(new URL(url).hostname);
       } catch (error) {
-        return {
+        return done({
           ok: false,
           backend: "browser_playwright",
           failure: error instanceof SsrfBlockedError ? error.failure : "dns_resolution_failed",
@@ -490,7 +497,7 @@ export async function renderAndExtract(context, url, options = {}) {
           render_ms: 0,
           extract_ms: 0,
           latency_ms: Math.round(performance.now() - started),
-        };
+        });
       }
     }
 
@@ -513,7 +520,7 @@ export async function renderAndExtract(context, url, options = {}) {
     
     // Check if initial navigation was blocked
     if (navigationBlocked) {
-      return {
+      return done({
         ok: false,
         backend: "browser_playwright",
         failure: "private_url_blocked",
@@ -522,12 +529,14 @@ export async function renderAndExtract(context, url, options = {}) {
         render_ms: 0,
         extract_ms: 0,
         latency_ms: Math.round(performance.now() - started),
-      };
+      });
     }
 
     const navStatus = mainResponse?.status?.() ?? 0;
-    if (navStatus >= 400) {
-      return {
+    // 401/403 can still render a real document (Stack Overflow-class walls).
+    // Fail-fast only for statuses that cannot become usable content (404/410/5xx/…).
+    if (!shouldContinueAfterNavStatus(navStatus)) {
+      return done({
         ok: false,
         backend: "browser_playwright",
         failure: `http_${navStatus}`,
@@ -539,7 +548,7 @@ export async function renderAndExtract(context, url, options = {}) {
         consent_recipe: recipe?.id ?? null,
         cookies_injected: cookiesInjected,
         latency_ms: Math.round(performance.now() - started),
-      };
+      });
     }
     await page.waitForSelector("article, main, [role='main'], body", { timeout: 12_000 }).catch(() => {});
     await page.waitForTimeout(recipe?.postLoadWaitMs ?? (consentAggressive ? 2000 : 1000));
@@ -562,10 +571,11 @@ export async function renderAndExtract(context, url, options = {}) {
       };
     }).catch(() => null);
     if (isChallengeWall(challengeProbe)) {
-      return {
+      return done({
         ok: false,
         backend: "browser_playwright",
         failure: "captcha_or_challenge",
+        status_code: navStatus > 0 ? navStatus : undefined,
         extract_variant: variant,
         url: { requested: url, final: page.url() },
         consent_recipe: recipe?.id ?? null,
@@ -573,7 +583,7 @@ export async function renderAndExtract(context, url, options = {}) {
         render_ms: Math.round(performance.now() - renderStart),
         extract_ms: 0,
         latency_ms: Math.round(performance.now() - started),
-      };
+      });
     }
 
     // Single budgeted consent pass. HTML preprocess stripConsentOnly still removes
@@ -595,7 +605,7 @@ export async function renderAndExtract(context, url, options = {}) {
     if (Array.isArray(mcpActions) && mcpActions.length > 0) {
       const validated = validateMcpActions(mcpActions);
       if (!validated.ok) {
-        return {
+        return done({
           ok: false,
           backend: "browser_playwright",
           failure: validated.failure,
@@ -603,14 +613,14 @@ export async function renderAndExtract(context, url, options = {}) {
           extract_variant: variant,
           url: { requested: url, final: page.url() },
           latency_ms: Math.round(performance.now() - started),
-        };
+        });
       }
       mcpActionResult = await runMcpActions(page, validated.actions, {
         deadlineMs: actionDeadlineMs ?? undefined,
       });
       interactionInfo = { steps_run: mcpActionResult.steps_run ?? 0 };
       if (!mcpActionResult.ok) {
-        return {
+        return done({
           ok: false,
           backend: "browser_playwright",
           failure: mcpActionResult.failure ?? "action_failed",
@@ -623,7 +633,7 @@ export async function renderAndExtract(context, url, options = {}) {
           failed_index: mcpActionResult.failed_index,
           steps_run: mcpActionResult.steps_run,
           latency_ms: Math.round(performance.now() - started),
-        };
+        });
       }
     } else {
       interactionInfo = await runBrowserPlan(page, browserPlan);
@@ -686,10 +696,10 @@ export async function renderAndExtract(context, url, options = {}) {
     // P0-1: Final URL validation after all redirects/navigations
     const finalValidation = validateFinalUrlInBrowser(finalUrl, started);
     if (finalValidation) {
-      return {
+      return done({
         ...finalValidation,
         extract_variant: variant,
-      };
+      });
     }
 
     if (extracted?.markdown) {
@@ -714,9 +724,33 @@ export async function renderAndExtract(context, url, options = {}) {
       }
     }
 
-    return {
+    const gated = classifyGatedNavResult({
+      navStatus,
+      markdown: extracted?.markdown ?? "",
+      isChallengeWall: isChallengeWall(challengeProbe),
+      looksThin: (extracted?.text_length ?? 0) < GATED_CONTENT_FLOOR,
+      looksErrorShell: Boolean(extracted?.access?.error_shell),
+    });
+    if (gated.kind === "fail") {
+      return done({
+        ok: false,
+        backend: "browser_playwright",
+        failure: gated.failure,
+        status_code: gated.statusCode,
+        extract_variant: variant,
+        url: { requested: url, final: finalUrl },
+        consent_recipe: recipe?.id ?? null,
+        cookies_injected: cookiesInjected,
+        render_ms: renderMs,
+        extract_ms: extractMs,
+        latency_ms: Math.round(performance.now() - started),
+      });
+    }
+
+    return done({
       ok: true,
       backend: "browser_playwright",
+      status_code: navStatus > 0 ? navStatus : undefined,
       extract_variant: variant,
       consent_recipe: recipe?.id ?? null,
       cookies_injected: cookiesInjected,
@@ -744,7 +778,7 @@ export async function renderAndExtract(context, url, options = {}) {
       virtual_scroll_unique_items: scrollInfo.unique_items ?? 0,
       latency_ms: Math.round(performance.now() - started),
       screenshot: screenshotBase64 || undefined,
-    };
+    });
   } catch (error) {
     // Map unexpected exceptions to a clean taxonomy code — never leak the raw JS error name as a
     // failure code (this used to emit e.g. "typeerror" for a Playwright/page TypeError). The raw
@@ -753,7 +787,7 @@ export async function renderAndExtract(context, url, options = {}) {
     // A navigation aborted by the SSRF route guard (a redirect to a private host) surfaces here as
     // net::ERR_BLOCKED_BY_CLIENT — report it as the honest private_url_blocked, not extraction_failed.
     const blockedBySsrf = (error?.message ?? "").includes("ERR_BLOCKED_BY_CLIENT");
-    return {
+    return done({
       ok: false,
       backend: "browser_playwright",
       failure: blockedBySsrf ? "private_url_blocked" : (errName === "TimeoutError" ? "timeout" : "extraction_failed"),
@@ -767,8 +801,23 @@ export async function renderAndExtract(context, url, options = {}) {
       consent_recipe: recipe?.id ?? null,
       cookies_injected: cookiesInjected,
       latency_ms: Math.round(performance.now() - started),
-    };
+    });
   } finally {
+    if (outgoing) {
+      try {
+        const harvested = await harvestCookiesForRetry(
+          context,
+          url,
+          outgoing.url?.final || page.url?.() || url,
+        );
+        if (harvested.count > 0) {
+          outgoing.harvested_cookie_header = harvested.header;
+          outgoing.harvested_cookie_count = harvested.count;
+        }
+      } catch {
+        // Harvest must not fail the extract or leak values.
+      }
+    }
     await page.close();
   }
 }

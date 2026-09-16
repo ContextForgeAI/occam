@@ -5,6 +5,8 @@ public enum AccessDisposition
     Open,
     Restricted,
     Unknown,
+    /// <summary>HTTP 401/403, but extracted markdown is a usable document — not a grant of access.</summary>
+    BlockedButContentAvailable,
 }
 
 public enum AccessEvidenceStage

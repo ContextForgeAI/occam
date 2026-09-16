@@ -1,0 +1,3 @@
+{"url":"https://example.com","ok":true,"exitCode":0,"latencyMs":6468,"backend":"browser_playwright","partial":false,"failure":null}
+{"url":"https://nginx.org/","ok":true,"exitCode":0,"latencyMs":5692,"backend":"browser_playwright","partial":false,"failure":null}
+{"url":"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404","ok":true,"exitCode":0,"latencyMs":7959,"backend":"browser_playwright","partial":false,"failure":null}

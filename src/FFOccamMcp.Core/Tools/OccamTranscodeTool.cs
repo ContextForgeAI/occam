@@ -435,7 +435,8 @@ public sealed class OccamTranscodeTool(
                         .Select(e => new OccamTranscodeTocEntry(e.Level, e.Heading, e.Anchor, e.Ordinal))],
                 MustContain: omitHeavySidecars || options.MustContain is null
                     ? null
-                    : MapMustContain(Compile.MustContainMatcher.Evaluate(result.Markdown ?? string.Empty, options.MustContain))),
+                    : MapMustContain(Compile.MustContainMatcher.Evaluate(result.Markdown ?? string.Empty, options.MustContain)),
+                StatusCode: result.StatusCode is >= 400 ? result.StatusCode : null),
             OccamTranscodeJsonContext.Default.OccamTranscodeSuccessResponse);
         // Only cache real successes; never an unchanged (AF-6) body — cacheable already
         // excludes if_none_match, so unchanged is null on this path.
@@ -530,6 +531,11 @@ public sealed class OccamTranscodeTool(
         if (access?.Disposition == "restricted")
         {
             warnings.Add("access_restricted: shared access assessment reports restricted; prefer session or stop.");
+        }
+        else if (access?.Disposition == "blocked-but-content-available")
+        {
+            warnings.Add(
+                "access_blocked_but_content: HTTP 401/403 with a usable extracted document; do not treat this as granted access.");
         }
 
         if (warnings.Count == 0)

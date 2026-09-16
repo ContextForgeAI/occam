@@ -1,0 +1,43 @@
+{
+  "maxScore": 4,
+  "tiers": {
+    "weak": {
+      "profile": "minimal",
+      "toolCount": 1
+    },
+    "medium": {
+      "profile": "basic",
+      "toolCount": 3
+    },
+    "strong": {
+      "profile": "full",
+      "toolCount": 15
+    }
+  },
+  "tasks": [
+    {
+      "id": "canary",
+      "prompt": "Fetch the probe URL you were given and report the value of its \u0060occam-sentinel\u0060 meta tag, verbatim. Do not guess: an unmatched value is recorded as a hallucination.",
+      "passCondition": "The reported sentinel adjudicates to READ_VERIFIED. READ_STALE does not pass \u2014 the task asks for a current read.",
+      "measures": "Whether the agent actually reads fetched content, rather than answering from prior knowledge."
+    },
+    {
+      "id": "basic_call",
+      "prompt": "Call \u0060occam_transcode\u0060 on https://example.com using only the required parameter.",
+      "passCondition": "Arguments parse as a JSON object containing \u0060url\u0060, whose value is an absolute http or https URL.",
+      "measures": "Basic schema binding \u2014 the most common failure mode for a small model."
+    },
+    {
+      "id": "focus_budget",
+      "prompt": "Call \u0060occam_transcode\u0060 on a long page, asking only for the part relevant to a specific question, and cap the response size explicitly.",
+      "passCondition": "Arguments contain a non-empty \u0060focus_query\u0060 and a \u0060max_tokens\u0060 integer in [64..200000].",
+      "measures": "Whether the agent manages its own context budget or floods it."
+    },
+    {
+      "id": "chain",
+      "prompt": "Read a page, keep its \u0060contentHash\u0060, then make a second call that checks whether the page changed without re-downloading the body.",
+      "passCondition": "At least two calls, where a later call passes the exact value produced by an earlier one as \u0060if_none_match\u0060 or \u0060diff_against\u0060.",
+      "measures": "Multi-step state handling \u2014 carrying a value across calls instead of restarting."
+    }
+  ]
+}

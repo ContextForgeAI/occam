@@ -1,0 +1,49 @@
+{
+  "protocol": "occam-h2-agent-selection-v1",
+  "note": "Single Composer agent cell in a Cursor IDE session. Surface is the host MCP profile (reader/full tools available to this session), not a controlled minimal/basic/full contrast. Not multi-model H2. Not mixed with mock rows.",
+  "subject": {
+    "clientInfo": "cursor-composer/agent-session",
+    "modelHint": "composer-agent",
+    "sessionId": "exam-composer-2026-09-16",
+    "examTier": "strong",
+    "recommendedProfile": "full"
+  },
+  "collectedAt": "2026-09-16T16:40:00Z",
+  "trials": [
+    {
+      "taskId": "h2-01",
+      "needs": "read",
+      "url": "https://example.com",
+      "chosenTool": "occam_transcode",
+      "irrelevantAvoided": ["occam_playbook_heal", "occam_playbook_save"],
+      "ok": true,
+      "mustContainHit": true,
+      "evidence": "Example Domain in markdown; contentHash sha256:5945db6fd8137aa377638814ca9bb1ac0a663fd90a97f11f86c3f5c09cfb40e3"
+    },
+    {
+      "taskId": "h2-09",
+      "needs": "digest",
+      "urls": ["https://example.com", "https://nginx.org/"],
+      "chosenTool": "occam_digest",
+      "irrelevantAvoided": ["occam_playbook_heal"],
+      "ok": true,
+      "mustContainHit": true,
+      "evidence": "digest ok; items 2/2; combined contains Example Domain and nginx"
+    },
+    {
+      "taskId": "exam-chain",
+      "needs": "chain",
+      "chosenTool": "occam_transcode",
+      "ok": true,
+      "evidence": "if_none_match with live contentHash → unchanged:true (see exam-composer-submission.json)"
+    }
+  ],
+  "summary": {
+    "n": 3,
+    "ok": 3,
+    "successRate": 1.0,
+    "irrelevantSelections": 0,
+    "surfacesContrasted": false,
+    "limitation": "No OCCAM_PROFILE=minimal|basic|full A/B in this cell — host MCP surface fixed for the session."
+  }
+}

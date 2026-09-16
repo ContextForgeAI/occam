@@ -9,13 +9,6 @@ namespace OccamMcp.Core.Playbooks;
 /// </summary>
 public static class PlaybookHealDraftBuilder
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        WriteIndented = false,
-    };
-
     public static string? TryBuildJson(string url, PlaybookHealAnchors? anchors)
     {
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)
@@ -54,10 +47,10 @@ public static class PlaybookHealDraftBuilder
             new HealDraftExtract(selectors),
             "Mechanical stub from occam_playbook_heal mainCandidates — review selectors before occam_playbook_save.");
 
-        return JsonSerializer.Serialize(draft, JsonOptions);
+        return JsonSerializer.Serialize(draft, HealDraftJsonContext.Default.HealDraftDocument);
     }
 
-    private sealed record HealDraftDocument(
+    internal sealed record HealDraftDocument(
         [property: JsonPropertyName("schema_version")] string SchemaVersion,
         string Id,
         string[] Hosts,
@@ -66,11 +59,28 @@ public static class PlaybookHealDraftBuilder
         HealDraftExtract Extract,
         [property: JsonPropertyName("agent_notes")] string AgentNotes);
 
-    private sealed record HealDraftMeta(string Title, string[] Tags);
+    internal sealed record HealDraftMeta(string Title, string[] Tags);
 
-    private sealed record HealDraftRouting(
+    internal sealed record HealDraftRouting(
         [property: JsonPropertyName("preferred_backend")] string PreferredBackend);
 
-    private sealed record HealDraftExtract(
+    internal sealed record HealDraftExtract(
         [property: JsonPropertyName("contentSelectors")] string[] ContentSelectors);
 }
+
+/// <summary>
+/// Source-generated serializer for the heal draft.
+/// </summary>
+/// <remarks>
+/// Replaces a reflection-based <c>JsonSerializer.Serialize</c> call that raised IL2026/IL3050: the
+/// host ships Native AOT with <c>TrimMode=full</c>, so a reflection-serialised type on a shipped
+/// path is a real trimming hazard, not analyser noise. Options mirror the previous
+/// <c>JsonSerializerOptions</c> exactly; <c>PlaybookHealDraftBuilderTests.DraftJsonIsByteStable</c>
+/// pins the emitted bytes so the swap is provably output-neutral.
+/// </remarks>
+[JsonSourceGenerationOptions(
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    WriteIndented = false)]
+[JsonSerializable(typeof(PlaybookHealDraftBuilder.HealDraftDocument))]
+internal sealed partial class HealDraftJsonContext : JsonSerializerContext;

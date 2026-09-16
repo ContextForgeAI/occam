@@ -8,7 +8,9 @@ response. Occam does not index the web — it delegates discovery and names the 
 
 Override with `OCCAM_SEARCH_PROVIDER=searxng` \| `brave` \| `tavily` \| `donsetch`
 (plus URL/key/binary as required), or `off` / `none` for the air-gap
-`search_unconfigured` contract. See [configuration](../configuration.md).
+`search_unconfigured` contract. For parallel multi-backend discovery set
+`OCCAM_SEARCH_PROVIDERS=duckduckgo,brave,searxng` — response uses `provider: "fanout"`
+and `providersUsed`. See [configuration](../configuration.md).
 
 ## When to use
 
@@ -35,6 +37,7 @@ Success envelope:
 - `ok: true`, `query`, `provider`, `count`
 - `results[]` — `{id, handle, title, url, snippet?}`; with `rerank=true` also `extractability` and
   `recommendedBackend` (a hit whose probe failed keeps a mid-low score and no backend annotation)
+- `providersUsed[]` — when `provider` is `fanout`, backends that returned ok hits
 - `handleTtlS` (3600) and `handleScope` (`process`) — once per success envelope
 - `agentHints.suggestedNext` — pass `handle` or `url`; `S1` is the latest search only
 
@@ -43,7 +46,8 @@ Failure envelope: `ok: false`, `query`, `failure: {code, message}`.
 ## Failure codes
 
 `invalid_arguments`, `search_unconfigured` (provider `off` / incomplete explicit config),
-`search_timeout` (retry or raise `OCCAM_SEARCH_TIMEOUT_MS`), `search_http_<status>`,
+`search_timeout` (retry or raise `OCCAM_SEARCH_PROVIDER_TIMEOUT_MS` / `OCCAM_SEARCH_TIMEOUT_MS`),
+`search_rate_limited` (local rate window or all arms degraded), `search_http_<status>`,
 `search_error` (empty/blocked SERP or parse miss). See [failure codes](../failure-codes.md).
 
 ## Example

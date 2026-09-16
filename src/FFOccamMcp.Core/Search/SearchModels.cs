@@ -9,10 +9,16 @@ public sealed record SearchOutcome(
     string Provider,
     IReadOnlyList<SearchResultItem> Results,
     string? FailureCode,
-    int LatencyMs)
+    int LatencyMs,
+    /// <summary>When <see cref="Provider"/> is <c>fanout</c>, providers that returned ok hits.</summary>
+    IReadOnlyList<string>? ProvidersUsed = null)
 {
-    public static SearchOutcome Success(string provider, IReadOnlyList<SearchResultItem> results, int latencyMs) =>
-        new(true, provider, results, null, latencyMs);
+    public static SearchOutcome Success(
+        string provider,
+        IReadOnlyList<SearchResultItem> results,
+        int latencyMs,
+        IReadOnlyList<string>? providersUsed = null) =>
+        new(true, provider, results, null, latencyMs, providersUsed);
 
     public static SearchOutcome Failure(string provider, string failureCode, int latencyMs) =>
         new(false, provider, [], failureCode, latencyMs);

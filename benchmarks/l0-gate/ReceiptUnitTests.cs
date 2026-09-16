@@ -154,6 +154,32 @@ public static class ReceiptUnitTests
         var noSign = OccamTranscodeResponseBuilder.BuildReceipt(outcome, "https://a.com/x", null);
         assert("buildReceipt without signer -> telemetry only", noSign?.Signed is null);
 
+        var gatedOutcome = new TranscodeOutcome(
+            Ok: true,
+            Markdown: markdown,
+            FinalUrl: "https://example.test/q/1",
+            Backend: "browser",
+            FailureCode: null,
+            Message: null,
+            StatusCode: 403,
+            Confidence: 0.8);
+        var gatedReceipt = OccamTranscodeResponseBuilder.BuildReceipt(
+            gatedOutcome, "https://example.test/q/1", signer);
+        assert("gated 403 receipt keeps statusCode", gatedReceipt?.Signed?.StatusCode == 403);
+        assert("gated 403 receipt is extraction not negative",
+            gatedReceipt!.Signed!.Kind == ReceiptEnvelope.KindExtraction
+            && gatedReceipt.Signed.FailureCode is null);
+        var gatedEnvelopeJson = JsonSerializer.Serialize(
+            new OccamTranscodeSuccessResponse(
+                true,
+                new OccamTranscodeUrlInfo("https://example.test/q/1", "https://example.test/q/1"),
+                markdown,
+                "browser",
+                StatusCode: 403),
+            OccamTranscodeJsonContext.Default.OccamTranscodeSuccessResponse);
+        assert("gated 403 envelope json has statusCode",
+            gatedEnvelopeJson.Contains("\"statusCode\":403", StringComparison.Ordinal));
+
         // --- Phase 3: envelope survives the JSON round-trip occam_verify relies on ---
         var envJson = JsonSerializer.Serialize(signed, ReceiptJsonContext.Default.ReceiptEnvelope);
         var reparsed = JsonSerializer.Deserialize(envJson, ReceiptJsonContext.Default.ReceiptEnvelope);

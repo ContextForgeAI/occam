@@ -1,0 +1,25 @@
+{
+  "protocol": "occam-h3-summary-v1",
+  "mode": "mock",
+  "seed": 1,
+  "hostCommit": "33570d11c20283d76b1fd9ff6ecb60ff6e383a14",
+  "behavioural": {
+    "weak": 0.7083333333333334,
+    "medium": 0.9583333333333334,
+    "strong": 0.9583333333333334
+  },
+  "selfReport": {
+    "weak": 0.2916666666666667,
+    "medium": 0.8333333333333334,
+    "strong": 1
+  },
+  "staticMap": {
+    "weak": 0.7083333333333334,
+    "medium": 0.8333333333333334,
+    "strong": 1
+  },
+  "behaviouralMonotone": true,
+  "selfReportInflatesWeak": false,
+  "pipelineOk": true,
+  "note": "Pipeline selftest only. Replace mock agents with real models before claiming H3."
+}

@@ -84,7 +84,7 @@ Does <strong>not</strong> invent page text from model memory.
         >curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash</code>
         <button type="button" class="oc-signal-copy" data-oc-copy-command aria-label="Copy install command" aria-live="polite">Copy</button>
       </div>
-      <span class="oc-signal-command__note">Windows, Linux, and macOS — see <a href="install/">Install</a>. Experimental MCP-only (no <code>occam connect</code>): <code>npx ff-occam@1.1.1</code>.</span>
+      <span class="oc-signal-command__note">Windows, Linux, and macOS — see <a href="install/">Install</a>. Experimental MCP-only (no <code>occam connect</code>): <code>npx ff-occam@1.2.0</code>.</span>
     </div>
     <p class="oc-hero-actions">
       <a class="oc-btn oc-btn--primary" href="quick-start/">Get your first result</a>
@@ -363,6 +363,23 @@ finish with a real page read.
 </p>
 
 <p class="oc-meta-line"><strong>Version:</strong> 1.0.0 (published install channel) · <strong>Status:</strong> GA · <strong>License:</strong> AGPL-3.0-or-later</p>
+
+## Research and verification
+
+Occam has a product half and a research half. This section is the research half — and its honest
+status is that the instrument is built and verified while **no experiment has been run with it**.
+
+| Page | What it is |
+|------|------------|
+| [Proof-of-read protocol](https://github.com/ContextForgeAI/occam/blob/main/PROBE_PROTOCOL.md) | Specification of the canary: sentinel derivation, the four verdicts, threat model, test vectors |
+| [Hypotheses](research/hypothesis.md) | H1–H3 in falsifiable form, each with what would kill it |
+| [Methodology](research/methodology.md) | Experiment design; mock pipelines ready, real-model cells not run |
+| [Exam harness](research/exam-harness.md) | Offline grade → `OCCAM_PROFILE`; H2/H3 scorecard runners |
+| [Related work](research/related_work.md) | Marked `[verified]` / `[concept]` / `[unverified]`; four literature searches still open |
+| [Paper skeleton](research/paper_draft.md) | Structure only; every figure is a placeholder |
+| [Citation](research/BibTeX.md) | Software and protocol entries, plus the normative RFCs |
+| [Cross-platform results](testing/RESULTS.md) | What is verified on which platform, with logs — and an explicit "not verified" list |
+| [Architecture decisions](adr/README.md) | ADR index; 0010–0015 cover the canary, test stack and evidence policy |
 
 ## Explore deeper
 

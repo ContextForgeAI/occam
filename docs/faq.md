@@ -40,8 +40,8 @@ The product is **agent-first**: tool descriptions and [Choosing a tool](choosing
 
 ## How many tools ship by default?
 
-The product default is `OCCAM_PROFILE=reader`, which exposes **8** day-to-day
-tools. `OCCAM_PROFILE=full` exposes the complete **15-tool** core catalog.
+The product default is `OCCAM_PROFILE=reader`, which exposes **9** day-to-day
+tools. `OCCAM_PROFILE=full` exposes the complete **16-tool** core catalog.
 Environment-gated batch, watch, cross-check, failure-atlas, and browser-action
 tools can add more — runtime `tools/list` is authoritative. See
 [Configuration — profiles](configuration.md#tool-surface-profile-occam_profile)
@@ -67,7 +67,7 @@ Use the **release tarball / bootstrap scripts** — see [Install](install.md).
 |---------|------------|
 | `get-ff-occam.sh` / `.ps1` bootstrap | **Yes** — supported release channel |
 | Manual tarball + SHA-256 manifest | **No** — integrity inspection only; use the guarded bootstrap to install |
-| `npx ff-occam@1.1.1` | Experimental npm RC — MCP host only; not the guarded GA install path |
+| `npx ff-occam@1.2.0` | Experimental npm RC — MCP host only; not the guarded GA install path |
 | `npm install -g ff-occam` | Same experimental launcher (`ff-occam`). Does **not** install the `occam` operator CLI or run `occam connect` |
 | `npx @ff-occam/mcp` | Low-level npm entry — not the primary public package name |
 | Cosign `.bundle` alone | **No** — the bootstrap must verify it under the manifest policy |

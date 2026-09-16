@@ -4,7 +4,7 @@
 
 If you still need install: [Quick Start](quick-start.md) · canonical reference [Install](install.md) · root [`INSTALL.md`](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md).
 
-Published `v1.1.1` installs verify archive SHA-256 against the release
+Published `v1.2.0` installs verify archive SHA-256 against the release
 manifest, run archive-member preflight before extract, and verify Cosign when
 the manifest declares `signaturePolicy=required-cosign-v1` (requires the
 `cosign` CLI on PATH). Self-contained runtime closure
@@ -12,8 +12,8 @@ the manifest declares `signaturePolicy=required-cosign-v1` (requires the
 mutable repository overlay. Review [installation safety](trust/installation-safety.md)
 for what install mutates and how to remove it.
 
-**Tool surface:** product default is `OCCAM_PROFILE=reader` (8 tools). Set `OCCAM_PROFILE=full`
-for heal/save and the complete fifteen-tool catalog. See [Configuration — profiles](configuration.md).
+**Tool surface:** product default is `OCCAM_PROFILE=reader` (9 tools). Set `OCCAM_PROFILE=full`
+for heal/save and the complete sixteen-tool catalog. See [Configuration — profiles](configuration.md).
 
 ---
 
@@ -25,7 +25,7 @@ terminal. Source checkouts can use the contributor path described below.
 
 ```bash
 occam smoke
-# expect exit 0; tool count depends on OCCAM_PROFILE (default reader=8; full=15)
+# expect exit 0; tool count depends on OCCAM_PROFILE (default reader=9; full=16)
 ```
 
 This checks the local MCP host and a live probe. Re-check registration in your AI

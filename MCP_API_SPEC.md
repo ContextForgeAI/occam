@@ -1,8 +1,8 @@
 # MCP API Specification — FF-Occam MCP
 
-**Version:** `1.1.1` (fifteen tools + opt-in batch/watch/crosscheck/browser_interact; Agent-First AF-1..AF-6; Receipt v1; live-only). Public install default: published `1.1.1`.
+**Version:** `1.1.1` (sixteen tools + opt-in batch/watch/crosscheck/browser_interact; Agent-First AF-1..AF-6; Receipt v1; live-only). Public install default: published `1.1.1`.
 **Transport:** stdio MCP (default) + optional **Streamable HTTP** (`--mcp-http`), local WebSocket, and authenticated WSS (see [docs/transports.md](docs/transports.md))
-**Tools:** 15 — `occam_client_capabilities`, `occam_transcode`, `occam_probe`, `occam_digest`, `occam_playbook_resolve`, `occam_map`, `occam_playbook_heal`, `occam_playbook_save`, `occam_extract_knowledge`, **`occam_search`**, **`occam_verify`**, **`occam_claim_check`**, **`occam_attest`**, **`occam_playbook_lint`**, **`occam_dataset_export`** · **opt-in tools:** +3 async batch (`occam_batch_*`) when `OCCAM_BATCH_MCP=1`, `occam_watch` (stateful change-watch) when `OCCAM_WATCH_MCP=1`, `occam_crosscheck` (SI-14 consensus/cloaking cross-check) when `OCCAM_CONSENSUS_MCP=1`, `occam_failure_atlas` (SI-10 per-host closure map) when `OCCAM_ATLAS_MCP=1`, and **`occam_browser_interact`** when `OCCAM_BROWSER_ACTIONS_MCP=1` — see [docs/tools-reference.md](docs/tools-reference.md#opt-in-tools). Runtime `tools/list` may be narrower via `OCCAM_PROFILE` (`reader` default | `researcher` | `auditor` | `full`) — see [docs/configuration.md](docs/configuration.md#tool-surface-profile-occam_profile). Client context sizing: `occam_client_capabilities` / `OCCAM_CLIENT_CONTEXT_TOKENS` — see [docs/configuration.md](docs/configuration.md#client-context-budget-occam_client_context_tokens).
+**Tools:** 16 — `occam_client_capabilities`, `occam`, `occam_transcode`, `occam_probe`, `occam_digest`, `occam_playbook_resolve`, `occam_map`, `occam_playbook_heal`, `occam_playbook_save`, `occam_extract_knowledge`, **`occam_search`**, **`occam_verify`**, **`occam_claim_check`**, **`occam_attest`**, **`occam_playbook_lint`**, **`occam_dataset_export`** · **opt-in tools:** +3 async batch (`occam_batch_*`) when `OCCAM_BATCH_MCP=1`, `occam_watch` (stateful change-watch) when `OCCAM_WATCH_MCP=1`, `occam_crosscheck` (SI-14 consensus/cloaking cross-check) when `OCCAM_CONSENSUS_MCP=1`, `occam_failure_atlas` (SI-10 per-host closure map) when `OCCAM_ATLAS_MCP=1`, and **`occam_browser_interact`** when `OCCAM_BROWSER_ACTIONS_MCP=1` — see [docs/tools-reference.md](docs/tools-reference.md#opt-in-tools). Runtime `tools/list` may be narrower via `OCCAM_PROFILE` (`reader` default | `researcher` | `auditor` | `full`) — see [docs/configuration.md](docs/configuration.md#tool-surface-profile-occam_profile). Client context sizing: `occam_client_capabilities` / `OCCAM_CLIENT_CONTEXT_TOKENS` — see [docs/configuration.md](docs/configuration.md#client-context-budget-occam_client_context_tokens).
 
 **Audience:** agent (contract) · operator (install/env in [docs/configuration.md](docs/configuration.md))
 
@@ -734,14 +734,15 @@ Converts one HTTP(S) URL to Markdown. **Always live extract.**
 | Field | Type | Meaning |
 |-------|------|---------|
 | `confidence` | number | AF-1: 0.0–1.0 extract fitness (ADR-0004 EQM `quality.score`, plus a small backend/truncation adjustment) on **success** envelopes (omitted when 0). Failure envelopes omit top-level `confidence`; do not treat its absence as extract fitness. **Not** focus correctness or completeness |
-| `access` | object? | PR-F shared access dimension: `{ disposition: open\|restricted\|unknown, confidence, evidenceCodes[], recommendedAction }` |
+| `statusCode` | number? | Present on success when the HTTP/navigation status is ≥400 (typically 401/403) and the extract is still a usable document. Not a grant of access. Pair with `access.disposition=blocked-but-content-available`. Omitted on ordinary 2xx successes |
+| `access` | object? | PR-F shared access dimension: `{ disposition: open\|restricted\|unknown\|blocked-but-content-available, status (same public token), confidence, evidenceCodes[], recommendedAction }`. `blocked-but-content-available` means HTTP 401/403 with a usable extracted document — not a grant of access. Envelope `statusCode` still carries the HTTP status. |
 | `focus` | object? | PR-F focus dimension: `{ status: hit\|weak\|miss\|not_requested, confidence?, matchedAnchor? }` |
 | `completeness` | object? | PR-F answer completeness: `{ status: complete\|partial\|incomplete, incompleteReason?, suggestedMinTokens? }` |
 | `verdict` | string? | Semantic judgment when computed; retrieval/transcode paths emit `not_evaluated` |
 | `quality` | object? | ADR-0004 extract quality breakdown on success: `{ score, noise, contentDensity, semanticRichness, lengthPrior, verdict }` where `verdict` is `short_quality` \| `rich` \| `noisy` \| `thin`. Length alone never decides thin vs quality. Omitted on `unchanged` / `delta_only` heavy-omit paths |
 | `receipt` | object? | AF-3 telemetry `{ tokensUsed, tokenEstimator, truncationStrategy, confidence, elapsedMs }` **plus Receipt v1 verifiable fields on success**: `signed` (the signed extraction envelope — `contentHash`, optional `actionPlanHash` on `occam_browser_interact`, `blockMerkleRoot`, provenance, ECDsa P-256 signature), `blockLeaves` (unsigned sidecar that reconstructs the root; present with `json_blocks`), and `timeAnchor` (optional RFC3161 when `OCCAM_TIME_ANCHOR=1`). `tokenEstimator` names the model-independent heuristic; it is not a claim of exact tokenizer parity. Verify with `occam_verify` or the offline CLI (see [receipt_verification.md](docs/receipt_verification.md)). `OCCAM_RECEIPTS=off` → telemetry only, no `signed`. Blocks are reconciled to the returned (post-prune) markdown, so `contentHash`/`blockMerkleRoot`/`blocks` are mutually consistent |
 | `timings` | object? | Per-stage wall-clock breakdown (ms): `{ totalMs, preflightMs, routeMs, networkMs, parseMs, postProcessMs, compileMs }`. `networkMs` is the with-internet leg (DNS+connect+TLS+download), `parseMs` is the without-internet CPU leg (DOM+Readability+Turndown); `routeMs − networkMs − parseMs` ≈ worker spawn/IPC dispatch overhead. Present on http-backed transcodes (success and most failures) |
-| `recovery` | array? | AF-4 / PR-F: `[{ backend, ok, latencyMs, transportOk?, usable?, failureCode?, escalationReason? }]`. Legacy `ok` aliases `transportOk` (raw transport/extract completion). `usable` is independent router quality. Present on the `http_then_browser` recovery path |
+| `recovery` | array? | AF-4 / PR-F: `[{ backend, ok, latencyMs, transportOk?, usable?, failureCode?, escalationReason? }]`. Legacy `ok` aliases `transportOk` (raw transport/extract completion). `usable` is independent router quality. Present on the `http_then_browser` recovery path. A cookie-harvest HTTP replay uses `escalationReason=browser_cookie_retry` and never includes cookie values |
 | `unchanged` | boolean? | AF-6: `true` when `if_none_match` matched — **whole-response** conditional: empty `markdown` and omitted heavy sidecars (`blocks`, `chunks`, `tables`, `feed`, `mediaRefs`, `screenshot`, translation). Not a Markdown-only 304 |
 | `deltaOnly` | boolean? | `true` when `delta_only` suppressed the full body: the empty `markdown` is intentional — reconstruct current content from `diff` + your prior blocks and verify against `contentHash`. Heavy sidecars omitted. Omitted otherwise |
 | `contentHash` | string? | Always-on bare-hex SHA-256 of the materialized markdown (no receipts required). Two uses: (1) store it and pass as `if_none_match` next time for a 304-style skip; (2) it is the **KV-cache prefix key** — an identical `contentHash` means byte-identical markdown, so a harness can reuse cached prompt tokens instead of re-encoding. Same digest as `receipt.signed.contentHash` without the `sha256:` prefix (either form is accepted by `if_none_match`). On `unchanged: true` the body is empty but this **echoes** the matching hash. Under `deltaOnly:true` the body is empty but this hashes the **full** current markdown, so you can verify a delta reconstruction |
@@ -878,7 +879,10 @@ Open-web search (query → result URLs) — the agent's **discovery** step befor
 Occam does not crawl or index; it delegates to a backend and normalizes results with a disclosed
 `provider`. **Default** when `OCCAM_SEARCH_PROVIDER` is unset: keyless DuckDuckGo HTML
 (`provider=duckduckgo`). Set `off`/`none` for `search_unconfigured`. Explicit `searxng` /
-`brave` / `tavily` / `donsetch` keep their URL/key/binary requirements. Source: `Tools/OccamSearchTool.cs`.
+`brave` / `tavily` / `donsetch` keep their URL/key/binary requirements.
+Optional **`OCCAM_SEARCH_PROVIDERS`** (CSV) enables parallel fan-out across configured
+healthy backends (`provider=fanout`, `providersUsed[]`); it wins over the singular
+provider env. Source: `Tools/OccamSearchTool.cs`.
 
 ### Parameters
 
@@ -888,7 +892,7 @@ Occam does not crawl or index; it delegates to a backend and normalizes results 
 | `max_results` | int | `8` | Max results, range **1–20** |
 | `rerank` | bool | `false` | Rerank by extractability — cheaply probes each hit and reorders so clean HTTP-extractable pages rank above paywalls/anti-bot/JS-stubs/dead links. Adds `extractability` (0–1) + `recommendedBackend` per result. Opt-in (extra probe latency) |
 
-Config (env): `OCCAM_SEARCH_PROVIDER` (unset → `duckduckgo`; `off`\|`none`\|`duckduckgo`\|`searxng`\|`brave`\|`tavily`\|`donsetch`), `OCCAM_SEARCH_URL` (SearXNG instance), `OCCAM_SEARCH_API_KEY` (Brave/Tavily), `OCCAM_DONSETCH_PATH` (optional path to local Donsetch binary), `OCCAM_SEARCH_TIMEOUT_MS` (default 20000) — see [Environment](#environment).
+Config (env): `OCCAM_SEARCH_PROVIDER` (unset → `duckduckgo`; `off`\|`none`\|`duckduckgo`\|`searxng`\|`brave`\|`tavily`\|`donsetch`), `OCCAM_SEARCH_PROVIDERS` (CSV fan-out; wins over singular), `OCCAM_SEARCH_URL` (SearXNG), `OCCAM_SEARCH_API_KEY` (Brave/Tavily), `OCCAM_DONSETCH_PATH`, `OCCAM_SEARCH_TIMEOUT_MS` (HttpClient ceiling, default 20000), `OCCAM_SEARCH_PROVIDER_TIMEOUT_MS` (fan-out per-arm, default 3000), `OCCAM_SEARCH_FANOUT_TIMEOUT_MS`, `OCCAM_SEARCH_DEGRADE_MINUTES` (default 5), `OCCAM_SEARCH_RATE_MAX` / `OCCAM_SEARCH_RATE_WINDOW_S` — see [Environment](#environment) and [docs/configuration.md](docs/configuration.md).
 
 ### Success response
 
@@ -907,6 +911,10 @@ Config (env): `OCCAM_SEARCH_PROVIDER` (unset → `duckduckgo`; `off`\|`none`\|`d
 }
 ```
 
+When `OCCAM_SEARCH_PROVIDERS` is set, `provider` is `"fanout"` and success may include
+`providersUsed: ["duckduckgo","brave"]` (backends that returned ok hits). Hits are
+deduped by normalized URL; URLs found by more providers rank first.
+
 `id` values `S1`…`Sn` are assigned **after** final ranking and are **latest-search shorthand** only — a later `occam_search` remaps `S1`. `handle` (`H` + 8 hex) is the process-local durable id (TTL 60 minutes, cap 64, LRU). Pass `handle` or the raw `url` to `occam_transcode` / `occam_digest` / `occam_probe` / `occam_map` / `occam_extract_knowledge`. Handles never skip SSRF: the host resolves to the stored URL, then the existing `FetchPreflight` / privacy classifier run. Stale or unknown tokens return `stale_handle` / `unknown_handle` (pass the raw `url`). No new MCP tool; storage is in-process only (one MCP stdio session).
 
 With `rerank=true`, `results` are ordered by `extractability` (desc) and each also carries `extractability` (0–1) + `recommendedBackend` (e.g. `"extractability": 0.9, "recommendedBackend": "http"`).
@@ -918,7 +926,8 @@ With `rerank=true`, `results` are ordered by `extractability` (desc) and each al
 | `invalid_arguments` | Empty `query` or `max_results` outside 1–20 |
 | `search_unconfigured` | Provider `off`/`none`, unknown name, or missing url/key for an explicit keyed provider |
 | `search_http_*` | Backend returned non-2xx |
-| `search_timeout` | Backend timed out |
+| `search_timeout` | Backend timed out (or a fan-out arm hit `OCCAM_SEARCH_PROVIDER_TIMEOUT_MS`) |
+| `search_rate_limited` | Local per-provider rate window exhausted, or all fan-out arms degraded/rate-limited |
 | `search_error` | Empty/blocked SERP, network, or parse failure |
 
 ---

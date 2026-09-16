@@ -2,7 +2,7 @@
 
 **What you'll do:** look up every MCP tool, parameter, and response shape.
 
-**Fifteen core tools** are always registered. **Opt-in tools** require env flags — see [Opt-in tools](#opt-in-tools).
+**Sixteen core tools** are always registered. **Opt-in tools** require env flags — see [Opt-in tools](#opt-in-tools).
 
 All tools return a **JSON string** (camelCase). Unless noted, `ok: false` means content is unknown.
 
@@ -11,7 +11,7 @@ All tools return a **JSON string** (camelCase). Unless noted, `ok: false` means 
 ## 1. `occam_client_capabilities`
 
 Declare the host LLM context window so Occam can size later extracts (ambient `max_tokens` for
-`occam_transcode` / `occam_digest` when those calls omit a budget).
+`occam` / `occam_transcode` / `occam_digest` when those calls omit a budget).
 
 ### Parameters
 
@@ -24,6 +24,29 @@ Declare the host LLM context window so Occam can size later extracts (ambient `m
 ### Success response
 
 `ok`, `configured`, `contextTokens`, `outputBudgetTokens`, `suggestedProfile`, `source`, `note`
+
+---
+
+## 1a. `occam` (cascade facade)
+
+Progressive page reader: `url` required; optional `task`, `budget`, `mode` (`auto`|`advanced`).
+Internally: playbook → HTTP → browser → focus/budget → content-hash, with per-step timeouts and
+`partial`/`omitted[]` on graceful degradation. Narrative: [docs/tools/occam.md](tools/occam.md) ·
+ADR: [0017](adr/0017-cascade-facade.md).
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `url` | string | — | Absolute http(s) URL (required) |
+| `task` | string? | null | Focus intent → `focus_query` + fit |
+| `budget` | int? | null | Token cap (min 128) → `max_tokens` |
+| `mode` | string | `auto` | `auto` or `advanced` |
+
+### Success response
+
+`ok`, `partial`, `url`, `markdown`, `steps[]`, `omitted[]`, optional `playbookId`, `backend`,
+`maxTokens`, `focusQuery`, `contentHash`, `hint`
 
 ---
 
@@ -246,7 +269,8 @@ Extract typed `facts[]` driven by playbook `knowledge_schema`.
 ## 10. `occam_search`
 
 Open-web search → result URLs. Default keyless DuckDuckGo HTML (`provider=duckduckgo`);
-override or disable via `OCCAM_SEARCH_PROVIDER`.
+override or disable via `OCCAM_SEARCH_PROVIDER`. Multi-backend fan-out via
+`OCCAM_SEARCH_PROVIDERS` (CSV) → `provider=fanout` + `providersUsed[]`.
 
 ### Parameters
 
@@ -258,7 +282,7 @@ override or disable via `OCCAM_SEARCH_PROVIDER`.
 
 ### Success response
 
-`ok`, `results[]` with `id` (`S1`…`Sn`, latest-search shorthand), `handle` (`H…`, process-local, 60 min / 64 cap), `title`, `url`, `snippet`; optional `extractability`, `recommendedBackend` when `rerank=true`. Pass `handle` or `url` to fetch tools. `S1` remaps on the next search.
+`ok`, `results[]` with `id` (`S1`…`Sn`, latest-search shorthand), `handle` (`H…`, process-local, 60 min / 64 cap), `title`, `url`, `snippet`; optional `extractability`, `recommendedBackend` when `rerank=true`. Fan-out adds `providersUsed`. Pass `handle` or `url` to fetch tools. `S1` remaps on the next search.
 
 ---
 

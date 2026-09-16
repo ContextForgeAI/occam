@@ -7,6 +7,21 @@ public static class AccessClassifier
     {
         var codes = new List<string>(6);
 
+        if ((evidence.StatusCode is 401 or 403)
+            && evidence.HasUsableContent
+            && !evidence.ErrorShell)
+        {
+            codes.Add(evidence.StatusCode == 401 ? "http_401" : "http_403");
+            codes.Add("blocked_but_content_available");
+            codes.Add("usable_public_content");
+            return new AccessAssessment(
+                AccessDisposition.BlockedButContentAvailable,
+                0.8,
+                evidence.Stage,
+                codes,
+                "continue");
+        }
+
         if (evidence.StatusCode == 401)
         {
             codes.Add("http_401");

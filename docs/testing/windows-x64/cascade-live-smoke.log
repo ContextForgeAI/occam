@@ -1,0 +1,17 @@
+### cascade live smoke 2026-09-16T14:30:55Z
+repo=C:\PROJECTS\FFOccamMCP
+platform=windows-x64
+
+url=https://example.com status=OK exit=0 latency_ms=4438 backend=node_readability_turndown partial=False failure=
+url=https://nginx.org/ status=OK exit=0 latency_ms=3158 backend=node_readability_turndown partial=False failure=
+url=https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404 status=OK exit=0 latency_ms=3475 backend=node_readability_turndown partial=False failure=
+
+ok_count=3
+fail_count=0
+latency_n=3
+latency_p50_ms=3475
+latency_p95_ms=3475
+latency_mean_ms=3690
+latency_min_ms=3158
+latency_max_ms=4438
+CASCADE_LIVE_SMOKE_OK

@@ -16,6 +16,7 @@ public static class OccamMcpServerRegistration
     public static readonly string[] OccamToolNames =
     [
         "occam_client_capabilities",
+        "occam",
         "occam_transcode",
         "occam_probe",
         "occam_digest",
@@ -111,6 +112,8 @@ public static class OccamMcpServerRegistration
         // Role-scoped core tools (OCCAM_PROFILE). Default reader; full = entire OccamToolNames catalog.
         if (OccamToolProfile.IsExposed("occam_client_capabilities", profile))
             builder = builder.WithTools<OccamClientCapabilitiesTool>();
+        if (OccamToolProfile.IsExposed("occam", profile))
+            builder = builder.WithTools<OccamCascadeTool>();
         if (OccamToolProfile.IsExposed("occam_transcode", profile))
             builder = builder.WithTools<OccamTranscodeTool>();
         if (OccamToolProfile.IsExposed("occam_probe", profile))

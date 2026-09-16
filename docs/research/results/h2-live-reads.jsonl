@@ -1,0 +1,10 @@
+{"type":"meta","protocol":"occam-h2-live-reads-v1","hostCommit":"33570d11c20283d76b1fd9ff6ecb60ff6e383a14","taskCount":9,"collectedAt":"2026-09-16T16:42:42.954Z","note":"Extract success only. Not H2 tool-selection. Not mixed with mock rows."}
+{"type":"trial","taskId":"h2-01","url":"https://example.com","ok":true,"mustContainHit":true,"extractOk":true,"backend":"node_readability_turndown","failure":null,"latencyMs":4969,"exitCode":0}
+{"type":"trial","taskId":"h2-02","url":"https://nginx.org/","ok":true,"mustContainHit":true,"extractOk":true,"backend":"browser_playwright","failure":null,"latencyMs":23413,"exitCode":0}
+{"type":"trial","taskId":"h2-03","url":"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404","ok":true,"mustContainHit":true,"extractOk":true,"backend":"node_readability_turndown","failure":null,"latencyMs":7771,"exitCode":0}
+{"type":"trial","taskId":"h2-04","url":"https://www.rfc-editor.org/rfc/rfc2616","ok":true,"mustContainHit":true,"extractOk":true,"backend":"node_readability_turndown","failure":null,"latencyMs":10632,"exitCode":0}
+{"type":"trial","taskId":"h2-05","url":"https://httpbin.org/html","ok":true,"mustContainHit":true,"extractOk":true,"backend":"node_readability_turndown","failure":null,"latencyMs":10657,"exitCode":0}
+{"type":"trial","taskId":"h2-06","url":"https://www.example.org/","ok":true,"mustContainHit":true,"extractOk":true,"backend":"node_readability_turndown","failure":null,"latencyMs":7390,"exitCode":0}
+{"type":"trial","taskId":"h2-07","url":"https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview","ok":true,"mustContainHit":true,"extractOk":true,"backend":"node_readability_turndown","failure":null,"latencyMs":5048,"exitCode":0}
+{"type":"trial","taskId":"h2-08","url":"https://jsonplaceholder.typicode.com/","ok":true,"mustContainHit":true,"extractOk":true,"backend":"node_readability_turndown","failure":null,"latencyMs":6641,"exitCode":0}
+{"type":"trial","taskId":"h2-12","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide","ok":true,"mustContainHit":true,"extractOk":true,"backend":"node_readability_turndown","failure":null,"latencyMs":9488,"exitCode":0}

@@ -1,6 +1,6 @@
 # Tool index
 
-Occam exposes **15 core tools** under `OCCAM_PROFILE=full` (product default is **`reader`** = 8);
+Occam exposes **16 core tools** under `OCCAM_PROFILE=full` (product default is **`reader`** = 9);
 **6 more are opt-in** via host environment flags (plus `occam_browser_interact`).
 All tools return a **JSON string** (camelCase). The trust rule everywhere: **`ok: false` means the
 page content is unknown** — never substitute model memory.
@@ -14,7 +14,8 @@ intent, outputs, and recovery behavior.
 | You want to… | Use | Notes |
 |---|---|---|
 | Tell Occam your context window (once) | [`occam_client_capabilities`](occam_client_capabilities.md) | Sizes later reads; or set `OCCAM_CLIENT_CONTEXT_TOKENS` |
-| Read one page as clean Markdown | [`occam_transcode`](occam_transcode.md) | The default page reader; only `url` required |
+| Read one page (cascade: url / task / budget) | [`occam`](occam.md) | Progressive facade; default on `minimal`/`basic` |
+| Read one page with full opt-ins | [`occam_transcode`](occam_transcode.md) | Power reader; only `url` required |
 | Decide whether a page is worth fetching | [`occam_probe`](occam_probe.md) | Cheap classify: extractability 0–1, recommended backend |
 | Research several pages at once | [`occam_digest`](occam_digest.md) | Up to 8 URLs → per-page excerpts + combined Markdown |
 | Find pages on a site when you have no URLs | [`occam_map`](occam_map.md) | Same-domain links from homepage/sitemap/robots |

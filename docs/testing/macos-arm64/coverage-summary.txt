@@ -1,0 +1,78 @@
+platform: macos-arm64 (canary)
+report: artifacts/xplat/coverage/macos-arm64.cobertura.xml
+
+namespace OccamMcp.Core.Canary.
+  line coverage   : 91.33% (748/819)
+  branch coverage : 75.48% (237/314)
+
+whole OccamMcp.Core assembly (includes ~300 pre-existing files covered by the L0 gate, not by xunit)
+  line coverage   : 2.54% (2138/84328)
+  branch coverage : 2.81% (585/20826)
+
+per class in scope:
+
+Class                                     Lines Covered LinePct BranchPct
+-----                                     ----- ------- ------- ---------
+CanaryIssueLog/IssueKey                       1       0       0          
+CanaryCliVerbs/<ServeAsync>d__9              12       0       0 0        
+CanaryOptionsValidator                       32      25    78.1 72.2     
+CanaryCliVerbs                              207     170    82.1 52.4     
+CanaryCliVerbs/<SmokeAsync>d__8              42      35    83.3 64.3     
+CanaryProbeServerHost/<DisposeAsync>d__14     6       5    83.3 50       
+CanaryProbeServerHost                        20      17      85 50       
+CanaryIssueLog                               44      43    97.7 94.4     
+CanaryService                                75      74    98.7 86.4     
+CanaryEndpoints                              75      74    98.7 78.6     
+CanaryRateLimiter/Window                      1       1     100          
+CanaryRateLimiter                            42      42     100 95       
+CanaryRateDecision                            1       1     100          
+CanaryVerifier                               74      74     100 92.3     
+CanarySentinel                               44      44     100 100      
+CanarySecret                                 46      46     100 100      
+CanaryProbeServerHost/<StartAsync>d__10      16      16     100 75       
+CanaryIssue                                   5       5     100          
+CanaryOptions                                30      30     100          
+CanaryIssueRecord                             5       5     100          
+CanaryPage                                   23      23     100          
+CanaryVerification                            8       8     100 100      
+CanaryProbeServerHost/<>c                     3       3     100          
+CanaryVerdictStrings                          7       7     100 100      
+
+
+
+
+platform: macos-arm64 (exam)
+report: artifacts/xplat/coverage/macos-arm64.cobertura.xml
+
+namespace OccamMcp.Core.Exam.
+  line coverage   : 95.49% (529/554)
+  branch coverage : 83.19% (198/238)
+
+whole OccamMcp.Core assembly (includes ~300 pre-existing files covered by the L0 gate, not by xunit)
+  line coverage   : 2.54% (2138/84328)
+  branch coverage : 2.81% (585/20826)
+
+per class in scope:
+
+Class                   Lines Covered LinePct BranchPct
+-----                   ----- ------- ------- ---------
+ExamResult                  8       7    87.5          
+ExamCliVerbs              211     193    91.5 60.8     
+ExamResultCache            55      51    92.7 69.2     
+ExamTasks                  44      42    95.5 75       
+ExamResultCache/Entry       1       1     100          
+ExamSubmission              4       4     100          
+ExamScoring                11      11     100 100      
+ExamTasks/Definition        4       4     100          
+ExamChainAttempt            1       1     100          
+ExamSubject                 6       6     100 100      
+CompetenceTracker/State    36      36     100 100      
+CompetenceTracker          35      35     100 91.7     
+CompetenceAssessment        5       5     100          
+ExamGrader                112     112     100 98.7     
+CallObservation             1       1     100          
+ExamTaskOutcome             1       1     100          
+ExamWire                   19      19     100 100      
+
+
+

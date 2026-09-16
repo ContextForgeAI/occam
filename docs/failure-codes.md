@@ -15,8 +15,8 @@
 | `network_error` | Connection reset, refused | Yes | Retry once |
 | `dns_error` | Host does not resolve | Yes | Check URL spelling / DNS |
 | `tls_error` | Certificate invalid or expired | No | Inform user; do not bypass TLS |
-| `http_401` | Unauthorized | No | `session_profile` via occam-session export-state; optional local `backend_policy=browser` |
-| `http_403` | Forbidden | No | `session_profile` then local `backend_policy=browser` |
+| `http_401` | Unauthorized, and the extract did not produce a usable document | No | `session_profile` via occam-session export-state; optional local `backend_policy=browser`. A 401 that still yields a real article is `ok:true` with `access.disposition=blocked-but-content-available` and `statusCode=401` — not this failure |
+| `http_403` | Forbidden, and the browser/HTTP extract did not produce a usable document | No | `session_profile` then local `backend_policy=browser`. A 403 that still yields a real article is `ok:true` with `access.disposition=blocked-but-content-available` and `statusCode=403` — not this failure |
 | `http_404` | Not found | No | Fix or remove URL |
 | `http_410` | Gone | No | Remove URL |
 | `http_429` | Rate limited | Yes | Back off and retry |
@@ -48,9 +48,10 @@
 | `invalid_urls` | Bad digest/map URL list | No | Fix `urls` parameter |
 | `digest_failed` | All digest URLs failed | No | Retry singles with transcode |
 | `sitemap_not_found` | Map source=sitemap empty | No | Retry `source=homepage` |
-| `search_unconfigured` | Provider `off`/`none`, unknown name, or explicit provider missing key/URL | No | Default DuckDuckGo when unset; configure dedicated provider or skip |
-| `search_timeout` | Search backend slow | Yes | Retry or raise timeout |
+| `search_unconfigured` | Provider `off`/`none`, unknown name, empty fan-out list, or explicit provider missing key/URL | No | Default DuckDuckGo when unset; set `OCCAM_SEARCH_PROVIDERS` or a dedicated provider |
+| `search_timeout` | Search backend slow / fan-out arm hit per-provider timeout | Yes | Retry, raise `OCCAM_SEARCH_PROVIDER_TIMEOUT_MS` / `OCCAM_SEARCH_TIMEOUT_MS`, or add another provider |
 | `search_http_<status>` | Search backend returned an HTTP error (`<status>`) | Depends on status | Check endpoint/API key; DuckDuckGo soft-blocks may need retry or another provider |
+| `search_rate_limited` | Local rate window exhausted, or all fan-out arms degraded/rate-limited | Yes | Wait for `OCCAM_SEARCH_DEGRADE_MINUTES` cooldown or use another backend |
 | `search_error` | Empty/blocked SERP, parse miss, or other backend failure | Sometimes | Retry, refine query, or set SearXNG/Brave/Tavily |
 | `stale_handle` | Search handle expired (60 min) or evicted (64-cap LRU) | No | Pass the raw `url` from the search hit; do not invent a page |
 | `unknown_handle` | `S1`… not in the current search, or a handle this process never issued | No | Pass `result.handle` or the raw `url`; `S1` is latest-search only |

@@ -189,6 +189,7 @@ nav:
           - Client capabilities: tools/occam_client_capabilities.md
           - Probe: tools/occam_probe.md
       - Read and transform:
+          - Cascade: tools/occam.md
           - Transcode: tools/occam_transcode.md
           - Digest: tools/occam_digest.md
           - Extract knowledge: tools/occam_extract_knowledge.md

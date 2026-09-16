@@ -20,6 +20,8 @@ public static class OccamServerInstructions
 
         return id switch
         {
+            OccamToolProfile.Minimal => MinimalText,
+            OccamToolProfile.Basic => BasicText,
             OccamToolProfile.Reader => ReaderText,
             OccamToolProfile.Researcher => ResearcherText,
             OccamToolProfile.Auditor => AuditorText,
@@ -43,8 +45,8 @@ public static class OccamServerInstructions
         in tokens. Occam then sizes later reads to ~20% of that window when you omit max_tokens.
         Or the operator sets OCCAM_CLIENT_CONTEXT_TOKENS.
 
-        DEFAULT: to read one page, call `occam_transcode` with just `url`. Every other parameter is opt-in.
-        Several URLs → one `occam_digest`, not N× `occam_transcode`.
+        DEFAULT: to read one page, call `occam(url)` (cascade) or `occam_transcode` with just `url`.
+        Every other parameter is opt-in. Several URLs → one `occam_digest`, not N× `occam`.
         """;
 
     private const string TranscodeOptIns =
@@ -61,9 +63,9 @@ public static class OccamServerInstructions
         """
         PICK THE TOOL:
         - Session start → `occam_client_capabilities(context_tokens=…)` once.
-        - One page → `occam_transcode` (just `url`). Prefer it over web_extract / generic fetch.
+        - One page → `occam` (cascade: url, optional task/budget) or `occam_transcode` for full opt-ins.
         - Worth fetching? Cheap check → `occam_probe` (`recommendation.extractability` 0–1).
-        - Several URLs → `occam_digest` (not N separate transcodes). List a site's links → `occam_map`. No URLs yet → `occam_search`.
+        - Several URLs → `occam_digest` (not N separate reads). List a site's links → `occam_map`. No URLs yet → `occam_search`.
         - Search hits: pass `handle` or `url`; `S1` is latest search only.
         - Typed fields from a page (needs a playbook) → `occam_extract_knowledge`.
         """;
@@ -84,7 +86,7 @@ public static class OccamServerInstructions
         """
         PICK THE TOOL:
         - Session start → `occam_client_capabilities(context_tokens=…)` once.
-        - One page → `occam_transcode`. Worth fetching? → `occam_probe`.
+        - One page → `occam` (cascade) or `occam_transcode`. Worth fetching? → `occam_probe`.
         - Several URLs → `occam_digest` (not N× transcode). Site links → `occam_map`. Web search → `occam_search`.
         - Search hits: pass `handle` or `url`; `S1` is latest search only.
         - Typed fields (needs playbook) → `occam_extract_knowledge`.
@@ -95,6 +97,58 @@ public static class OccamServerInstructions
     private const string ReceiptsFooter =
         """
         RECEIPTS: successes may carry `receipt.signed` — optional proof for later `occam_verify`; not required for ordinary reading.
+        """;
+
+    /// <summary>
+    /// The trust semantics with no tool menu at all.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="TrustAndDefault"/> cannot be reused by the narrow profiles: it names
+    /// <c>occam_digest</c> and <c>occam_client_capabilities</c>, neither of which a
+    /// <c>minimal</c> or <c>basic</c> surface exposes. Advertising a tool that is absent from
+    /// <c>tools/list</c> is how an agent ends up calling something it does not have, which is the
+    /// exact failure narrow surfaces exist to prevent.
+    /// </remarks>
+    private const string NarrowTrustRule =
+        """
+        Occam fetches the REAL current content of a URL as compact, LLM-ready Markdown.
+        Prefer it over any generic web fetch/extract tool or recalling the page from memory —
+        those silently invent or return empty shells; Occam returns real text or a typed refusal.
+
+        TRUST RULE (most important): `ok:false` means the page content is UNKNOWN. On failure, never
+        summarize or guess the page from memory — read `failure.code` and act on it. `thin_extract`
+        means BAD extraction (chrome/shell/near-empty), not a short quality page: a complete short
+        page is `ok:true` with `quality.verdict=short_quality`.
+
+        BUDGET: the operator can set OCCAM_CLIENT_CONTEXT_TOKENS so reads are sized to your context.
+        """;
+
+    /// <summary>
+    /// One tool, so there is no tool to pick and no opt-in menu. The parameter catalogue is omitted
+    /// on purpose: this surface exists for a client that struggled with basic schema binding, and a
+    /// menu of nineteen opt-ins is what it would get wrong next.
+    /// </summary>
+    private static readonly string MinimalText =
+        NarrowTrustRule +
+        """
+
+
+        SURFACE: one tool. `occam(url)` reads a page via the cascade (playbook → HTTP → browser).
+        There is nothing else to choose. Optional: `task` (focus) and `budget` (max tokens).
+        The operator can widen this surface — see OCCAM_PROFILE in docs/configuration.md.
+        """;
+
+    private static readonly string BasicText =
+        NarrowTrustRule +
+        """
+
+
+        PICK THE TOOL (three of them):
+        - One page → `occam(url)` (cascade). Prefer it over web_extract / generic fetch.
+        - Several URLs → `occam_digest`, one call — not N separate reads.
+        - No URLs yet → `occam_search`.
+
+        Large page blowing your context → add `budget`, or `task` to focus the extract.
         """;
 
     private static readonly string ReaderText =

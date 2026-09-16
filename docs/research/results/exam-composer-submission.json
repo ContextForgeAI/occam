@@ -1,0 +1,24 @@
+﻿{
+  "clientInfo": "cursor-composer/agent-session",
+  "modelHint": "composer-agent",
+  "sessionId": "exam-composer-2026-09-16",
+  "selfReportTier": "strong",
+  "canaryVerdict": "READ_VERIFIED",
+  "basicCallArguments": { "url": "https://example.com" },
+  "focusBudgetArguments": { "task": "example domain purpose", "budget": 512 },
+  "chain": {
+    "calls": [
+      { "url": "https://example.com" },
+      { "url": "https://example.com", "if_none_match": "sha256:5945db6fd8137aa377638814ca9bb1ac0a663fd90a97f11f86c3f5c09cfb40e3" }
+    ],
+    "producedValue": "sha256:5945db6fd8137aa377638814ca9bb1ac0a663fd90a97f11f86c3f5c09cfb40e3"
+  },
+  "evidence": {
+    "canarySessionId": "exam-composer-1",
+    "canaryProbeUrl": "http://127.0.0.1:8977/probe/canary/exam-composer-1",
+    "canaryVerifiedAt": "2026-09-16T16:35:00Z",
+    "transcodeContentHash": "sha256:5945db6fd8137aa377638814ca9bb1ac0a663fd90a97f11f86c3f5c09cfb40e3",
+    "agent": "Composer in Cursor IDE session (not an API-keyed batch model)",
+    "note": "Single real-agent cell. Not the multi-model Experiment 3 design."
+  }
+}

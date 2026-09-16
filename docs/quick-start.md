@@ -82,7 +82,7 @@ Requires Node.js 20+. The release install does not require the .NET SDK.
     irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
     ```
 
-The currently published channel is `v1.1.1`. The installer verifies the
+The currently published channel is `v1.2.0`. The installer verifies the
 release archive against its SHA-256 manifest, verifies Cosign when
 `signaturePolicy=required-cosign-v1` is declared (**requires the `cosign` CLI**),
 runs archive-member preflight before extract, and checks the complete bundled

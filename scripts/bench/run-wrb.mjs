@@ -53,6 +53,8 @@ const wrbRoot = join(root, "artifacts", "wrb", shortRef, "repo");
 const outputDir = join(root, "artifacts", "wrb", shortRef, "results");
 const adapterSource = join(root, "scripts", "bench", "wrb", "occam.py");
 const adapterTarget = join(wrbRoot, "runners", "occam.py");
+const donsetchSource = join(root, "scripts", "bench", "wrb", "donsetch.py");
+const donsetchTarget = join(wrbRoot, "runners", "donsetch.py");
 
 function run(command, args, opts = {}) {
   try {
@@ -96,6 +98,9 @@ run("git", ["checkout", "--detach", custom.wrbRef], {
 });
 
 copyFileSync(adapterSource, adapterTarget);
+if (custom.runner === "donsetch") {
+  copyFileSync(donsetchSource, donsetchTarget);
+}
 mkdirSync(outputDir, { recursive: true });
 
 const occamRevision = run("git", ["rev-parse", "HEAD"]).trim();
@@ -168,6 +173,7 @@ try {
       ? (process.env.OCCAM_SEARCH_PROVIDER || "duckduckgo")
       : null,
     crawlMapping: custom.runner === "occam" ? "occam_map_proxy" : "native",
+    archive: custom.runner === "donsetch" ? "off" : "n/a",
   };
   writeFileSync(outputPath, `${JSON.stringify(result, null, 2)}\n`, "utf8");
   console.error(`Provenance recorded: ${outputPath}`);

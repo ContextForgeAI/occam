@@ -87,6 +87,7 @@ public static class OccamServiceCollectionExtensions
         services.AddSingleton<Search.ISearchProvider, Search.BraveProvider>();
         services.AddSingleton<Search.ISearchProvider, Search.TavilyProvider>();
         services.AddSingleton<Search.ISearchProvider, Search.DonsetchSearchProvider>();
+        services.AddSingleton<Search.SearchProviderHealth>();
         services.AddSingleton<Services.ISearchService, Services.SearchService>();
         services.AddHttpClient(Services.RobotsThrottleService.HttpClientName, c => c.Timeout = TimeSpan.FromMilliseconds(
             OccamMcp.Core.Configuration.OccamEnvironment.GetInt("OCCAM_ROBOTS_TIMEOUT_MS", defaultValue: 10_000, min: 1_000, max: 60_000)))
@@ -112,6 +113,8 @@ public static class OccamServiceCollectionExtensions
         services.AddSingleton<HttpProbeFetcher>();
         services.AddSingleton<ProbeService>();
         services.AddSingleton<TranscodePipeline>();
+        services.AddSingleton<Cascade.ICascadeExtractBackend, Cascade.LiveCascadeExtractBackend>();
+        services.AddSingleton<Cascade.CascadeService>();
         services.AddSingleton<DigestService>();
         services.AddSingleton<MapService>();
         // SI-16 claim-check — grounds a claim in provable source blocks (core tool).

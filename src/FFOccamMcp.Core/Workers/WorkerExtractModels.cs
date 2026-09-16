@@ -71,6 +71,15 @@ public sealed class WorkerExtractResponse
     // pushed). The receipt stamps PlaybookId/PlaybookVersion only when this is true — honest provenance.
     [JsonPropertyName("overlay_applied")]
     public bool OverlayApplied { get; init; }
+
+    /// <summary>In-process only: first-party Cookie header harvested after browser navigation. Never log.</summary>
+    [JsonPropertyName("harvested_cookie_header")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? HarvestedCookieHeader { get; init; }
+
+    [JsonPropertyName("harvested_cookie_count")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int HarvestedCookieCount { get; init; }
 }
 
 public sealed class WorkerAccessEvidenceInfo

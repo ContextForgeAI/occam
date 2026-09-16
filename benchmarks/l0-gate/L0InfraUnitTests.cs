@@ -17,6 +17,7 @@ using OccamMcp.Core.Services;
 using OccamMcp.Core.Text;
 using OccamMcp.Core.Telemetry;
 using OccamMcp.Core.Search;
+using OccamMcp.Core.Time;
 using OccamMcp.Core.Tools;
 using OccamMcp.Core.Workers;
 using Microsoft.Extensions.DependencyInjection;
@@ -359,21 +360,22 @@ internal static class L0InfraUnitTests
                     == OccamMcp.Core.Transport.OccamMcpServerRegistration.OccamToolNames.Length);
 
             var reader = OccamMcp.Core.Transport.OccamToolProfile.GetExposedToolNames("reader");
-            assert("reader has 8 tools", reader.Length == 8);
+            assert("reader has 9 tools", reader.Length == 9);
             assert("reader exposes client_capabilities", System.Array.IndexOf(reader, "occam_client_capabilities") >= 0);
+            assert("reader exposes occam cascade", System.Array.IndexOf(reader, "occam") >= 0);
             assert("reader exposes transcode", System.Array.IndexOf(reader, "occam_transcode") >= 0);
             assert("reader exposes verify", System.Array.IndexOf(reader, "occam_verify") >= 0);
             assert("reader hides heal", System.Array.IndexOf(reader, "occam_playbook_heal") < 0);
             assert("reader hides save", System.Array.IndexOf(reader, "occam_playbook_save") < 0);
 
             var researcher = OccamMcp.Core.Transport.OccamToolProfile.GetExposedToolNames("researcher");
-            assert("researcher has 9 tools", researcher.Length == 9);
+            assert("researcher has 10 tools", researcher.Length == 10);
             assert("researcher exposes verify", System.Array.IndexOf(researcher, "occam_verify") >= 0);
             assert("researcher exposes claim_check", System.Array.IndexOf(researcher, "occam_claim_check") >= 0);
             assert("researcher hides heal", System.Array.IndexOf(researcher, "occam_playbook_heal") < 0);
 
             var auditor = OccamMcp.Core.Transport.OccamToolProfile.GetExposedToolNames("auditor");
-            assert("auditor has 12 tools", auditor.Length == 12);
+            assert("auditor has 13 tools", auditor.Length == 13);
             assert("auditor exposes attest", System.Array.IndexOf(auditor, "occam_attest") >= 0);
             assert("auditor hides heal", System.Array.IndexOf(auditor, "occam_playbook_heal") < 0);
 
@@ -480,6 +482,9 @@ internal static class L0InfraUnitTests
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "shared", "lib", "response-body-cap.selftest.mjs"), "response body cap selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "shared", "lib", "request-headers.selftest.mjs"), "request headers cross-origin strip selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "browser-extract", "lib", "browser-challenge-detect.selftest.mjs"), "browser challenge fail-fast selftest");
+        RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "browser-extract", "lib", "harvest-cookies.selftest.mjs"), "harvest cookies selftest");
+        RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "browser-extract", "lib", "gated-nav-extract.selftest.mjs"), "gated-nav extract selftest");
+        RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "browser-extract", "lib", "gated-nav-html-extract.selftest.mjs"), "gated-nav html extract selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "browser-extract", "lib", "browser-html-cap.selftest.mjs"), "browser html cap selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("workers", "browser-extract", "lib", "dom-skeleton-prefer-content.selftest.mjs"), "dom skeleton prefer-content selftest");
         RunNodeSelfTest(assert, occamHome, Path.Combine("scripts", "lib", "verify-community-manifest.mjs"), "verify community manifest");
@@ -3457,8 +3462,10 @@ internal static class L0InfraUnitTests
         var prevProvider = Environment.GetEnvironmentVariable("OCCAM_SEARCH_PROVIDER");
         var prevUrl = Environment.GetEnvironmentVariable("OCCAM_SEARCH_URL");
         var prevKey = Environment.GetEnvironmentVariable("OCCAM_SEARCH_API_KEY");
+        var prevProviders = Environment.GetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS");
         try
         {
+            Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS", null);
             var search = OccamServiceCollectionExtensions.BuildSearchService();
 
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", null);
@@ -3496,12 +3503,14 @@ internal static class L0InfraUnitTests
             assert("search unknown provider disabled", !search.IsConfigured);
 
             RunDuckDuckGoHtmlParseContract(assert);
+            RunSearchFanoutContract(assert);
         }
         finally
         {
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", prevProvider);
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_URL", prevUrl);
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_API_KEY", prevKey);
+            Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS", prevProviders);
         }
 
         // Response serialization round-trips (camelCase, snippet omitted when null).
@@ -3566,7 +3575,7 @@ internal static class L0InfraUnitTests
         assert("ddg parse count", hits.Count == 2);
         assert("ddg unwrap uddg", hits[0].Url == "https://nginx.org/en/docs/");
         assert("ddg title", hits[0].Title.Contains("Nginx", StringComparison.OrdinalIgnoreCase));
-        assert("ddg snippet", hits[0].Snippet is not null && hits[0].Snippet.Contains("reverse proxy", StringComparison.OrdinalIgnoreCase));
+        assert("ddg snippet", hits[0].Snippet is { } snip && snip.Contains("reverse proxy", StringComparison.OrdinalIgnoreCase));
         assert("ddg direct https", hits[1].Url == "https://example.com/direct");
         assert("ddg looks like results", DuckDuckGoHtmlParser.LooksLikeResultsPage(fixture));
         assert("ddg resolve filters ddg host", DuckDuckGoHtmlParser.ResolveResultUrl("https://duckduckgo.com/about") is null);
@@ -3579,6 +3588,81 @@ internal static class L0InfraUnitTests
             DuckDuckGoHtmlParser.LooksLikeAnomalyChallenge(
                 """<div class="anomaly-modal__title">Unfortunately, bots use DuckDuckGo too.</div><form action="//duckduckgo.com/anomaly.js">"""));
         assert("ddg anomaly not on normal SERP", !DuckDuckGoHtmlParser.LooksLikeAnomalyChallenge(fixture));
+    }
+
+    private static void RunSearchFanoutContract(Action<string, bool> assert)
+    {
+        assert(
+            "search url normalize strips fragment+slash",
+            SearchUrlNormalizer.Normalize("https://Example.COM/path/?q=1#frag")
+                == "https://example.com/path?q=1");
+        assert(
+            "search url normalize root",
+            SearchUrlNormalizer.Normalize("https://example.com/") == "https://example.com");
+        assert("search url normalize rejects relative", SearchUrlNormalizer.Normalize("/relative") is null);
+
+        var a = SearchOutcome.Success("duckduckgo",
+        [
+            new SearchResultItem("A1", "https://example.com/shared/", "from-ddg"),
+            new SearchResultItem("A2", "https://example.com/only-ddg", null),
+        ], 10);
+        var b = SearchOutcome.Success("brave",
+        [
+            new SearchResultItem("B1", "https://example.com/shared", "from-brave"),
+            new SearchResultItem("B2", "https://example.com/only-brave/", null),
+        ], 12);
+        var merged = SearchResultMerger.Merge([a, b], maxResults: 10);
+        assert("search merge consensus first", merged.Count >= 1 && merged[0].Url.Contains("shared", StringComparison.Ordinal));
+        assert("search merge keeps ddg title for consensus", merged[0].Title == "A1");
+        assert("search merge includes uniques", merged.Count == 3);
+
+        var clock = ManualClock.AtUnixSeconds(1_700_000_000);
+        Environment.SetEnvironmentVariable("OCCAM_SEARCH_RATE_MAX", "2");
+        Environment.SetEnvironmentVariable("OCCAM_SEARCH_RATE_WINDOW_S", "60");
+        Environment.SetEnvironmentVariable("OCCAM_SEARCH_DEGRADE_MINUTES", "5");
+        try
+        {
+            var health = new SearchProviderHealth(clock);
+            assert("search health first permit", health.TryBeginCall("brave"));
+            assert("search health second permit", health.TryBeginCall("brave"));
+            assert("search health rate limited", !health.TryBeginCall("brave"));
+
+            health.Observe(SearchOutcome.Failure("tavily", "search_http_429", 1));
+            assert("search health degraded after 429", health.IsDegraded("tavily"));
+            assert("search health skip degraded", !health.TryBeginCall("tavily"));
+            clock.Advance(TimeSpan.FromMinutes(6));
+            assert("search health recovers after cooldown", health.TryBeginCall("tavily"));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("OCCAM_SEARCH_RATE_MAX", null);
+            Environment.SetEnvironmentVariable("OCCAM_SEARCH_RATE_WINDOW_S", null);
+            Environment.SetEnvironmentVariable("OCCAM_SEARCH_DEGRADE_MINUTES", null);
+        }
+
+        Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS", "duckduckgo,brave");
+        Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", "searxng");
+        Environment.SetEnvironmentVariable("OCCAM_SEARCH_API_KEY", "k");
+        var fan = OccamServiceCollectionExtensions.BuildSearchService();
+        assert("search PROVIDERS wins → fanout", fan.IsConfigured && fan.ProviderName == "fanout");
+
+        Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS", "brave");
+        Environment.SetEnvironmentVariable("OCCAM_SEARCH_API_KEY", null);
+        assert("search PROVIDERS brave without key → empty", !fan.IsConfigured);
+
+        Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS", null);
+
+        var fanoutJson = JsonSerializer.Serialize(
+            new OccamSearchSuccessResponse(
+                true, "q", "fanout", 1,
+                [new OccamSearchResultInfo("T", "https://e.com/a", null, Id: "S1")],
+                ProvidersUsed: ["duckduckgo", "brave"]),
+            OccamSearchJsonContext.Default.OccamSearchSuccessResponse);
+        assert(
+            "search fanout serializes providersUsed",
+            fanoutJson.Contains("\"provider\":\"fanout\"", StringComparison.Ordinal)
+            && fanoutJson.Contains("\"providersUsed\"", StringComparison.Ordinal)
+            && fanoutJson.Contains("duckduckgo", StringComparison.Ordinal));
     }
 
     private static void RunTranslationContract(Action<string, bool> assert)

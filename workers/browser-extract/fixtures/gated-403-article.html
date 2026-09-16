@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>How closures capture variables</title>
+</head>
+<body>
+  <main>
+    <article>
+      <h1>How closures capture variables</h1>
+      <p>
+        A closure is a function plus the lexical environment recorded when that
+        function was created. The inner function can still read outer bindings
+        after the outer function has returned.
+      </p>
+      <h2>Steps</h2>
+      <ol>
+        <li>Declare the outer function and its locals.</li>
+        <li>Return an inner function that reads those locals.</li>
+        <li>Call the inner function later and observe the captured values.</li>
+      </ol>
+      <pre><code>function makeAdder(x) {
+  return function add(y) {
+    return x + y;
+  };
+}
+
+const addFive = makeAdder(5);
+console.log(addFive(2));</code></pre>
+      <p>
+        The HTTP status on this fixture is 403. The document is still a real
+        article with a list and a code sample, not a challenge interstitial.
+        Keep enough visible prose so quality floors treat this as a usable
+        document rather than a thin forbidden shell. Closures are ordinary
+        functions that remember the bindings that were in scope when they
+        were created, which is why later calls still see those values.
+      </p>
+    </article>
+  </main>
+</body>
+</html>

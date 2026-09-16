@@ -1,0 +1,57 @@
+{
+  "protocol": "occam-canary-v1",
+  "domainLabel": "occam-canary-v1",
+  "sentinelKeyInfo": "occam-canary-v1/sentinel-mac",
+  "rootKeyHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+  "encoding": "base64url-unpadded",
+  "vectors": [
+    {
+      "sessionId": "vector-session",
+      "bucket": 0,
+      "sentinelBytes": 32,
+      "sentinel": "mENHHl1pbVogGlYUtGkyvSXzZosi-jQiJ6kpN5jmQhw"
+    },
+    {
+      "sessionId": "vector-session",
+      "bucket": 1,
+      "sentinelBytes": 32,
+      "sentinel": "SsRmlFHeM5mZGPJA1fCiBHvd7p2aMN21ofVstQL8v8U"
+    },
+    {
+      "sessionId": "vector-session",
+      "bucket": -1,
+      "sentinelBytes": 32,
+      "sentinel": "sNlf-meFmnSUFKgsEiQacMFf8GE_1_EN3QeKhgfOZv4"
+    },
+    {
+      "sessionId": "vector-session",
+      "bucket": 6000000,
+      "sentinelBytes": 32,
+      "sentinel": "e-jPUfHCPr-WmQWy1B82PSpluyQtPPL5BnKqYvb3PKY"
+    },
+    {
+      "sessionId": "vector-session",
+      "bucket": 6000000,
+      "sentinelBytes": 16,
+      "sentinel": "e-jPUfHCPr-WmQWy1B82PQ"
+    },
+    {
+      "sessionId": "a",
+      "bucket": 0,
+      "sentinelBytes": 32,
+      "sentinel": "PWtR1dbF8dK1vJTcq4_j-fI9pLrhRomuL_vtTRtG-JI"
+    },
+    {
+      "sessionId": "session.with_dots-and-dashes",
+      "bucket": 123456,
+      "sentinelBytes": 32,
+      "sentinel": "7Z11tKy2enm5zVuXj-b2dhaSqJZw97YjI68YKQfDpfM"
+    },
+    {
+      "sessionId": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+      "bucket": 999,
+      "sentinelBytes": 32,
+      "sentinel": "R5yMvhQ1aYzyA5uPed-xRRFqRIIxsqwIs2JvHf0Ft-s"
+    }
+  ]
+}

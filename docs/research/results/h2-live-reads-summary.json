@@ -1,0 +1,11 @@
+{
+  "protocol": "occam-h2-live-reads-summary-v1",
+  "hostCommit": "33570d11c20283d76b1fd9ff6ecb60ff6e383a14",
+  "n": 9,
+  "ok": 9,
+  "fail": 0,
+  "successRate": 1,
+  "latencyP50Ms": 7771,
+  "latencyP95Ms": 10657,
+  "allOk": true
+}

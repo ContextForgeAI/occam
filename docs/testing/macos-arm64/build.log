@@ -1,0 +1,31 @@
+### dotnet restore
+  Determining projects to restore...
+  Restored /Users/pavelbogatyrev/occam-test/occam/src/FFOccamMcp.Core/FFOccamMcp.Core.csproj (in 135 ms).
+restore_core_exit=0
+  Determining projects to restore...
+  Restored /Users/pavelbogatyrev/occam-test/occam/tests/OccamMcp.Core.Tests/OccamMcp.Core.Tests.csproj (in 171 ms).
+  1 of 2 projects are up-to-date for restore.
+restore_tests_exit=0
+
+### dotnet build -c Release (Core)
+  FFOccamMcp.Core -> /Users/pavelbogatyrev/occam-test/occam/src/FFOccamMcp.Core/bin/Release/net10.0/OccamMcp.Core.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.82
+build_core_exit=0
+
+### dotnet build -c Release (Tests, warnings-as-errors)
+  FFOccamMcp.Core -> /Users/pavelbogatyrev/occam-test/occam/src/FFOccamMcp.Core/bin/Release/net10.0/OccamMcp.Core.dll
+  OccamMcp.Core.Tests -> /Users/pavelbogatyrev/occam-test/occam/tests/OccamMcp.Core.Tests/bin/Release/net10.0/OccamMcp.Core.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.67
+build_tests_exit=0
+build_wall_seconds=7
+build_script_exit=0

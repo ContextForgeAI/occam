@@ -1,0 +1,17 @@
+### cascade live smoke 2026-09-16T11:32:23Z
+repo=/Users/pavelbogatyrev/occam-cascade-build
+platform=macos-arm64
+
+url=https://example.com status=OK exit=0 latency_ms=1312 backend=node_readability_turndown partial=false failure=
+url=https://nginx.org/ status=OK exit=0 latency_ms=1600 backend=node_readability_turndown partial=false failure=
+url=https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404 status=OK exit=0 latency_ms=1826 backend=node_readability_turndown partial=false failure=
+
+ok_count=3
+fail_count=0
+latency_n=3
+latency_p50_ms=1600
+latency_p95_ms=1600
+latency_mean_ms=1579
+latency_min_ms=1312
+latency_max_ms=1826
+CASCADE_LIVE_SMOKE_OK

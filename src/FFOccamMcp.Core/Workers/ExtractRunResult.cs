@@ -26,4 +26,5 @@ public sealed record ExtractRunResult(
     // A3: true when a playbook overlay actually matched this host and shaped the extract (honest
     // provenance — the receipt stamps PlaybookId only when this is true, not merely on overlay push).
     bool OverlayApplied = false,
-    WorkerAccessEvidenceInfo? Access = null);
+    WorkerAccessEvidenceInfo? Access = null,
+    string? HarvestedCookieHeader = null);

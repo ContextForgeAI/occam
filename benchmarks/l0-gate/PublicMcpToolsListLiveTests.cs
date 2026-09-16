@@ -64,6 +64,7 @@ internal static class PublicMcpToolsListLiveTests
 
             JsonElement? digest = null;
             JsonElement? transcode = null;
+            JsonElement? cascade = null;
             foreach (var tool in tools.EnumerateArray())
             {
                 if (!tool.TryGetProperty("name", out var nameEl))
@@ -80,15 +81,21 @@ internal static class PublicMcpToolsListLiveTests
                 {
                     transcode = tool;
                 }
+                else if (name == "occam")
+                {
+                    cascade = tool;
+                }
             }
 
+            assert("live tools/list: occam cascade present", cascade.HasValue);
             assert("live tools/list: occam_digest present", digest.HasValue);
             assert("live tools/list: occam_transcode present", transcode.HasValue);
-            if (!digest.HasValue || !transcode.HasValue)
+            if (!digest.HasValue || !transcode.HasValue || !cascade.HasValue)
             {
                 return;
             }
 
+            AssertCascadeSchema(assert, cascade.Value);
             AssertDigestSchema(assert, digest.Value);
             AssertTranscodeSchema(assert, transcode.Value);
 
@@ -116,6 +123,29 @@ internal static class PublicMcpToolsListLiveTests
         finally
         {
             session.Dispose();
+        }
+    }
+
+    private static void AssertCascadeSchema(Action<string, bool> assert, JsonElement tool)
+    {
+        if (!tool.TryGetProperty("inputSchema", out var schema))
+        {
+            assert("live cascade: inputSchema", false);
+            return;
+        }
+
+        var required = ReadRequired(schema);
+        assert("live cascade: only url required", required.Count == 1 && required[0] == "url");
+        assert("live cascade: task property", HasProperty(schema, "task"));
+        assert("live cascade: budget property", HasProperty(schema, "budget"));
+        assert("live cascade: mode property", HasProperty(schema, "mode"));
+
+        if (TryGetPropertySchema(schema, "mode", out var mode))
+        {
+            assert(
+                "live cascade: mode default is auto",
+                !mode.TryGetProperty("default", out var def)
+                || (def.ValueKind == JsonValueKind.String && def.GetString() == "auto"));
         }
     }
 

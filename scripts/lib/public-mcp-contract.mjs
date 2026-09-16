@@ -82,6 +82,24 @@ export function assertPublicMcpContract(tools) {
     }
   }
 
+  const cascade = byName.occam;
+  if (!cascade) {
+    failures.push("occam (cascade facade) missing from tools/list");
+  } else {
+    const schema = cascade.inputSchema || {};
+    const required = Array.isArray(schema.required) ? schema.required : [];
+    if (!(required.length === 1 && required[0] === "url")) {
+      failures.push(`occam: required must be ["url"] (got ${JSON.stringify(required)})`);
+    }
+    const props = schema.properties || {};
+    for (const name of ["url", "task", "budget", "mode"]) {
+      if (!props[name]) failures.push(`occam: missing ${name}`);
+    }
+    if (props.mode && props.mode.default != null && props.mode.default !== "auto") {
+      failures.push(`occam: mode default must be "auto" (got ${JSON.stringify(props.mode.default)})`);
+    }
+  }
+
   const transcode = byName.occam_transcode;
   if (!transcode) {
     failures.push("occam_transcode missing from tools/list");

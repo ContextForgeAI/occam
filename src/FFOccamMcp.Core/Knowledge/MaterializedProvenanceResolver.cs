@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using OccamMcp.Core.Knowledge.Canonical;
 using OccamMcp.Core.Receipts;
 
@@ -120,12 +121,23 @@ public static class MaterializedProvenanceResolver
             MembershipVerified: membershipOk);
     }
 
+    /// <summary>
+    /// Walks Claim → Evidence → Source, reporting which link was missing when it cannot finish.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="NotNullWhenAttribute"/> annotations are load-bearing rather than cosmetic:
+    /// on the <c>true</c> path all three of claim, evidence and source are guaranteed set, and
+    /// without the annotations every caller has to either re-check or suppress a nullable warning.
+    /// <see cref="KnowledgeProvenance"/> is deliberately *not* annotated — a resolved chain with no
+    /// receipt provenance is a normal outcome, which is why the leaf can fall back to
+    /// <see cref="Evidence.ContentHash"/>.
+    /// </remarks>
     private static bool TryLocateChain(
         MaterializedKnowledgeView view,
         ClaimCandidateId claimId,
-        out ClaimCandidate? claim,
-        out Evidence? evidence,
-        out Source? source,
+        [NotNullWhen(true)] out ClaimCandidate? claim,
+        [NotNullWhen(true)] out Evidence? evidence,
+        [NotNullWhen(true)] out Source? source,
         out KnowledgeProvenance? provenance,
         out ProvenanceTraceStatus status)
     {

@@ -1,0 +1,39 @@
+{
+  "protocol": "occam-h2-surface-ab-summary-v1",
+  "hostCommit": "33570d11c20283d76b1fd9ff6ecb60ff6e383a14",
+  "agentPolicy": "strong-preferred-tool",
+  "surfaces": [
+    "minimal",
+    "basic",
+    "full"
+  ],
+  "cells": [
+    {
+      "surface": "minimal",
+      "listedToolCount": 1,
+      "n": 24,
+      "ok": 17,
+      "successRate": 0.7083333333333334,
+      "missingCapabilityCount": 7
+    },
+    {
+      "surface": "basic",
+      "listedToolCount": 3,
+      "n": 24,
+      "ok": 24,
+      "successRate": 1,
+      "missingCapabilityCount": 0
+    },
+    {
+      "surface": "full",
+      "listedToolCount": 16,
+      "n": 24,
+      "ok": 24,
+      "successRate": 1,
+      "missingCapabilityCount": 0
+    }
+  ],
+  "strongMinimalBelowFull": true,
+  "allSurfacesRan": true,
+  "note": "Strong agent only. Weak-model selection rates unmeasured."
+}

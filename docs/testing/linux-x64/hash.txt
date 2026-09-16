@@ -1,0 +1,1 @@
+52def527330b16273c5af13521791963d5a58c530b4848e61978bad5205e0105  /home/pavel/occam-test/publish/linux-x64/OccamMcp.Core

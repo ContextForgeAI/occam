@@ -1,0 +1,10 @@
+{
+  "clientInfo": "exam-harness/demo",
+  "modelHint": "mock-weak-7b",
+  "sessionId": "demo-weak",
+  "selfReportTier": "strong",
+  "canaryVerdict": "HALLUCINATED",
+  "basicCallArguments": { "url": "not-a-url" },
+  "focusBudgetArguments": { "task": "x" },
+  "chain": { "calls": [], "producedValue": null }
+}

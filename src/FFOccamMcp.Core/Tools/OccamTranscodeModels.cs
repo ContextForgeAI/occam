@@ -290,7 +290,10 @@ public sealed record OccamTranscodeSuccessResponse(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     OccamTranscodeTocEntry[]? Toc = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    OccamTranscodeMustContainInfo? MustContain = null);
+    OccamTranscodeMustContainInfo? MustContain = null,
+    /// <summary>HTTP status when it is not a normal 2xx grant of access (typically 401/403 with usable content).</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    int? StatusCode = null);
 
 public sealed record OccamTranscodeTocEntry(int Level, string Heading, string? Anchor, int Ordinal);
 
@@ -402,7 +405,7 @@ internal static class OccamTranscodeResponseBuilder
             LeafSetComplete: leafSetComplete && leaves is not null ? true : null,
             Tokens: result.TokensEstimated,
             FailureCode: null,
-            StatusCode: null,
+            StatusCode: result.StatusCode is 401 or 403 ? result.StatusCode : null,
             Confidence: result.Confidence,
             KeyId: string.Empty,
             Alg: string.Empty,

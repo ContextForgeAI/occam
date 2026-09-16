@@ -6,8 +6,8 @@ This page is the documentation-site copy of the same happy path.
 
 **Requirements:** Node.js **20+**. No .NET SDK on the install machine.  
 **Cosign:** required for published `v1.0.0-rc.3`+ (`signaturePolicy=required-cosign-v1`). See [Sigstore install](https://docs.sigstore.dev/cosign/system_config/installation/).
-**Published release:** `1.1.1`
-**Public install default:** `1.1.1`
+**Published release:** `1.2.0`
+**Public install default** (unset `OCCAM_VERSION`): **`1.2.0`
 
 ---
 
@@ -58,14 +58,14 @@ The bootstrap selects install behavior from the **release manifest contract**, n
 | `runtimeLayout=self-contained-v1` (published `v1.0.0-rc.3`+) | Self-contained: SHA-256 + archive preflight + complete runtime closure; **no** executable helper overlay; Cosign when `signaturePolicy=required-cosign-v1` |
 | unknown `runtimeLayout` / unknown `signaturePolicy` | Fail closed |
 
-**Public default** (no `OCCAM_VERSION`): **`1.1.1`**. Set `OCCAM_VERSION=1.1.0`, `1.0.0`, `1.0.0-rc.5`, `1.0.0-rc.4`, `1.0.0-rc.3`, or `1.0.0-rc.2` only for an older channel.
+**Public default** (no `OCCAM_VERSION`): **`1.2.0`**. Set `OCCAM_VERSION=1.1.1`, `1.1.0`, `1.0.0`, `1.0.0-rc.5`, `1.0.0-rc.4`, `1.0.0-rc.3`, or `1.0.0-rc.2` only for an older channel.
 
 1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases
 2. Requires the manifest version and RID to match the request, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). For self-contained manifests, archive-member preflight runs **before** extract
 3. Extracts to staging. Self-contained installs validate the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR`. An existing target must itself be a consistent Occam release for the current RID (inner `layout: level-b` markers); source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
 4. **Self-contained:** uses only helpers inside that verified archive (no mutable post-install executable helper overlay). **Legacy Level B:** may refresh operator CLI helpers from the repository overlay. Bootstrap **script** delivery from the mutable `main` raw URL remains a separate T4 concern
 5. Runs **doctor** (`--skip-build`) — npm workers, Playwright Chromium, host binary check (quiet by default)
-6. Verifies the Occam host by required tool identity — default `reader` exposes **8** core tools; `full` exposes **15**
+6. Verifies the Occam host by required tool identity — default `reader` exposes **9** core tools; `full` exposes **16**
 7. Writes onboard defaults → `~/.occam/onboard.json` (known install path; no re-prompt)
 8. Installs the user launcher transactionally. It replaces only exact Occam-generated current or previous-release launchers and refuses unrelated `occam`, `occam.cmd`, or `occam.ps1` files
 9. Runs **`occam connect`** for live-validated AI/MCP hosts (one host auto; multiple confirm first)
@@ -150,7 +150,7 @@ occam smoke
 occam connect
 ```
 
-Expect **exit 0**. Tool count follows `OCCAM_PROFILE` (default `reader` = **8**; `full` = **15**).
+Expect **exit 0**. Tool count follows `OCCAM_PROFILE` (default `reader` = **9**; `full` = **16**).
 
 ## Optional environment
 
@@ -159,7 +159,7 @@ Expect **exit 0**. Tool count follows `OCCAM_PROFILE` (default `reader` = **8**;
 | `OCCAM_SETUP` | `auto` | `auto` \| `manual` \| `ask` |
 | `OCCAM_HOST` | (none) | Legacy **fallback** snippet preference (`hermes` \| `cursor`) — does not replace connect |
 | `OCCAM_INSTALL_DIR` | `~/.local/share/ff-occam` | Install root |
-| `OCCAM_VERSION` | `1.1.1` (public default) | Release version; set an older tag only for a legacy channel |
+| `OCCAM_VERSION` | `1.2.0` (public default) | Release version; set an older tag only for a legacy channel |
 | `OCCAM_RID` | detected | Published RID override: `win-x64` \| `linux-x64` \| `osx-arm64` only |
 
 ## Do not

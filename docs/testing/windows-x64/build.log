@@ -1,0 +1,29 @@
+### dotnet restore
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+restore_core_exit=0
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+restore_tests_exit=0
+
+### dotnet build -c Release (Core)
+  FFOccamMcp.Core -> C:\PROJECTS\FFOccamMCP\src\FFOccamMcp.Core\bin\Release\net10.0\OccamMcp.Core.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.69
+build_core_exit=0
+
+### dotnet build -c Release (Tests, warnings-as-errors)
+  FFOccamMcp.Core -> C:\PROJECTS\FFOccamMCP\src\FFOccamMcp.Core\bin\Release\net10.0\OccamMcp.Core.dll
+  OccamMcp.Core.Tests -> C:\PROJECTS\FFOccamMCP\tests\OccamMcp.Core.Tests\bin\Release\net10.0\OccamMcp.Core.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.91
+build_tests_exit=0
+build_wall_seconds=4

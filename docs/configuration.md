@@ -36,6 +36,12 @@ Only variables found in `src/FFOccamMcp.Core/` are listed. CLI flags override en
 
 Export profiles: `node scripts/occam-session.mjs export-state --profile <id>`.
 
+After a browser extract, Occam may replay the same URL once over HTTP with
+first-party cookies harvested from that navigation. That harvest is in-call
+only (temp headers file, deleted after the retry). It is not a session
+profile, is not persisted, and cookie values are never written to receipts
+or the MCP response.
+
 ---
 
 ## Browser and Playwright
@@ -108,6 +114,55 @@ Export profiles: `node scripts/occam-session.mjs export-state --profile <id>`.
 
 ---
 
+## Capability tiers (experimental)
+
+The exam engine (`occam exam selftest` / `exam tasks`) grades an agent on four checkable tasks and
+maps the score to a tool surface. The engine is implemented and tested; **the host does not
+administer the exam itself** — MCP has no general server-initiated task mechanism, so today a tier
+reaches a surface only by an operator setting `OCCAM_PROFILE`. See
+[ADR-0016](https://github.com/ContextForgeAI/occam/blob/main/docs/adr/0016-capability-exam.md) for
+what is and is not wired up.
+
+| Score | Tier | Profile | Tools |
+|-------|------|---------|-------|
+| 0–1 | `weak` | `minimal` | 1 |
+| 2–3 | `medium` (default) | `basic` | 3 |
+| 4 | `strong` | `full` | 16 |
+
+A client that never sat the exam is treated as `medium`: starving a capable agent is a silent
+failure, while over-trusting a weak one is visible and recoverable.
+
+---
+
+## Proof-of-read canary (experimental)
+
+Tunables for the `occam canary` verbs and the probe endpoints. Defaults are the normative protocol
+values from [PROBE_PROTOCOL.md](https://github.com/ContextForgeAI/occam/blob/main/PROBE_PROTOCOL.md)
+§8 — change them only with that document open, because several interact.
+
+| Variable | Default | Range | Purpose |
+|----------|---------|-------|---------|
+| `OCCAM_CANARY_BUCKET_SECONDS` | `300` | 30–3600 | Time-bucket width; the sentinel changes every bucket |
+| `OCCAM_CANARY_FRESH_TOLERANCE` | `1` | 0–8 | Buckets on either side still counted `READ_VERIFIED` (absorbs clock skew) |
+| `OCCAM_CANARY_STALE_HORIZON` | `24` | 1–512 | Oldest bucket still recognised as `READ_STALE` |
+| `OCCAM_CANARY_SENTINEL_BYTES` | `32` | 16–32 | Tag length; 16 gives a 22-character sentinel, 32 gives 43 |
+| `OCCAM_CANARY_ISSUE_LOG_HOURS` | `24` | 1–168 | Issuance retention — drives `REPLAY_SUSPECT` detection |
+| `OCCAM_CANARY_ISSUE_LOG_CAPACITY` | `8192` | 256–1048576 | Hard cap on retained issuance records |
+| `OCCAM_CANARY_RATE_LIMIT` | `30` | 1–10000 | Requests per window, per session and client |
+| `OCCAM_CANARY_RATE_WINDOW_SECONDS` | `60` | 1–3600 | Rate-limit window width |
+
+Notes that matter:
+
+- The secret is **not** configurable. It is generated per process from the platform CSPRNG, never
+  persisted and never logged. Restarting the host invalidates every outstanding sentinel by design.
+- Setting `OCCAM_CANARY_STALE_HORIZON` at or below `OCCAM_CANARY_FRESH_TOLERANCE` is **rejected at
+  startup**: it makes `READ_STALE` unreachable, so the verifier would silently lose a verdict.
+- Shortening `OCCAM_CANARY_ISSUE_LOG_HOURS` below `STALE_HORIZON × BUCKET_SECONDS` makes genuine
+  older reads report as `REPLAY_SUSPECT`, because their issuance record has been evicted.
+- Out-of-range values are clamped with a note on stderr rather than accepted silently.
+
+---
+
 ## Playbooks
 
 | Variable | Purpose |
@@ -122,16 +177,24 @@ Export profiles: `node scripts/occam-session.mjs export-state --profile <id>`.
 
 | Variable | Purpose |
 |----------|---------|
-| `OCCAM_SEARCH_PROVIDER` | Unset → keyless **`duckduckgo`** (HTML SERP, `provider` disclosed). `off` \| `none` → `search_unconfigured`. Explicit: `duckduckgo` \| `searxng` \| `brave` \| `tavily` \| `donsetch`. |
+| `OCCAM_SEARCH_PROVIDER` | Unset → keyless **`duckduckgo`** (HTML SERP, `provider` disclosed). `off` \| `none` → `search_unconfigured`. Explicit: `duckduckgo` \| `searxng` \| `brave` \| `tavily` \| `donsetch`. **Ignored when `OCCAM_SEARCH_PROVIDERS` is set.** |
+| `OCCAM_SEARCH_PROVIDERS` | Optional CSV fan-out list (e.g. `duckduckgo,brave,searxng`). **Wins over** `OCCAM_SEARCH_PROVIDER`. Parallel poll of every configured healthy backend; merge by URL consensus. Response `provider` is `fanout` + `providersUsed[]`. Entries missing key/URL are skipped. |
 | `OCCAM_SEARCH_URL` | Required for SearXNG base URL |
 | `OCCAM_SEARCH_API_KEY` | Required for Brave/Tavily |
-| `OCCAM_SEARCH_TIMEOUT_MS` | Default `20000` (1k–120k) |
+| `OCCAM_SEARCH_TIMEOUT_MS` | HttpClient ceiling. Default `20000` (1k–120k) |
+| `OCCAM_SEARCH_PROVIDER_TIMEOUT_MS` | Per-provider cancel in fan-out. Default `3000` (1k–30k). Slow arms are dropped; others continue. |
+| `OCCAM_SEARCH_FANOUT_TIMEOUT_MS` | Overall fan-out cancel. Default `provider+500` clamped (1k–35k). |
+| `OCCAM_SEARCH_DEGRADE_MINUTES` | After `429` / CAPTCHA (`202`) / timeout, skip that provider for N minutes. Default `5` (1–120). |
+| `OCCAM_SEARCH_RATE_MAX` | Per-provider fixed-window permit count. Default `30` (1–10000). |
+| `OCCAM_SEARCH_RATE_WINDOW_S` | Rate-limit window seconds. Default `60` (1–3600). |
 | `OCCAM_DONSETCH_PATH` | Optional absolute path to a local `donsetch` binary (`OCCAM_SEARCH_PROVIDER=donsetch`). Otherwise `donsetch` must be on `PATH`. Never bundled (AGPL). |
 
 Occam does not index the web. The DuckDuckGo default is disclosed discovery for
 first-run Research; operators who want a dedicated backend set SearXNG/Brave/Tavily
 (or `off` for air-gap). DuckDuckGo may soft-block automated egress with an anomaly
-challenge — Occam returns `search_http_202` and does not solve CAPTCHAs.
+challenge — Occam returns `search_http_202` and does not solve CAPTCHAs. Fan-out
+skips degraded/rate-limited providers and logs switches on stderr as
+`[occam.search] event=… provider=… reason=… untilUtc=…`.
 
 ---
 
@@ -200,15 +263,26 @@ When a proxy pool is active, HTTP and browser daemons are disabled (rotation req
 ## Tool surface profile (`OCCAM_PROFILE`)
 
 Narrows which **core** tools appear in `tools/list` (and in server instructions). Default **`reader`**
-keeps the day-to-day read surface (8 tools). Set `OCCAM_PROFILE=full` for all fifteen (including
+keeps the day-to-day read surface (9 tools). Set `OCCAM_PROFILE=full` for all sixteen (including
 playbook heal/save). Opt-in tools above are independent — still require their own flags.
 
 | Value | Core tools exposed |
 |-------|--------------------|
+| `minimal` | `occam_transcode` only — one tool, so tool selection cannot go wrong |
+| `basic` | `occam_transcode`, `occam_digest`, `occam_search` — read one page, read several, find pages |
 | `reader` (default) | `occam_client_capabilities`, `occam_transcode`, `occam_probe`, `occam_digest`, `occam_map`, `occam_search`, `occam_extract_knowledge`, `occam_verify` |
 | `researcher` | reader + `occam_claim_check` |
 | `auditor` | researcher + `occam_attest`, `occam_dataset_export`, `occam_playbook_lint` |
 | `full` | All fifteen (includes playbook resolve/heal/save) |
+
+Surfaces are nested: widening a profile never removes a tool a narrower one had. Each profile also
+gets its own `instructions` text, and no profile's instructions name a tool it does not expose —
+advertising an absent tool is how an agent ends up calling something missing from its `tools/list`.
+
+`minimal` and `basic` exist for the capability tiers above. `minimal` deliberately omits
+`occam_client_capabilities`: declaring a context budget is useful, but on a one-tool surface it is
+one more thing to get wrong, and `OCCAM_CLIENT_CONTEXT_TOKENS` does the same job from the operator
+side.
 
 Invalid values fall back to `reader` with a one-line `[occam.config]` warning on stderr.
 

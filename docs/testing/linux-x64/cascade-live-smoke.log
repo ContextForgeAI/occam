@@ -1,0 +1,17 @@
+### cascade live smoke 2026-09-16T11:33:06Z
+repo=/home/pavel/occam-cascade-build
+platform=linux-x64
+
+url=https://example.com status=OK exit=0 latency_ms=6468 backend=browser_playwright partial=false failure=
+url=https://nginx.org/ status=OK exit=0 latency_ms=5692 backend=browser_playwright partial=false failure=
+url=https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404 status=OK exit=0 latency_ms=7959 backend=browser_playwright partial=false failure=
+
+ok_count=3
+fail_count=0
+latency_n=3
+latency_p50_ms=6468
+latency_p95_ms=6468
+latency_mean_ms=6706
+latency_min_ms=5692
+latency_max_ms=7959
+CASCADE_LIVE_SMOKE_OK

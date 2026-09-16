@@ -1,0 +1,47 @@
+{
+  "protocol": "occam-h3-real-cell-v1",
+  "note": "One real graded subject (Composer) plus strong-agent H2 surface A/B. Assignment disagreement is a datapoint — not predictive AUC. Do not treat as Experiment 3 completion.",
+  "subject": {
+    "clientInfo": "cursor-composer/agent-session",
+    "modelHint": "composer-agent",
+    "sessionId": "exam-composer-2026-09-16"
+  },
+  "gradePath": "docs/research/results/exam-composer-grade.json",
+  "assignments": {
+    "self_report": {
+      "tier": "strong",
+      "profile": "full",
+      "matchesExam": true
+    },
+    "static_map": {
+      "tier": "medium",
+      "profile": "basic",
+      "matchesExam": false,
+      "reason": "StaticModelMap has no entry for composer-agent; defaults to medium"
+    },
+    "behavioural": {
+      "tier": "strong",
+      "score": 4,
+      "maxScore": 4,
+      "profile": "full",
+      "toolCount": 16
+    }
+  },
+  "h2Proxy": {
+    "source": "h2-surface-ab-summary.json",
+    "agentPolicy": "strong-preferred-tool",
+    "successBySurface": {
+      "minimal": 0.7083,
+      "basic": 1.0,
+      "full": 1.0
+    },
+    "strongMinimalBelowFull": true,
+    "note": "LOD cost on strong: minimal lacks digest/search (7 missingCapability). Not weak-model selection."
+  },
+  "interpretation": {
+    "staticMapDisagreesWithBehavioural": true,
+    "selfReportAgreesWithBehavioural": true,
+    "predictiveValidityMeasured": false
+  },
+  "collectedAt": "2026-09-16T17:17:00Z"
+}

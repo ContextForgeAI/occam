@@ -142,8 +142,13 @@ internal static class L2TransportUnitTests
         assert("transport tool includes occam_claim_check", names.Contains("occam_claim_check"));
         assert("transport tool includes occam_attest", names.Contains("occam_attest"));
         assert("transport tool includes occam_playbook_lint", names.Contains("occam_playbook_lint"));
+        assert("transport tool includes occam cascade", names.Contains("occam"));
         assert("transport tool includes occam_dataset_export", names.Contains("occam_dataset_export"));
-        assert("transport tool prefix", names.All(name => name.StartsWith("occam_", StringComparison.Ordinal)));
+        assert(
+            "transport tool prefix",
+            names.All(name =>
+                name.Equals("occam", StringComparison.Ordinal)
+                || name.StartsWith("occam_", StringComparison.Ordinal)));
     }
 
     private static void RunContentLengthFraming(Action<string, bool> assert)

@@ -36,9 +36,10 @@ DonSeTch had no URL that Occam retrieved and DonSeTch missed.
 
 The overall gap is **12.5 percentage points** (6/48). That exceeds the plan's
 "investigate if >5 pp" trigger. The misses are **gated acquisition**, not
-Tier-1 documentation extract. Stack Overflow remains an Occam honest miss
-(`http_403` / challenge class in prior notes). Reuters was already documented
-as a CloudFront shell.
+Tier-1 documentation extract. On this frozen run Stack Overflow failed as
+`http_403` because the browser worker abort-ed on navigation status before
+DOM quality. That fail-fast is removed in-tree (P0); these 36/48 numbers
+are not a re-run. Reuters was already documented as a CloudFront shell.
 
 ## Decision
 
@@ -49,7 +50,7 @@ as a CloudFront shell.
 | Where DonSeTch is ahead | WRB Tier 2/3 acquisition (SO + two Cloudflare walls). |
 | Start a TLS/HTTP2 rewrite? | **No** — plan §7 still defers a proprietary stack copy. The evidence is a short list of anti-bot hosts, not a global extract-quality deficit. |
 | Change search default? | **No.** Search arm not measured. Do not set `OCCAM_SEARCH_PROVIDER=donsetch`. |
-| Next engine investment if any | Honest SO/Reuters/Indeed acquisition (session / browser / documented limits), not OCR and not a universal crawler. |
+| Next engine investment if any | **P0+P1 measured.** Occam in-tree WRB is still **36/48**. DonSeTch `archive=off` is **39/48** (frozen 42/48 used `archive=auto`). Fair live gap is 3 URL (one SO + Indeed + Reuters), not 6. Cookie retry is in the ladder; it did not close those three. TLS rewrite still not the next step. |
 
 Do not cite 75% or 87.5% as a product-wide success rate. WRB tiers are WRB's,
 not Occam document classes. Token medians are WRB `chars/4`, not tiktoken.
@@ -59,8 +60,12 @@ Reproduce:
 ```bash
 # Windows: WRB's runner prepends ~/.npm-global/bin (Unix). Point at the .exe:
 #   set DONSETCH_PATH=%AppData%\npm\node_modules\donsetch\binaries\donsetch.exe
-node scripts/bench/run-wrb.mjs --runner=donsetch --fetch-only --verbose
-node scripts/bench/run-wrb.mjs --fetch-only --verbose
+# Frozen 36/48 used the default outputs occam.json / donsetch.json.
+# P1 measurement (in-tree host, DonSeTch archive=off):
+#   set OCCAM_FORCE_DOTNET_RUN=1
+#   set OCCAM_WRB_RETAIN_COMPILE=1
+node scripts/bench/run-wrb.mjs --fetch-only --verbose --output occam-p1.json
+node scripts/bench/run-wrb.mjs --runner=donsetch --fetch-only --verbose --output donsetch-archive-off.json
 node scripts/bench/compare-wrb.mjs \
   artifacts/wrb/52025c304f6c/results/occam.json \
   artifacts/wrb/52025c304f6c/results/donsetch.json

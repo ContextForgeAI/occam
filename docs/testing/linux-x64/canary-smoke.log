@@ -1,0 +1,42 @@
+### occam canary selftest
+[canary.selftest] issued bucket=6000000 sentinelChars=43
+[canary] ok   determinism: same inputs derive the same sentinel
+[canary] ok   session isolation: a different session derives a different sentinel
+[canary] ok   time binding: the next bucket derives a different sentinel
+[canary] ok   READ_VERIFIED for a fresh, issued sentinel
+[canary] ok   READ_VERIFIED tolerates surrounding quotes and whitespace
+[canary] ok   HALLUCINATED for an invented value
+[canary] ok   HALLUCINATED for an empty claim
+[canary] ok   HALLUCINATED when the sentinel belongs to another session
+[canary] ok   REPLAY_SUSPECT for an authentic but unissued sentinel
+[canary] ok   READ_STALE once the fresh window has passed
+[canary] ok   READ_STALE reports a positive bucket distance
+[canary] ok   HALLUCINATED beyond the stale horizon
+[canary] ok   floor bucket arithmetic holds for pre-epoch instants
+[canary] ok   bucket arithmetic is exact on a bucket boundary
+[canary] ok   rate limiter refuses once the window is exhausted
+[canary] ok   session ids reject characters that would need HTML escaping
+[canary] ok   disposed secret refuses to derive
+CANARY_SELFTEST_OK
+selftest_exit=0
+
+### occam canary vectors --verify docs/testing/canary-vectors.json
+[canary.vectors] checked=8 mismatches=0
+CANARY_VECTORS_OK checked=8
+vectors_exit=0
+
+### re-emitted vectors (byte comparison lives in canary-vectors.log, via --out + SHA-256)
+[canary.vectors] wrote /home/pavel/occam-test/results/linux-x64/canary-vectors-local.json
+emit_exit=0
+### occam canary smoke (HTTP issue -> read -> verify -> reject)
+[canary.smoke] listening on http://127.0.0.1:37137
+[canary] ok   probe document returns 200
+[canary] ok   probe document is not cacheable
+[canary] ok   probe document carries an occam-sentinel meta tag
+[canary] ok   sentinel also appears in the document body
+[canary] ok   truthful claim verifies (got READ_VERIFIED)
+[canary] ok   invented claim is rejected (got HALLUCINATED)
+[canary.smoke] verify(truthful)={"ok":true,"verdict":"READ_VERIFIED","sessionId":"Li-Ft5P3DOuJR2t_NlGoMA","currentBucket":5965117,"matchedBucket":5965117,"bucketDistance":0,"detail":"Sentinel is authentic, was issued by this host, and is inside the fresh window."}
+[canary.smoke] verify(invented)={"ok":false,"verdict":"HALLUCINATED","sessionId":"Li-Ft5P3DOuJR2t_NlGoMA","currentBucket":5965117,"matchedBucket":null,"bucketDistance":null,"detail":"Reported sentinel matches no bucket within the recognised window (24 buckets back)."}
+CANARY_SMOKE_OK
+smoke_exit=0

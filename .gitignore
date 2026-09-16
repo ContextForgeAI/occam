@@ -67,6 +67,9 @@ cursor-proxy/
 # Caches, logs, temps, local DBs
 *.cache
 *.log
+# Exception: cross-platform verification logs under docs/testing/ ARE the evidence for the platform
+# claims in docs/testing/RESULTS.md (ADR-0015). Ignoring them would leave those claims unbacked.
+!docs/testing/**/*.log
 *.tmp
 *.bak
 *.orig

@@ -1,0 +1,12 @@
+### semantic check: re-derive every committed vector
+[canary.vectors] checked=8 mismatches=0
+CANARY_VECTORS_OK checked=8
+vectors_exit=0
+
+### byte check: emit to a file and compare SHA-256 with the committed baseline
+[canary.vectors] wrote C:\PROJECTS\FFOccamMCP\docs\testing\windows-x64\canary-vectors-local.json
+baseline_sha256=d0cc1b15096451f9c63d9c53d428f7b3f468800f3ac8e5cddbdbb838da0e50b5
+local_sha256=d0cc1b15096451f9c63d9c53d428f7b3f468800f3ac8e5cddbdbb838da0e50b5
+baseline_bytes=1658
+local_bytes=1658
+vectors_byte_identical=yes

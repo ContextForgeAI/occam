@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/ContextForgeAI/occam/security/advisories/new
+    about: Report privately. Do not open a public issue for a vulnerability — see SECURITY.md.
+  - name: Documentation hub
+    url: https://github.com/ContextForgeAI/occam/blob/main/docs/index.md
+    about: Install, tool reference, failure codes and troubleshooting before filing a bug.
+  - name: Proof-of-read protocol specification
+    url: https://github.com/ContextForgeAI/occam/blob/main/PROBE_PROTOCOL.md
+    about: Threat model, verdict semantics and test vectors for the canary protocol.
+  - name: Cross-platform verification evidence
+    url: https://github.com/ContextForgeAI/occam/blob/main/docs/testing/RESULTS.md
+    about: What is actually verified on which platform, with logs — check here before reporting a platform issue.

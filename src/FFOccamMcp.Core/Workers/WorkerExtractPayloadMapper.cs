@@ -30,7 +30,8 @@ internal static class WorkerExtractPayloadMapper
                 // install, so carry it on the failure branch too — not just on success.
                 BrowserProvisioned: payload.BrowserProvisioned,
                 OverlayApplied: payload.OverlayApplied,
-                Access: payload.Access);
+                Access: payload.Access,
+                HarvestedCookieHeader: payload.HarvestedCookieHeader);
         }
 
         return new ExtractRunResult(
@@ -53,7 +54,8 @@ internal static class WorkerExtractPayloadMapper
             Screenshot: payload.Screenshot,
             BrowserProvisioned: payload.BrowserProvisioned,
             OverlayApplied: payload.OverlayApplied,
-            Access: payload.Access);
+            Access: payload.Access,
+            HarvestedCookieHeader: payload.HarvestedCookieHeader);
     }
 
     private static bool IsTimeoutFailure(string? failure) =>

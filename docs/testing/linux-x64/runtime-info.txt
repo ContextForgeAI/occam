@@ -1,0 +1,49 @@
+platform_label=linux-x64
+rid=linux-x64
+collected_at=2026-09-16T05:08:55Z
+
+== uname ==
+Linux ubuntu-docker 6.8.0-136-generic #136-Ubuntu SMP PREEMPT_DYNAMIC Wed Jul  1 21:53:05 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+
+== os-release ==
+PRETTY_NAME="Ubuntu 24.04.4 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.4 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+
+== cpu ==
+model name	: Intel(R) Core(TM) i5-14500HX
+cores=16
+mem_kb=22537312
+
+== dotnet ==
+10.0.302
+.NET SDK:
+ Version:           10.0.302
+ Commit:            35b593bebf
+ Workload version:  10.0.300-manifests.1641d827
+ MSBuild version:   18.6.11+35b593beb
+
+Runtime Environment:
+ OS Name:     ubuntu
+ OS Version:  24.04
+ OS Platform: Linux
+ RID:         linux-x64
+ Base Path:   /home/pavel/.dotnet/sdk/10.0.302/
+
+.NET workloads installed:
+There are no installed workloads to display.
+Configured to use workload sets when installing new manifests.
+No workload sets are installed. Run "dotnet workload restore" to install a workload set.
+
+Host:
+  Version:      10.0.10

@@ -13,7 +13,7 @@ You are working in **FFOccamMCP**, the L0 core of **FF-Occam MCP**. **Read this 
 | Ships | Does not ship |
 |-------|---------------|
 | MCP stdio host `src/FFOccamMcp.Core` (.NET 10, Native AOT); Streamable HTTP `--mcp-http` | 11 legacy `web_*` tools from FFWebMCP |
-| **Always-on core MCP tools** (registry: `OccamMcpServerRegistration.OccamToolNames` — do not hand-count): client_capabilities, transcode, probe, digest, playbook_resolve, map, playbook_heal, playbook_save, extract_knowledge, search (default DuckDuckGo; `OCCAM_SEARCH_PROVIDER` override), verify, claim_check, attest, playbook_lint, dataset_export. Default **`OCCAM_PROFILE=reader`** exposes 8 of these; `full` exposes all 15. **Opt-in** (env-gated, not in the core set): `occam_batch_*` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`), `occam_browser_interact` (`OCCAM_BROWSER_ACTIONS_MCP=1`) | `web_probe`, adaptive digest, bundle, publish playbook MCP |
+| **Always-on core MCP tools** (registry: `OccamMcpServerRegistration.OccamToolNames` — do not hand-count): client_capabilities, **occam** (cascade), transcode, probe, digest, playbook_resolve, map, playbook_heal, playbook_save, extract_knowledge, search (default DuckDuckGo; `OCCAM_SEARCH_PROVIDER` override), verify, claim_check, attest, playbook_lint, dataset_export. Default **`OCCAM_PROFILE=reader`** exposes 9 of these; `full` exposes all 16. **Opt-in** (env-gated, not in the core set): `occam_batch_*` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`), `occam_browser_interact` (`OCCAM_BROWSER_ACTIONS_MCP=1`) | `web_probe`, adaptive digest, bundle, publish playbook MCP |
 | Params: on `occam_transcode` **only `url` is required** — every other is an off-by-default opt-in (~19, grouped by `[core]`/`[tokens]`/`[structured]`/`[fetch]`/`[watch]`/`[advanced]`); full param tables are code-generated → **canonical in `MCP_API_SPEC.md` + `docs/tools-reference.md`** (don't hand-count here) | `revisit_diff`, legacy `web_map` |
 | L1b: probe, domain tiers, agentHints | federation cache, legacy `web_*` |
 | Workers: `workers/http-extract/extract.mjs`, `workers/browser-extract/browser-extract.mjs`, **`workers/css-extract/css-extract.mjs`** | gate-unit monolith |
@@ -119,7 +119,7 @@ Docs drifted historically because many agents hand-wrote prose from memory. The 
 - **One route per audience.** People start at `docs/index.md`; tool-using agents start at
   `llms.txt`; automated installers read `INSTALL.md`; contributors read this file.
 - **Executable doc-lint.** `node scripts/check-docs.mjs` validates local links and anchors, H1
-  structure, orphan pages, the fifteen-tool registry, `llms.txt`, runtime help routes, stale
+  structure, orphan pages, the sixteen-tool registry, `llms.txt`, runtime help routes, stale
   names, and English-only public docs. CI also runs `env-catalog.selftest.mjs` for code↔env drift.
 - **Pre-publication = nuke-and-regenerate** from a clean information architecture after a
   claims-vs-code "truth audit" — do **not** patch accumulated drift.
@@ -248,7 +248,7 @@ docs-internal/           # local engineering (gitignored)
 
 ## 7. MCP contract (canonical)
 
-**Fifteen always-on core tools** (registry: `Transport/OccamMcpServerRegistration.cs` → `OccamToolNames`). **Opt-in extras** (env-gated): `occam_batch_submit/status/results` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`).
+**Sixteen always-on core tools** (registry: `Transport/OccamMcpServerRegistration.cs` → `OccamToolNames`). **Opt-in extras** (env-gated): `occam_batch_submit/status/results` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`).
 
 **Planned (PB4c — not shipped as MCP):** publish CLI + signed manifest — a CLI, not a tenth MCP tool. Maintainer spec: local `docs-internal/GENOME_EXCHANGE_TEST_PLAN.md`.
 
@@ -346,7 +346,7 @@ Report drafts: `artifacts/quality-audit/YYYY-MM-DD-….md` (gitignored). Public 
 
 ## 10. Session start checklist
 
-**Current product track:** **v1.1.1** GA on GitHub Releases (public install default). Foundation includes MCP 2.2, Streamable HTTP, wire enrichments, `ff-occam`, browser interact, profiles, keyless DuckDuckGo search default. npm remains experimental (not the guarded GA install path). Public release identity: `https://github.com/ContextForgeAI/occam`.
+**Current product track:** **v1.2.0** GA on GitHub Releases (public install default). Foundation includes MCP 2.2, Streamable HTTP, wire enrichments, `ff-occam`, browser interact, profiles, keyless DuckDuckGo search default. npm remains experimental (not the guarded GA install path). Public release identity: `https://github.com/ContextForgeAI/occam`.
 
 1. Read **this file** and [docs/index.md](docs/index.md) for current priorities. For a one-page product flashcard (advantages + knobs), read [docs/why-occam.md](docs/why-occam.md) first — agents often miss it.
 2. Confirm **Cursor rules** active: [.cursor/rules/README.md](.cursor/rules/README.md) (6 `.mdc` files).

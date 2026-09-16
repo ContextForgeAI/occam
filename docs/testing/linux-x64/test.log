@@ -1,0 +1,9 @@
+### dotnet test --collect:XPlat Code Coverage
+Test run for /home/pavel/occam-test/occam/tests/OccamMcp.Core.Tests/bin/Release/net10.0/OccamMcp.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:   314, Skipped:     0, Total:   314, Duration: 398 ms - OccamMcp.Core.Tests.dll (net10.0)
+
+Attachments:
+  /home/pavel/occam-test/results/linux-x64/TestResults/f5f13e9a-6237-44bc-9e09-da091b360654/coverage.cobertura.xml
+test_exit=0

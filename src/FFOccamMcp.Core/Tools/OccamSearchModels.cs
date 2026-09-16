@@ -30,7 +30,10 @@ public sealed record OccamSearchSuccessResponse(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     int? HandleTtlS = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? HandleScope = null);
+    string? HandleScope = null,
+    /// <summary>When <see cref="Provider"/> is <c>fanout</c>, backends that returned ok hits.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string[]? ProvidersUsed = null);
 
 public sealed record OccamSearchAgentHintsInfo(string SuggestedNext);
 

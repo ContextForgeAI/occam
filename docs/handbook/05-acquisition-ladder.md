@@ -36,8 +36,9 @@ Per `PHASE6-ACQUISITION-CONTRACT.md` and `OccamRouter`:
 4. **Terminal HTTP (404/410) → STOP** — No browser.
 5. **Public-reference failed HTTP → STOP** — Wikipedia/RFC-style tiers skip browser **silently** (looks like ordinary HTTP failure; no "we chose not to escalate" flag).
 6. **Browser attempt** — When escalation conditions met.
-7. **Browser usable success → STOP**
-8. **Dual local failure → rank** — `FailureRanking.Informativeness` picks HTTP vs browser failure for the surface (e.g. `http_403` rank 100 beats browser `timeout` rank 50). There is **no** third-party managed scrape rung.
+7. **Cookie HTTP retry (at most one)** — If the browser harvested first-party cookies, replay the same URL over HTTP with those cookies. Pick the better usable document (2xx over 4xx-with-content, then longer markdown). Cookies stay in-process; they are not written to receipts or the MCP envelope.
+8. **Browser usable success → STOP** — When there was no harvest, or the retry was not better.
+9. **Dual local failure → rank** — `FailureRanking.Informativeness` picks HTTP vs browser (or cookie-retry) failure for the surface (e.g. `http_403` rank 100 beats browser `timeout` rank 50). There is **no** third-party managed scrape rung.
 
 ### Post-processors (after a backend returns)
 

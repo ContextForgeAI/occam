@@ -1,0 +1,7 @@
+### dotnet publish -c Release -r win-x64 (Native AOT)
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  FFOccamMcp.Core -> C:\PROJECTS\FFOccamMCP\src\FFOccamMcp.Core\bin\Release\net10.0\win-x64\OccamMcp.Core.dll
+  FFOccamMcp.Core -> C:\PROJECTS\FFOccamMCP\artifacts\xplat\publish\windows-x64\
+publish_exit=0
+publish_wall_seconds=3

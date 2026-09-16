@@ -6,7 +6,7 @@
 
 ## Mental model
 
-**Product capability ≠ MCP tool count.** Product default is `OCCAM_PROFILE=reader` (8 tools).
+**Product capability ≠ MCP tool count.** Product default is `OCCAM_PROFILE=reader` (9 tools).
 "15 tools" is the `OCCAM_PROFILE=full` stdio `tools/list` with opt-in flags off — one exposure
 slice of **51 named entrypoints**, not the whole product.
 
