@@ -16,7 +16,7 @@ public sealed class CascadeServiceTests
             new CascadeExtractAttempt(false, null, "browser", "unused", null),
             receiptsEnabled: false);
         var result = await new CascadeService(backend).RunAsync(
-            new CascadeRequest("https://example.com", Timeouts: CascadeTimeouts.Fast));
+            new CascadeRequest("https://example.com"));
 
         Assert.True(result.Ok);
         Assert.False(result.Partial);
@@ -34,7 +34,7 @@ public sealed class CascadeServiceTests
             new CascadeExtractAttempt(true, "# BrowserBody", "browser", null, null),
             receiptsEnabled: true);
         var result = await new CascadeService(backend).RunAsync(
-            new CascadeRequest("https://example.com", Timeouts: CascadeTimeouts.Fast));
+            new CascadeRequest("https://example.com"));
 
         Assert.True(result.Ok);
         Assert.Equal("browser", result.BackendUsed);

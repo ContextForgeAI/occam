@@ -6,17 +6,10 @@ Never invent page text from model memory.
 **Occam** is the product name. The MCP host identifies as **`ff-occam`**
 ([`OccamMcpServerRegistration.cs`](src/FFOccamMcp.Core/Transport/OccamMcpServerRegistration.cs)).
 
-[![CI](https://github.com/ContextForgeAI/occam/actions/workflows/ci.yml/badge.svg)](https://github.com/ContextForgeAI/occam/actions/workflows/ci.yml)
-[![Docs](https://github.com/ContextForgeAI/occam/actions/workflows/docs.yml/badge.svg)](https://github.com/ContextForgeAI/occam/actions/workflows/docs.yml)
 [![Release](https://img.shields.io/github/v/release/ContextForgeAI/occam?label=release)](https://github.com/ContextForgeAI/occam/releases/latest)
-[![GitHub downloads (latest)](https://img.shields.io/github/downloads/ContextForgeAI/occam/latest/total?label=downloads%20%28latest%29)](https://github.com/ContextForgeAI/occam/releases/latest)
-[![GitHub downloads (total)](https://img.shields.io/github/downloads/ContextForgeAI/occam/total?label=downloads%20%28all%29)](https://github.com/ContextForgeAI/occam/releases)
-[![npm downloads](https://img.shields.io/npm/dm/ff-occam?label=npm%20downloads)](https://www.npmjs.com/package/ff-occam)
+[![Downloads](https://img.shields.io/github/downloads/ContextForgeAI/occam/total?label=downloads)](https://github.com/ContextForgeAI/occam/releases)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
-[![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)](src/FFOccamMcp.Core/FFOccamMcp.Core.csproj)
-[![MCP](https://img.shields.io/badge/MCP-16%20core%20tools-0ea5e9)](docs/tools-reference.md)
-[![Platforms](https://img.shields.io/badge/platforms-win--x64%20%7C%20linux--x64%20%7C%20osx--arm64-informational)](INSTALL.md)
-[![npm](https://img.shields.io/badge/npm-ff--occam%401.2.0-cb3837?logo=npm&logoColor=white)](https://www.npmjs.com/package/ff-occam)
+[![npm](https://img.shields.io/npm/v/ff-occam?label=npm)](https://www.npmjs.com/package/ff-occam)
 
 - **Proof-of-read canary** — HMAC sentinel with four verdicts:
   `READ_VERIFIED`, `READ_STALE`, `HALLUCINATED`, `REPLAY_SUSPECT`.
