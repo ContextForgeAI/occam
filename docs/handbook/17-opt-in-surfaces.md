@@ -12,7 +12,7 @@
 
 ## Explanation
 
-Default product `tools/list` uses **`OCCAM_PROFILE=reader`** (9 tools). Set `OCCAM_PROFILE=full` for all **16 core tools**. Four additional env flags add **6 more MCP tools** (opt-in are **not** profile-filtered — `OCCAM_PROFILE=reader` with `OCCAM_CONSENSUS_MCP=1` still exposes `occam_crosscheck`). A fifth flag adds browser interact.
+Default product `tools/list` uses **`OCCAM_PROFILE=reader`** (11 tools). Set `OCCAM_PROFILE=full` for all **18 core tools**. Four additional env flags add **6 more MCP tools** (opt-in are **not** profile-filtered — `OCCAM_PROFILE=reader` with `OCCAM_CONSENSUS_MCP=1` still exposes `occam_crosscheck`). A fifth flag adds browser interact.
 
 | Env gate | Tool(s) | Class |
 |----------|---------|-------|

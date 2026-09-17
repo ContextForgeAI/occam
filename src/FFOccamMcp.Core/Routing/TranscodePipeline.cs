@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using OccamMcp.Core.Abstractions;
+using OccamMcp.Core.Canary;
 using OccamMcp.Core.Codecs;
 using OccamMcp.Core.Handles;
 using OccamMcp.Core.Knowledge;
@@ -19,7 +20,8 @@ public sealed class TranscodePipeline(
     Services.IRobotsThrottleService robotsThrottle,
     KnowledgeCodecRegistry codecRegistry,
     MaterializationPlanner materializationPlanner,
-    SourceHandleStore sourceHandles)
+    SourceHandleStore sourceHandles,
+    CanaryMcpRuntime? canaryRuntime = null)
 {
     private readonly ITranscodePostProcessor[] _postProcessors =
         postProcessors.OrderBy(p => p.Order).ToArray();
@@ -128,6 +130,14 @@ public sealed class TranscodePipeline(
         var fetchUrl = focusIntent.FetchUrl;
         options = options with { FocusFragment = focusIntent.Fragment };
         var started = Stopwatch.GetTimestamp();
+
+        // Proof-of-read canary probe URLs are loopback — serve in-process so agents can
+        // occam_transcode the URL from occam_canary_issue without private_url_blocked.
+        if (canaryRuntime is not null && canaryRuntime.TryMaterializeProbe(fetchUrl, out var canaryOutcome))
+        {
+            return canaryOutcome;
+        }
+
         var preflight = FetchPreflight.Prepare(fetchUrl, options.SessionProfile);
         if (!preflight.Ok)
         {

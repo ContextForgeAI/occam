@@ -4,7 +4,7 @@ namespace OccamMcp.Core.Transport;
 
 /// <summary>
 /// Role-scoped MCP tool surface via <c>OCCAM_PROFILE</c>. Default <see cref="Reader"/> exposes
-/// nine day-to-day tools; <see cref="Full"/> keeps all sixteen core tools. Narrower profiles
+/// eleven day-to-day tools; <see cref="Full"/> keeps all eighteen core tools. Narrower profiles
 /// hide playbook-authoring (and other) tools so agents do not drift into heal/save on a simple read.
 /// </summary>
 public static class OccamToolProfile
@@ -54,6 +54,8 @@ public static class OccamToolProfile
         "occam_search",
         "occam_extract_knowledge",
         "occam_verify",
+        "occam_canary_issue",
+        "occam_canary_verify",
     ];
 
     private static readonly string[] ResearcherExtra =
@@ -74,7 +76,7 @@ public static class OccamToolProfile
         var raw = OccamEnvironment.Get("OCCAM_PROFILE");
         if (string.IsNullOrWhiteSpace(raw))
         {
-            // Default surface is reader (not all 16 core tools) — playbook authoring stays opt-in via full.
+            // Default surface is reader (not all 18 core tools) — playbook authoring stays opt-in via full.
             return Reader;
         }
 

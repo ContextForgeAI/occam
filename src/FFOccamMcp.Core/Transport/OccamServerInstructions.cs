@@ -68,6 +68,7 @@ public static class OccamServerInstructions
         - Several URLs → `occam_digest` (not N separate reads). List a site's links → `occam_map`. No URLs yet → `occam_search`.
         - Search hits: pass `handle` or `url`; `S1` is latest search only.
         - Typed fields from a page (needs a playbook) → `occam_extract_knowledge`.
+        - Prove a page was read → `occam_canary_issue` → `occam_transcode(url)` → `occam_canary_verify` (quote the sentinel only if you fetched it).
         """;
 
     private const string ResearcherPickExtra =
@@ -91,6 +92,7 @@ public static class OccamServerInstructions
         - Search hits: pass `handle` or `url`; `S1` is latest search only.
         - Typed fields (needs playbook) → `occam_extract_knowledge`.
         - Claim retrieval → `occam_claim_check`. Report citations (`status`) → `occam_attest`. Prove a receipt → `occam_verify`.
+        - Prove a page was read → `occam_canary_issue` → fetch → `occam_canary_verify`.
         - Auditable URL set → `occam_dataset_export`. Draft/fix a site recipe → `occam_playbook_heal` → lint → `occam_playbook_save` (only when authoring; never on short_quality successes).
         """;
 

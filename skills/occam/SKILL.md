@@ -74,6 +74,7 @@ Never invent markdown for a failed URL. Never bypass `captcha_or_challenge` or `
 | Cite one sentence | `occam_claim_check` | Retrieves cited blocks + membership proof; legacy `proven` ≠ page truth |
 | Batch citations | `occam_attest` | Heuristic citation assessment (`status`); **not** cryptographic attestation |
 | Offline receipt check | `occam_verify` | Integrity vs key; no re-fetch required in offline mode |
+| Prove a page was read | `occam_canary_issue` → transcode → `occam_canary_verify` | Quote sentinel only after fetch |
 | Auditable URL set | `occam_dataset_export` | 1–20 URLs + manifest signature |
 
 Full decision guide: [references/tool-picker.md](references/tool-picker.md). Copy-paste flows: [references/recipes.md](references/recipes.md).

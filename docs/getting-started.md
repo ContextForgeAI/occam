@@ -12,8 +12,8 @@ the manifest declares `signaturePolicy=required-cosign-v1` (requires the
 mutable repository overlay. Review [installation safety](trust/installation-safety.md)
 for what install mutates and how to remove it.
 
-**Tool surface:** product default is `OCCAM_PROFILE=reader` (9 tools). Set `OCCAM_PROFILE=full`
-for heal/save and the complete sixteen-tool catalog. See [Configuration — profiles](configuration.md).
+**Tool surface:** product default is `OCCAM_PROFILE=reader` (11 tools). Set `OCCAM_PROFILE=full`
+for heal/save and the complete eighteen-tool catalog. See [Configuration — profiles](configuration.md).
 
 ---
 

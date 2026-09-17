@@ -22,6 +22,8 @@ Registry: `OccamMcpServerRegistration.OccamToolNames`. All return JSON strings (
 | `occam_attest` | Batch claim-check for a cited report |
 | `occam_playbook_lint` | Static playbook JSON validation (no network) |
 | `occam_dataset_export` | 1–20 URLs → signed auditable dataset manifest |
+| `occam_canary_issue` | Mint proof-of-read canary URL + session (no sentinel) |
+| `occam_canary_verify` | Verify claimed sentinel → READ_VERIFIED / … |
 
 ---
 

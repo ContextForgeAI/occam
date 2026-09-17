@@ -2,7 +2,7 @@
 
 **What you'll do:** look up every MCP tool, parameter, and response shape.
 
-**Sixteen core tools** are always registered. **Opt-in tools** require env flags — see [Opt-in tools](#opt-in-tools).
+**Eighteen core tools** are always registered. **Opt-in tools** require env flags — see [Opt-in tools](#opt-in-tools).
 
 All tools return a **JSON string** (camelCase). Unless noted, `ok: false` means content is unknown.
 
@@ -371,6 +371,40 @@ Build a signed dataset from 1–20 URLs.
 ### Success response
 
 `ok`, `manifest`, `rows[]` with per-row `receipt`
+
+---
+
+## 16. `occam_canary_issue`
+
+Mint a proof-of-read canary URL + session. **Never returns the sentinel** — fetch `url` then verify.
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `session_id` | string? | generated | Optional session token |
+| `ttl_seconds` | int? | protocol | Advisory TTL for `expiresAt` (30–86400) |
+
+### Success response
+
+`ok`, `url`, `sessionId`, `expiresAt`, `bucket`
+
+---
+
+## 17. `occam_canary_verify`
+
+Adjudicate a claimed sentinel for a canary session.
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `session_id` | string | **required** | From `occam_canary_issue` |
+| `sentinel` | string | **required** | Quoted from the fetched page |
+
+### Success response
+
+`ok`, `verdict` (`READ_VERIFIED` \| `READ_STALE` \| `HALLUCINATED` \| `REPLAY_SUSPECT`), `bucket`, `reason`, …
 
 ---
 

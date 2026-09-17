@@ -8,15 +8,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Added
 
-- Docs hubs: [CAPABILITIES](docs/CAPABILITIES.md), [TRUST](docs/TRUST.md),
-  [CASCADE](docs/CASCADE.md), [SEARCH](docs/SEARCH.md) — link maps over existing
-  ADRs/tool pages (no contract duplication).
+- **`occam_canary_issue` MCP tool** — issue canary URL + session (sentinel never returned).
+- **`occam_canary_verify` MCP tool** — verify sentinel; verdicts `READ_VERIFIED` /
+  `READ_STALE` / `HALLUCINATED` / `REPLAY_SUSPECT`.
+- **Canary on the MCP surface** (previously CLI/probe only). Core catalog **16 → 18**;
+  default reader profile **9 → 11**. CLI `occam canary` and the probe host are unchanged.
 
 ### Changed
 
+- Docs hubs: [CAPABILITIES](docs/CAPABILITIES.md), [TRUST](docs/TRUST.md),
+  [CASCADE](docs/CASCADE.md), [SEARCH](docs/SEARCH.md) — link maps over existing
+  ADRs/tool pages (no contract duplication).
 - Root [README.md](README.md) restructured around five blocks (hero, inventory,
   algorithms, MCP map, configuration) from recon PHASE1/PHASE2; honesty markers
-  for canary CLI-only, exam beta, donsetch experimental.
+  for exam beta, donsetch experimental.
 
 ### Fixed
 

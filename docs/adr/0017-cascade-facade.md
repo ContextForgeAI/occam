@@ -36,7 +36,7 @@ yields `ok:false` with a typed `failure.code` and the full step log.
 | `minimal` | only `occam` |
 | `basic` | `occam` + digest + search |
 | `reader`+ | `occam` alongside `occam_transcode` (full opt-ins) |
-| `full` | all sixteen core tools |
+| `full` | all eighteen core tools |
 
 **`mode=advanced`:** still runs the cascade; response may include a `hint` that specialised tools
 live on wider profiles. It does **not** dynamically enlarge `tools/list` (see ADR-0016 —

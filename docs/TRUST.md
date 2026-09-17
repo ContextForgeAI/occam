@@ -29,9 +29,10 @@ precedence state machine (`CanaryVerifier.cs:50+`).
 
 Source: `Canary/CanaryModels.cs:8–49`.
 
-**Surface:** CLI `occam canary` + probe HTTP host
-(`CanaryCliVerbs.cs`, `CanaryProbeServerHost.cs:68`, `Program.cs:20–24`).
-**Not** registered in `OccamToolNames`. MCP tool exposure is **roadmap only**.
+**Surface:** CLI `occam canary` + probe HTTP host **and** MCP tools
+`occam_canary_issue` / `occam_canary_verify` (reader + full profiles;
+`Tools/OccamCanaryIssueTool.cs`, `CanaryCliVerbs.cs`, `CanaryProbeServerHost.cs`).
+Registered in `OccamToolNames`.
 
 Env: `OCCAM_CANARY_*` — see [configuration.md](configuration.md).
 
@@ -52,11 +53,15 @@ semantic truth or authentic origin of the website.
 | Tool | Role | Code |
 |------|------|------|
 | `occam_verify` | offline / live / prove / citation / history | `Tools/OccamVerifyTool.cs:25–35` |
+| `occam_canary_issue` | Mint canary URL + session (no sentinel) | `Tools/OccamCanaryIssueTool.cs` |
+| `occam_canary_verify` | Adjudicate claimed sentinel → verdict | `Tools/OccamCanaryVerifyTool.cs` |
 | `occam_claim_check` | Relevant blocks + Merkle citation; you judge support | `Claims/ClaimCheckService.cs:25`, tool `:18` |
 | `occam_attest` | Fail-closed status (`supported` / …); Merkle ≠ support | `Attest/AttestService.cs`, tool `:22` |
 | `occam_dataset_export` | Per-row receipts + manifest Merkle root | `Dataset/DatasetExportService.cs:25`, tool `:21` |
 
 Tool pages: [occam_verify](tools/occam_verify.md) ·
+[occam_canary_issue](tools/occam_canary_issue.md) ·
+[occam_canary_verify](tools/occam_canary_verify.md) ·
 [occam_claim_check](tools/occam_claim_check.md) ·
 [occam_attest](tools/occam_attest.md) ·
 [occam_dataset_export](tools/occam_dataset_export.md).
@@ -68,7 +73,7 @@ Tool pages: [occam_verify](tools/occam_verify.md) ·
 3. Later: `occam_verify` offline or live; `prove` / `citation` for block membership.
 4. For claims in a report: `occam_attest` — gate on `status`, not BM25 alone.
 5. For an auditable URL set: `occam_dataset_export` then per-row / manifest verify.
-6. For agent-read proofs (research / eval): canary CLI/probe — not MCP today.
+6. For agent-read proofs: `occam_canary_issue` → fetch → `occam_canary_verify` (or CLI `occam canary`).
 
 ## Related
 

@@ -1,6 +1,6 @@
 # Tool index
 
-Occam exposes **16 core tools** under `OCCAM_PROFILE=full` (product default is **`reader`** = 9);
+Occam exposes **18 core tools** under `OCCAM_PROFILE=full` (product default is **`reader`** = 11);
 **6 more are opt-in** via host environment flags (plus `occam_browser_interact`).
 All tools return a **JSON string** (camelCase). The trust rule everywhere: **`ok: false` means the
 page content is unknown** — never substitute model memory.
@@ -26,6 +26,7 @@ intent, outputs, and recovery behavior.
 | Validate a recipe without fetching | [`occam_playbook_lint`](occam_playbook_lint.md) | Static, deterministic |
 | Save a recipe (with live verify) | [`occam_playbook_save`](occam_playbook_save.md) | Default dry-runs a transcode first |
 | Verify a signed receipt / cite a block | [`occam_verify`](occam_verify.md) | offline / live / prove / citation / history modes |
+| Prove an agent read a page | [`occam_canary_issue`](occam_canary_issue.md) → fetch → [`occam_canary_verify`](occam_canary_verify.md) | HMAC sentinel; four verdicts |
 | Check whether a page backs a claim | [`occam_claim_check`](occam_claim_check.md) | Returns retrieved blocks + Merkle membership proofs; `found:false` is retrieval-only |
 | Audit a report's citations in bulk | [`occam_attest`](occam_attest.md) | 1–50 `{claim, sourceUrl}` rows |
 | Build a signed, auditable URL corpus | [`occam_dataset_export`](occam_dataset_export.md) | Per-row receipts + one manifest signature |

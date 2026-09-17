@@ -13,7 +13,7 @@ You are working in **FFOccamMCP**, the L0 core of **FF-Occam MCP**. **Read this 
 | Ships | Does not ship |
 |-------|---------------|
 | MCP stdio host `src/FFOccamMcp.Core` (.NET 10, Native AOT); Streamable HTTP `--mcp-http` | 11 legacy `web_*` tools from FFWebMCP |
-| **Always-on core MCP tools** (registry: `OccamMcpServerRegistration.OccamToolNames` — do not hand-count): client_capabilities, **occam** (cascade), transcode, probe, digest, playbook_resolve, map, playbook_heal, playbook_save, extract_knowledge, search (default DuckDuckGo; `OCCAM_SEARCH_PROVIDER` override), verify, claim_check, attest, playbook_lint, dataset_export. Default **`OCCAM_PROFILE=reader`** exposes 9 of these; `full` exposes all 16. **Opt-in** (env-gated, not in the core set): `occam_batch_*` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`), `occam_browser_interact` (`OCCAM_BROWSER_ACTIONS_MCP=1`) | `web_probe`, adaptive digest, bundle, publish playbook MCP |
+| **Always-on core MCP tools** (registry: `OccamMcpServerRegistration.OccamToolNames` — do not hand-count): client_capabilities, **occam** (cascade), transcode, probe, digest, playbook_resolve, map, playbook_heal, playbook_save, extract_knowledge, search (default DuckDuckGo; `OCCAM_SEARCH_PROVIDER` override), verify, claim_check, attest, playbook_lint, dataset_export, **canary_issue**, **canary_verify**. Default **`OCCAM_PROFILE=reader`** exposes 11 of these; `full` exposes all 18. **Opt-in** (env-gated, not in the core set): `occam_batch_*` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`), `occam_browser_interact` (`OCCAM_BROWSER_ACTIONS_MCP=1`) | `web_probe`, adaptive digest, bundle, publish playbook MCP |
 | Params: on `occam_transcode` **only `url` is required** — every other is an off-by-default opt-in (~19, grouped by `[core]`/`[tokens]`/`[structured]`/`[fetch]`/`[watch]`/`[advanced]`); full param tables are code-generated → **canonical in `MCP_API_SPEC.md` + `docs/tools-reference.md`** (don't hand-count here) | `revisit_diff`, legacy `web_map` |
 | L1b: probe, domain tiers, agentHints | federation cache, legacy `web_*` |
 | Workers: `workers/http-extract/extract.mjs`, `workers/browser-extract/browser-extract.mjs`, **`workers/css-extract/css-extract.mjs`** | gate-unit monolith |
@@ -119,7 +119,7 @@ Docs drifted historically because many agents hand-wrote prose from memory. The 
 - **One route per audience.** People start at `docs/index.md`; tool-using agents start at
   `llms.txt`; automated installers read `INSTALL.md`; contributors read this file.
 - **Executable doc-lint.** `node scripts/check-docs.mjs` validates local links and anchors, H1
-  structure, orphan pages, the sixteen-tool registry, `llms.txt`, runtime help routes, stale
+  structure, orphan pages, the eighteen-tool registry, `llms.txt`, runtime help routes, stale
   names, and English-only public docs. CI also runs `env-catalog.selftest.mjs` for code↔env drift.
 - **Pre-publication = nuke-and-regenerate** from a clean information architecture after a
   claims-vs-code "truth audit" — do **not** patch accumulated drift.
@@ -248,7 +248,7 @@ docs-internal/           # local engineering (gitignored)
 
 ## 7. MCP contract (canonical)
 
-**Sixteen always-on core tools** (registry: `Transport/OccamMcpServerRegistration.cs` → `OccamToolNames`). **Opt-in extras** (env-gated): `occam_batch_submit/status/results` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`).
+**Eighteen always-on core tools** (registry: `Transport/OccamMcpServerRegistration.cs` → `OccamToolNames`). **Opt-in extras** (env-gated): `occam_batch_submit/status/results` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`).
 
 **Planned (PB4c — not shipped as MCP):** publish CLI + signed manifest — a CLI, not a tenth MCP tool. Maintainer spec: local `docs-internal/GENOME_EXCHANGE_TEST_PLAN.md`.
 

@@ -11,11 +11,11 @@ Never invent page text from model memory.
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/ff-occam?label=npm)](https://www.npmjs.com/package/ff-occam)
 [![.NET](https://img.shields.io/badge/.NET-10%20Native%20AOT-512BD4?logo=dotnet&logoColor=white)](src/FFOccamMcp.Core/FFOccamMcp.Core.csproj)
-[![MCP](https://img.shields.io/badge/MCP-16%20core%20tools-0ea5e9)](docs/tools-reference.md)
+[![MCP](https://img.shields.io/badge/MCP-18%20core%20tools-0ea5e9)](docs/tools-reference.md)
 
 - **Proof-of-read canary** — HMAC sentinel with four verdicts:
   `READ_VERIFIED`, `READ_STALE`, `HALLUCINATED`, `REPLAY_SUSPECT`.
-  **CLI/probe surface today; MCP tool is on the roadmap.**
+  **MCP + CLI** (`occam_canary_issue` / `occam_canary_verify`, plus `occam canary`).
   ([`Canary/`](src/FFOccamMcp.Core/Canary/),
   [ADR-0010](docs/adr/0010-proof-of-read-canary.md),
   [PROBE_PROTOCOL.md](PROBE_PROTOCOL.md))
@@ -30,7 +30,7 @@ Never invent page text from model memory.
 > **Demo asset (TODO):** `docs/assets/occam-cascade-demo.gif` —
 > `occam(url)` → step log → Markdown.
 
-Default **`OCCAM_PROFILE=reader`** exposes **9** tools. Full suite: **16** core
+Default **`OCCAM_PROFILE=reader`** exposes **11** tools. Full suite: **18** core
 + **5** opt-in ([configuration](docs/configuration.md)).
 
 ---
@@ -44,7 +44,7 @@ Topic hubs: [CAPABILITIES](docs/CAPABILITIES.md) · [TRUST](docs/TRUST.md) ·
 
 | Capability | Notes | Source |
 |------------|-------|--------|
-| Proof-of-read canary | HMAC; four verdicts; **CLI/probe only** (MCP tool on roadmap) | [`Canary/`](src/FFOccamMcp.Core/Canary/) · [TRUST](docs/TRUST.md) |
+| Proof-of-read canary | HMAC; four verdicts; **MCP + CLI** | [`Canary/`](src/FFOccamMcp.Core/Canary/) · [TRUST](docs/TRUST.md) |
 | Receipt v1 (ECDSA P-256) | On by default; `OCCAM_RECEIPTS=off` disables | [`ReceiptSigner.cs`](src/FFOccamMcp.Core/Receipts/ReceiptSigner.cs), [`ReceiptsPolicy.cs`](src/FFOccamMcp.Core/Receipts/ReceiptsPolicy.cs) |
 | Merkle blocks + verify | Modes: offline, live, prove, citation, history | [`MerkleTree.cs`](src/FFOccamMcp.Core/Receipts/MerkleTree.cs), [`OccamVerifyTool.cs`](src/FFOccamMcp.Core/Tools/OccamVerifyTool.cs) |
 | Claim check + attest | Retrieval is not support; fail-closed status | [`ClaimCheckService.cs`](src/FFOccamMcp.Core/Claims/ClaimCheckService.cs), [`AttestService.cs`](src/FFOccamMcp.Core/Attest/AttestService.cs) |
@@ -99,16 +99,16 @@ The agent must quote it. The verifier returns one of four exclusive verdicts
 [`CanaryVerifier.cs`](src/FFOccamMcp.Core/Canary/CanaryVerifier.cs),
 [`CanaryModels.cs`](src/FFOccamMcp.Core/Canary/CanaryModels.cs)).
 
-**Surface today:** CLI `occam canary` and the probe HTTP host
-([`CanaryCliVerbs.cs`](src/FFOccamMcp.Core/Canary/CanaryCliVerbs.cs),
-[`CanaryProbeServerHost.cs`](src/FFOccamMcp.Core/Canary/CanaryProbeServerHost.cs),
-[`Program.cs`](src/FFOccamMcp.Core/Program.cs)).
-This is **not** an MCP tool. MCP exposure is roadmap-only.
+**Surface:** MCP tools `occam_canary_issue` / `occam_canary_verify` (reader + full
+profiles), plus CLI `occam canary` and the probe HTTP host
+([`OccamCanaryIssueTool.cs`](src/FFOccamMcp.Core/Tools/OccamCanaryIssueTool.cs),
+[`CanaryCliVerbs.cs`](src/FFOccamMcp.Core/Canary/CanaryCliVerbs.cs),
+[`CanaryProbeServerHost.cs`](src/FFOccamMcp.Core/Canary/CanaryProbeServerHost.cs)).
 
 [ADR-0010](docs/adr/0010-proof-of-read-canary.md) · [PROBE_PROTOCOL.md](PROBE_PROTOCOL.md)
 
 > **Demo asset (TODO):** `docs/assets/occam-canary-demo.gif` —
-> issue → quote → `READ_VERIFIED` vs `HALLUCINATED` (CLI/probe).
+> issue → quote → `READ_VERIFIED` vs `HALLUCINATED` (MCP + CLI).
 
 ```mermaid
 flowchart LR
@@ -208,7 +208,7 @@ gating
 ([`OccamToolProfile.cs`](src/FFOccamMcp.Core/Transport/OccamToolProfile.cs),
 [`ExamScoring.cs`](src/FFOccamMcp.Core/Exam/ExamScoring.cs)).
 
-### 16 core tools
+### 18 core tools
 
 | Tool | Role |
 |------|------|
@@ -228,6 +228,8 @@ gating
 | `occam_attest` | Fail-closed citation status |
 | `occam_playbook_lint` | Static playbook lint |
 | `occam_dataset_export` | Signed multi-URL dataset |
+| `occam_canary_issue` | Issue proof-of-read canary URL |
+| `occam_canary_verify` | Verify canary sentinel / verdict |
 
 Registry: [`OccamMcpServerRegistration.cs`](src/FFOccamMcp.Core/Transport/OccamMcpServerRegistration.cs).
 Schemas: [tools-reference](docs/tools-reference.md).
@@ -246,7 +248,8 @@ Registration gate:
 [`OccamMcpServerRegistration.cs`](src/FFOccamMcp.Core/Transport/OccamMcpServerRegistration.cs).
 Limits and honesty: [experimental](docs/experimental.md).
 
-**Canary** is not in `tools/list` (CLI/probe only; MCP tool on the roadmap).
+**Canary** is in the core catalog: `occam_canary_issue` + `occam_canary_verify`
+(reader + full; not on `minimal` / `basic`).
 
 ---
 

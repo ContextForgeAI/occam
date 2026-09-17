@@ -31,6 +31,8 @@ public static class OccamMcpServerRegistration
         "occam_attest",
         "occam_playbook_lint",
         "occam_dataset_export",
+        "occam_canary_issue",
+        "occam_canary_verify",
     ];
 
     public static IMcpServerBuilder AddOccamMcpServer(this IServiceCollection services)
@@ -152,6 +154,10 @@ public static class OccamMcpServerRegistration
             builder = builder.WithTools<OccamPlaybookLintTool>();
         if (OccamToolProfile.IsExposed("occam_dataset_export", profile))
             builder = builder.WithTools<OccamDatasetExportTool>();
+        if (OccamToolProfile.IsExposed("occam_canary_issue", profile))
+            builder = builder.WithTools<OccamCanaryIssueTool>();
+        if (OccamToolProfile.IsExposed("occam_canary_verify", profile))
+            builder = builder.WithTools<OccamCanaryVerifyTool>();
 
         // Opt-in async batch (fire-and-forget). Off by default: no background processor, no extra
         // tools, tool count stays at the profile surface. Enable with OCCAM_BATCH_MCP=1.

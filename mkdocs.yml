@@ -210,6 +210,8 @@ nav:
           - Claim check: tools/occam_claim_check.md
           - Attest: tools/occam_attest.md
           - Dataset export: tools/occam_dataset_export.md
+          - Canary issue: tools/occam_canary_issue.md
+          - Canary verify: tools/occam_canary_verify.md
       - Experimental tools:
           - Batch: tools/occam_batch.md
           - Watch: tools/occam_watch.md

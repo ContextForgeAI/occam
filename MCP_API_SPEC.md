@@ -1,8 +1,8 @@
 # MCP API Specification — FF-Occam MCP
 
-**Version:** `1.1.1` (sixteen tools + opt-in batch/watch/crosscheck/browser_interact; Agent-First AF-1..AF-6; Receipt v1; live-only). Public install default: published `1.1.1`.
+**Version:** `1.2.0` (eighteen tools + opt-in batch/watch/crosscheck/browser_interact; Agent-First AF-1..AF-6; Receipt v1; live-only). Public install default: published `1.2.0`.
 **Transport:** stdio MCP (default) + optional **Streamable HTTP** (`--mcp-http`), local WebSocket, and authenticated WSS (see [docs/transports.md](docs/transports.md))
-**Tools:** 16 — `occam_client_capabilities`, `occam`, `occam_transcode`, `occam_probe`, `occam_digest`, `occam_playbook_resolve`, `occam_map`, `occam_playbook_heal`, `occam_playbook_save`, `occam_extract_knowledge`, **`occam_search`**, **`occam_verify`**, **`occam_claim_check`**, **`occam_attest`**, **`occam_playbook_lint`**, **`occam_dataset_export`** · **opt-in tools:** +3 async batch (`occam_batch_*`) when `OCCAM_BATCH_MCP=1`, `occam_watch` (stateful change-watch) when `OCCAM_WATCH_MCP=1`, `occam_crosscheck` (SI-14 consensus/cloaking cross-check) when `OCCAM_CONSENSUS_MCP=1`, `occam_failure_atlas` (SI-10 per-host closure map) when `OCCAM_ATLAS_MCP=1`, and **`occam_browser_interact`** when `OCCAM_BROWSER_ACTIONS_MCP=1` — see [docs/tools-reference.md](docs/tools-reference.md#opt-in-tools). Runtime `tools/list` may be narrower via `OCCAM_PROFILE` (`reader` default | `researcher` | `auditor` | `full`) — see [docs/configuration.md](docs/configuration.md#tool-surface-profile-occam_profile). Client context sizing: `occam_client_capabilities` / `OCCAM_CLIENT_CONTEXT_TOKENS` — see [docs/configuration.md](docs/configuration.md#client-context-budget-occam_client_context_tokens).
+**Tools:** 18 — `occam_client_capabilities`, `occam`, `occam_transcode`, `occam_probe`, `occam_digest`, `occam_playbook_resolve`, `occam_map`, `occam_playbook_heal`, `occam_playbook_save`, `occam_extract_knowledge`, **`occam_search`**, **`occam_verify`**, **`occam_claim_check`**, **`occam_attest`**, **`occam_playbook_lint`**, **`occam_dataset_export`**, **`occam_canary_issue`**, **`occam_canary_verify`** · **opt-in tools:** +3 async batch (`occam_batch_*`) when `OCCAM_BATCH_MCP=1`, `occam_watch` (stateful change-watch) when `OCCAM_WATCH_MCP=1`, `occam_crosscheck` (SI-14 consensus/cloaking cross-check) when `OCCAM_CONSENSUS_MCP=1`, `occam_failure_atlas` (SI-10 per-host closure map) when `OCCAM_ATLAS_MCP=1`, and **`occam_browser_interact`** when `OCCAM_BROWSER_ACTIONS_MCP=1` — see [docs/tools-reference.md](docs/tools-reference.md#opt-in-tools). Runtime `tools/list` may be narrower via `OCCAM_PROFILE` (`reader` default | `researcher` | `auditor` | `full`) — see [docs/configuration.md](docs/configuration.md#tool-surface-profile-occam_profile). Client context sizing: `occam_client_capabilities` / `OCCAM_CLIENT_CONTEXT_TOKENS` — see [docs/configuration.md](docs/configuration.md#client-context-budget-occam_client_context_tokens).
 
 **Audience:** agent (contract) · operator (install/env in [docs/configuration.md](docs/configuration.md))
 
@@ -1103,6 +1103,35 @@ before using rows as content.** Additive summary fields on success: `status` ∈
 still valid).
 `sig`/`keyId` omitted under `OCCAM_RECEIPTS=off`. Invalid `urls` JSON or > 20 URLs → typed
 `{ ok:false, failure:{ code, message } }`.
+
+---
+
+## `occam_canary_issue`
+
+Mint a proof-of-read canary URL + session. **Never returns the sentinel.** Source:
+`Tools/OccamCanaryIssueTool.cs`. See [tools/occam_canary_issue.md](docs/tools/occam_canary_issue.md).
+
+| Parameter | Type | Default | Notes |
+|-----------|------|---------|-------|
+| `session_id` | string? | generated | Optional; `[A-Za-z0-9._-]{1..128}` |
+| `ttl_seconds` | int? | protocol | Advisory TTL for `expiresAt` (30–86400) |
+
+Success: `{ ok, url, sessionId, expiresAt, bucket }`. Next: fetch `url` (e.g. `occam_transcode`) then `occam_canary_verify`.
+
+---
+
+## `occam_canary_verify`
+
+Adjudicate a claimed sentinel. Source: `Tools/OccamCanaryVerifyTool.cs`. See
+[tools/occam_canary_verify.md](docs/tools/occam_canary_verify.md).
+
+| Parameter | Type | Default | Notes |
+|-----------|------|---------|-------|
+| `session_id` | string | **required** | From `occam_canary_issue` |
+| `sentinel` | string | **required** | Quoted from the fetched page |
+
+Success: `{ ok, verdict, bucket, reason, sessionId, currentBucket, matchedBucket?, bucketDistance? }`
+where `verdict` ∈ `READ_VERIFIED` \| `READ_STALE` \| `HALLUCINATED` \| `REPLAY_SUSPECT`.
 
 ---
 

@@ -360,7 +360,7 @@ internal static class L0InfraUnitTests
                     == OccamMcp.Core.Transport.OccamMcpServerRegistration.OccamToolNames.Length);
 
             var reader = OccamMcp.Core.Transport.OccamToolProfile.GetExposedToolNames("reader");
-            assert("reader has 9 tools", reader.Length == 9);
+            assert("reader has 11 tools", reader.Length == 11);
             assert("reader exposes client_capabilities", System.Array.IndexOf(reader, "occam_client_capabilities") >= 0);
             assert("reader exposes occam cascade", System.Array.IndexOf(reader, "occam") >= 0);
             assert("reader exposes transcode", System.Array.IndexOf(reader, "occam_transcode") >= 0);

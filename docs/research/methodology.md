@@ -105,7 +105,7 @@ Between-conditions on tool surface size, within-subjects on model.
 |---|---|---|
 | Minimal | `OCCAM_PROFILE=minimal`, 1 tool | ✅ today |
 | Basic | `OCCAM_PROFILE=basic`, 3 tools | ✅ today |
-| Reader | `OCCAM_PROFILE=reader`, 9 tools | ✅ today |
+| Reader | `OCCAM_PROFILE=reader`, 11 tools | ✅ today |
 | Full | `OCCAM_PROFILE=full`, 16 tools | ✅ today |
 
 All four conditions are runnable on the current build. Task seeds (24 of the planned 60) live in

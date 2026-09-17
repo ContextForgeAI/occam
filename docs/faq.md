@@ -40,8 +40,8 @@ The product is **agent-first**: tool descriptions and [Choosing a tool](choosing
 
 ## How many tools ship by default?
 
-The product default is `OCCAM_PROFILE=reader`, which exposes **9** day-to-day
-tools. `OCCAM_PROFILE=full` exposes the complete **16-tool** core catalog.
+The product default is `OCCAM_PROFILE=reader`, which exposes **11** day-to-day
+tools. `OCCAM_PROFILE=full` exposes the complete **18-tool** core catalog.
 Environment-gated batch, watch, cross-check, failure-atlas, and browser-action
 tools can add more — runtime `tools/list` is authoritative. See
 [Configuration — profiles](configuration.md#tool-surface-profile-occam_profile)

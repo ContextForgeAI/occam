@@ -99,6 +99,21 @@ occam_transcode({ url, playbook_policy: "auto" })  → verify improvement
 
 ---
 
+## Prove that a page was read (canary)
+
+```
+occam_canary_issue({})
+# → { url, sessionId, expiresAt, bucket }  — no sentinel
+occam_transcode({ url })                   # read the canary page into context
+# Quote Sentinel: `…` from markdown — do not invent
+occam_canary_verify({ session_id, sentinel })
+# → verdict: READ_VERIFIED | READ_STALE | HALLUCINATED | REPLAY_SUSPECT
+```
+
+Trust rule: quote the sentinel only if you actually fetched the page. Faking it will be detected.
+
+---
+
 ## Honest failure handling
 
 On `ok: false`, read `failure.code` and `agentHints` / `agentMeta.decisions` if present. Never fill gaps from model memory. See [failure-codes.md](failure-codes.md).

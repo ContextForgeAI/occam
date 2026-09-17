@@ -39,7 +39,7 @@ Source of truth for this table: codebase paths cited below
 | 13 | Browser interact | `Tools/OccamBrowserInteractTool.cs:31` | opt-in / experimental | `OCCAM_BROWSER_ACTIONS_MCP=1` |
 | 14 | Proxy rotation | `Services/RoundRobinProxyRotationService.cs:3–33` | stable | `OCCAM_PROXY_LIST*` |
 | 15 | Browser pool / Playwright | `Workers/Browser*` | stable | `OCCAM_BROWSER_*` |
-| 16 | Proof-of-read canary | `Canary/*` | stable **CLI/probe**; MCP tool in roadmap | `OCCAM_CANARY_*` |
+| 16 | Proof-of-read canary | `Canary/*`, `Tools/OccamCanary*Tool.cs` | stable **MCP + CLI** | `OCCAM_CANARY_*` |
 | 17 | Capability exam | `Exam/*` | beta / research (CLI) | recommends → `OCCAM_PROFILE` (manual) |
 | 18 | Client capabilities | `Tools/OccamClientCapabilitiesTool.cs:16` | stable | `OCCAM_CLIENT_CONTEXT_TOKENS` |
 | 19 | Time anchor TSA | `Receipts/TimeAnchorService.cs` | opt-in | `OCCAM_TIME_ANCHOR` + `OCCAM_TSA_URL` |
@@ -52,7 +52,7 @@ Source of truth for this table: codebase paths cited below
 | Gap | Status |
 |-----|--------|
 | Browser fingerprint rotation | **Not found** — do not document as a feature |
-| Canary as MCP tool | Roadmap only — not in `OccamToolNames` |
+| Canary as MCP tool | **Shipped** — `occam_canary_issue` + `occam_canary_verify` in `OccamToolNames` |
 | Exam auto-applies `OCCAM_PROFILE` | **No** — operator sets env manually |
 | Proxy / external as cascade stages | **No** — separate from `CascadeStepKind` |
 
@@ -62,8 +62,8 @@ Source of truth for this table: codebase paths cited below
 |---------|------------|-------|
 | `minimal` | 1 | Exam Weak mapping |
 | `basic` | 3 | Exam Medium mapping |
-| `reader` | 9 | Default |
-| `full` | 16 core | Exam Strong mapping |
+| `reader` | 11 | Default |
+| `full` | 18 core | Exam Strong mapping |
 
 Source: `Transport/OccamToolProfile.cs`, `Exam/ExamScoring.cs:47–51`,
 `Exam/ExamCliVerbs.cs:153–156`.

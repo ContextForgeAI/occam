@@ -133,6 +133,8 @@ public static class OccamServiceCollectionExtensions
         services.AddSingleton<FeatureDiscoveryService>();
         services.AddSingleton<Services.ITranslationService, Services.TranslationService>();
         services.AddSingleton<Caching.ITranscodeResponseCache, Caching.FileTranscodeResponseCache>();
+        // Proof-of-read canary MCP surface — shared service + loopback probe host for issue URLs.
+        services.AddSingleton<Canary.CanaryMcpRuntime>();
         // ADR-0001 / master PR-E: built-in codecs only via DI. Third-party OptInExtension codecs require
         // KnowledgeCodecExtensionOptions.AllowOptInExtensions + TryRegisterExtension (no assembly scan).
         // Live transcode resolves the configured default via KnowledgeCodecSelector (no MCP codec param).

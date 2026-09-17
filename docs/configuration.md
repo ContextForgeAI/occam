@@ -127,16 +127,17 @@ what is and is not wired up.
 |-------|------|---------|-------|
 | 0–1 | `weak` | `minimal` | 1 |
 | 2–3 | `medium` (default) | `basic` | 3 |
-| 4 | `strong` | `full` | 16 |
+| 4 | `strong` | `full` | 18 |
 
 A client that never sat the exam is treated as `medium`: starving a capable agent is a silent
 failure, while over-trusting a weak one is visible and recoverable.
 
 ---
 
-## Proof-of-read canary (experimental)
+## Proof-of-read canary
 
-Tunables for the `occam canary` verbs and the probe endpoints. Defaults are the normative protocol
+Tunables for the MCP tools (`occam_canary_issue` / `occam_canary_verify`), the
+`occam canary` CLI verbs, and the probe endpoints. Defaults are the normative protocol
 values from [PROBE_PROTOCOL.md](https://github.com/ContextForgeAI/occam/blob/main/PROBE_PROTOCOL.md)
 §8 — change them only with that document open, because several interact.
 
@@ -150,6 +151,7 @@ values from [PROBE_PROTOCOL.md](https://github.com/ContextForgeAI/occam/blob/mai
 | `OCCAM_CANARY_ISSUE_LOG_CAPACITY` | `8192` | 256–1048576 | Hard cap on retained issuance records |
 | `OCCAM_CANARY_RATE_LIMIT` | `30` | 1–10000 | Requests per window, per session and client |
 | `OCCAM_CANARY_RATE_WINDOW_SECONDS` | `60` | 1–3600 | Rate-limit window width |
+| `OCCAM_CANARY_MCP_PORT` | `0` (OS pick) | 0–65535 | Loopback probe port for MCP-issued URLs |
 
 Notes that matter:
 
@@ -263,17 +265,17 @@ When a proxy pool is active, HTTP and browser daemons are disabled (rotation req
 ## Tool surface profile (`OCCAM_PROFILE`)
 
 Narrows which **core** tools appear in `tools/list` (and in server instructions). Default **`reader`**
-keeps the day-to-day read surface (9 tools). Set `OCCAM_PROFILE=full` for all sixteen (including
+keeps the day-to-day read surface (11 tools). Set `OCCAM_PROFILE=full` for all eighteen (including
 playbook heal/save). Opt-in tools above are independent — still require their own flags.
 
 | Value | Core tools exposed |
 |-------|--------------------|
-| `minimal` | `occam_transcode` only — one tool, so tool selection cannot go wrong |
-| `basic` | `occam_transcode`, `occam_digest`, `occam_search` — read one page, read several, find pages |
-| `reader` (default) | `occam_client_capabilities`, `occam_transcode`, `occam_probe`, `occam_digest`, `occam_map`, `occam_search`, `occam_extract_knowledge`, `occam_verify` |
+| `minimal` | `occam` only — one tool, so tool selection cannot go wrong |
+| `basic` | `occam`, `occam_digest`, `occam_search` — read one page, read several, find pages |
+| `reader` (default) | `occam_client_capabilities`, `occam`, `occam_transcode`, `occam_probe`, `occam_digest`, `occam_map`, `occam_search`, `occam_extract_knowledge`, `occam_verify`, `occam_canary_issue`, `occam_canary_verify` |
 | `researcher` | reader + `occam_claim_check` |
 | `auditor` | researcher + `occam_attest`, `occam_dataset_export`, `occam_playbook_lint` |
-| `full` | All fifteen (includes playbook resolve/heal/save) |
+| `full` | All eighteen (includes playbook resolve/heal/save) |
 
 Surfaces are nested: widening a profile never removes a tool a narrower one had. Each profile also
 gets its own `instructions` text, and no profile's instructions name a tool it does not expose —

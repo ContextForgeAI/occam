@@ -69,7 +69,7 @@ ADR: [0016-capability-exam](adr/0016-capability-exam.md).
 
 Documented profiles for this hub: `minimal` / `basic` / `reader` / `full`
 (`Transport/OccamToolProfile.cs`). Default process profile without exam:
-`reader` (9 tools).
+`reader` (11 tools).
 
 ## Related
 
