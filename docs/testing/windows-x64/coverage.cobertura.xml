@@ -159690,7 +159690,7 @@
             <line number="55" hits="0" branch="False" />
           </lines>
         </class>
-        <class name="OccamMcp.Core.Search.DonsetchSearchProvider" filename="C:\PROJECTS\FFOccamMCP\src\FFOccamMcp.Core\Search\DonsetchSearchProvider.cs" line-rate="0" branch-rate="0" complexity="37">
+        <class name="OccamMcp.Core.Search.ExternalCliSearchProvider" filename="C:\PROJECTS\FFOccamMCP\src\FFOccamMcp.Core\Search\ExternalCliSearchProvider.cs" line-rate="0" branch-rate="0" complexity="37">
           <methods>
             <method name="get_Name" signature="()" line-rate="0" branch-rate="1" complexity="1">
               <lines>
@@ -159866,7 +159866,7 @@
             </line>
           </lines>
         </class>
-        <class name="OccamMcp.Core.Search.DonsetchSearchProvider/&lt;SearchAsync&gt;d__6" filename="C:\PROJECTS\FFOccamMCP\src\FFOccamMcp.Core\Search\DonsetchSearchProvider.cs" line-rate="0" branch-rate="0" complexity="10">
+        <class name="OccamMcp.Core.Search.ExternalCliSearchProvider/&lt;SearchAsync&gt;d__6" filename="C:\PROJECTS\FFOccamMCP\src\FFOccamMcp.Core\Search\ExternalCliSearchProvider.cs" line-rate="0" branch-rate="0" complexity="10">
           <methods>
             <method name="MoveNext" signature="()" line-rate="0" branch-rate="0" complexity="10">
               <lines>

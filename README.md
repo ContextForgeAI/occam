@@ -64,7 +64,7 @@ Topic hubs: [CAPABILITIES](docs/CAPABILITIES.md) · [TRUST](docs/TRUST.md) ·
 |------------|-------|--------|
 | DuckDuckGo default | Keyless; HTML → lite fallback | [`DuckDuckGoSearchProvider.cs`](src/FFOccamMcp.Core/Search/DuckDuckGoSearchProvider.cs) · [SEARCH](docs/SEARCH.md) |
 | Fan-out + health | `OCCAM_SEARCH_PROVIDERS` CSV | [`SearchService.cs`](src/FFOccamMcp.Core/Services/SearchService.cs), [`SearchProviderHealth.cs`](src/FFOccamMcp.Core/Search/SearchProviderHealth.cs) |
-| Other providers | searxng, brave, tavily; **donsetch is experimental** (external CLI, not bundled) | [SEARCH](docs/SEARCH.md) |
+| Other providers | searxng, brave, tavily; **external CLI search provider (opt-in, not bundled)** | [SEARCH](docs/SEARCH.md) |
 
 ### Playbooks
 
@@ -266,7 +266,7 @@ Canonical catalog: **[docs/configuration.md](docs/configuration.md)**.
 | Receipts | `OCCAM_RECEIPTS`, `OCCAM_KEYS_ROOT` |
 | Opt-in MCP | `OCCAM_BATCH_MCP`, `OCCAM_WATCH_MCP`, `OCCAM_CONSENSUS_MCP`, `OCCAM_ATLAS_MCP`, `OCCAM_BROWSER_ACTIONS_MCP` |
 
-**Advanced (optional):** `OCCAM_DONSETCH_PATH`, `OCCAM_PDF_OCR*`, `OCCAM_TRANSLATE_*`
+**Advanced (optional):** `OCCAM_EXTERNAL_SEARCH_PATH`, `OCCAM_PDF_OCR*`, `OCCAM_TRANSLATE_*`
 — not the default product surface
 ([configuration](docs/configuration.md), [SEARCH](docs/SEARCH.md)).
 

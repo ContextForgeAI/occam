@@ -8,7 +8,7 @@ namespace OccamMcp.Core.Services;
 /// Default when <c>OCCAM_SEARCH_PROVIDER</c> is unset: keyless DuckDuckGo HTML
 /// (<c>provider=duckduckgo</c> disclosed). Set <c>off</c>/<c>none</c> for the old
 /// air-gap <c>search_unconfigured</c> contract. Explicit <c>searxng</c>/<c>brave</c>/
-/// <c>tavily</c>/<c>donsetch</c> still require their URL/key/binary.
+/// <c>tavily</c>/<c>external_cli</c> still require their URL/key/binary.
 /// When <c>OCCAM_SEARCH_PROVIDERS</c> is set (CSV), fan-out polls all configured
 /// healthy providers in parallel, merges by URL consensus, and skips degraded ones.
 /// Core never crawls or indexes — it delegates and normalizes results.

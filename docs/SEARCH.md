@@ -29,7 +29,7 @@ DI registration: `Composition/OccamServiceCollectionExtensions.cs:85–90`.
 | `searxng` | no | **required** `OCCAM_SEARCH_URL` | Self-hosted |
 | `brave` | yes (`OCCAM_SEARCH_API_KEY`) | default `api.search.brave.com` | |
 | `tavily` | yes (`OCCAM_SEARCH_API_KEY`) | default `api.tavily.com` | |
-| `donsetch` | no | local binary | **Experimental** — not bundled (AGPL); `OCCAM_DONSETCH_PATH` or `PATH` (`DonsetchSearchProvider.cs:10–28`) |
+| `external_cli` | no | local binary | **Experimental** — external CLI search provider (opt-in, not bundled); `OCCAM_EXTERNAL_SEARCH_PATH` or `PATH` (`ExternalCliSearchProvider.cs:10–28`) |
 
 `OCCAM_SEARCH_PROVIDER=off|none` → configured-off failure
 (`SearchService.cs` resolve path).
@@ -56,7 +56,7 @@ OCCAM_SEARCH_PROVIDER  XOR  OCCAM_SEARCH_PROVIDERS (CSV wins)
 ## Honesty notes
 
 - Occam search is **discovery**, not a crawl index.
-- **Donsetch** is an optional operator-installed CLI — do not imply it ships in
+- **External CLI** search provider is opt-in (BYO binary, not bundled) — do not imply it ships in
   the release tarball.
 - PDF OCR and translate are separate advanced env knobs
   (`OCCAM_PDF_OCR*`, `OCCAM_TRANSLATE_*`) — not search providers.

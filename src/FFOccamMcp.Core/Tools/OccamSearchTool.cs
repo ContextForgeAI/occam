@@ -161,7 +161,7 @@ public sealed class OccamSearchTool(ISearchService searchService, ProbeService p
 
     private static string DescribeFailure(string? code) => code switch
     {
-        "search_unconfigured" => "Search is disabled or incomplete. Default is keyless duckduckgo when OCCAM_SEARCH_PROVIDER is unset. Set OCCAM_SEARCH_PROVIDER=off to keep search off; or OCCAM_SEARCH_PROVIDERS=duckduckgo,brave for fan-out. searxng needs OCCAM_SEARCH_URL; brave/tavily need OCCAM_SEARCH_API_KEY; donsetch needs a local binary (OCCAM_DONSETCH_PATH optional).",
+        "search_unconfigured" => "Search is disabled or incomplete. Default is keyless duckduckgo when OCCAM_SEARCH_PROVIDER is unset. Set OCCAM_SEARCH_PROVIDER=off to keep search off; or OCCAM_SEARCH_PROVIDERS=duckduckgo,brave for fan-out. searxng needs OCCAM_SEARCH_URL; brave/tavily need OCCAM_SEARCH_API_KEY; external_cli needs a local binary (OCCAM_EXTERNAL_SEARCH_PATH optional).",
         "search_timeout" => "Search backend timed out. Retry, raise OCCAM_SEARCH_PROVIDER_TIMEOUT_MS (fan-out) or OCCAM_SEARCH_TIMEOUT_MS, or add another provider via OCCAM_SEARCH_PROVIDERS.",
         "search_rate_limited" => "Search provider(s) are rate-limited or temporarily degraded after 429/CAPTCHA/timeout. Wait for OCCAM_SEARCH_DEGRADE_MINUTES cooldown or try another backend in OCCAM_SEARCH_PROVIDERS.",
         var c when c is not null && c.StartsWith("search_http_", StringComparison.Ordinal) =>

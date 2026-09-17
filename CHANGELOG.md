@@ -16,12 +16,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Changed
 
+- **External CLI search provider rename (breaking):** provider id is now
+  `external_cli`; path env is `OCCAM_EXTERNAL_SEARCH_PATH`; class/file
+  `ExternalCliSearchProvider`. Prior branded provider id / path env / class name
+  are removed. Functionality unchanged — BYO binary, not bundled. Competitor
+  brand names removed from public docs.
 - Docs hubs: [CAPABILITIES](docs/CAPABILITIES.md), [TRUST](docs/TRUST.md),
   [CASCADE](docs/CASCADE.md), [SEARCH](docs/SEARCH.md) — link maps over existing
   ADRs/tool pages (no contract duplication).
 - Root [README.md](README.md) restructured around five blocks (hero, inventory,
   algorithms, MCP map, configuration) from recon PHASE1/PHASE2; honesty markers
-  for exam beta, donsetch experimental.
+  for exam beta, external CLI search experimental.
 
 ### Fixed
 
@@ -213,7 +218,7 @@ cite them as byte-identical to this Release.
   Feedback template asks for task + expected content + redacted diagnostics.
   Golden trio recaptured 2026-09-07 on workspace MCP
   (`ff-occam/1.0.0-rc.2`); MDN hashes unchanged; nginx excerpts refreshed.
-- **Q2 competitor arm** — DonSeTch 3.6.7 fetch-only WRB vs Occam on the same
+- **Q2 competitor arm** — external CLI 3.6.7 fetch-only WRB vs Occam on the same
   pin: 42/48 vs 36/48. Gap is gated T2/T3 acquisition (SO, Indeed, Reuters),
   not Tier-1 docs. No parity. Decision:
   [Q2 WRB](docs/examples/capability-eval/q2-wrb/).
@@ -298,7 +303,7 @@ cite them as byte-identical to this Release.
 
 ### Removed
 
-- **Managed extract escalation** — third-party scrape adapters (Firecrawl, Jina, Spider, Scrapfly, Wayback `archive`, Donsetch-as-extract) and `OCCAM_MANAGED_*` are gone. Acquisition is local HTTP → browser → typed refusal only. `OCCAM_SEARCH_PROVIDER=donsetch` remains for search discovery.
+- **Managed extract escalation** — third-party scrape adapters (Firecrawl, Jina, Spider, Scrapfly, Wayback `archive`, External CLI-as-extract) and `OCCAM_MANAGED_*` are gone. Acquisition is local HTTP → browser → typed refusal only. `OCCAM_SEARCH_PROVIDER=external_cli` remains for search discovery.
 
 ## [1.0.1] — 2026-09-01
 
@@ -348,7 +353,7 @@ L3–L9 soak on `main` passed 2026-08-30 before this cut.
 - **Keyless default search (DuckDuckGo HTML)** — when `OCCAM_SEARCH_PROVIDER` is
   unset, `occam_search` uses disclosed DuckDuckGo HTML/lite discovery
   (`provider=duckduckgo`). Set `off`/`none` for the previous
-  `search_unconfigured` air-gap contract; explicit searxng/brave/tavily/donsetch
+  `search_unconfigured` air-gap contract; explicit searxng/brave/tavily/external_cli
   still require their URL/key/binary. Empty SERPs and DuckDuckGo anomaly/CAPTCHA
   interstitials stay typed failures (`search_error` / `search_http_202`) — never
   solved and never invented URLs.
@@ -395,7 +400,7 @@ L3–L9 soak on `main` passed 2026-08-30 before this cut.
   URL-discovery proxy); `compare-wrb.mjs` renders two result files as a
   direction-aware scorecard. The runner has an offline fake-MCP contract
   self-test, retains backend/final-source/failure diagnostics, and the docs
-  prohibit circular Occam-via-DonSeTch comparisons. Reuters and LeBonCoin
+  prohibit circular Occam-via-external-CLI comparisons. Reuters and LeBonCoin
   access-wall cases remain documented honest misses rather than probe-only
   source substitutions.
 - **Homepage / README proof framing** — stop leading with “67.2%”; treat fixture
@@ -412,8 +417,8 @@ L3–L9 soak on `main` passed 2026-08-30 before this cut.
   step 0, Ask AI, README, docs hub, MkDocs Getting Started / Capabilities, MCP
   `instructions`, and AGENTS session start.
 - **rc5 plan slice (C)** — search result labels `S1`…`Sn` (notes only; always pass
-  `url` to fetch tools); optional `OCCAM_SEARCH_PROVIDER=donsetch` and
-  `OCCAM_MANAGED_PROVIDER=archive|donsetch` (local CLI / Wayback — not bundled);
+  `url` to fetch tools); optional `OCCAM_SEARCH_PROVIDER=external_cli` and
+  `OCCAM_MANAGED_PROVIDER=archive|external_cli` (local CLI / Wayback — not bundled);
   opt-in PDF OCR after `pdf_no_text_layer` via `OCCAM_PDF_OCR` + `OCCAM_PDF_OCR_BIN`;
   resumable crawl MCP still deferred (map + digest + batch cover most cases).
 - **rc4 plan polish (B)** — unified failure `next_action` (derived from

@@ -1,7 +1,7 @@
 namespace OccamMcp.Core.Agent;
 
 /// <summary>
-/// Derives a single Donsetch-style <c>next_action</c> string from existing
+/// Derives a single compact <c>next_action</c> string from existing
 /// <see cref="ProbeDecision"/> rows — no invented page content.
 /// </summary>
 public static class NextActionFormatter

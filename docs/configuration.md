@@ -179,7 +179,7 @@ Notes that matter:
 
 | Variable | Purpose |
 |----------|---------|
-| `OCCAM_SEARCH_PROVIDER` | Unset → keyless **`duckduckgo`** (HTML SERP, `provider` disclosed). `off` \| `none` → `search_unconfigured`. Explicit: `duckduckgo` \| `searxng` \| `brave` \| `tavily` \| `donsetch`. **Ignored when `OCCAM_SEARCH_PROVIDERS` is set.** |
+| `OCCAM_SEARCH_PROVIDER` | Unset → keyless **`duckduckgo`** (HTML SERP, `provider` disclosed). `off` \| `none` → `search_unconfigured`. Explicit: `duckduckgo` \| `searxng` \| `brave` \| `tavily` \| `external_cli`. **Ignored when `OCCAM_SEARCH_PROVIDERS` is set.** |
 | `OCCAM_SEARCH_PROVIDERS` | Optional CSV fan-out list (e.g. `duckduckgo,brave,searxng`). **Wins over** `OCCAM_SEARCH_PROVIDER`. Parallel poll of every configured healthy backend; merge by URL consensus. Response `provider` is `fanout` + `providersUsed[]`. Entries missing key/URL are skipped. |
 | `OCCAM_SEARCH_URL` | Required for SearXNG base URL |
 | `OCCAM_SEARCH_API_KEY` | Required for Brave/Tavily |
@@ -189,7 +189,7 @@ Notes that matter:
 | `OCCAM_SEARCH_DEGRADE_MINUTES` | After `429` / CAPTCHA (`202`) / timeout, skip that provider for N minutes. Default `5` (1–120). |
 | `OCCAM_SEARCH_RATE_MAX` | Per-provider fixed-window permit count. Default `30` (1–10000). |
 | `OCCAM_SEARCH_RATE_WINDOW_S` | Rate-limit window seconds. Default `60` (1–3600). |
-| `OCCAM_DONSETCH_PATH` | Optional absolute path to a local `donsetch` binary (`OCCAM_SEARCH_PROVIDER=donsetch`). Otherwise `donsetch` must be on `PATH`. Never bundled (AGPL). |
+| `OCCAM_EXTERNAL_SEARCH_PATH` | Optional absolute path to a local `external_cli` binary (`OCCAM_SEARCH_PROVIDER=external_cli`). Otherwise `external_cli` must be on `PATH`. Never bundled — BYO binary. |
 
 Occam does not index the web. The DuckDuckGo default is disclosed discovery for
 first-run Research; operators who want a dedicated backend set SearXNG/Brave/Tavily

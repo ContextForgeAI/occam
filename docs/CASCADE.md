@@ -34,7 +34,7 @@ flowchart TD
 | Concern | Where it lives | Why separate |
 |---------|----------------|--------------|
 | Static / rotating proxy | `Workers/EgressProxyConfig.cs`, `RoundRobinProxyRotationService.cs` | Applied on worker spawn, not a `CascadeStepKind` |
-| External CLI (Donsetch, OCR helpers) | `External/ExternalCli.cs` | Optional binaries; not fetch ladder steps |
+| External CLI (External CLI, OCR helpers) | `External/ExternalCli.cs` | Optional binaries; not fetch ladder steps |
 
 Do not draw proxy or external as cascade stages in diagrams or agent prompts.
 

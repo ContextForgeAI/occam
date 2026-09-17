@@ -3495,9 +3495,9 @@ internal static class L0InfraUnitTests
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_API_KEY", "k");
             assert("search brave ready with key", search.IsConfigured && search.ProviderName == "brave");
 
-            Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", "donsetch");
+            Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", "external_cli");
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_API_KEY", null);
-            assert("search donsetch keyless ready", search.IsConfigured && search.ProviderName == "donsetch");
+            assert("search external_cli keyless ready", search.IsConfigured && search.ProviderName == "external_cli");
 
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", "nonsuch");
             assert("search unknown provider disabled", !search.IsConfigured);
@@ -3542,11 +3542,11 @@ internal static class L0InfraUnitTests
         assert("search AssignResultIds S1", labeled[0].Id == "S1" && labeled[0].Url == "https://a.example/");
         assert("search AssignResultIds S2", labeled[1].Id == "S2");
 
-        var donsetchHits = DonsetchSearchProvider.ParseResults(
+        var externalCliHits = ExternalCliSearchProvider.ParseResults(
             """{"results":[{"title":"T","url":"https://e.com/x","snippet":"s"},{"link":"https://e.com/y","name":"Y"}]}""",
             maxResults: 5);
-        assert("donsetch parse results count", donsetchHits.Count == 2);
-        assert("donsetch parse url", donsetchHits[0].Url == "https://e.com/x" && donsetchHits[1].Url == "https://e.com/y");
+        assert("external_cli parse results count", externalCliHits.Count == 2);
+        assert("external_cli parse url", externalCliHits[0].Url == "https://e.com/x" && externalCliHits[1].Url == "https://e.com/y");
     }
 
     private static void RunDuckDuckGoHtmlParseContract(Action<string, bool> assert)

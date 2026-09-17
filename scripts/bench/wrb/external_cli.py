@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""DonSeTch WRB adapter with archive=off (live-fetch only).
+"""External CLI WRB adapter with archive=off (live-fetch only).
 
 WRB's upstream runner omits --archive, so the CLI default archive=auto can
 credit Wayback snapshots. This overlay keeps the same fetch/search/crawl
 shape and forces archive=off for a fair live comparison.
+
+BYO binary: set EXTERNAL_SEARCH_PATH (or OCCAM_EXTERNAL_SEARCH_PATH) to the
+operator-installed CLI; default looks for `external_cli` on PATH.
 """
 
 import json
@@ -14,7 +17,11 @@ import time
 
 from base import Runner as BaseRunner
 
-DONSETCH_PATH = os.environ.get("DONSETCH_PATH", "donsetch")
+EXTERNAL_SEARCH_PATH = (
+    os.environ.get("EXTERNAL_SEARCH_PATH")
+    or os.environ.get("OCCAM_EXTERNAL_SEARCH_PATH")
+    or "external_cli"
+)
 ENV = {**os.environ, "PATH": os.path.expanduser("~/.npm-global/bin:") + os.environ.get("PATH", "")}
 FETCH_TIMEOUT_S = max(1, int(os.environ.get("OCCAM_WRB_TIMEOUT_MS", "90000")) / 1000)
 
@@ -42,11 +49,11 @@ def run_cmd(args, timeout=60):
 
 
 class Runner(BaseRunner):
-    name = "DonSeTch"
+    name = "external_cli"
 
     def fetch(self, url, max_chars=5000):
         stdout, stderr, latency, rc = run_cmd([
-            DONSETCH_PATH, "fetch", url,
+            EXTERNAL_SEARCH_PATH, "fetch", url,
             "--max-chars", str(max_chars),
             "--archive", "off",
             "--deadline-ms", str(int(FETCH_TIMEOUT_S * 1000)),
@@ -88,7 +95,7 @@ class Runner(BaseRunner):
 
     def search(self, query, max_results=10):
         stdout, stderr, latency, rc = run_cmd([
-            DONSETCH_PATH, "search", query, "--max-results", str(max_results), "--json"
+            EXTERNAL_SEARCH_PATH, "search", query, "--max-results", str(max_results), "--json"
         ], timeout=30)
 
         try:
@@ -122,7 +129,7 @@ class Runner(BaseRunner):
 
     def crawl(self, seed_url, focus, max_pages=30):
         stdout, stderr, latency, rc = run_cmd([
-            DONSETCH_PATH, "crawl", seed_url,
+            EXTERNAL_SEARCH_PATH, "crawl", seed_url,
             "--topic", focus,
             "--max-pages", str(max_pages),
             "--max-chars", "100000",

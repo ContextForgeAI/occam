@@ -92,7 +92,7 @@ public sealed record OccamTranscodeFailureResponse(
     Semantics.SemanticCompletenessInfo? Completeness = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? Verdict = null,
-    /// <summary>Primary operational hint derived from agentMeta.decisions (Donsetch-style one-liner).</summary>
+    /// <summary>Primary operational hint derived from agentMeta.decisions (compact one-liner).</summary>
     [property: JsonPropertyName("next_action")]
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? NextAction = null);

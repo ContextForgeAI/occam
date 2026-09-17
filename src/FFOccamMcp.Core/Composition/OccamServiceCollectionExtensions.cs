@@ -86,7 +86,7 @@ public static class OccamServiceCollectionExtensions
         services.AddSingleton<Search.ISearchProvider, Search.SearxngProvider>();
         services.AddSingleton<Search.ISearchProvider, Search.BraveProvider>();
         services.AddSingleton<Search.ISearchProvider, Search.TavilyProvider>();
-        services.AddSingleton<Search.ISearchProvider, Search.DonsetchSearchProvider>();
+        services.AddSingleton<Search.ISearchProvider, Search.ExternalCliSearchProvider>();
         services.AddSingleton<Search.SearchProviderHealth>();
         services.AddSingleton<Services.ISearchService, Services.SearchService>();
         services.AddHttpClient(Services.RobotsThrottleService.HttpClientName, c => c.Timeout = TimeSpan.FromMilliseconds(

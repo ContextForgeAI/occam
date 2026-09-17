@@ -36,7 +36,7 @@ Never compare them as interchangeable scores. Discovery tools cheaply answer *wh
 ### `occam_search`
 
 - Registered core tool. Unset `OCCAM_SEARCH_PROVIDER` uses keyless DuckDuckGo HTML (`provider` disclosed). `off` / `none` fails closed as `search_unconfigured`.
-- Proxies a named provider (DuckDuckGo default; SearXNG/Brave/Tavily/Donsetch override)—not Occam's index.
+- Proxies a named provider (DuckDuckGo default; SearXNG/Brave/Tavily/External CLI override)—not Occam's index.
 - Optional `rerank` can fire many live probes (up to ~20) ordering by **extractability**, not relevance.
 - Results are pointers + hints, not page content.
 

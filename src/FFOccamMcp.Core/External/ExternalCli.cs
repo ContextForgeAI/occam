@@ -4,7 +4,7 @@ using System.Text;
 namespace OccamMcp.Core.External;
 
 /// <summary>
-/// Minimal spawn helper for optional local CLIs (Donsetch, OCR bins). No shell interpolation.
+/// Minimal spawn helper for optional local CLIs (external search, OCR bins). No shell interpolation.
 /// </summary>
 internal static class ExternalCli
 {

@@ -4,12 +4,13 @@ using OccamMcp.Core.External;
 namespace OccamMcp.Core.Search;
 
 /// <summary>
-/// Optional keyless search via a local <c>donsetch</c> CLI (<c>OCCAM_SEARCH_PROVIDER=donsetch</c>).
-/// Does not bundle Donsetch — operator installs the binary separately (AGPL).
+/// Optional keyless search via an operator-supplied local CLI
+/// (<c>OCCAM_SEARCH_PROVIDER=external_cli</c>). Binary is BYO — not bundled.
+/// Set <c>OCCAM_EXTERNAL_SEARCH_PATH</c> or put <c>external_cli</c> on <c>PATH</c>.
 /// </summary>
-public sealed class DonsetchSearchProvider : ISearchProvider
+public sealed class ExternalCliSearchProvider : ISearchProvider
 {
-    public string Name => "donsetch";
+    public string Name => "external_cli";
     public bool RequiresApiKey => false;
     public bool RequiresBaseUrl => false;
 
@@ -25,7 +26,7 @@ public sealed class DonsetchSearchProvider : ISearchProvider
         _ = baseUrl;
         _ = apiKey;
         var started = System.Diagnostics.Stopwatch.GetTimestamp();
-        var bin = ExternalCli.ResolveBinary("OCCAM_DONSETCH_PATH", "donsetch");
+        var bin = ExternalCli.ResolveBinary("OCCAM_EXTERNAL_SEARCH_PATH", "external_cli");
         if (bin is null)
         {
             return SearchOutcome.Failure(Name, "search_error", SearchElapsed.Ms(started));
@@ -66,7 +67,7 @@ public sealed class DonsetchSearchProvider : ISearchProvider
         }
     }
 
-    /// <summary>Tolerant parse of Donsetch --json search envelopes (shape may evolve).</summary>
+    /// <summary>Tolerant parse of external CLI --json search envelopes (shape may evolve).</summary>
     internal static IReadOnlyList<SearchResultItem> ParseResults(string json, int maxResults)
     {
         try

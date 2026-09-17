@@ -44,7 +44,7 @@ Source of truth for this table: codebase paths cited below
 | 18 | Client capabilities | `Tools/OccamClientCapabilitiesTool.cs:16` | stable | `OCCAM_CLIENT_CONTEXT_TOKENS` |
 | 19 | Time anchor TSA | `Receipts/TimeAnchorService.cs` | opt-in | `OCCAM_TIME_ANCHOR` + `OCCAM_TSA_URL` |
 | 20 | Translate / PDF OCR | `Services/TranslationService.cs`, `External/ExternalCli.cs` | opt-in / advanced | `OCCAM_TRANSLATE_*`, `OCCAM_PDF_OCR*` |
-| 21 | Donsetch search | `Search/DonsetchSearchProvider.cs:10` | experimental | `OCCAM_SEARCH_PROVIDER=donsetch`, `OCCAM_DONSETCH_PATH` |
+| 21 | External CLI search | `Search/ExternalCliSearchProvider.cs:10` | experimental | `OCCAM_SEARCH_PROVIDER=external_cli`, `OCCAM_EXTERNAL_SEARCH_PATH` |
 | 22 | Streamable HTTP / remote TLS | `Transport/*` | stable | `OCCAM_TLS_*`, JWT vars |
 
 ## Explicit gaps

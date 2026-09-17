@@ -6,7 +6,7 @@ Open-web search (query → result URLs). **Default** when `OCCAM_SEARCH_PROVIDER
 unset: keyless DuckDuckGo HTML SERP with `provider: "duckduckgo"` disclosed in the
 response. Occam does not index the web — it delegates discovery and names the source.
 
-Override with `OCCAM_SEARCH_PROVIDER=searxng` \| `brave` \| `tavily` \| `donsetch`
+Override with `OCCAM_SEARCH_PROVIDER=searxng` \| `brave` \| `tavily` \| `external_cli`
 (plus URL/key/binary as required), or `off` / `none` for the air-gap
 `search_unconfigured` contract. For parallel multi-backend discovery set
 `OCCAM_SEARCH_PROVIDERS=duckduckgo,brave,searxng` — response uses `provider: "fanout"`

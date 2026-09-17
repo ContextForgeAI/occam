@@ -879,7 +879,7 @@ Open-web search (query → result URLs) — the agent's **discovery** step befor
 Occam does not crawl or index; it delegates to a backend and normalizes results with a disclosed
 `provider`. **Default** when `OCCAM_SEARCH_PROVIDER` is unset: keyless DuckDuckGo HTML
 (`provider=duckduckgo`). Set `off`/`none` for `search_unconfigured`. Explicit `searxng` /
-`brave` / `tavily` / `donsetch` keep their URL/key/binary requirements.
+`brave` / `tavily` / `external_cli` keep their URL/key/binary requirements.
 Optional **`OCCAM_SEARCH_PROVIDERS`** (CSV) enables parallel fan-out across configured
 healthy backends (`provider=fanout`, `providersUsed[]`); it wins over the singular
 provider env. Source: `Tools/OccamSearchTool.cs`.
@@ -892,7 +892,7 @@ provider env. Source: `Tools/OccamSearchTool.cs`.
 | `max_results` | int | `8` | Max results, range **1–20** |
 | `rerank` | bool | `false` | Rerank by extractability — cheaply probes each hit and reorders so clean HTTP-extractable pages rank above paywalls/anti-bot/JS-stubs/dead links. Adds `extractability` (0–1) + `recommendedBackend` per result. Opt-in (extra probe latency) |
 
-Config (env): `OCCAM_SEARCH_PROVIDER` (unset → `duckduckgo`; `off`\|`none`\|`duckduckgo`\|`searxng`\|`brave`\|`tavily`\|`donsetch`), `OCCAM_SEARCH_PROVIDERS` (CSV fan-out; wins over singular), `OCCAM_SEARCH_URL` (SearXNG), `OCCAM_SEARCH_API_KEY` (Brave/Tavily), `OCCAM_DONSETCH_PATH`, `OCCAM_SEARCH_TIMEOUT_MS` (HttpClient ceiling, default 20000), `OCCAM_SEARCH_PROVIDER_TIMEOUT_MS` (fan-out per-arm, default 3000), `OCCAM_SEARCH_FANOUT_TIMEOUT_MS`, `OCCAM_SEARCH_DEGRADE_MINUTES` (default 5), `OCCAM_SEARCH_RATE_MAX` / `OCCAM_SEARCH_RATE_WINDOW_S` — see [Environment](#environment) and [docs/configuration.md](docs/configuration.md).
+Config (env): `OCCAM_SEARCH_PROVIDER` (unset → `duckduckgo`; `off`\|`none`\|`duckduckgo`\|`searxng`\|`brave`\|`tavily`\|`external_cli`), `OCCAM_SEARCH_PROVIDERS` (CSV fan-out; wins over singular), `OCCAM_SEARCH_URL` (SearXNG), `OCCAM_SEARCH_API_KEY` (Brave/Tavily), `OCCAM_EXTERNAL_SEARCH_PATH`, `OCCAM_SEARCH_TIMEOUT_MS` (HttpClient ceiling, default 20000), `OCCAM_SEARCH_PROVIDER_TIMEOUT_MS` (fan-out per-arm, default 3000), `OCCAM_SEARCH_FANOUT_TIMEOUT_MS`, `OCCAM_SEARCH_DEGRADE_MINUTES` (default 5), `OCCAM_SEARCH_RATE_MAX` / `OCCAM_SEARCH_RATE_WINDOW_S` — see [Environment](#environment) and [docs/configuration.md](docs/configuration.md).
 
 ### Success response
 

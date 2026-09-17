@@ -3,7 +3,7 @@
  * Run the external WRB benchmark at a pinned revision.
  *
  * The WRB checkout and result JSON stay under artifacts/ (gitignored). The
- * default runner is Occam; --runner=donsetch runs WRB's native comparison arm.
+ * default runner is Occam; --runner=external_cli runs WRB's native comparison arm.
  */
 import { execFileSync, spawnSync } from "node:child_process";
 import {
@@ -39,8 +39,8 @@ for (const arg of process.argv.slice(2)) {
   }
 }
 
-if (!["occam", "donsetch"].includes(custom.runner)) {
-  console.error("error: --runner must be occam or donsetch");
+if (!["occam", "external_cli"].includes(custom.runner)) {
+  console.error("error: --runner must be occam or external_cli");
   process.exit(2);
 }
 if (!/^[0-9a-f]{40}$/i.test(custom.wrbRef)) {
@@ -53,8 +53,8 @@ const wrbRoot = join(root, "artifacts", "wrb", shortRef, "repo");
 const outputDir = join(root, "artifacts", "wrb", shortRef, "results");
 const adapterSource = join(root, "scripts", "bench", "wrb", "occam.py");
 const adapterTarget = join(wrbRoot, "runners", "occam.py");
-const donsetchSource = join(root, "scripts", "bench", "wrb", "donsetch.py");
-const donsetchTarget = join(wrbRoot, "runners", "donsetch.py");
+const externalCliSource = join(root, "scripts", "bench", "wrb", "external_cli.py");
+const externalCliTarget = join(wrbRoot, "runners", "external_cli.py");
 
 function run(command, args, opts = {}) {
   try {
@@ -98,8 +98,8 @@ run("git", ["checkout", "--detach", custom.wrbRef], {
 });
 
 copyFileSync(adapterSource, adapterTarget);
-if (custom.runner === "donsetch") {
-  copyFileSync(donsetchSource, donsetchTarget);
+if (custom.runner === "external_cli") {
+  copyFileSync(externalCliSource, externalCliTarget);
 }
 mkdirSync(outputDir, { recursive: true });
 
@@ -138,7 +138,7 @@ const runnerArgs = [
   join(wrbRoot, "lib", "wrb.py"),
   custom.runner,
   "--tool-name",
-  custom.runner === "occam" ? "FF-Occam" : "DonSeTch",
+  custom.runner === "occam" ? "FF-Occam" : "external_cli",
   ...forwarded,
 ];
 if (!requestedOutput) {
@@ -173,7 +173,7 @@ try {
       ? (process.env.OCCAM_SEARCH_PROVIDER || "duckduckgo")
       : null,
     crawlMapping: custom.runner === "occam" ? "occam_map_proxy" : "native",
-    archive: custom.runner === "donsetch" ? "off" : "n/a",
+    archive: custom.runner === "external_cli" ? "off" : "n/a",
   };
   writeFileSync(outputPath, `${JSON.stringify(result, null, 2)}\n`, "utf8");
   console.error(`Provenance recorded: ${outputPath}`);

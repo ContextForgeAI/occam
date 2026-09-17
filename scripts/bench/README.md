@@ -12,7 +12,7 @@ A "bad" run (many failures) is the *most* valuable — it's the bug list. The du
 | `build-corpus.mjs` | Build a content-focused corpus from a Tranco CSV (drops CDN/API/DNS infra domains). |
 | `sweep.mjs` | Resumable 3-arm sweep (Occam / raw fetch / Firecrawl). Appends one JSON line per URL. |
 | `summarize.mjs` | Aggregate a `results.jsonl` into honest stats + flag trust-model violations. |
-| `run-wrb.mjs` | Run the external Web Research Benchmark at a pinned revision with the Occam or DonSeTch runner. |
+| `run-wrb.mjs` | Run the external Web Research Benchmark at a pinned revision with the Occam or external CLI runner. |
 | `compare-wrb.mjs` | Render two WRB JSON results as a direction-aware Markdown scorecard. |
 | `wrb/occam.py` | WRB adapter: transcode → fetch, search → search, map → crawl URL-discovery proxy. |
 | `package.json` | Declares the only dep (`tiktoken`, o200k tokenizer). `npm install` here before first run. |
@@ -58,25 +58,25 @@ node scripts/bench/run-wrb.mjs --fetch-only --verbose
 # Full current surface. Unconfigured occam_search fails honestly.
 node scripts/bench/run-wrb.mjs --verbose
 
-# Same WRB revision with the competitor's native runner (donsetch on PATH)
+# Same WRB revision with the competitor's native runner (external_cli on PATH)
 # In-tree host (not the published AOT) + retain transcode debug fields:
 #   OCCAM_FORCE_DOTNET_RUN=1 OCCAM_WRB_RETAIN_COMPILE=1
 node scripts/bench/run-wrb.mjs --fetch-only --verbose --output occam-p1.json
 
-# DonSeTch live-only (scripts/bench/wrb/donsetch.py forces --archive off)
-node scripts/bench/run-wrb.mjs --runner=donsetch --verbose
+# external CLI live-only (scripts/bench/wrb/external_cli.py forces --archive off)
+node scripts/bench/run-wrb.mjs --runner=external_cli --verbose
 
 # Compare the two saved results
 node scripts/bench/compare-wrb.mjs \
   artifacts/wrb/52025c304f6c/results/occam.json \
-  artifacts/wrb/52025c304f6c/results/donsetch.json
+  artifacts/wrb/52025c304f6c/results/external_cli.json
 ```
 
 Set `OCCAM_SEARCH_PROVIDER` only when the scorecard explicitly declares that
 configuration. When unset, Occam's search arm uses keyless DuckDuckGo HTML
 (`provider=duckduckgo`) — record that provider in the run notes. Do not set
-`OCCAM_SEARCH_PROVIDER=donsetch` for an Occam-vs-DonSeTch search comparison:
-that would benchmark DonSeTch through Occam and produce circular evidence.
+`OCCAM_SEARCH_PROVIDER=external_cli` for an Occam-vs-external-CLI search comparison:
+that would benchmark external CLI through Occam and produce circular evidence.
 For a fair vs-competitor search arm, either both sides use their native
 keyless defaults, or both use an explicitly declared dedicated backend.
 
@@ -95,7 +95,7 @@ The pinned WRB report currently discards those extra fields, so preserve the
 raw runner response when source-level evidence is required.
 
 WRB uses deterministic substring probes and `chars / 4` token estimates. Its
-repository and initial task set were created by the DonSeTch author. Report it
+repository and initial task set were created by the external CLI author. Report it
 as reproducible comparative evidence, not independent certification or an
 agent-answer-quality score.
 
@@ -152,7 +152,7 @@ success-conditioned; do not hide the p50/p90 rise in an overall average.
 Investigate before treating the August speed line as current.
 
 A 2026-09-07 Occam refresh on the same pin still reads **36/48** (p50 2109 ms,
-p90 4313 ms). DonSeTch 3.6.7 fetch-only on the same machine is **42/48**.
+p90 4313 ms). external CLI 3.6.7 fetch-only on the same machine is **42/48**.
 See the Q2 decision below.
 
 ## Q2 scoped comparison protocol
@@ -162,7 +162,7 @@ Reuse this harness. Do not add a second dashboard.
 1. Pin Occam, WRB (`52025c304f6cdd242eb6d3fef2f0cb3700838fbd`), browser, and
    tokenizer. Record cold vs warm separately.
 2. Fetch-only arm first (`--fetch-only`). Keep native keyless search as a
-   **separate** arm. Never set `OCCAM_SEARCH_PROVIDER=donsetch` in a
+   **separate** arm. Never set `OCCAM_SEARCH_PROVIDER=external_cli` in a
    head-to-head discovery comparison.
 3. Count tokens with the same tokenizer on both sides. Preserve wall and
    challenge failures; report success-conditioned latency and failure rate
@@ -172,13 +172,13 @@ Reuse this harness. Do not add a second dashboard.
 5. After a fresh run, decide the target segment from the raw artifacts —
    do not pre-declare parity.
 
-**2026-09-07:** competitor fetch-only arm ran (DonSeTch **3.6.7**, git
-`24e6ee8`). Occam 36/48 vs DonSeTch 42/48. Do not declare parity. The six-URL
+**2026-09-07:** competitor fetch-only arm ran (external CLI **3.6.7**, git
+`24e6ee8`). Occam 36/48 vs external CLI 42/48. Do not declare parity. The six-URL
 gap is gated acquisition (four Stack Overflow pages, Indeed, Reuters), not
 Tier-1 documentation extract. Search and crawl were not measured. On Windows
-the WRB DonSeTch runner prepends `~/.npm-global/bin` (Unix); set
-`DONSETCH_PATH` to the npm `donsetch.exe` if `donsetch` is not on `PATH`.
-Do not set `OCCAM_SEARCH_PROVIDER=donsetch`. Decision:
+the WRB external CLI runner prepends `~/.npm-global/bin` (Unix); set
+`EXTERNAL_SEARCH_PATH` to the npm `external_cli.exe` if `external_cli` is not on `PATH`.
+Do not set `OCCAM_SEARCH_PROVIDER=external_cli`. Decision:
 [docs/examples/capability-eval/q2-wrb/](../../docs/examples/capability-eval/q2-wrb/).
 
 ## Method notes (honesty rules — see HANDOFF §5c)

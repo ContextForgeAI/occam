@@ -149,7 +149,7 @@ nav:
           - Citation inspector (CLI): examples/citation-inspector/README.md
           - Capability evaluation:
               - Overview: examples/capability-eval/README.md
-              - Q2 WRB vs DonSeTch: examples/capability-eval/q2-wrb/README.md
+              - Q2 WRB vs external CLI: examples/capability-eval/q2-wrb/README.md
               - PDF / OCR: examples/capability-eval/pdf-ocr/README.md
           - Verify a receipt: examples/verify-receipt.md
           - Check a claim: examples/check-a-claim.md
