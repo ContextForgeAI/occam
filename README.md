@@ -10,6 +10,8 @@ Never invent page text from model memory.
 [![Downloads](https://img.shields.io/github/downloads/ContextForgeAI/occam/total?label=downloads)](https://github.com/ContextForgeAI/occam/releases)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/ff-occam?label=npm)](https://www.npmjs.com/package/ff-occam)
+[![.NET](https://img.shields.io/badge/.NET-10%20Native%20AOT-512BD4?logo=dotnet&logoColor=white)](src/FFOccamMcp.Core/FFOccamMcp.Core.csproj)
+[![MCP](https://img.shields.io/badge/MCP-16%20core%20tools-0ea5e9)](docs/tools-reference.md)
 
 - **Proof-of-read canary** — HMAC sentinel with four verdicts:
   `READ_VERIFIED`, `READ_STALE`, `HALLUCINATED`, `REPLAY_SUSPECT`.
