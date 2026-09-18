@@ -102,10 +102,19 @@ function Assert-UrlScheme([string]$Url) {
 
 function Test-NodeVersion {
   $node = Get-Command node -ErrorAction SilentlyContinue
-  if (-not $node) { throw "required command not found: node (Node.js $MinNodeMajor+ required)" }
+  if (-not $node) {
+    throw @"
+Node.js $MinNodeMajor+ is required to install Occam (node not found on PATH).
+
+Install Node 20+ from https://nodejs.org/, then re-run:
+  irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+
+No .NET SDK is required for this release install path.
+"@
+  }
   $major = [int]((node -p "process.versions.node.split('.')[0]").Trim())
   if ($major -lt $MinNodeMajor) {
-    throw "Node.js $MinNodeMajor+ required (found $(node -v))"
+    throw "Node.js $MinNodeMajor+ required (found $(node -v)). No .NET SDK is required for this release install path."
   }
   if ($VerboseInstall) { Write-Host "node: $(node -v)" }
 }
@@ -297,8 +306,10 @@ function Download-File([string]$Url, [string]$Dest) {
     Invoke-WebRequest -Uri $Url -OutFile $Dest -UseBasicParsing
   } catch {
     Write-Error @"
-download failed $($script:OccamEmDash) is the release tarball published?
+download failed $($script:OccamEmDash) release tarball not available.
   url: $Url
+  Do NOT build from source (no dotnet build / publish / run).
+  STOP and tell the user, or retry after Node 20+ / network / publishing the release.
   maintainer: tag v$Version and ensure GitHub Release assets exist
   see: INSTALL.md
 "@

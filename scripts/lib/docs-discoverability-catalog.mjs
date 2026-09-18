@@ -241,6 +241,7 @@ export const DO_NOT_FEATURE_FAMILIES = [
 
 /** Opt-in env gates that must co-locate with tool names in experimental docs (R2). */
 export const OPT_IN_ENV_GATES = [
+  { env: "OCCAM_EXAM_MCP", tools: ["occam_exam_submit"], docGlobs: ["docs/experimental.md", "docs/tools/occam_exam_submit.md", "docs/configuration.md"] },
   { env: "OCCAM_BATCH_MCP", tools: ["occam_batch_submit", "occam_batch_status", "occam_batch_results"], docGlobs: ["docs/experimental.md", "docs/tools/occam_batch.md"] },
   { env: "OCCAM_WATCH_MCP", tools: ["occam_watch"], docGlobs: ["docs/experimental.md", "docs/tools/occam_watch.md"] },
   { env: "OCCAM_CONSENSUS_MCP", tools: ["occam_crosscheck"], docGlobs: ["docs/experimental.md", "docs/tools/occam_crosscheck.md"] },

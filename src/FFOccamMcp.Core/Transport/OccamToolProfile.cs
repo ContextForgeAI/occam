@@ -70,6 +70,13 @@ public static class OccamToolProfile
         "occam_playbook_lint",
     ];
 
+    /// <summary>
+    /// True when the operator set <c>OCCAM_PROFILE</c> (any non-whitespace value). Used by the
+    /// opt-in exam MCP path so a pinned profile is never overwritten by a graded tier.
+    /// </summary>
+    public static bool IsPinned() =>
+        !string.IsNullOrWhiteSpace(OccamEnvironment.Get("OCCAM_PROFILE"));
+
     /// <summary>Resolved profile id: <c>full</c> | <c>reader</c> | <c>researcher</c> | <c>auditor</c>.</summary>
     public static string Resolve()
     {

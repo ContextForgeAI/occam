@@ -99,13 +99,15 @@ occam_transcode({ url, playbook_policy: "auto" })  → verify improvement
 
 ---
 
-## Prove that a page was read (canary)
+## Verify read via canary
+
+Proof-of-read over MCP (reader/full profiles). Same flow as CLI `occam canary`.
 
 ```
 occam_canary_issue({})
 # → { url, sessionId, expiresAt, bucket }  — no sentinel
-occam_transcode({ url })                   # read the canary page into context
-# Quote Sentinel: `…` from markdown — do not invent
+occam_transcode({ url })                   # or curl/fetch the canary URL
+# Quote Sentinel: `…` / meta occam-sentinel — do not invent
 occam_canary_verify({ session_id, sentinel })
 # → verdict: READ_VERIFIED | READ_STALE | HALLUCINATED | REPLAY_SUSPECT
 ```

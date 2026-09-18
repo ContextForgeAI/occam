@@ -333,11 +333,22 @@ ensure_node_on_path() {
 
 check_node() {
   ensure_node_on_path
-  need_cmd node
+  if ! command -v node >/dev/null 2>&1; then
+    cat >&2 <<EOF
+error: Node.js ${MIN_NODE_MAJOR}+ is required to install Occam (node not found on PATH).
+
+Install Node 20+ from https://nodejs.org/ (or your package manager), then re-run:
+  curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+
+No .NET SDK is required for this release install path.
+EOF
+    exit 1
+  fi
   local major
   major="$(node -p "process.versions.node.split('.')[0]")"
   if [[ "$major" -lt "$MIN_NODE_MAJOR" ]]; then
     echo "error: Node.js ${MIN_NODE_MAJOR}+ required (found $(node -v))" >&2
+    echo "No .NET SDK is required for this release install path." >&2
     exit 1
   fi
   v_echo "node: $(node -v)"
@@ -550,8 +561,10 @@ download() {
   v_echo "download: $url"
   if ! curl -fsSL "$url" -o "$dest"; then
     echo "" >&2
-    echo "error: download failed — is the release tarball published?" >&2
+    echo "error: download failed — release tarball not available." >&2
     echo "  url: $url" >&2
+    echo "  Do NOT build from source (no dotnet build / publish / run)." >&2
+    echo "  STOP and tell the user, or retry after Node 20+ / network / publishing the release." >&2
     echo "  maintainer: tag v${VERSION} and ensure GitHub Release assets exist" >&2
     echo "  see: INSTALL.md" >&2
     exit 1

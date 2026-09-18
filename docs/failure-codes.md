@@ -10,7 +10,7 @@
 
 | Code | Typical trigger | Retryable? | Agent action |
 |------|-----------------|------------|--------------|
-| `workers_unavailable` | `OCCAM_HOME` wrong, doctor not run, or the browser isn't installed | No | Run `occam-doctor`; reload MCP. When the page needs a browser and none is installed, the response carries `failure.fix` — run its `command` (e.g. `occam install-browser`) |
+| `workers_unavailable` | `OCCAM_HOME` wrong, doctor not run, or the browser isn't installed | No | Run `occam doctor` or `occam install-workers`; reload MCP. When the page needs a browser and none is installed, the response carries `failure.fix` — run its `command` (e.g. `occam install-browser`) |
 | `timeout` | Worker/probe exceeded budget, or map exhausted its total discovery deadline | Yes | Retry once; raise the relevant per-call timeout if justified, then skip or use `browser` |
 | `network_error` | Connection reset, refused | Yes | Retry once |
 | `dns_error` | Host does not resolve | Yes | Check URL spelling / DNS |

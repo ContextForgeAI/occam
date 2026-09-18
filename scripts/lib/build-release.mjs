@@ -107,6 +107,7 @@ function stageReleaseTree(version, rid, publishedBinary, stageExeName) {
     "get-ff-occam.ps1",
     "occam-doctor.sh",
     "occam-doctor.ps1",
+    "occam-install-workers.mjs",
     "occam-onboard.mjs",
     "occam-help.mjs",
     "occam-skill-install.mjs",

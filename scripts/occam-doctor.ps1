@@ -44,20 +44,35 @@ if (-not (Test-Path (Join-Path $workersRoot "package.json"))) {
     Write-Error "Missing workers/package.json (npm workspace root)"
 }
 
-Push-Location $workersRoot
-try {
-    if (-not (Test-Path "node_modules")) {
-        Write-Doctor "npm install (workspace root) ..."
-        if ($Quiet) {
-            npm install --no-fund --no-audit --silent 2>$null | Out-Null
-        } else {
-            npm install --no-fund --no-audit
-        }
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+$ensureWorkers = Join-Path $PSScriptRoot "lib\ensure-workers-deps.mjs"
+if (Test-Path $ensureWorkers) {
+    Write-Doctor "workers npm deps (ensure/repair) ..."
+    $ensureArgs = @()
+    if ($Quiet) { $ensureArgs += "--quiet" }
+    if ($env:OCCAM_WORKERS_FORCE_INSTALL -eq "1" -or $env:OCCAM_WORKERS_FORCE_INSTALL -eq "true") {
+        $ensureArgs += "--force"
+    }
+    & node $ensureWorkers @ensureArgs
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "workers npm install failed — run: occam install-workers --force"
     }
 }
-finally {
-    Pop-Location
+else {
+    Push-Location $workersRoot
+    try {
+        if (-not (Test-Path "node_modules")) {
+            Write-Doctor "npm install (workspace root) ..."
+            if ($Quiet) {
+                npm install --no-fund --no-audit --silent 2>$null | Out-Null
+            } else {
+                npm install --no-fund --no-audit
+            }
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        }
+    }
+    finally {
+        Pop-Location
+    }
 }
 
 $skipPlaywrightBundled = $false

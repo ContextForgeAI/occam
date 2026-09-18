@@ -1,0 +1,132 @@
+# Clean-VM / release-install regression (Prompt #6).
+# Proves: (1) no-Node Ubuntu fails with actionable message;
+#         (2) Node-only matrix install (no .NET SDK) → smoke → read.
+name: clean-install
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: clean-install-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regression-selftest:
+    name: Install-failure catalog selftest (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+      - name: Clean-install regression selftest
+        run: node scripts/lib/clean-install-regression.selftest.mjs
+
+  clean-vm-no-node:
+    name: Ubuntu 24.04 container — no Node (expect fail)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container:
+      image: ubuntu:24.04
+    steps:
+      - name: Minimal tools (curl/ca only — no Node, no .NET)
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq curl ca-certificates tar
+          command -v node && exit 1 || true
+          command -v dotnet && exit 1 || true
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Bootstrap must fail with actionable Node message
+        run: |
+          set +e
+          bash scripts/get-ff-occam.sh > /tmp/out.txt 2> /tmp/err.txt
+          code=$?
+          set -e
+          echo "exit=$code"
+          cat /tmp/err.txt
+          test "$code" -ne 0
+          grep -qi 'Node.js 20+ is required to install Occam' /tmp/err.txt
+          grep -qi 'No .NET SDK is required' /tmp/err.txt
+
+  release-install-no-dotnet:
+    name: Release install without .NET (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+
+      # Intentional: do NOT setup-dotnet — Level B must not need the SDK.
+
+      - name: Prove dotnet is not required on PATH
+        shell: bash
+        run: |
+          if command -v dotnet >/dev/null 2>&1; then
+            echo "note: runner image has dotnet ($(dotnet --version)); install path must still use --skip-build / AOT tarball"
+          else
+            echo "dotnet absent — ideal clean-VM shape"
+          fi
+
+      - name: Install Cosign (required-cosign-v1 releases)
+        uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3.9.1
+
+      - name: Bootstrap into isolated install dir (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        env:
+          OCCAM_VERSION: "1.2.0"
+          OCCAM_SETUP: manual
+          OCCAM_INSTALL_DIR: ${{ runner.temp }}/ff-occam-clean
+          OCCAM_CONNECT_ALL: "0"
+        run: |
+          bash scripts/get-ff-occam.sh
+          echo "OCCAM_HOME=$OCCAM_INSTALL_DIR" >> "$GITHUB_ENV"
+          echo "$OCCAM_INSTALL_DIR/scripts" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Bootstrap into isolated install dir (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          OCCAM_VERSION: "1.2.0"
+          OCCAM_SETUP: manual
+          OCCAM_INSTALL_DIR: ${{ runner.temp }}\ff-occam-clean
+          OCCAM_CONNECT_ALL: "0"
+        run: |
+          & "$env:GITHUB_WORKSPACE\scripts\get-ff-occam.ps1"
+          "OCCAM_HOME=$env:OCCAM_INSTALL_DIR" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "$env:OCCAM_INSTALL_DIR\scripts" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+          "$env:USERPROFILE\.local\bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+      - name: Smoke
+        shell: bash
+        run: |
+          export OCCAM_HOME="${OCCAM_HOME:-$OCCAM_INSTALL_DIR}"
+          node "$OCCAM_HOME/scripts/hermes-smoke.mjs"
+
+      - name: Read example.com
+        shell: bash
+        run: |
+          export OCCAM_HOME="${OCCAM_HOME:-$OCCAM_INSTALL_DIR}"
+          # Prefer operator CLI when on PATH; else node wrapper.
+          if command -v occam >/dev/null 2>&1; then
+            occam read https://example.com
+          else
+            node "$OCCAM_HOME/scripts/occam-read.mjs" https://example.com
+          fi

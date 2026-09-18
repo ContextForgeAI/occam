@@ -144,7 +144,7 @@ flowchart TB
   Envelope --> Verify[occam_verify]
 ```
 
-### 3. Capability exam (**beta** — CLI, not auto MCP)
+### 3. Capability exam (**beta** — CLI + opt-in MCP)
 
 Four one-point tasks (Canary, BasicCall, FocusBudget, Chain) score 0–4, map to
 tier Weak / Medium / Strong, and recommend `OCCAM_PROFILE`
@@ -153,15 +153,15 @@ tier Weak / Medium / Strong, and recommend `OCCAM_PROFILE`
 [`ExamGrader.cs`](src/FFOccamMcp.Core/Exam/ExamGrader.cs),
 [`ExamScoring.cs`](src/FFOccamMcp.Core/Exam/ExamScoring.cs)).
 
-This is **not** auto-adaptive MCP. The operator applies the result by setting
-`OCCAM_PROFILE`
-([`ExamGradeCli.cs`](src/FFOccamMcp.Core/Exam/ExamGradeCli.cs),
-[ADR-0016](docs/adr/0016-capability-exam.md)).
+**Default:** operator sets `OCCAM_PROFILE` (or uses host default `reader`).  
+**Opt-in MCP:** `OCCAM_EXAM_MCP=1` exposes `occam_exam_submit` — grade a harness JSON,
+cache the result, apply the surface when profile is not pinned, and send
+`notifications/tools/list_changed` ([ADR-0016](docs/adr/0016-capability-exam.md)).
 
 ```
 score 0–1 → Weak   → OCCAM_PROFILE=minimal (1 tool)
 score 2–3 → Medium → OCCAM_PROFILE=basic   (3 tools)
-score 4   → Strong → OCCAM_PROFILE=full    (16 core)
+score 4   → Strong → OCCAM_PROFILE=full    (18 core)
 ```
 
 ### 4. Cascade facade
@@ -200,13 +200,14 @@ See [SEARCH](docs/SEARCH.md).
 |---------|------:|-----|
 | `minimal` | 1 | Exam Weak — only `occam` |
 | `basic` | 3 | Exam Medium — `occam`, `occam_digest`, `occam_search` |
-| `reader` (default) | 9 | Day-to-day reads |
-| `full` | 16 core | Full core catalog |
+| `reader` (default) | **11** | Day-to-day reads + canary |
+| `full` | **18** core | Full core catalog |
 
-Exam recommends a profile; apply it with `OCCAM_PROFILE`. There is no automatic
-gating
+Exam recommends a profile. Operator pin: `OCCAM_PROFILE`. Opt-in live apply:
+`OCCAM_EXAM_MCP=1` + `occam_exam_submit`
 ([`OccamToolProfile.cs`](src/FFOccamMcp.Core/Transport/OccamToolProfile.cs),
-[`ExamScoring.cs`](src/FFOccamMcp.Core/Exam/ExamScoring.cs)).
+[`ExamScoring.cs`](src/FFOccamMcp.Core/Exam/ExamScoring.cs),
+[ADR-0016](docs/adr/0016-capability-exam.md)). Map: [docs/MCP_MAP.md](docs/MCP_MAP.md).
 
 ### 18 core tools
 
@@ -277,6 +278,10 @@ only.
 ---
 
 ## Install
+
+> **Install from the release tarball. Do not build from source.**
+> Agents: run only the bootstrap below (Node 20+, no .NET SDK). If the tarball is
+> missing — stop and tell the user; never `dotnet build` / `publish` / `run`.
 
 Signed GitHub Release bootstrap is the recommended path.
 [INSTALL.md](INSTALL.md) · [getting-started](docs/getting-started.md) ·

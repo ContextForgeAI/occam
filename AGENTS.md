@@ -2,8 +2,14 @@
 
 You are working in **FFOccamMCP**, the L0 core of **FF-Occam MCP**. **Read this file first, every session.**
 
-**Language:** English only — user docs, API spec, commits, PRs, comments in committed files.  
-**User docs:** [docs/index.md](docs/index.md) — accurate, polished, enjoyable to read.  
+**End-user / friend / “install Occam” (not contributing code):** do **not** clone + build.
+Follow **[INSTALL.md](INSTALL.md)** only — `curl|bash` / `irm|iex`. Needs **Node 20+**; **no .NET SDK**.
+Contributor build (this file) requires .NET 10 — that path is for developers, not install customers.
+
+**When installing Occam, always use the release tarball.** Never build from source unless a human developer explicitly asks. Forbidden for agents: `dotnet build`, `dotnet publish`, `dotnet run`. If the tarball download fails — **STOP** and tell the user; do not fall back to a source build.
+
+**Language:** English only — user docs, API spec, commits, PRs, comments in committed files. 
+**User docs:** [docs/index.md](docs/index.md) — accurate, polished, enjoyable to read. 
 **Engineering:** `docs-internal/` — **gitignored**; never commit; never link from user docs.
 
 ---
@@ -13,7 +19,7 @@ You are working in **FFOccamMCP**, the L0 core of **FF-Occam MCP**. **Read this 
 | Ships | Does not ship |
 |-------|---------------|
 | MCP stdio host `src/FFOccamMcp.Core` (.NET 10, Native AOT); Streamable HTTP `--mcp-http` | 11 legacy `web_*` tools from FFWebMCP |
-| **Always-on core MCP tools** (registry: `OccamMcpServerRegistration.OccamToolNames` — do not hand-count): client_capabilities, **occam** (cascade), transcode, probe, digest, playbook_resolve, map, playbook_heal, playbook_save, extract_knowledge, search (default DuckDuckGo; `OCCAM_SEARCH_PROVIDER` override), verify, claim_check, attest, playbook_lint, dataset_export, **canary_issue**, **canary_verify**. Default **`OCCAM_PROFILE=reader`** exposes 11 of these; `full` exposes all 18. **Opt-in** (env-gated, not in the core set): `occam_batch_*` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`), `occam_browser_interact` (`OCCAM_BROWSER_ACTIONS_MCP=1`) | `web_probe`, adaptive digest, bundle, publish playbook MCP |
+| **Always-on core MCP tools** (registry: `OccamMcpServerRegistration.OccamToolNames` — do not hand-count): client_capabilities, **occam** (cascade), transcode, probe, digest, playbook_resolve, map, playbook_heal, playbook_save, extract_knowledge, search (default DuckDuckGo; `OCCAM_SEARCH_PROVIDER` override), verify, claim_check, attest, playbook_lint, dataset_export, **canary_issue**, **canary_verify**. Default **`OCCAM_PROFILE=reader`** exposes 11 of these; `full` exposes all 18. **Opt-in** (env-gated, not in the core set): `occam_batch_*` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`), `occam_browser_interact` (`OCCAM_BROWSER_ACTIONS_MCP=1`), `occam_exam_submit` (`OCCAM_EXAM_MCP=1`) | `web_probe`, adaptive digest, bundle, publish playbook MCP |
 | Params: on `occam_transcode` **only `url` is required** — every other is an off-by-default opt-in (~19, grouped by `[core]`/`[tokens]`/`[structured]`/`[fetch]`/`[watch]`/`[advanced]`); full param tables are code-generated → **canonical in `MCP_API_SPEC.md` + `docs/tools-reference.md`** (don't hand-count here) | `revisit_diff`, legacy `web_map` |
 | L1b: probe, domain tiers, agentHints | federation cache, legacy `web_*` |
 | Workers: `workers/http-extract/extract.mjs`, `workers/browser-extract/browser-extract.mjs`, **`workers/css-extract/css-extract.mjs`** | gate-unit monolith |
@@ -21,7 +27,11 @@ You are working in **FFOccamMCP**, the L0 core of **FF-Occam MCP**. **Read this 
 | `scripts/occam-doctor.ps1` | 12-tool public wiki |
 | Gate `benchmarks/l0-gate` → `L0_GATE_OK` / `L0_GATE_FAST_OK` / `L1A_TOKEN_OK` / `L1B_PROBE_OK` / `L1_FAILURE_TAXONOMY_OK` / `L2_DIGEST_OK` / `L2_MAP_OK` / **`L2_SESSION_OK`** / **`L2_TRANSPORT_OK`** / **`L2_EGRESS_OK`** / **`L2_MEDIA_REFS_OK`** / **`L3_HEAL_LEARN_OK`** / **`L4_GENOME_OK`** / **`L5_BATCH_OK`** / **`L6_BROWSER_POOL_OK`** / **`L7_RESOURCE_SAFETY_OK`** / **`L8_AGENT_FIRST_OK`** (L9 golden set folds into `L0_GATE_OK`) | Wide Validation, wave2-eval |
 
-**Live by default** — every call fetches the page unless the caller explicitly opts into the local TTL-bound response cache with `cache_ttl_s > 0`; private/session-bound requests are never cached (**v1.0.0** published — fifteen core tools + Receipt v1 verifiable layer + opt-in batch/watch/consensus/atlas; Agent-First AF-1..AF-6; PB2 community + PB3 heal/save + PB4a/b shipped; tier-3 baseline 2026-06-17, L0 core CLOSED).
+**Live by default** — every call fetches the page unless the caller explicitly opts into the local TTL-bound response cache with `cache_ttl_s > 0`; private/session-bound requests are never cached (**v1.2.0** published — **18** core tools + Receipt v1 + opt-in batch/watch/consensus/atlas/exam; Agent-First AF-1..AF-6; PB2–PB4b shipped; L0 core CLOSED).
+
+**Tool surface freeze:** no new MCP tools until install ship is zero-config.
+Any new tool requires an ADR + explicit human approval. Opt-in env-gated tools
+(`OCCAM_*_MCP`) are the only expansion path until then.
 
 **PB3 heal-learn (shipped v0.8.4-pb3-heal-learn):** `occam_playbook_heal` + `occam_playbook_save`; gate `L3_HEAL_LEARN_OK` — see `MCP_API_SPEC.md` + `corpora/l3-heal-learn.jsonl`.
 
@@ -36,6 +46,11 @@ You are working in **FFOccamMCP**, the L0 core of **FF-Occam MCP**. **Read this 
 ## 2. Task discipline — order of operations
 
 Follow this sequence **on every task**. Do not skip steps.
+
+**Install discipline:** when installing Occam, always use the release tarball
+(`get-ff-occam` / [INSTALL.md](INSTALL.md)). Never build from source unless a human
+developer explicitly asks. Do not run `dotnet build` / `dotnet publish` / `dotnet run`
+as an install fallback.
 
 ```
 1. UNDERSTAND   Read AGENTS.md + relevant docs/*.md for the area you touch
@@ -248,7 +263,7 @@ docs-internal/           # local engineering (gitignored)
 
 ## 7. MCP contract (canonical)
 
-**Eighteen always-on core tools** (registry: `Transport/OccamMcpServerRegistration.cs` → `OccamToolNames`). **Opt-in extras** (env-gated): `occam_batch_submit/status/results` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`).
+**Eighteen always-on core tools** (registry: `Transport/OccamMcpServerRegistration.cs` → `OccamToolNames`). **Opt-in extras** (env-gated): `occam_batch_submit/status/results` (`OCCAM_BATCH_MCP=1`), `occam_watch` (`OCCAM_WATCH_MCP=1`), `occam_crosscheck` (`OCCAM_CONSENSUS_MCP=1`), `occam_failure_atlas` (`OCCAM_ATLAS_MCP=1`), `occam_exam_submit` (`OCCAM_EXAM_MCP=1`).
 
 **Planned (PB4c — not shipped as MCP):** publish CLI + signed manifest — a CLI, not a tenth MCP tool. Maintainer spec: local `docs-internal/GENOME_EXCHANGE_TEST_PLAN.md`.
 

@@ -289,6 +289,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Validate clean-install / agent-first-step regression catalog
+        run: node scripts/lib/clean-install-regression.selftest.mjs
+
       - name: Validate archive preflight listing fallback
         run: node scripts/lib/archive-preflight-listing.selftest.mjs
 

@@ -32,15 +32,16 @@ Activate this skill when the user or task involves:
 
 **Do not** use for private URLs, CAPTCHA solving, or when MCP is not wired — read [references/install.md](references/install.md) first.
 
-**Install tasks** (Hermes, tarball, doctor, MCP config): read [references/install.md](references/install.md) **before** any shell command. On Hermes **without .NET 10 SDK**, use `get-ff-occam.sh` — not bare `git clone`.
+**Install tasks** (Hermes, tarball, doctor, MCP config): read [references/install.md](references/install.md) **before** any shell command. **Install from release tarball only** — never `git clone` + `dotnet build`/`publish`/`run` unless a human developer explicitly asks for a source build.
 
 ---
 
 ## Prerequisites
 
-1. **MCP host installed** — Hermes/prod without .NET 10: `get-ff-occam.sh` tarball; dev with SDK: `occam doctor`. Never edit csproj to net8.0; never run in-repo `occam-mcp.js` on a git clone.
+1. **MCP host installed from the release tarball only.** Source builds are **not** supported for agents.
+   Use `get-ff-occam.sh` / `.ps1` (Node 20+, no .NET SDK). If the tarball is missing — **STOP** and tell the user; do **not** run `dotnet build` / `publish` / `run`.
 2. **MCP wired** — stdio server with **`OCCAM_HOME`** set (non-empty `env`). Hermes: `scripts/occam-wrapper.sh` + reload MCP.
-3. **Smoke check** — `occam smoke`, `tools/list`, or `node scripts/hermes-smoke.mjs` → registry core `occam_*` tools present (count varies by `OCCAM_PROFILE` + opt-in env); exit 0. Do not hard-require a fixed “14/15”.
+3. **Smoke check** — `occam smoke`, `tools/list`, or `node scripts/hermes-smoke.mjs` → **18** core tools when profile is `full` (smoke default); **11** under `reader`. See `docs/MCP_MAP.md`. Do not treat a stale “15” (old filter that skipped cascade `occam`) as the catalog size.
 4. **Call discipline** — use your harness MCP tool interface (`CallMcpTool`, native tool calling, Hermes MCP bridge, etc.). Tool names are always `occam_<verb>`.
 
 If MCP is unavailable, stop and tell the user to follow [references/install.md](references/install.md). Do not guess page content.
@@ -53,7 +54,7 @@ If MCP is unavailable, stop and tell the user to follow [references/install.md](
 |--------|---------|--------------|
 | `ok: true` | Live extract succeeded | Use `markdown` / structured fields; cite `url.final` |
 | `ok: false` | Content **unknown** | Read `failure.code`; follow [references/failure-codes.md](references/failure-codes.md) |
-| `receipt.signed` | Locally signed extraction | Optional offline check via `occam_verify` |
+| `receipt.signed` | Integrity of extract bytes **relative to a local key** — not truth, origin, or trusted time | Optional offline check via `occam_verify` |
 
 Never invent markdown for a failed URL. Never bypass `captcha_or_challenge` or `requires_login` without a configured `session_profile`.
 
@@ -71,9 +72,10 @@ Never invent markdown for a failed URL. Never bypass `captcha_or_challenge` or `
 | Structured fields | `occam_playbook_resolve` → `occam_extract_knowledge` | Schema required in playbook |
 | Site-tuned extract | `occam_playbook_resolve` → `occam_transcode` | `playbook_policy=auto` (default) |
 | Fix hard site | heal → lint → save | Local playbooks only |
-| Cite one sentence | `occam_claim_check` | Proves block in source, not truth |
-| Batch citations | `occam_attest` | Report-level `status` counts (gate on `supported`) |
-| Offline receipt check | `occam_verify` | No re-fetch required in offline mode |
+| Cite one sentence | `occam_claim_check` | Retrieves cited blocks + membership proof; legacy `proven` ≠ page truth |
+| Batch citations | `occam_attest` | Heuristic citation assessment (`status`); **not** cryptographic attestation |
+| Offline receipt check | `occam_verify` | Integrity vs key; no re-fetch required in offline mode |
+| Prove a page was read | `occam_canary_issue` → transcode → `occam_canary_verify` | Quote sentinel only after fetch |
 | Auditable URL set | `occam_dataset_export` | 1–20 URLs + manifest signature |
 
 Full decision guide: [references/tool-picker.md](references/tool-picker.md). Copy-paste flows: [references/recipes.md](references/recipes.md).
@@ -93,7 +95,7 @@ occam_transcode({ url, fit_markdown: true, focus_query: "…" })  # tokens optio
 
 ```
 occam_map({ url, source: "sitemap", max_links: 8 })
-occam_digest({ urls: […], focus_query: "…", fit_markdown: true })
+occam_digest({ urls: "[…]", focus_query: "…", fit_markdown: true })
 ```
 
 ### Structured facts (Recipe D)

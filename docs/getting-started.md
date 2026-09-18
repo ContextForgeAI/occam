@@ -2,6 +2,13 @@
 
 **What you'll do:** after Occam is installed and connected, run a successful `occam_transcode` and understand the result.
 
+**Install from the release tarball. Do not build from source.**
+
+Agents and operators: use only the bootstrap in [`INSTALL.md`](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md)
+(`curl|bash` / `irm|iex`). Needs **Node 20+**. **No .NET SDK.**
+If the tarball is missing or download fails — **STOP** and tell the user. Do **not** run
+`dotnet build`, `dotnet publish`, or `dotnet run` as a fallback.
+
 If you still need install: [Quick Start](quick-start.md) · canonical reference [Install](install.md) · root [`INSTALL.md`](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md).
 
 Published `v1.2.0` installs verify archive SHA-256 against the release
@@ -25,7 +32,7 @@ terminal. Source checkouts can use the contributor path described below.
 
 ```bash
 occam smoke
-# expect exit 0; tool count depends on OCCAM_PROFILE (default reader=9; full=16)
+# expect exit 0; tool count depends on OCCAM_PROFILE (default reader=11; full=18)
 ```
 
 This checks the local MCP host and a live probe. Re-check registration in your AI
@@ -86,6 +93,8 @@ directory to `PATH`.
 | `occam disconnect` | Preview or remove only Occam-managed host registrations |
 | `occam uninstall` | Preview or remove a release install; preserve local state by default |
 | `occam doctor` | Validate workers, browser, and host binary |
+| `occam install-workers` | Repair worker npm deps (`--force`, `--with-browser`) |
+| `occam update` | Idempotent release update (`--force` reinstalls latest) |
 | `occam smoke` | stdio tools/list + probe |
 | `occam snippet` | Paste-ready MCP config (advanced) |
 | `occam status` | Install / onboarding state |

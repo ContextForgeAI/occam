@@ -99,6 +99,16 @@ occam doctor
 
 Re-run doctor after upgrades or when you see `workers_unavailable`.
 
+If workers crash with `ERR_MODULE_NOT_FOUND` (empty/corrupt `node_modules`), repair npm deps without a full doctor:
+
+```bash
+occam install-workers          # npm ci/install until HTTP markers resolve
+occam install-workers --force  # re-run even when markers look healthy
+occam install-workers --with-browser  # also install Playwright Chromium
+```
+
+Release tarballs intentionally omit `workers/node_modules`; doctor / `install-workers` populate them after extract.
+
 ## Connect
 
 ```bash

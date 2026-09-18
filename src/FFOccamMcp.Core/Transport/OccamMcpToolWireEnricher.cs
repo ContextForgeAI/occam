@@ -41,6 +41,7 @@ internal static class OccamMcpToolWireEnricher
         "occam_playbook_save",
         "occam_batch_submit",
         "occam_browser_interact",
+        "occam_exam_submit",
     };
 
     public static CallToolResult EnrichCallToolResult(CallToolResult result)

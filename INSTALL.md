@@ -3,6 +3,8 @@
 > **If you are an automated agent:** run **only** the canonical command for your OS below.
 > Do **not** edit `FFOccamMcp.Core.csproj`, do **not** install .NET 8, do **not** run
 > `npx @ff-occam/mcp`, and do **not** invent alternate install paths.
+> **Do not build from source** (`dotnet build` / `publish` / `run`). If the tarball is
+> missing — **STOP** and tell the user.
 
 **Product:** Occam (Occam MCP)  
 **Repo:** [https://github.com/ContextForgeAI/occam](https://github.com/ContextForgeAI/occam)  
@@ -65,7 +67,7 @@ Install behavior follows the **release manifest contract** (not the version stri
 2. Requires the manifest version, RID, and tarball name to match the requested release, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). For self-contained manifests, archive-member preflight runs **before** extract
 3. Extracts to staging. Self-contained installs check the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR` (default `~/.local/share/ff-occam`). An existing target must itself be a consistent Occam release for the current RID (inner `layout: level-b` markers); source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
 4. **Self-contained:** uses only helpers inside that verified archive (no mutable post-install executable helper overlay). **Legacy Level B:** may refresh operator CLI helpers from the repository overlay. Bootstrap **script** delivery from the mutable `main` raw URL remains a separate T4 concern
-5. Runs **doctor** (`--skip-build`) — npm workers + Playwright (quiet by default)
+5. Runs **doctor** (`--skip-build`) — repairs worker npm deps (resolve-check, not mere `node_modules` existence) + Playwright when needed (quiet by default). Manual repair: `occam install-workers`
 6. Verifies the Occam host (`verify-install` + smoke) — expect the profile's required tool identities (default `reader` = **11**; `full` = **18**)
 7. Writes operator defaults to `~/.occam/onboard.json` (no second `OCCAM_HOME` prompt)
 8. Installs a user-scoped **`occam`** launcher (`~/.local/bin`; Windows: `occam.cmd` + `occam.ps1`) and prepends that directory to the **User** PATH (and the current shell PATH) so `occam` resolves immediately after install. Existing launchers are replaced only when they exactly match an Occam-generated current or previous-release launcher; unrelated same-named files stop the install, and multi-file launcher updates roll back as one transaction
@@ -112,6 +114,13 @@ occam smoke
 ```
 
 Expect **exit 0**. Tool count follows `OCCAM_PROFILE` (default `reader` = **11**; `full` = **18**).
+
+Later upgrades (idempotent — no download when already current):
+
+```bash
+occam update           # Already up to date (vX.Y.Z) → exit 0
+occam update --force   # reinstall latest anyway
+```
 
 Re-run host connection any time:
 
@@ -214,7 +223,7 @@ Do **not** put LLM API keys in Occam's env.
 |-------|-----|
 | `npx @ff-occam/mcp` | **Not** a GA 1.0 install channel |
 | Trust Cosign without reading `signaturePolicy` | Always verify SHA-256. Cosign is required only when the manifest declares `required-cosign-v1`; it proves release authenticity/signer identity, not page-content truth |
-| `npm ci` / `npm run bootstrap` at repo root | Does not exist — doctor installs workers |
+| `npm ci` / `npm run bootstrap` at repo root | Does not exist — doctor / `occam install-workers` install under `workers/` (`npm ci` when lockfile present) |
 | Bare `git clone` without .NET 10 SDK | Source only — no AOT binary |
 | `git clone` + `doctor --skip-build` without a release binary | Fails — no host binary |
 | Edit `TargetFramework` to net8.0 | Must stay `net10.0` |

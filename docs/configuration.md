@@ -1,8 +1,8 @@
 # Configuration
 
-**What you'll do:** look up every `OCCAM_*` environment variable the host reads.
+**What you'll do:** look up every `OCCAM_*` environment variable the host and operator scripts read.
 
-Only variables found in `src/FFOccamMcp.Core/` are listed. CLI flags override env where noted in [Transports](transports.md).
+Core host variables live under `src/FFOccamMcp.Core/`; doctor / install helpers under `scripts/` are listed where operators need them. CLI flags override env where noted in [Transports](transports.md).
 
 ---
 
@@ -23,6 +23,9 @@ Only variables found in `src/FFOccamMcp.Core/` are listed. CLI flags override en
 | `OCCAM_NODE_BIN` | stamped by launcher from install record / `process.execPath`; else `{OCCAM_HOME}/bin/node` / well-known paths / `PATH` | Absolute Node used to spawn all workers. Advanced override only — GUI MCP host configs should **not** set this. Install writes `{OCCAM_HOME}/runtime/node-bin`; `scripts/launch-mcp-host.mjs` and `occam-wrapper.sh` stamp `OCCAM_NODE_BIN` for Core. |
 | `OCCAM_DOM_SKELETON_SCRIPT` | auto | Override DOM skeleton script for heal |
 | `OCCAM_FORCE_DOTNET_RUN` | off | Launcher uses `dotnet run` instead of AOT binary |
+| `OCCAM_WORKERS_FORCE_INSTALL` | off | Doctor / `occam install-workers`: force `npm ci`/`npm install` even when HTTP worker markers already resolve. Repair empty or corrupt `workers/node_modules` without deleting the tree by hand |
+
+Doctor and `occam install-workers` verify that `@mozilla/readability`, `jsdom`, `turndown`, and `undici` resolve from `workers/http-extract` — a present-but-empty `node_modules` directory is treated as broken. Prefer `npm ci` when `workers/package-lock.json` is present. Playwright Chromium is **not** part of this repair; use `occam install-workers --with-browser` or `occam install-browser` when the page needs a browser.
 
 ---
 
@@ -116,21 +119,39 @@ or the MCP response.
 
 ## Capability tiers (experimental)
 
-The exam engine (`occam exam selftest` / `exam tasks`) grades an agent on four checkable tasks and
-maps the score to a tool surface. The engine is implemented and tested; **the host does not
-administer the exam itself** — MCP has no general server-initiated task mechanism, so today a tier
-reaches a surface only by an operator setting `OCCAM_PROFILE`. See
-[ADR-0016](https://github.com/ContextForgeAI/occam/blob/main/docs/adr/0016-capability-exam.md) for
-what is and is not wired up.
+The exam engine (`occam exam selftest` / `exam tasks` / `exam grade`) grades an agent on four
+checkable tasks and maps the score to a tool surface. Offline CLI grading is always available.
 
 | Score | Tier | Profile | Tools |
 |-------|------|---------|-------|
 | 0–1 | `weak` | `minimal` | 1 |
-| 2–3 | `medium` (default) | `basic` | 3 |
+| 2–3 | `medium` (default *exam* result) | `basic` | 3 |
 | 4 | `strong` | `full` | 18 |
 
-A client that never sat the exam is treated as `medium`: starving a capable agent is a silent
-failure, while over-trusting a weak one is visible and recoverable.
+A client that never sat the exam is treated as exam-tier `medium` in the cache API
+(`ExamResult.Default`). That value is **not** auto-applied to a live MCP session.
+
+### MCP runtime (opt-in)
+
+Set `OCCAM_EXAM_MCP=1` to expose `occam_exam_submit` and allow mid-session surface changes via
+`notifications/tools/list_changed`.
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `OCCAM_EXAM_MCP` | off | `1`/`true` enables exam submit + dynamic tool surface |
+
+Behaviour when enabled:
+
+- Session starts at **`reader`** (11 tools) unless `OCCAM_PROFILE` is set (pinned — exam never overrides).
+- Agent/harness calls `occam_exam_submit` with the same JSON as `occam exam grade`.
+- On success: cache by `{clientInfo, modelHint, sessionId}` (TTL 24h); if not pinned, apply
+  tier→profile and notify `tools/list_changed`.
+- Flag **off** (default): identical to historical hosts — fixed profile, no exam tool.
+
+See [ADR-0016](https://github.com/ContextForgeAI/occam/blob/main/docs/adr/0016-capability-exam.md).
+
+A client that never sat the exam is assumed competent for the *host* default (`reader`); starving a
+capable agent is a silent failure, while over-trusting a weak one is visible and recoverable.
 
 ---
 

@@ -182,12 +182,14 @@ export async function checkForUpdate(opts) {
   if (updateAvailable) {
     upgradeHint = [
       `Newer release v${latest} available (installed v${installed}).`,
-      `Re-run the one-line installer to update, or set OCCAM_VERSION=${latest}.`,
+      `Run: occam update`,
     ].join(" ");
   } else if (error) {
     upgradeHint = `Could not check for updates: ${error}. Set OCCAM_LATEST_VERSION to compare manually.`;
+  } else if (installed !== "unknown" && latest !== null && compareVersions(installed, latest) > 0) {
+    upgradeHint = `Installed version is newer than latest release (installed v${installed}, latest v${latest}).`;
   } else {
-    upgradeHint = `Installed v${installed} — up to date.`;
+    upgradeHint = `Already up to date (v${installed}).`;
   }
 
   return {
@@ -197,5 +199,95 @@ export async function checkForUpdate(opts) {
     updateAvailable,
     upgradeHint,
     error,
+  };
+}
+
+/**
+ * Decide whether `occam update` should no-op, upgrade, or fail.
+ *
+ * @param {{ installed: string, latest: string | null, force?: boolean, error?: string | null }} opts
+ * @returns {{
+ *   action: 'noop' | 'upgrade' | 'error',
+ *   code: string,
+ *   message: string,
+ *   exitCode: number,
+ *   targetVersion: string | null,
+ * }}
+ */
+export function decideUpdateAction(opts) {
+  const installed = (opts.installed || "").replace(/^v/i, "").trim() || "unknown";
+  const latestRaw = opts.latest == null ? null : String(opts.latest).replace(/^v/i, "").trim();
+  const latest = latestRaw || null;
+  const force = opts.force === true;
+  const checkError = opts.error ?? null;
+
+  if (checkError && !latest) {
+    return {
+      action: "error",
+      code: "check_failed",
+      message: `Could not check for updates: ${checkError}`,
+      exitCode: 1,
+      targetVersion: null,
+    };
+  }
+
+  if (!latest) {
+    return {
+      action: "error",
+      code: "no_latest",
+      message: "Could not resolve latest release tag. Set OCCAM_LATEST_VERSION or OCCAM_RELEASES_API_URL.",
+      exitCode: 1,
+      targetVersion: null,
+    };
+  }
+
+  if (installed === "unknown") {
+    return {
+      action: "error",
+      code: "unknown_installed",
+      message: "Installed version unknown (no VERSION file). Use a release install, or set OCCAM_HOME to the Level B tree.",
+      exitCode: 1,
+      targetVersion: null,
+    };
+  }
+
+  const cmp = compareVersions(installed, latest);
+
+  if (cmp === 0 && !force) {
+    return {
+      action: "noop",
+      code: "up_to_date",
+      message: `Already up to date (v${installed})`,
+      exitCode: 0,
+      targetVersion: latest,
+    };
+  }
+
+  if (cmp > 0 && !force) {
+    return {
+      action: "error",
+      code: "newer_than_latest",
+      message: `Installed version is newer than latest release (installed v${installed}, latest v${latest})`,
+      exitCode: 1,
+      targetVersion: latest,
+    };
+  }
+
+  const targetVersion = latest;
+  let message;
+  if (force && cmp === 0) {
+    message = `Reinstalling v${targetVersion} (--force)`;
+  } else if (force && cmp > 0) {
+    message = `Reinstalling latest v${targetVersion} (--force; installed v${installed} is newer)`;
+  } else {
+    message = `Updating v${installed} → v${targetVersion}`;
+  }
+
+  return {
+    action: "upgrade",
+    code: force ? "force_reinstall" : "upgrade",
+    message,
+    exitCode: 0,
+    targetVersion,
   };
 }

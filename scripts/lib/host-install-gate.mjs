@@ -2,6 +2,7 @@
  * Fail-fast checks before starting the MCP host (agent-friendly install gate).
  */
 import { execSync } from "node:child_process";
+import { createRequire } from "node:module";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { resolveHostBinary } from "./resolve-host-binary.mjs";
@@ -26,7 +27,18 @@ export function dotnetSdkMajor() {
  * @param {string} root OCCAM_HOME
  */
 export function isWorkersInstalled(root) {
-  return existsSync(join(root, "workers", "http-extract", "node_modules"));
+  const httpPkg = join(root, "workers", "http-extract", "package.json");
+  if (!existsSync(httpPkg)) {
+    return false;
+  }
+  try {
+    const require = createRequire(httpPkg);
+    require.resolve("@mozilla/readability");
+    require.resolve("jsdom");
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -64,7 +76,9 @@ export function formatInstallBlockerMessage(root, options = {}) {
   ];
 
   if (!workers) {
-    lines.push(`${prefix} Missing: worker npm install (run occam-doctor).`);
+    lines.push(
+      `${prefix} Missing: worker npm deps (run: occam install-workers  or  occam doctor).`,
+    );
   }
   lines.push(`${prefix} Missing: OccamMcp.Core AOT binary at repo root or publish path.`);
   if (dotnetMajor > 0 && dotnetMajor < 10) {

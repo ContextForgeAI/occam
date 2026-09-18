@@ -324,7 +324,8 @@ occam status   # installed version and setup summary
 occam doctor   # runtime, browser, and web-safety checks
 occam smoke    # local MCP initialize, tools/list, and live probe
 occam connect  # detect and connect supported applications
-occam update   # read-only release check
+occam update   # idempotent: no-op when already current; upgrades otherwise
+occam update --force  # reinstall latest even when versions match
 ```
 
 Use the result in this order:

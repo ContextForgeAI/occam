@@ -101,7 +101,9 @@ async function main() {
     }
 
     if (sub.internalAction === "update") {
-      const result = await runControlAction("update", defaultHome);
+      const result = await runControlAction("update", defaultHome, {
+        args: passthrough,
+      });
       if (json) {
         console.log(JSON.stringify(result.data ?? result, null, 2));
       } else {

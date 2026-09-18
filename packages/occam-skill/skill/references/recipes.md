@@ -31,7 +31,7 @@ Search defaults to keyless DuckDuckGo. Set `OCCAM_SEARCH_PROVIDER=off` for air-g
 ```
 occam_search({ query: "nginx reverse proxy", max_results: 5 })
 occam_digest({
-  urls: ["https://…", "https://…"],
+  urls: "[\"https://…\", \"https://…\"]",
   focus_query: "reverse proxy configuration",
   fit_markdown: true
 })
@@ -43,7 +43,7 @@ occam_digest({
 
 ```
 occam_map({ url: "https://nginx.org", source: "sitemap", max_links: 8 })
-occam_digest({ urls: map.links.map(link => link.url), focus_query: "install" })
+occam_digest({ urls: "<from map.links>", focus_query: "install" })
 ```
 
 If `sitemap_not_found` → retry `source: "homepage"`.
@@ -96,6 +96,23 @@ occam_playbook_lint({ playbook })
 occam_playbook_save({ playbook, verify: true })
 occam_transcode({ url, playbook_policy: "auto" })  → verify improvement
 ```
+
+---
+
+## Verify read via canary
+
+Proof-of-read over MCP (reader/full profiles). Same flow as CLI `occam canary`.
+
+```
+occam_canary_issue({})
+# → { url, sessionId, expiresAt, bucket }  — no sentinel
+occam_transcode({ url })                   # or curl/fetch the canary URL
+# Quote Sentinel: `…` / meta occam-sentinel — do not invent
+occam_canary_verify({ session_id, sentinel })
+# → verdict: READ_VERIFIED | READ_STALE | HALLUCINATED | REPLAY_SUSPECT
+```
+
+Trust rule: quote the sentinel only if you actually fetched the page. Faking it will be detected.
 
 ---
 
