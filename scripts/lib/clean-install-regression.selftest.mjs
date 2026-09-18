@@ -95,27 +95,31 @@ function read(rel) {
   if (!bash) {
     console.error("[clean-install-regression] SKIP no-node spawn (bash not found on Windows)");
   } else {
-    const curl = spawnSync(bash, ["-c", "command -v curl"], { encoding: "utf8" });
-    const tar = spawnSync(bash, ["-c", "command -v tar"], { encoding: "utf8" });
+    // Resolve absolute bash BEFORE scrubbing PATH (macOS: bash is /bin/bash, curl is /usr/bin/curl).
+    const bashResolved = spawnSync(bash, ["-c", "command -v bash"], { encoding: "utf8" });
+    const bashAbs = (bashResolved.stdout || "").trim() || bash;
+    assert.ok(bashAbs, "bash absolute path required");
+
+    const curl = spawnSync(bashAbs, ["-c", "command -v curl"], { encoding: "utf8" });
+    const tar = spawnSync(bashAbs, ["-c", "command -v tar"], { encoding: "utf8" });
     const curlPath = (curl.stdout || "").trim();
     const tarPath = (tar.stdout || "").trim();
     assert.ok(curlPath, "curl required for no-node repro");
     assert.ok(tarPath, "tar required for no-node repro");
 
-    const pathDirs = [...new Set([dirname(curlPath), dirname(tarPath)])].join(
-      process.platform === "win32" ? ";" : ":",
-    );
+    const pathDirs = [
+      ...new Set([dirname(curlPath), dirname(tarPath), dirname(bashAbs)]),
+    ].join(process.platform === "win32" ? ";" : ":");
     const script = join(root, "scripts", "get-ff-occam.sh");
     const scrubEnv = {
       PATH: pathDirs,
       OCCAM_BOOTSTRAP_STRICT_PATH: "1",
       HOME: join(tmpdir(), "occam-bootstrap-no-node-home"),
-      // Do not inherit CI node toolcache / user bin hints.
       OCCAM_HOME: "",
       OCCAM_VERSION: "1.2.0",
     };
 
-    const whichNode = spawnSync(bash, ["-c", "command -v node || true"], {
+    const whichNode = spawnSync(bashAbs, ["-c", "command -v node || true"], {
       encoding: "utf8",
       env: scrubEnv,
     });
@@ -125,7 +129,7 @@ function read(rel) {
       `node must be absent from scrubbed PATH (got ${(whichNode.stdout || "").trim()})`,
     );
 
-    const result = spawnSync(bash, [script], {
+    const result = spawnSync(bashAbs, [script], {
       encoding: "utf8",
       env: scrubEnv,
     });
