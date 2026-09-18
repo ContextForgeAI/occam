@@ -7,7 +7,7 @@ description: >-
   unknown — never substitute model memory.
 license: AGPL-3.0-or-later
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   homepage: https://www.npmjs.com/package/ff-occam
   mcp_package: "ff-occam"
 ---
@@ -32,15 +32,16 @@ Activate this skill when the user or task involves:
 
 **Do not** use for private URLs, CAPTCHA solving, or when MCP is not wired — read [references/install.md](references/install.md) first.
 
-**Install tasks** (Hermes, tarball, doctor, MCP config): read [references/install.md](references/install.md) **before** any shell command. On Hermes **without .NET 10 SDK**, use `get-ff-occam.sh` — not bare `git clone`.
+**Install tasks** (Hermes, tarball, doctor, MCP config): read [references/install.md](references/install.md) **before** any shell command. **Install from release tarball only** — never `git clone` + `dotnet build`/`publish`/`run` unless a human developer explicitly asks for a source build.
 
 ---
 
 ## Prerequisites
 
-1. **MCP host installed** — Hermes/prod without .NET 10: `get-ff-occam.sh` tarball; dev with SDK: `occam doctor`. Never edit csproj to net8.0; never run in-repo `occam-mcp.js` on a git clone.
+1. **MCP host installed from the release tarball only.** Source builds are **not** supported for agents.
+   Use `get-ff-occam.sh` / `.ps1` (Node 20+, no .NET SDK). If the tarball is missing — **STOP** and tell the user; do **not** run `dotnet build` / `publish` / `run`.
 2. **MCP wired** — stdio server with **`OCCAM_HOME`** set (non-empty `env`). Hermes: `scripts/occam-wrapper.sh` + reload MCP.
-3. **Smoke check** — `occam smoke`, `tools/list`, or `node scripts/hermes-smoke.mjs` → registry core `occam_*` tools present (count varies by `OCCAM_PROFILE` + opt-in env); exit 0. Do not hard-require a fixed “14/15”.
+3. **Smoke check** — `occam smoke`, `tools/list`, or `node scripts/hermes-smoke.mjs` → **18** core tools when profile is `full` (smoke default); **11** under `reader`. See `docs/MCP_MAP.md`. Do not treat a stale “15” (old filter that skipped cascade `occam`) as the catalog size.
 4. **Call discipline** — use your harness MCP tool interface (`CallMcpTool`, native tool calling, Hermes MCP bridge, etc.). Tool names are always `occam_<verb>`.
 
 If MCP is unavailable, stop and tell the user to follow [references/install.md](references/install.md). Do not guess page content.

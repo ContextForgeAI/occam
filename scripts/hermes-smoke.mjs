@@ -12,7 +12,12 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = process.env.OCCAM_HOME?.trim() || join(scriptDir, "..");
 const PROBE_URL = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide";
 const REQUEST_TIMEOUT_MS = 60_000;
-const EXPECTED_TOOLS = 15;
+const EXPECTED_CORE_TOOLS = 18;
+
+/** Core catalog names: `occam` plus every `occam_*` (cascade is not `occam_`). */
+function isCoreOccamToolName(name) {
+  return typeof name === "string" && (name === "occam" || name.startsWith("occam_"));
+}
 
 class McpStdioClient {
   #proc;
@@ -110,7 +115,7 @@ async function main() {
     env: {
       ...process.env,
       OCCAM_HOME: root,
-      // Hermes smoke asserts the full fifteen-tool catalog (not product default reader=8).
+      // Full core catalog under OCCAM_PROFILE=full (product default is reader=11).
       OCCAM_PROFILE: process.env.OCCAM_PROFILE?.trim() || "full",
       Logging__LogLevel__Default: "None",
       WT_OCCAM_BANNER: "0",
@@ -130,15 +135,18 @@ async function main() {
     client.notify("notifications/initialized");
 
     const toolsResult = await client.request("tools/list", {});
-    const occamTools = (toolsResult?.tools ?? []).filter((t) => t.name?.startsWith("occam_"));
+    const allTools = toolsResult?.tools ?? [];
+    const occamTools = allTools.filter((t) => isCoreOccamToolName(t.name));
     report.steps.toolsList = {
-      total: toolsResult?.tools?.length ?? 0,
+      total: allTools.length,
       occamCount: occamTools.length,
-      names: occamTools.map((t) => t.name),
+      names: occamTools.map((t) => t.name).sort(),
     };
 
-    if (occamTools.length !== EXPECTED_TOOLS) {
-      report.errors.push(`expected ${EXPECTED_TOOLS} occam_* tools, got ${occamTools.length}`);
+    if (occamTools.length !== EXPECTED_CORE_TOOLS) {
+      report.errors.push(
+        `expected ${EXPECTED_CORE_TOOLS} core Occam tools (occam + occam_*), got ${occamTools.length}`,
+      );
     }
 
     const probeResult = parseToolJson(

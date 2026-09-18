@@ -6,6 +6,7 @@ Features that ship but are **not** default product promises. Experimental ≠ in
 
 | Feature | Enablement | What it does | Limitations | Why not default |
 |---------|------------|--------------|-------------|-----------------|
+| **Exam MCP** | `OCCAM_EXAM_MCP=1` | `occam_exam_submit` grades a harness JSON; may change the tool surface + `list_changed` | Does not run the four tasks for the agent; pinned `OCCAM_PROFILE` wins; clients must re-list after notify | Default host stays fixed-profile; capability research surface |
 | **Watch** | `OCCAM_WATCH_MCP=1` | Re-check a URL over time; history chain | No daemon (agent polls); store races; unsigned history ≠ `history_verified` | Costly; persistence/concurrency limits |
 | **Crosscheck** | `OCCAM_CONSENSUS_MCP=1` | Multi-source / multi-vantage **comparison** (source agreement) | Verdict is computed, not a “consensus proof”; same-process/egress limits | Expensive (2+ extracts); easy to overread |
 | **Batch** | `OCCAM_BATCH_MCP=1` | Queue many URLs | No Receipt v1 on the batch envelope; store races; retention limits | Operator/server mode; not a casual agent default |

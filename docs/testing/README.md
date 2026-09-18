@@ -8,6 +8,7 @@ resolve to a file here, or it should not be made.
 | Path | What it is |
 |---|---|
 | [`RESULTS.md`](RESULTS.md) | Cross-platform summary table with per-platform numbers and an explicit "not verified" section |
+| [`install-failures.md`](install-failures.md) | Clean-VM / agent install failure catalog → CI regressions |
 | [`status.md`](status.md) | Which machines were reachable during the run, and which were not |
 | [`canary-vectors.json`](canary-vectors.json) | Canonical proof-of-read test vectors (PROBE_PROTOCOL.md §9) |
 | `macos-arm64/`, `linux-x64/`, `windows-x64/` | Raw per-platform logs |

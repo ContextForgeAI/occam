@@ -63,7 +63,22 @@ if [[ ! -f "$ROOT/workers/package.json" ]]; then
   exit 1
 fi
 
-if [[ ! -d "$ROOT/workers/node_modules" ]]; then
+# Repair empty/corrupt node_modules (dir existence alone is not enough).
+ENSURE_WORKERS="$ROOT/scripts/lib/ensure-workers-deps.mjs"
+if [[ -f "$ENSURE_WORKERS" ]]; then
+  ensure_args=()
+  if [[ "$QUIET" -eq 1 ]]; then
+    ensure_args+=(--quiet)
+  fi
+  if [[ "${OCCAM_WORKERS_FORCE_INSTALL:-}" == "1" || "${OCCAM_WORKERS_FORCE_INSTALL:-}" == "true" ]]; then
+    ensure_args+=(--force)
+  fi
+  doctor_echo "workers npm deps (ensure/repair) ..."
+  if ! node "$ENSURE_WORKERS" "${ensure_args[@]}"; then
+    echo "error: workers npm install failed — run: occam install-workers --force" >&2
+    exit 1
+  fi
+elif [[ ! -d "$ROOT/workers/node_modules" ]]; then
   doctor_echo "npm install (workspace root) ..."
   if [[ "$QUIET" -eq 1 ]]; then
     (cd "$ROOT/workers" && npm install --no-fund --no-audit --silent)

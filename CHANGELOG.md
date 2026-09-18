@@ -2,33 +2,57 @@
 
 All notable changes to **FFOccamMCP** (L0 core) are documented here.
 
-Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1`…`1.0.0-rc.5` were release candidates; **`1.0.0` was first GA**; current public default is **`1.2.0`**.
+Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1`…`1.0.0-rc.5` were release candidates; **`1.0.0` was first GA**; current public default is **`1.3.0`**.
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-09-18
+
+GitHub Release **v1.3.0** (Cosign `required-cosign-v1`). Experimental npm
+**1.3.0** downloads this host (`HOST_RELEASE_VERSION`).
+
 ### Added
 
-- **`occam_canary_issue` MCP tool** — issue canary URL + session (sentinel never returned).
-- **`occam_canary_verify` MCP tool** — verify sentinel; verdicts `READ_VERIFIED` /
-  `READ_STALE` / `HALLUCINATED` / `REPLAY_SUSPECT`.
-- **Canary on the MCP surface** (previously CLI/probe only). Core catalog **16 → 18**;
-  default reader profile **9 → 11**. CLI `occam canary` and the probe host are unchanged.
+- **Exam in MCP runtime (opt-in):** `OCCAM_EXAM_MCP=1` exposes `occam_exam_submit`, grades a
+  harness submission, caches by `{clientInfo, modelHint, sessionId}` (TTL 24h), applies the
+  tier→profile surface when `OCCAM_PROFILE` is not pinned, and sends
+  `notifications/tools/list_changed`. Flag off = unchanged fixed-profile host. CLI `occam exam`
+  unchanged.
+- **Canary MCP E2E selftest:** `node scripts/lib/canary-mcp-e2e.selftest.mjs` →
+  `CANARY_MCP_E2E_OK` (tools/list → issue → HTTP fetch → READ_VERIFIED + HALLUCINATED).
+- **Idempotent `occam update`:** compares install `VERSION` to GitHub latest; equal →
+  `Already up to date (vX.Y.Z)` (exit 0, no download); older → bootstrap upgrade via
+  staged `get-ff-occam` (atomic replace); newer-than-latest → exit 1; `--force` reinstalls.
+  Selftest: `UPDATE_APPLY_SELFTEST_OK`.
+- **Clean-install regression (IF-01/IF-02):** catalog `corpora/install-failures.jsonl`;
+  selftest `CLEAN_INSTALL_REGRESSION_OK`; workflow `.github/workflows/clean-install.yml`
+  (Ubuntu 24.04 no-Node expect-fail; OS matrix bootstrap **without** `setup-dotnet` →
+  smoke → read). Bootstrap missing-Node message now tells friends to install Node 20+
+  and that **no .NET SDK** is required. `AGENTS.md` redirects “install Occam” to
+  `INSTALL.md`.
 
 ### Changed
 
-- **External CLI search provider rename (breaking):** provider id is now
-  `external_cli`; path env is `OCCAM_EXTERNAL_SEARCH_PATH`; class/file
-  `ExternalCliSearchProvider`. Prior branded provider id / path env / class name
-  are removed. Functionality unchanged — BYO binary, not bundled. Competitor
-  brand names removed from public docs.
-- Docs hubs: [CAPABILITIES](docs/CAPABILITIES.md), [TRUST](docs/TRUST.md),
-  [CASCADE](docs/CASCADE.md), [SEARCH](docs/SEARCH.md) — link maps over existing
-  ADRs/tool pages (no contract duplication).
-- Root [README.md](README.md) restructured around five blocks (hero, inventory,
-  algorithms, MCP map, configuration) from recon PHASE1/PHASE2; honesty markers
-  for exam beta, external CLI search experimental.
+- **Tool surface frozen at 18 core tools.** New MCP tools require an ADR and will not be
+  added until install is zero-config. Opt-in env-gated tools remain the expansion path.
+  See [docs/MCP_MAP.md](docs/MCP_MAP.md).
+- **`hermes-smoke` / `occam smoke`:** expect **18** core tools under `OCCAM_PROFILE=full`;
+  count includes cascade `occam` (not only `occam_*`).
+- **`occam update`:** no longer read-only; performs an upgrade when needed (was only an
+  upgrade hint).
+- **Install docs forbid source builds for agents:** skill `install.md` / `SKILL.md`,
+  `AGENTS.md`, README Install, `docs/getting-started.md`, and bootstrap download errors
+  now say: release tarball only; never `dotnet build`/`publish`/`run` as an install
+  fallback; if the tarball is missing — STOP and tell the user.
 
 ### Fixed
+
+- **Workers npm repair:** doctor no longer treats an empty/corrupt `workers/node_modules`
+  directory as installed. Shared `scripts/lib/ensure-workers-deps.mjs` resolve-checks HTTP
+  markers (`@mozilla/readability`, `jsdom`, `turndown`, `undici`), prefers `npm ci` when
+  `workers/package-lock.json` is present, and prints `WORKERS_DEPS_OK`. New operator verb
+  `occam install-workers [--force] [--with-browser]`. Env: `OCCAM_WORKERS_FORCE_INSTALL=1`.
+  Selftest: `node scripts/lib/install-workers.selftest.mjs` → `INSTALL_WORKERS_SELFTEST_OK`.
 
 ## [1.2.0] — 2026-09-16
 

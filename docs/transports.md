@@ -56,9 +56,11 @@ OccamMcp.Core --streamable-http --port 5055
 Modern clients use **`server/discover`** with per-request `_meta` (protocol `2026-07-28`).
 Legacy **`initialize`** clients continue to work on stdio and WebSocket.
 
-**Capability honesty:** the host advertises tools with `listChanged: false` and does not claim
-a logging capability it does not push on the default path. Clients must not wait for
-`notifications/tools/list_changed` after profile/env changes — restart the host instead.
+**Capability honesty:** by default the host advertises tools with `listChanged: false` and does
+not claim a logging capability it does not push. After an env/`OCCAM_PROFILE` change, restart the
+host. With **`OCCAM_EXAM_MCP=1`**, `listChanged` is advertised `true` and a successful
+`occam_exam_submit` may send `notifications/tools/list_changed` so clients can re-list tools
+without restart. Clients that ignore the notification keep the first `tools/list` until reconnect.
 
 **Auth (rc.4):** Streamable HTTP is **loopback-first and unauthenticated**. There is **no OAuth**
 on `/mcp` in this release. For authenticated remote agents use **Remote MCP** (`--remote` + JWT /

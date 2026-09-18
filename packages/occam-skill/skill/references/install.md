@@ -7,19 +7,61 @@ Host-neutral steps for the public GitHub release tree (`https://github.com/Conte
 
 ---
 
+## DO NOT build from source (agents)
+
+**Install from the release tarball only.** Source builds are **not** supported for agents
+(Hermes, Cursor, Claude Code, etc.).
+
+### Forbidden commands (stop — do not run)
+
+| Forbidden | Why |
+|-----------|-----|
+| `dotnet build` | Builds the SDK project — needs .NET 10; not the install path |
+| `dotnet publish` | Same — AOT publish is maintainer/CI, not agent install |
+| `dotnet run --project …` | Same — never a substitute for the release host binary |
+| `git clone` + doctor without a published binary | Fails or pulls you into the contributor SDK path |
+| Edit `FFOccamMcp.Core.csproj` / force `net8.0` | Wrong framework — doctor fails |
+| `npm ci` / `npm run bootstrap` at repo root | **Does not exist** |
+| `packages/occam-mcp/bin/occam-mcp.js` on a git clone | Exits immediately |
+| Invent an alternate install (npx as GA, manual extract-only) | Not the guarded path |
+
+**If the release tarball is missing or download fails — STOP and tell the user.**
+Do **not** build from source. Do **not** install .NET “to fix it.”
+
+### Correct agent path
+
+1. Detect platform (bootstrap does this via `uname` / Windows RID).
+2. Download the matching release tarball + manifest (`get-ff-occam.sh` / `.ps1`).
+3. Extract → doctor (`--skip-build`) → smoke.
+4. Wire MCP with `OCCAM_HOME` set.
+
+```bash
+# Linux x64 / macOS Apple Silicon
+curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+```
+
+```powershell
+# Windows x64
+irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+```
+
+Needs **Node 20+**. **No .NET SDK.**
+
+---
+
 ## Agent hard gates (do not skip)
 
 | Forbidden | Why |
 |-----------|-----|
-| Edit `FFOccamMcp.Core.csproj` / `TargetFramework` → net8.0 | Project is **net10.0 Native AOT** — doctor fails; use .NET 10 or tarball |
-| Install .NET 8 to “fix” build | `NETSDK1045` — wrong SDK |
+| Edit `FFOccamMcp.Core.csproj` / `TargetFramework` → net8.0 | Project is **net10.0 Native AOT** — doctor fails; use release tarball |
+| Install .NET 8 to “fix” build | `NETSDK1045` — wrong SDK; agents must not build |
 | `packages/occam-mcp/bin/occam-mcp.js` on a **git clone** | Exits immediately — use `scripts/occam-wrapper.sh` |
 | `npm ci` / `npm run bootstrap` at repo root | **Does not exist** |
 | `git clone` + `occam-doctor --skip-build` without tarball | No `OccamMcp.Core` — doctor **fails** |
 | MCP `env: {}` without `OCCAM_HOME` | Workers won't resolve — `workers_unavailable` |
 | `OPENROUTER_API_KEY` in Occam MCP `env` | Hermes LLM key — not the MCP host |
 
-Stack: **.NET 10 AOT host** + **Node 20+** workers. Expect **15** `occam_*` tools after smoke.
+Stack: **release AOT host** + **Node 20+** workers. Expect **11** tools under default `OCCAM_PROFILE=reader`, or **18** under `OCCAM_PROFILE=full`, after smoke.
 
 ---
 
@@ -41,11 +83,13 @@ $env:OCCAM_HOME = if ($env:OCCAM_INSTALL_DIR) { $env:OCCAM_INSTALL_DIR } else { 
 node "$env:OCCAM_HOME\scripts\hermes-smoke.mjs"
 ```
 
-Expect **exit 0** and **15** tools. Full details: repo-root `INSTALL.md`.
+Expect **exit 0** and **18** core tools when `OCCAM_PROFILE=full` (smoke default). Default product profile is **reader=11**. Full details: repo-root `INSTALL.md` · `docs/MCP_MAP.md`.
 
-`npx @ff-occam/mcp` is **not** part of `1.0.0-rc.2`.
+`npx @ff-occam/mcp` is **not** the GA install channel.
 
-### Advanced: git clone + .NET 10 SDK (contributors)
+### Advanced: git clone + .NET 10 SDK (human contributors only)
+
+**Agents must not use this section.** Only when a human developer explicitly asks for a source build:
 
 ```bash
 git clone https://github.com/ContextForgeAI/occam.git
@@ -127,7 +171,7 @@ node scripts/hermes-smoke.mjs
 | Check | Pass |
 |-------|------|
 | `occam doctor` | exits 0 |
-| `tools/list` | **14** `occam_*` tools |
+| `tools/list` | **11** under default `reader`; **18** under `full` (`occam` + `occam_*`) |
 | `hermes-smoke.mjs` | exit 0 |
 
 If MCP is not wired, **stop** — do not guess page content. Read [failure-codes.md](failure-codes.md) on `ok: false`.
@@ -172,7 +216,8 @@ After wiring MCP, **reload MCP servers** in your IDE or restart Hermes. The skil
 | Symptom | Fix |
 |---------|-----|
 | `get-ff-occam.sh` / manifest **404** | Release assets missing on GitHub — operator must publish `v1.0.0-rc.2` assets |
-| `workers_unavailable` | Wrong or missing `OCCAM_HOME`; run `occam doctor` |
+| `workers_unavailable` | Wrong or missing `OCCAM_HOME`; run `occam doctor` or `occam install-workers` |
+| Worker `ERR_MODULE_NOT_FOUND` (`@mozilla/readability`) | Empty/corrupt `workers/node_modules` | `occam install-workers --force` |
 | No `occam_*` tools | MCP not connected; check wrapper + `OCCAM_HOME` + reload |
 | `occam-mcp.js` exits on clone | Use `occam-wrapper.sh` or `launch-mcp-host.mjs` |
 | `NETSDK1045` / net8.0 | Install .NET 10 SDK or use tarball path |

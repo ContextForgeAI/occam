@@ -10,6 +10,7 @@ import {
   readOccamVersion,
 } from "./onboard-schema.mjs";
 import { checkForUpdate, readInstalledVersion } from "./update-check.mjs";
+import { runOccamUpdate } from "./update-apply.mjs";
 
 /**
  * @param {string} occamHome
@@ -169,15 +170,13 @@ export function runSmoke(occamHome, extraArgs = []) {
 
 /**
  * @param {string} occamHome
- * @param {{ fetch?: typeof fetch }} [opts]
+ * @param {{ fetch?: typeof fetch, force?: boolean, args?: string[] }} [opts]
  */
 export async function runUpdateCheck(occamHome, opts = {}) {
-  const update = await checkForUpdate({ occamHome, fetch: opts.fetch });
-  return {
-    ok: !update.error,
-    message: update.upgradeHint,
-    data: update,
-  };
+  const force =
+    opts.force === true ||
+    (opts.args ?? []).includes("--force");
+  return runOccamUpdate(occamHome, { force, fetch: opts.fetch });
 }
 
 /**

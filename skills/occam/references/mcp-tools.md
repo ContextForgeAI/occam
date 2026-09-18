@@ -1,13 +1,17 @@
 # MCP tools — core set
 
-Registry: `OccamMcpServerRegistration.OccamToolNames`. All return JSON strings (camelCase).
+**18 core tools** (frozen). Registry: `OccamMcpServerRegistration.OccamToolNames`.
+All return JSON strings (camelCase). Default `OCCAM_PROFILE=reader` exposes **11**.
+Map: repo `docs/MCP_MAP.md`.
 
 ---
 
-## Core tools
+## Core tools (18)
 
 | Tool | Purpose |
 |------|---------|
+| `occam_client_capabilities` | Declare LLM context budget |
+| `occam` | Cascade page read (`url` / `task` / `budget`) |
 | `occam_probe` | Cheap URL classification, extractability, backend hint |
 | `occam_transcode` | URL → Markdown (+ optional structured blocks, tokens, session) |
 | `occam_digest` | 1–8 URLs → per-page results + optional combined markdown |
@@ -45,7 +49,7 @@ Full param tables: `docs/tools-reference.md`, `MCP_API_SPEC.md`.
 
 ---
 
-## Opt-in tools (not in default tools/list)
+## Opt-in tools (not in the 18)
 
 | Tools | Env |
 |-------|-----|
@@ -53,6 +57,8 @@ Full param tables: `docs/tools-reference.md`, `MCP_API_SPEC.md`.
 | `occam_watch` | `OCCAM_WATCH_MCP=1` |
 | `occam_crosscheck` | `OCCAM_CONSENSUS_MCP=1` |
 | `occam_failure_atlas` | `OCCAM_ATLAS_MCP=1` |
+| `occam_browser_interact` | `OCCAM_BROWSER_ACTIONS_MCP=1` |
+| `occam_exam_submit` | `OCCAM_EXAM_MCP=1` |
 
 ---
 

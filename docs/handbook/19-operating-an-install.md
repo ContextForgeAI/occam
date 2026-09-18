@@ -18,13 +18,14 @@ The operator path is **first-class product surface** — parallel to MCP tools, 
 
 | Verb | What it does | Blast radius |
 |------|--------------|--------------|
-| `occam doctor` | npm, Playwright, dotnet publish readiness | May install browser bits and packages |
+| `occam doctor` | npm (resolve-repair), Playwright, dotnet publish readiness | May install browser bits and packages |
+| `occam install-workers` | Repair `workers/` npm workspace deps (`npm ci`/`install`); optional `--with-browser` | Network + `node_modules` under install tree |
 | `occam connect` | Detect + mutate host MCP configs (≤15 adapters) | Third-party config files + `.occam-bak` siblings |
 | `occam onboard` / `settings` | Writes `~/.occam/onboard.json` | Merged into **every** later launch via `launch-mcp-host` |
 | `occam refresh` / `restart` | Stops hosts launched from this `OCCAM_HOME`, then re-runs the doctor path | Processes whose executable or command line resolves inside this install tree |
 | `occam session` | Import/export session profiles | Plaintext cookie retention under `_imports/` by default |
 | `occam smoke` | Live extract smoke | Network |
-| `occam update` | Release fetch | Network |
+| `occam update` | Idempotent release update (noop when current; `--force` reinstall) | Network + install tree replace when upgrading |
 | `occam disconnect` | Removes only host registrations owned by this install | Third-party config files; unrelated entries are preserved |
 | `occam uninstall` | Disconnects managed hosts and removes a recognized release install | Generated launchers and install tree; state/cache removal is explicit |
 | `occam snippet` / `help` / `status` / `control` / `contract` / `skill` | Info, control, skill install | Skill install `rmSync`s destination |

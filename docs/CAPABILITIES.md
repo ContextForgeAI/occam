@@ -24,7 +24,7 @@ Source of truth for this table: codebase paths cited below
 
 | # | Feature | Evidence | Status | Env / config |
 |---|---------|----------|--------|--------------|
-| 1 | Core MCP tools (16) | `Transport/OccamMcpServerRegistration.cs:16–34` | stable | `OCCAM_PROFILE` |
+| 1 | Core MCP tools (18) | `Transport/OccamMcpServerRegistration.cs` → `OccamToolNames` | stable | `OCCAM_PROFILE` |
 | 2 | Cascade tool `occam` | `Cascade/CascadeService.cs`, `Tools/OccamCascadeTool.cs:15` | stable | — · [ADR-0017](adr/0017-cascade-facade.md) |
 | 3 | Transcode / probe / digest / map | `Tools/OccamTranscodeTool.cs:46`, `OccamProbeTool.cs:13`, `OccamDigestTool.cs:18`, `OccamMapTool.cs:12` | stable | `backend_policy`, sessions |
 | 4 | Playbook resolve / heal / lint / save | `Playbooks/PlaybookSeedResolver.cs:42`, `PlaybookHealService.cs:9`, `PlaybookLinter.cs:16`, `PlaybookSaveService.cs:11` | stable | `OCCAM_PLAYBOOKS_*`, genome fetch |
@@ -40,7 +40,7 @@ Source of truth for this table: codebase paths cited below
 | 14 | Proxy rotation | `Services/RoundRobinProxyRotationService.cs:3–33` | stable | `OCCAM_PROXY_LIST*` |
 | 15 | Browser pool / Playwright | `Workers/Browser*` | stable | `OCCAM_BROWSER_*` |
 | 16 | Proof-of-read canary | `Canary/*`, `Tools/OccamCanary*Tool.cs` | stable **MCP + CLI** | `OCCAM_CANARY_*` |
-| 17 | Capability exam | `Exam/*` | beta / research (CLI) | recommends → `OCCAM_PROFILE` (manual) |
+| 17 | Capability exam | `Exam/*`, `Tools/OccamExamSubmitTool.cs` | beta / opt-in MCP | CLI always; MCP: `OCCAM_EXAM_MCP=1` → `occam_exam_submit` |
 | 18 | Client capabilities | `Tools/OccamClientCapabilitiesTool.cs:16` | stable | `OCCAM_CLIENT_CONTEXT_TOKENS` |
 | 19 | Time anchor TSA | `Receipts/TimeAnchorService.cs` | opt-in | `OCCAM_TIME_ANCHOR` + `OCCAM_TSA_URL` |
 | 20 | Translate / PDF OCR | `Services/TranslationService.cs`, `External/ExternalCli.cs` | opt-in / advanced | `OCCAM_TRANSLATE_*`, `OCCAM_PDF_OCR*` |
@@ -53,7 +53,7 @@ Source of truth for this table: codebase paths cited below
 |-----|--------|
 | Browser fingerprint rotation | **Not found** — do not document as a feature |
 | Canary as MCP tool | **Shipped** — `occam_canary_issue` + `occam_canary_verify` in `OccamToolNames` |
-| Exam auto-applies `OCCAM_PROFILE` | **No** — operator sets env manually |
+| Exam auto-applies surface | **Opt-in** — `OCCAM_EXAM_MCP=1` + submit; pinned `OCCAM_PROFILE` never overridden. Default host unchanged. |
 | Proxy / external as cascade stages | **No** — separate from `CascadeStepKind` |
 
 ## Profiles (document only these)

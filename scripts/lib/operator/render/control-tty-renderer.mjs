@@ -20,7 +20,7 @@ export function renderControlMenu() {
     horizontalRule(),
     "  1  Settings (onboard)",
     "  2  Run doctor",
-    "  3  Check for updates",
+    "  3  Update Occam (idempotent)",
     "  4  Help (next steps)",
     "  5  Restart Occam + reload hint",
     "  6  Smoke test",

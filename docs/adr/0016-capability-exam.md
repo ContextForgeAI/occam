@@ -1,7 +1,8 @@
 # ADR-0016 — Capability exam and behaviour-derived tool tiers
 
-**Status:** Accepted (engine); **partially implemented** (administration — see Consequences)
+**Status:** Accepted (engine); **MCP opt-in** via `OCCAM_EXAM_MCP` (see Consequences)
 **Date:** 2026-09-16
+**Updated:** 2026-09-18 — MCP submit + list_changed path
 **Hypothesis:** [H2 and H3](../research/hypothesis.md)
 
 ## Context
@@ -72,18 +73,19 @@ and rolling competence with hysteresis. 163 tests; 96.7 % line and 84.5 % branch
 `OccamMcp.Core.Exam`; `occam exam selftest` runs 36 assertions from the shipped binary on macOS
 arm64, Linux x64 and Windows x64.
 
-**Not implemented: dynamic re-advertisement.** The tool surface is fixed when the MCP server is
-built — `OccamMcpServerRegistration` calls `WithTools<T>()` per tool at DI registration, once per
-process. Changing the surface mid-session therefore needs a restructured registration plus
-`notifications/tools/list_changed`, which is a transport-layer change, not an addition. Today a tier
-selects a profile at process start; it cannot narrow or widen a live session. **`OCCAM_PROFILE` is
-the only wired path from a tier to a surface**, and an operator sets it.
+**Not implemented previously; now opt-in:** dynamic re-advertisement when `OCCAM_EXAM_MCP=1`.
+The host registers the full core catalog, filters `tools/list` / `tools/call` through a
+session-scoped `SessionToolSurface`, and may send `notifications/tools/list_changed` after
+`occam_exam_submit`. Default (flag off) behaviour is unchanged: surface fixed at DI registration;
+`listChanged` advertised as false.
 
-**Not implemented: the exam is not administered by the host on the MCP request path.** Nothing
-calls the grader inside a tool invocation. **Implemented offline:** `occam exam grade` parses a
-harness submission, emits tier + `OCCAM_PROFILE`, and optional `profile.env`; mock H2/H3 runners
-prove the scorecard pipeline (`EXAM_HARNESS_SELFTEST_OK`, `H2_PIPELINE_OK`, `H3_PIPELINE_OK`). See
-[`docs/research/exam-harness.md`](../research/exam-harness.md).
+**Administration:** still not automatic at initialize (no server-driven agent task loop). Offline
+`occam exam grade` remains. With `OCCAM_EXAM_MCP=1`, agents/harnesses POST a behaviour record via
+`occam_exam_submit`. A pinned `OCCAM_PROFILE` always wins (exam recommends but does not apply).
+Cache miss / never-sat does **not** apply `ExamResult.Default`→`basic` — the session stays at
+`reader` until a real grade or an operator pin.
+
+**Still deferred:** rolling `CompetenceTracker` mid-session adjustments; sampling-based administration.
 
 **So what is this worth today?** An engine that is correct, measured and reproducible, plus two new
 profiles an operator can use immediately. The research claim it exists to test — H3, that

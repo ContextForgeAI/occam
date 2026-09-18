@@ -17,14 +17,14 @@
 
 ```bash
 # Primary npm name — stdio mode for any MCP client
-npx ff-occam@1.2.0
+npx ff-occam@1.3.0
 
 # Low-level scoped package (same host and version)
 npx @ff-occam/mcp@1.0.1
 
 # WebSocket mode (experimental)
-npx ff-occam@1.2.0 --mcp-server
-npx ff-occam@1.2.0 --mcp-server --port 5051
+npx ff-occam@1.3.0 --mcp-server
+npx ff-occam@1.3.0 --mcp-server --port 5051
 ```
 
 Operator CLI verbs (`connect`, `doctor`, …) are **not** provided by this package —
@@ -44,7 +44,7 @@ irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-o
 
 ```bash
 # Experimental MCP-only (not the guarded GA path; command is ff-occam, not occam)
-npx ff-occam@1.2.0
+npx ff-occam@1.3.0
 ```
 
 ## MCP tool surface
@@ -80,7 +80,7 @@ Add to `.cursor/mcp.json`:
   "mcpServers": {
     "ff-occam": {
       "command": "npx",
-      "args": ["-y", "ff-occam@1.2.0"],
+      "args": ["-y", "ff-occam@1.3.0"],
       "env": {
         "OCCAM_PROFILE": "reader"
       }
@@ -103,7 +103,7 @@ Or use the WebSocket transport:
 
 Then start the server:
 ```bash
-npx ff-occam@1.2.0 --mcp-server
+npx ff-occam@1.3.0 --mcp-server
 ```
 
 ## Environment Variables
@@ -123,7 +123,7 @@ Two install modes — do not mix them:
 | Mode | When | MCP launcher |
 |------|------|----------------|
 | **Local tree** | `git clone`, `install.sh`, Level B tarball | `node scripts/launch-mcp-host.mjs` + `OCCAM_HOME` |
-| **npm / npx RC** | `npx ff-occam@1.2.0` from registry | Primary wrapper delegates to `@ff-occam/mcp` and downloads the matching release binary |
+| **npm / npx RC** | `npx ff-occam@1.3.0` from registry | Primary wrapper delegates to `@ff-occam/mcp` and downloads the matching release binary |
 
 For a **git clone or tarball** (not `npx`):
 

@@ -7,7 +7,7 @@ duplicate their contracts.
 |-------|-----------|
 | Receipts | [receipts.md](receipts.md) |
 | Verify modes | [receipt_verification.md](receipt_verification.md) |
-| Canary protocol | [adr/0010-proof-of-read-canary.md](adr/0010-proof-of-read-canary.md), [PROBE_PROTOCOL.md](../PROBE_PROTOCOL.md) |
+| Canary protocol | [adr/0010-proof-of-read-canary.md](adr/0010-proof-of-read-canary.md), [PROBE_PROTOCOL.md](https://github.com/ContextForgeAI/occam/blob/main/PROBE_PROTOCOL.md) |
 | Honest failures | [trust/honest-failures.md](trust/honest-failures.md) |
 | Installation safety | [trust/installation-safety.md](trust/installation-safety.md) |
 | Datasets | [datasets.md](datasets.md) |

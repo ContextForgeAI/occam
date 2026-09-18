@@ -10,7 +10,7 @@ namespace OccamMcp.Core.Canary;
 /// probe host, and an in-process materializer so <c>occam_transcode</c> can read the issued URL
 /// without crossing the private-URL SSRF boundary.
 /// </summary>
-public sealed class CanaryMcpRuntime : IAsyncDisposable
+public sealed class CanaryMcpRuntime : IAsyncDisposable, IDisposable
 {
     private static readonly Regex ProbePath = new(
         @"^/probe/canary/(?<session>[A-Za-z0-9._\-]+)/?$",
@@ -227,6 +227,14 @@ public sealed class CanaryMcpRuntime : IAsyncDisposable
     }
 
     /// <inheritdoc />
+    public void Dispose()
+    {
+        // MS.DI sync scope dispose requires IDisposable on singletons; probe host stop is async.
+        DisposeAsync().AsTask().GetAwaiter().GetResult();
+        GC.SuppressFinalize(this);
+    }
+
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         if (_disposed)
@@ -251,6 +259,8 @@ public sealed class CanaryMcpRuntime : IAsyncDisposable
         {
             _service.Dispose();
         }
+
+        GC.SuppressFinalize(this);
     }
 }
 

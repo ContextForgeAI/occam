@@ -1,7 +1,7 @@
 # Tool index
 
 Occam exposes **18 core tools** under `OCCAM_PROFILE=full` (product default is **`reader`** = 11);
-**6 more are opt-in** via host environment flags (plus `occam_browser_interact`).
+**more are opt-in** via host environment flags (batch/watch/consensus/atlas/browser/exam).
 All tools return a **JSON string** (camelCase). The trust rule everywhere: **`ok: false` means the
 page content is unknown** — never substitute model memory.
 
@@ -42,6 +42,7 @@ Set the flag in the host environment **before** starting the MCP server, then re
 | [`occam_crosscheck`](occam_crosscheck.md) | `OCCAM_CONSENSUS_MCP=1` | Compare vantage points; detect cloaking/personalization |
 | [`occam_failure_atlas`](occam_failure_atlas.md) | `OCCAM_ATLAS_MCP=1` | Per-host failure map of the current run; skip walled hosts |
 | [`occam_browser_interact`](occam_browser_interact.md) | `OCCAM_BROWSER_ACTIONS_MCP=1` | Declarative browser actions, then materialize Markdown + Receipt v1 |
+| [`occam_exam_submit`](occam_exam_submit.md) | `OCCAM_EXAM_MCP=1` | Grade a capability-exam harness JSON; may change tools/list + list_changed |
 
 ## Common parameters
 

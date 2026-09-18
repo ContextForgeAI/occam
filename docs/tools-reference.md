@@ -2,7 +2,7 @@
 
 **What you'll do:** look up every MCP tool, parameter, and response shape.
 
-**Eighteen core tools** are always registered. **Opt-in tools** require env flags — see [Opt-in tools](#opt-in-tools).
+**Eighteen core tools** are always registered (surface **frozen** — see [MCP_MAP](MCP_MAP.md) / AGENTS.md). **Opt-in tools** require env flags — see [Opt-in tools](#opt-in-tools).
 
 All tools return a **JSON string** (camelCase). Unless noted, `ok: false` means content is unknown.
 

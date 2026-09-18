@@ -24,6 +24,14 @@ export const CLI_SUBCOMMANDS = [
     passthrough: true,
   },
   {
+    name: "install-workers",
+    summary: "Install/repair workers npm deps (HTTP extract); --with-browser for Playwright",
+    delegate: "node",
+    script: "occam-install-workers.mjs",
+    registryId: "occam-install-workers",
+    passthrough: true,
+  },
+  {
     name: "onboard",
     aliases: ["settings"],
     summary: "Profile wizard → ~/.occam/onboard.json + MCP snippet",
@@ -83,7 +91,7 @@ export const CLI_SUBCOMMANDS = [
   },
   {
     name: "update",
-    summary: "Check for a newer release (read-only)",
+    summary: "Update install when a newer release exists (idempotent; --force reinstall)",
     delegate: "internal",
     internalAction: "update",
   },

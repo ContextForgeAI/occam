@@ -1,8 +1,9 @@
 # Exam harness — grade behaviour, recommend a profile
 
-The host **does not** administer the capability exam on the MCP request path (ADR-0016). This sample
-is the missing piece: a harness that turns a behaviour record into `OCCAM_PROFILE` for the *next*
-process start.
+The host **does not** auto-run the four exam tasks on MCP connect (ADR-0016). This sample
+turns a behaviour record into a grade. Offline: set `OCCAM_PROFILE` for the *next* process
+start. Opt-in live surface: `OCCAM_EXAM_MCP=1` + MCP tool `occam_exam_submit` with the same
+JSON (see [docs/tools/occam_exam_submit.md](../../docs/tools/occam_exam_submit.md)).
 
 ## Grade a submission
 

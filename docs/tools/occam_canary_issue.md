@@ -40,5 +40,5 @@ markdown → `occam_canary_verify`.
 ## Related
 
 - [occam_canary_verify](occam_canary_verify.md)
-- [TRUST](../TRUST.md) · [PROBE_PROTOCOL.md](../../PROBE_PROTOCOL.md)
+- [TRUST](../TRUST.md) · [PROBE_PROTOCOL.md](https://github.com/ContextForgeAI/occam/blob/main/PROBE_PROTOCOL.md)
 - CLI: `occam canary` (unchanged)

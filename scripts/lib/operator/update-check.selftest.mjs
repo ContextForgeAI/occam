@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   compareVersions,
+  decideUpdateAction,
   fetchLatestReleaseTag,
   readInstalledVersion,
   releaseBaseToApiUrl,
@@ -10,6 +11,14 @@ assert.equal(compareVersions("0.8.13", "0.8.12"), 1);
 assert.equal(compareVersions("0.8.12", "0.8.12"), 0);
 assert.equal(compareVersions("0.8.11", "0.8.12"), -1);
 assert.equal(compareVersions("v0.8.12", "0.8.12"), 0);
+
+assert.equal(decideUpdateAction({ installed: "1.2.0", latest: "1.2.0" }).action, "noop");
+assert.equal(decideUpdateAction({ installed: "1.0.0", latest: "1.2.0" }).action, "upgrade");
+assert.equal(decideUpdateAction({ installed: "9.0.0", latest: "1.2.0" }).action, "error");
+assert.equal(
+  decideUpdateAction({ installed: "1.2.0", latest: "1.2.0", force: true }).action,
+  "upgrade",
+);
 
 const api = releaseBaseToApiUrl(
   "http://example/releases/download/v0.8.12",

@@ -19,6 +19,7 @@ Always-on core MCP tools. Opt-in tools need env flags (see bottom).
 | Prove one sentence | `occam_claim_check` | Citation proof, not truth judgment |
 | Check report citations | `occam_attest` | Batch `{claim, sourceUrl}` |
 | Verify signed extraction | `occam_verify` | Offline or live drift |
+| Prove a page was read | `occam_canary_issue` → transcode → `occam_canary_verify` | Quote sentinel only after fetch |
 | Auditable URL corpus | `occam_dataset_export` | 1–20 URLs + manifest |
 
 ---

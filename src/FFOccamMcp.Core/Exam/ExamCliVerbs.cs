@@ -475,9 +475,10 @@ public static class ExamCliVerbs
 
             Markers: EXAM_SELFTEST_OK, EXAM_GRADE_OK, EXAM_HARNESS_SELFTEST_OK.
 
-            The host does not administer the exam on the MCP request path — MCP has no general
-            server-initiated task mechanism. The harness grades a behaviour record offline, then an
-            operator sets OCCAM_PROFILE for the next process start. See docs/adr/0016-capability-exam.md.
+            The host does not run the four graded tasks by itself on MCP (no server-initiated task
+            loop). Opt-in: OCCAM_EXAM_MCP=1 exposes occam_exam_submit so a harness/agent can post a
+            behaviour record; the host grades, caches, and may send tools/list_changed. Without that
+            flag, set OCCAM_PROFILE for the next process start. See docs/adr/0016-capability-exam.md.
             """);
     }
 }
