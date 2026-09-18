@@ -369,13 +369,13 @@ internal static class L0InfraUnitTests
             assert("reader hides save", System.Array.IndexOf(reader, "occam_playbook_save") < 0);
 
             var researcher = OccamMcp.Core.Transport.OccamToolProfile.GetExposedToolNames("researcher");
-            assert("researcher has 10 tools", researcher.Length == 10);
+            assert("researcher has 12 tools", researcher.Length == 12);
             assert("researcher exposes verify", System.Array.IndexOf(researcher, "occam_verify") >= 0);
             assert("researcher exposes claim_check", System.Array.IndexOf(researcher, "occam_claim_check") >= 0);
             assert("researcher hides heal", System.Array.IndexOf(researcher, "occam_playbook_heal") < 0);
 
             var auditor = OccamMcp.Core.Transport.OccamToolProfile.GetExposedToolNames("auditor");
-            assert("auditor has 13 tools", auditor.Length == 13);
+            assert("auditor has 15 tools", auditor.Length == 15);
             assert("auditor exposes attest", System.Array.IndexOf(auditor, "occam_attest") >= 0);
             assert("auditor hides heal", System.Array.IndexOf(auditor, "occam_playbook_heal") < 0);
 
