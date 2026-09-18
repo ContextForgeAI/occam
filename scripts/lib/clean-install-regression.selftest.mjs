@@ -140,7 +140,7 @@ function read(rel) {
       OCCAM_BOOTSTRAP_STRICT_PATH: "1",
       HOME: join(tmpdir(), "occam-bootstrap-no-node-home"),
       OCCAM_HOME: "",
-      OCCAM_VERSION: "1.2.0",
+      OCCAM_VERSION: "1.3.0",
     };
 
     const whichNode = spawnSync(bashAbs, ["-c", "command -v node || true"], {
