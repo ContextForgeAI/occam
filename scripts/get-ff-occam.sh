@@ -41,7 +41,7 @@ assert_published_rid() {
 }
 
 # Public default tracks the published GitHub Release (see PUBLIC_DEFAULT_RELEASE_VERSION).
-VERSION="${OCCAM_VERSION:-1.2.0}"
+VERSION="${OCCAM_VERSION:-1.3.0}"
 RID="${OCCAM_RID:-$(detect_rid)}"
 assert_published_rid "$RID"
 INSTALL_DIR="${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}"
@@ -320,6 +320,10 @@ bootstrap_on_exit() {
 
 ensure_node_on_path() {
   if command -v node >/dev/null 2>&1; then
+    return 0
+  fi
+  # Tests / locked-down PATH: do not resurrect node from well-known dirs.
+  if [[ "${OCCAM_BOOTSTRAP_STRICT_PATH:-}" == "1" || "${OCCAM_BOOTSTRAP_STRICT_PATH:-}" == "true" ]]; then
     return 0
   fi
   local d

@@ -2,7 +2,7 @@
 
 Canonical tool surface for agents and operators. **Do not hand-count** — source of truth is
 `OccamMcpServerRegistration.OccamToolNames` in
-[`src/FFOccamMcp.Core/Transport/OccamMcpServerRegistration.cs`](../src/FFOccamMcp.Core/Transport/OccamMcpServerRegistration.cs).
+[`OccamMcpServerRegistration.cs`](https://github.com/ContextForgeAI/occam/blob/main/src/FFOccamMcp.Core/Transport/OccamMcpServerRegistration.cs).
 
 **Core catalog (frozen):** **18** tools.  
 **Default profile (`OCCAM_PROFILE=reader`):** **11** of those.  

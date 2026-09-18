@@ -2,9 +2,14 @@
 
 All notable changes to **FFOccamMCP** (L0 core) are documented here.
 
-Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1`…`1.0.0-rc.5` were release candidates; **`1.0.0` was first GA**; current public default is **`1.2.0`**.
+Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: SemVer; `1.0.0-rc.1`…`1.0.0-rc.5` were release candidates; **`1.0.0` was first GA**; current public default is **`1.3.0`**.
 
 ## [Unreleased]
+
+## [1.3.0] — 2026-09-18
+
+GitHub Release **v1.3.0** (Cosign `required-cosign-v1`). Experimental npm
+**1.3.0** downloads this host (`HOST_RELEASE_VERSION`).
 
 ### Added
 
@@ -15,11 +20,6 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   unchanged.
 - **Canary MCP E2E selftest:** `node scripts/lib/canary-mcp-e2e.selftest.mjs` →
   `CANARY_MCP_E2E_OK` (tools/list → issue → HTTP fetch → READ_VERIFIED + HALLUCINATED).
-- **`occam_canary_issue` MCP tool** — issue canary URL + session (sentinel never returned).
-- **`occam_canary_verify` MCP tool** — verify sentinel; verdicts `READ_VERIFIED` /
-  `READ_STALE` / `HALLUCINATED` / `REPLAY_SUSPECT`.
-- **Canary on the MCP surface** (previously CLI/probe only). Core catalog **16 → 18**;
-  default reader profile **9 → 11**. CLI `occam canary` and the probe host are unchanged.
 - **Idempotent `occam update`:** compares install `VERSION` to GitHub latest; equal →
   `Already up to date (vX.Y.Z)` (exit 0, no download); older → bootstrap upgrade via
   staged `get-ff-occam` (atomic replace); newer-than-latest → exit 1; `--force` reinstalls.
@@ -36,20 +36,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 - **Tool surface frozen at 18 core tools.** New MCP tools require an ADR and will not be
   added until install is zero-config. Opt-in env-gated tools remain the expansion path.
   See [docs/MCP_MAP.md](docs/MCP_MAP.md).
-- **External CLI search provider rename (breaking):** provider id is now
-  `external_cli`; path env is `OCCAM_EXTERNAL_SEARCH_PATH`; class/file
-  `ExternalCliSearchProvider`. Prior branded provider id / path env / class name
-  are removed. Functionality unchanged — BYO binary, not bundled. Competitor
-  brand names removed from public docs.
-- Docs hubs: [CAPABILITIES](docs/CAPABILITIES.md), [TRUST](docs/TRUST.md),
-  [CASCADE](docs/CASCADE.md), [SEARCH](docs/SEARCH.md) — link maps over existing
-  ADRs/tool pages (no contract duplication).
-- Root [README.md](README.md) restructured around five blocks (hero, inventory,
-  algorithms, MCP map, configuration) from recon PHASE1/PHASE2; honesty markers
-  for exam beta, external CLI search experimental.
 - **`hermes-smoke` / `occam smoke`:** expect **18** core tools under `OCCAM_PROFILE=full`;
-  count includes cascade `occam` (not only `occam_*`). Stale “15” was a filter bug +
-  pre-canary published binary.
+  count includes cascade `occam` (not only `occam_*`).
 - **`occam update`:** no longer read-only; performs an upgrade when needed (was only an
   upgrade hint).
 - **Install docs forbid source builds for agents:** skill `install.md` / `SKILL.md`,

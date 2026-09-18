@@ -9,5 +9,5 @@ Engineering write-ups (when present locally): `docs-internal/install-failures/` 
 | IF-02 | Agent builds from source / fears .NET | same selftest (INSTALL.md + AGENTS.md asserts) + CI matrix without `setup-dotnet` |
 | IF-03 | Empty `workers/node_modules` | `install-workers.selftest.mjs` |
 
-Machine-readable: [`corpora/install-failures.jsonl`](../../corpora/install-failures.jsonl).
-CI: [`.github/workflows/clean-install.yml`](../../.github/workflows/clean-install.yml).
+Machine-readable: [`corpora/install-failures.jsonl`](https://github.com/ContextForgeAI/occam/blob/main/corpora/install-failures.jsonl).
+CI: [`.github/workflows/clean-install.yml`](https://github.com/ContextForgeAI/occam/blob/main/.github/workflows/clean-install.yml).

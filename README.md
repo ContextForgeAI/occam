@@ -307,8 +307,8 @@ curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/g
 
 | Channel | What you get | Status |
 |---------|--------------|--------|
-| GitHub Release bootstrap | Host + `occam` CLI + Cosign verify | **Recommended (GA host 1.2.0)** |
-| `npx ff-occam@1.2.0` | MCP host only — no `connect` / `doctor` | Experimental |
+| GitHub Release bootstrap | Host + `occam` CLI + Cosign verify | **Recommended (GA host 1.3.0)** |
+| `npx ff-occam@1.3.0` | MCP host only — no `connect` / `doctor` | Experimental |
 
 Docs hub: [docs/index.md](docs/index.md) · Agent entry: [AGENTS.md](AGENTS.md) ·
 API: [MCP_API_SPEC.md](MCP_API_SPEC.md) · Agent doc map: [`llms.txt`](llms.txt)

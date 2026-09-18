@@ -3,7 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-09-15
 **Supersedes:** none
-**Specification:** [`PROBE_PROTOCOL.md`](../../PROBE_PROTOCOL.md)
+**Specification:** [`PROBE_PROTOCOL.md`](https://github.com/ContextForgeAI/occam/blob/main/PROBE_PROTOCOL.md)
 
 ## Context
 

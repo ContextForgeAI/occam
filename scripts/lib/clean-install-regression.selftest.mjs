@@ -104,8 +104,18 @@ function read(rel) {
     const script = join(root, "scripts", "get-ff-occam.sh").replace(/\\/g, "/");
     const result = spawnSync(
       bash,
-      ["-lc", `export PATH='${pathDirs}'; command -v node >/dev/null && exit 99; bash '${script}'`],
-      { encoding: "utf8", env: { ...process.env, PATH: pathDirs } },
+      [
+        "-lc",
+        `export PATH='${pathDirs}'; export OCCAM_BOOTSTRAP_STRICT_PATH=1; command -v node >/dev/null && exit 99; bash '${script}'`,
+      ],
+      {
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          PATH: pathDirs,
+          OCCAM_BOOTSTRAP_STRICT_PATH: "1",
+        },
+      },
     );
     assert.notEqual(result.status, 99, "node must be absent from scrubbed PATH");
     assert.notEqual(result.status, 0, "bootstrap must fail without node");
