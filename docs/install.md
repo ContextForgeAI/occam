@@ -58,7 +58,7 @@ The bootstrap selects install behavior from the **release manifest contract**, n
 | `runtimeLayout=self-contained-v1` (published `v1.0.0-rc.3`+) | Self-contained: SHA-256 + archive preflight + complete runtime closure; **no** executable helper overlay; Cosign when `signaturePolicy=required-cosign-v1` |
 | unknown `runtimeLayout` / unknown `signaturePolicy` | Fail closed |
 
-**Public default** (no `OCCAM_VERSION`): **`1.3.0`**. Set `OCCAM_VERSION=1.1.1`, `1.1.0`, `1.0.0`, `1.0.0-rc.5`, `1.0.0-rc.4`, `1.0.0-rc.3`, or `1.0.0-rc.2` only for an older channel.
+**Public default** (no `OCCAM_VERSION`): **`1.3.0`**. Set `OCCAM_VERSION=1.2.0`, `1.1.1`, `1.1.0`, `1.0.0`, `1.0.0-rc.5`, `1.0.0-rc.4`, `1.0.0-rc.3`, or `1.0.0-rc.2` only for an older channel.
 
 1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases
 2. Requires the manifest version and RID to match the request, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). For self-contained manifests, archive-member preflight runs **before** extract
