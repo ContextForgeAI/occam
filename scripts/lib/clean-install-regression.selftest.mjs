@@ -95,15 +95,39 @@ function read(rel) {
   if (!bash) {
     console.error("[clean-install-regression] SKIP no-node spawn (bash not found on Windows)");
   } else {
-    // Resolve absolute bash BEFORE scrubbing PATH (macOS: bash is /bin/bash, curl is /usr/bin/curl).
-    const bashResolved = spawnSync(bash, ["-c", "command -v bash"], { encoding: "utf8" });
-    const bashAbs = (bashResolved.stdout || "").trim() || bash;
+    // On Unix resolve bash to an absolute path before scrubbing PATH.
+    // On Windows keep the Git bash.exe path — `command -v bash` returns /usr/bin/bash
+    // which Node cannot spawn from Win32.
+    const bashAbs =
+      process.platform === "win32"
+        ? bash
+        : (spawnSync(bash, ["-c", "command -v bash"], { encoding: "utf8" }).stdout || "").trim() ||
+          bash;
     assert.ok(bashAbs, "bash absolute path required");
 
-    const curl = spawnSync(bashAbs, ["-c", "command -v curl"], { encoding: "utf8" });
-    const tar = spawnSync(bashAbs, ["-c", "command -v tar"], { encoding: "utf8" });
-    const curlPath = (curl.stdout || "").trim();
-    const tarPath = (tar.stdout || "").trim();
+    // Git Bash on Windows often has empty `command -v curl` even when curl.exe is on PATH.
+    // Prefer well-known absolute paths, then fall back to bash lookup.
+    function resolveTool(name) {
+      if (process.platform === "win32") {
+        const candidates = [
+          `C:\\Windows\\System32\\${name}.exe`,
+          `C:\\Program Files\\Git\\usr\\bin\\${name}.exe`,
+          `C:\\Program Files\\Git\\mingw64\\bin\\${name}.exe`,
+          `C:\\Program Files\\Git\\mingw64\\bin\\${name}`,
+        ];
+        for (const p of candidates) {
+          if (existsSync(p)) return p;
+        }
+        const where = spawnSync("where.exe", [name], { encoding: "utf8" });
+        const first = (where.stdout || "").trim().split(/\r?\n/).find(Boolean);
+        if (first && existsSync(first)) return first;
+      }
+      const r = spawnSync(bashAbs, ["-c", `command -v ${name}`], { encoding: "utf8" });
+      return (r.stdout || "").trim();
+    }
+
+    const curlPath = resolveTool("curl");
+    const tarPath = resolveTool("tar");
     assert.ok(curlPath, "curl required for no-node repro");
     assert.ok(tarPath, "tar required for no-node repro");
 
