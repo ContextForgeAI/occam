@@ -9,6 +9,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -84,44 +85,54 @@ function read(rel) {
 
 // --- IF-01 live: spawn bootstrap without node on PATH ---
 {
-  const bash = process.platform === "win32"
-    ? ["C:\\Program Files\\Git\\bin\\bash.exe", "C:\\Program Files (x86)\\Git\\bin\\bash.exe"].find(
-        (p) => existsSync(p),
-      )
-    : "bash";
+  const bash =
+    process.platform === "win32"
+      ? ["C:\\Program Files\\Git\\bin\\bash.exe", "C:\\Program Files (x86)\\Git\\bin\\bash.exe"].find((p) =>
+          existsSync(p),
+        )
+      : "bash";
 
   if (!bash) {
     console.error("[clean-install-regression] SKIP no-node spawn (bash not found on Windows)");
   } else {
-    const curl = spawnSync(bash, ["-lc", "command -v curl"], { encoding: "utf8" });
-    const tar = spawnSync(bash, ["-lc", "command -v tar"], { encoding: "utf8" });
+    const curl = spawnSync(bash, ["-c", "command -v curl"], { encoding: "utf8" });
+    const tar = spawnSync(bash, ["-c", "command -v tar"], { encoding: "utf8" });
     const curlPath = (curl.stdout || "").trim();
     const tarPath = (tar.stdout || "").trim();
     assert.ok(curlPath, "curl required for no-node repro");
     assert.ok(tarPath, "tar required for no-node repro");
 
-    const pathDirs = [dirname(curlPath), dirname(tarPath)].join(":");
-    const script = join(root, "scripts", "get-ff-occam.sh").replace(/\\/g, "/");
-    const result = spawnSync(
-      bash,
-      [
-        "-lc",
-        `export PATH='${pathDirs}'; export OCCAM_BOOTSTRAP_STRICT_PATH=1; command -v node >/dev/null && exit 99; bash '${script}'`,
-      ],
-      {
-        encoding: "utf8",
-        env: {
-          ...process.env,
-          PATH: pathDirs,
-          OCCAM_BOOTSTRAP_STRICT_PATH: "1",
-        },
-      },
+    const pathDirs = [...new Set([dirname(curlPath), dirname(tarPath)])].join(
+      process.platform === "win32" ? ";" : ":",
     );
-    assert.notEqual(result.status, 99, "node must be absent from scrubbed PATH");
-    assert.notEqual(result.status, 0, "bootstrap must fail without node");
-    const err = `${result.stderr || ""}\n${result.stdout || ""}`;
-    assert.match(err, /Node\.js 20\+ is required to install Occam/i);
-    assert.match(err, /No \.NET SDK is required/i);
+    const script = join(root, "scripts", "get-ff-occam.sh");
+    const scrubEnv = {
+      PATH: pathDirs,
+      OCCAM_BOOTSTRAP_STRICT_PATH: "1",
+      HOME: join(tmpdir(), "occam-bootstrap-no-node-home"),
+      // Do not inherit CI node toolcache / user bin hints.
+      OCCAM_HOME: "",
+      OCCAM_VERSION: "1.2.0",
+    };
+
+    const whichNode = spawnSync(bash, ["-c", "command -v node || true"], {
+      encoding: "utf8",
+      env: scrubEnv,
+    });
+    assert.equal(
+      (whichNode.stdout || "").trim(),
+      "",
+      `node must be absent from scrubbed PATH (got ${(whichNode.stdout || "").trim()})`,
+    );
+
+    const result = spawnSync(bash, [script], {
+      encoding: "utf8",
+      env: scrubEnv,
+    });
+    const err = `${result.stderr || ""}\n${result.stdout || ""}\n${result.error?.message || ""}`;
+    assert.notEqual(result.status, 0, `bootstrap must fail without node; output:\n${err}`);
+    assert.match(err, /Node\.js 20\+ is required to install Occam/i, err);
+    assert.match(err, /No \.NET SDK is required/i, err);
     assert.doesNotMatch(err, /^error: required command not found: node$/m);
   }
 }
