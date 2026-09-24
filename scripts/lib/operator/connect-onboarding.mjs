@@ -40,6 +40,47 @@ export function allowConnectAll(env = process.env) {
 }
 
 /**
+ * Parse `OCCAM_CONNECT_ONLY` — comma/space-separated host adapter ids (opt-in single-or-few).
+ * Does not replace `OCCAM_HOST` (legacy snippet only). Empty / unset → null.
+ * @param {NodeJS.ProcessEnv} [env]
+ * @returns {string[]|null}
+ */
+export function parseConnectOnlyIds(env = process.env) {
+  const raw = env.OCCAM_CONNECT_ONLY?.trim();
+  if (!raw) return null;
+  const ids = raw
+    .split(/[,;\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return ids.length ? ids : null;
+}
+
+/**
+ * Match requested connect-only ids against Tier-A candidates (case-insensitive id).
+ * @param {Array<{ id: string, name: string }>} candidates
+ * @param {string[]} requested
+ * @returns {{ matched: string[], missing: string[] }}
+ */
+export function matchConnectOnlyCandidates(candidates, requested) {
+  /** @type {string[]} */
+  const matched = [];
+  /** @type {string[]} */
+  const missing = [];
+  for (const req of requested) {
+    const hit = candidates.find((c) => c.id.toLowerCase() === req.toLowerCase());
+    if (hit) {
+      if (!matched.includes(hit.id)) matched.push(hit.id);
+    } else {
+      missing.push(req);
+    }
+  }
+  return { matched, missing };
+}
+
+const MULTI_HOST_AUTOMATION_HINT =
+  "Automation: OCCAM_CONNECT_ONLY=<id> (one host) or OCCAM_CONNECT_ALL=1 (all Tier-A)";
+
+/**
  * Registration targets eligible for auto-connect (Tier A, medium+).
  * @param {string} occamHome
  */
@@ -204,6 +245,7 @@ async function ask(prompt, opts) {
  *   forceConnect?: boolean,
  *   skipOccamVerify?: boolean,
  *   connectAll?: boolean,
+ *   connectOnly?: string[],
  *   detectOnly?: boolean,
  *   only?: string[],
  *   env?: NodeJS.ProcessEnv,
@@ -324,7 +366,52 @@ export async function runConnectOnboarding(opts) {
   /** @type {string[]|null} */
   let only = Array.isArray(opts.only) && opts.only.length ? [...opts.only] : null;
 
-  // Explicit --only bypasses consent (operator already chose).
+  // OCCAM_CONNECT_ONLY — explicit opt-in for one (or few) hosts; same consent as --only.
+  // OCCAM_CONNECT_ALL wins when both are set (connect every Tier-A candidate).
+  if (!only) {
+    const fromOpts =
+      Array.isArray(opts.connectOnly) && opts.connectOnly.length ? opts.connectOnly : null;
+    const fromEnv = parseConnectOnlyIds(env);
+    const requested = fromOpts || fromEnv;
+    if (requested?.length) {
+      if (connectAll) {
+        emit(
+          "[occam.connect] OCCAM_CONNECT_ALL=1 takes precedence; ignoring OCCAM_CONNECT_ONLY",
+        );
+      } else {
+        const { matched, missing } = matchConnectOnlyCandidates(candidates, requested);
+        if (matched.length === 0) {
+          const found = candidates.map((c) => c.id).join(", ") || "(none)";
+          return skippedResult({
+            detected: candidates,
+            source,
+            detail:
+              `OCCAM_CONNECT_ONLY=${requested.join(",")} — none of those hosts were detected among Tier-A candidates (${found}).\n` +
+              `No AI app configurations were changed.\n\n` +
+              (source === "install"
+                ? "When you're ready:\n  occam connect\n  # or: occam connect --only <id>"
+                : "Re-run: occam connect --only <id>"),
+          });
+        }
+        if (missing.length) {
+          emit(
+            `[occam.connect] OCCAM_CONNECT_ONLY: not detected (skipped): ${missing.join(", ")}`,
+          );
+        }
+        const names = candidates.filter((c) => matched.includes(c.id)).map((c) => c.name);
+        emit("");
+        emit(
+          names.length === 1
+            ? `OCCAM_CONNECT_ONLY → ${names[0]}.`
+            : `OCCAM_CONNECT_ONLY → ${names.join(", ")}.`,
+        );
+        emit(`Connecting Occam to ${names.join(", ")}...`);
+        only = matched;
+      }
+    }
+  }
+
+  // Explicit --only / CONNECT_ONLY bypasses consent (operator already chose).
   if (!only) {
     if (setupMode === "manual" && (interactive || opts.askQuestion)) {
       emit("");
@@ -385,14 +472,14 @@ export async function runConnectOnboarding(opts) {
     } else if (setupMode === "manual" && connectAll) {
       only = candidates.map((c) => c.id);
     } else {
-      // Non-interactive multi-host without OCCAM_CONNECT_ALL — never mutate.
+      // Non-interactive multi-host without ALL / ONLY — never mutate.
       return skippedResult({
         detected: candidates,
         source,
         detail:
           source === "install"
-            ? "Multiple AI apps detected.\nNo AI app configurations were changed.\n\nWhen you're ready:\n  occam connect\n\nAutomation: set OCCAM_CONNECT_ALL=1"
-            : "Multiple AI apps detected.\nNo AI app configurations were changed.\n\nRe-run interactively, or set OCCAM_CONNECT_ALL=1",
+            ? `Multiple AI apps detected.\nNo AI app configurations were changed.\n\nWhen you're ready:\n  occam connect\n\n${MULTI_HOST_AUTOMATION_HINT}`
+            : `Multiple AI apps detected.\nNo AI app configurations were changed.\n\nRe-run interactively, or:\n  ${MULTI_HOST_AUTOMATION_HINT}`,
       });
     }
   }

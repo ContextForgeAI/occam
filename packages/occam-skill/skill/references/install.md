@@ -37,12 +37,12 @@ Do **not** build from source. Do **not** install .NET “to fix it.”
 
 ```bash
 # Linux x64 / macOS Apple Silicon
-curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh | bash
 ```
 
 ```powershell
 # Windows x64
-irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+irm https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.ps1 | iex
 ```
 
 Needs **Node 20+**. **No .NET SDK.**
@@ -70,7 +70,7 @@ Stack: **release AOT host** + **Node 20+** workers. Expect **11** tools under de
 ### Linux / macOS
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh | bash
 export OCCAM_HOME="${OCCAM_INSTALL_DIR:-$HOME/.local/share/ff-occam}"
 node "$OCCAM_HOME/scripts/hermes-smoke.mjs"
 ```
@@ -78,7 +78,7 @@ node "$OCCAM_HOME/scripts/hermes-smoke.mjs"
 ### Windows (PowerShell)
 
 ```powershell
-irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+irm https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.ps1 | iex
 $env:OCCAM_HOME = if ($env:OCCAM_INSTALL_DIR) { $env:OCCAM_INSTALL_DIR } else { Join-Path $env:USERPROFILE ".local\share\ff-occam" }
 node "$env:OCCAM_HOME\scripts\hermes-smoke.mjs"
 ```

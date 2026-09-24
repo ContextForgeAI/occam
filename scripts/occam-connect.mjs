@@ -5,6 +5,7 @@
  *   node scripts/occam-connect.mjs [--json] [--detect-only] [--force] [--verbose]
  *   OCCAM_CONNECT=off|detect|auto
  *   OCCAM_CONNECT_ALL=1 — non-interactive connect-all
+ *   OCCAM_CONNECT_ONLY=cursor — non-interactive connect one (or comma-list) Tier-A host
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -87,6 +88,8 @@ Env:
   OCCAM_CONNECT          auto|off|detect — CI ignores auto/on without FORCE
   OCCAM_CONNECT_FORCE    1 — allow host mutation when CI=1 (explicit override)
   OCCAM_CONNECT_ALL      1 — non-interactive connect-all for multiple hosts
+  OCCAM_CONNECT_ONLY     id[,id] — non-interactive connect those Tier-A hosts only
+                         (ignored when OCCAM_CONNECT_ALL=1; not OCCAM_HOST)
 `);
 }
 

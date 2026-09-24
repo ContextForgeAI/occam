@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { resolveHostBinary } from "./resolve-host-binary.mjs";
+import { publicDefaultBootstrapScriptUrl } from "./bootstrap-release-contract.mjs";
 
 /**
  * @returns {number} Major SDK version, or 0 if dotnet missing / unreadable.
@@ -94,7 +95,7 @@ export function formatInstallBlockerMessage(root, options = {}) {
     "",
     "Fix (run once):",
     `  cd ${home}`,
-    `  curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash`,
+    `  curl -fsSL ${publicDefaultBootstrapScriptUrl("sh")} | bash`,
     "  # or with .NET 10 SDK: ./scripts/occam-doctor.sh (no --skip-build)",
     "",
     "Verify:",
@@ -131,8 +132,7 @@ export function exitInstallBlocked(root) {
 export function formatDoctorBinaryMissing(root, options = {}) {
   const home = root.replace(/\\/g, "/");
   const getScript =
-    process.env.OCCAM_GET_URL?.trim() ||
-    "https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh";
+    process.env.OCCAM_GET_URL?.trim() || publicDefaultBootstrapScriptUrl("sh");
   const { dotnetMajor } = assessHostInstall(root);
 
   /** @type {string[]} */

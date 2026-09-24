@@ -8,6 +8,7 @@ import {
   INSTALL_CONTRACT_LEGACY,
   INSTALL_CONTRACT_SELF_CONTAINED_V1,
   PUBLIC_DEFAULT_RELEASE_VERSION,
+  publicDefaultBootstrapScriptUrl,
   allowsExecutableOverlay,
   resolveBootstrapSignaturePolicy,
   resolveInstallContract,
@@ -17,6 +18,14 @@ import {
 
 function main() {
   assert.equal(PUBLIC_DEFAULT_RELEASE_VERSION, "1.3.0");
+  assert.equal(
+    publicDefaultBootstrapScriptUrl("sh"),
+    "https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh",
+  );
+  assert.equal(
+    publicDefaultBootstrapScriptUrl("ps1"),
+    "https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.ps1",
+  );
 
   // LEGACY MANIFEST: runtimeLayout absent → legacy + sha256-only
   assert.equal(resolveInstallContract({ version: "1.0.0-rc.2", rid: "win-x64" }), INSTALL_CONTRACT_LEGACY);

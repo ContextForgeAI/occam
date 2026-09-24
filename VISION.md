@@ -49,12 +49,13 @@ That honesty is the foundation the moat is built on: a result you can *trust* is
 Canonical detail: [docs/roadmap.md](docs/roadmap.md) · [MCP_API_SPEC.md](MCP_API_SPEC.md) ·
 [REVIEW_GUIDE.md](REVIEW_GUIDE.md).
 
-- **Core MCP tools** — fifteen always-on `occam_*` tools (see `OccamMcpServerRegistration.OccamToolNames`
-  / [MCP_API_SPEC.md](MCP_API_SPEC.md)), including `occam_transcode`, `occam_probe`, `occam_digest`,
-  `occam_map`, playbook resolve/heal/save/lint, `occam_extract_knowledge`, `occam_search`,
-  `occam_verify`, `occam_claim_check`, `occam_attest`, `occam_dataset_export`, and
-  `occam_client_capabilities`. Opt-in: `occam_watch`, `occam_batch_*`, `occam_crosscheck`,
-  `occam_failure_atlas` (env-gated).
+- **Core MCP tools** — eighteen always-on core tools (see `OccamMcpServerRegistration.OccamToolNames`
+  / [MCP_API_SPEC.md](MCP_API_SPEC.md)), including cascade `occam`, `occam_transcode`, `occam_probe`,
+  `occam_digest`, `occam_map`, playbook resolve/heal/save/lint, `occam_extract_knowledge`,
+  `occam_search`, `occam_verify`, `occam_claim_check`, `occam_attest`, `occam_dataset_export`,
+  `occam_client_capabilities`, and `occam_canary_issue` / `occam_canary_verify`. Default profile
+  `reader` exposes 11; `full` exposes all 18. Opt-in: `occam_watch`, `occam_batch_*`,
+  `occam_crosscheck`, `occam_failure_atlas`, `occam_exam_submit`, `occam_browser_interact` (env-gated).
 - **Verifiable receipts (Receipt v1)** — a signed `receipt.signed` on every success (contentHash +
   block-Merkle root + provenance, ECDsa P-256 local key), signed **negative** receipts on honest
   failures, and `occam_verify` to check them offline or live. **Shipped.** Deeper attestation ideas

@@ -73,13 +73,13 @@ Requires Node.js 20+. The release install does not require the .NET SDK.
 === "Linux x64 / macOS Apple Silicon"
 
     ```bash
-    curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh | bash
     ```
 
 === "Windows x64"
 
     ```powershell
-    irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+    irm https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.ps1 | iex
     ```
 
 The currently published channel is `v1.3.0`. The installer verifies the

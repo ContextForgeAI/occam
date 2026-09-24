@@ -39,14 +39,16 @@ emulation or cross-platform compatibility switch.
 === "Linux x64 / macOS Apple Silicon"
 
     ```bash
-    curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh | bash
     ```
 
 === "Windows x64"
 
     ```powershell
-    irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+    irm https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.ps1 | iex
     ```
+
+Bootstrap scripts are **tag-pinned** to `v1.3.0` (not mutable `main`). Tip-of-tree installer text: replace `v1.3.0` with `main`.
 
 ## What the installer does
 
@@ -63,7 +65,7 @@ The bootstrap selects install behavior from the **release manifest contract**, n
 1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases
 2. Requires the manifest version and RID to match the request, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). For self-contained manifests, archive-member preflight runs **before** extract
 3. Extracts to staging. Self-contained installs validate the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR`. An existing target must itself be a consistent Occam release for the current RID (inner `layout: level-b` markers); source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
-4. **Self-contained:** uses only helpers inside that verified archive (no mutable post-install executable helper overlay). **Legacy Level B:** may refresh operator CLI helpers from the repository overlay. Bootstrap **script** delivery from the mutable `main` raw URL remains a separate T4 concern
+4. **Self-contained:** uses only helpers inside that verified archive (no mutable post-install executable helper overlay). **Legacy Level B:** may refresh operator CLI helpers from the repository overlay. Canonical bootstrap URLs are **tag-pinned** (`v1.3.0`); tip-of-tree `main` raw URL remains optional for operators who want the newest installer text
 5. Runs **doctor** (`--skip-build`) — npm workers, Playwright Chromium, host binary check (quiet by default)
 6. Verifies the Occam host by required tool identity — default `reader` exposes **11** core tools; `full` exposes **18**
 7. Writes onboard defaults → `~/.occam/onboard.json` (known install path; no re-prompt)
@@ -167,7 +169,9 @@ Expect **exit 0**. Tool count follows `OCCAM_PROFILE` (default `reader` = **11**
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `OCCAM_SETUP` | `auto` | `auto` \| `manual` \| `ask` |
-| `OCCAM_HOST` | (none) | Legacy **fallback** snippet preference (`hermes` \| `cursor`) — does not replace connect |
+| `OCCAM_CONNECT_ALL` | unset | `1` — connect every detected Tier-A host without a prompt |
+| `OCCAM_CONNECT_ONLY` | unset | `id` or `id,id` — connect those Tier-A hosts only (ignored if `OCCAM_CONNECT_ALL=1`) |
+| `OCCAM_HOST` | (none) | Legacy **fallback** snippet preference (`hermes` \| `cursor`) — does not replace connect; use `OCCAM_CONNECT_ONLY` to pre-select |
 | `OCCAM_INSTALL_DIR` | `~/.local/share/ff-occam` | Install root |
 | `OCCAM_VERSION` | `1.3.0` (public default) | Release version; set an older tag only for a legacy channel |
 | `OCCAM_RID` | detected | Published RID override: `win-x64` \| `linux-x64` \| `osx-arm64` only |

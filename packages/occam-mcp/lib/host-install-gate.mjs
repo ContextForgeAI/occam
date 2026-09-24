@@ -83,7 +83,7 @@ export function formatInstallBlockerMessage(root, options = {}) {
     "",
     "Fix (run once):",
     `  cd ${home}`,
-    `  curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash`,
+    `  curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh | bash`,
     "  # or with .NET 10 SDK: ./scripts/occam-doctor.sh (no --skip-build)",
     "",
     "Verify:",
@@ -121,7 +121,7 @@ export function formatDoctorBinaryMissing(root, options = {}) {
   const home = root.replace(/\\/g, "/");
   const getScript =
     process.env.OCCAM_GET_URL?.trim() ||
-    "https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh";
+    "https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh";
   const { dotnetMajor } = assessHostInstall(root);
 
   /** @type {string[]} */

@@ -23,14 +23,16 @@
 ### Linux x64 / macOS Apple Silicon
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh | bash
 ```
 
 ### Windows x64 (PowerShell)
 
 ```powershell
-irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+irm https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.ps1 | iex
 ```
+
+Bootstrap scripts are **tag-pinned** to the published release (`v1.3.0`) so agents do not pull a mutable `main` installer (T4). For tip-of-tree bootstrap text only, replace `v1.3.0` with `main` — the script still downloads the public default tarball (`OCCAM_VERSION` / `1.3.0`).
 
 ### Supported release channel
 
@@ -66,7 +68,7 @@ Install behavior follows the **release manifest contract** (not the version stri
 1. Downloads `ff-occam-<ver>-<rid>.tar.gz` + `ff-occam-<ver>-<rid>-manifest.json` from GitHub Releases (or `OCCAM_RELEASE_BASE`)
 2. Requires the manifest version, RID, and tarball name to match the requested release, then verifies the archive **SHA-256**. When `signaturePolicy=required-cosign-v1` is declared, also verifies the Cosign bundle fail-closed (legacy undeclared/`sha256-only` stays SHA-256-only). For self-contained manifests, archive-member preflight runs **before** extract
 3. Extracts to staging. Self-contained installs check the platform host, `VERSION`, inner manifest, and bundled runtime helpers before replacing `OCCAM_INSTALL_DIR` (default `~/.local/share/ff-occam`). An existing target must itself be a consistent Occam release for the current RID (inner `layout: level-b` markers); source checkouts, links/reparse points, and unknown directories are refused before processes stop or files move
-4. **Self-contained:** uses only helpers inside that verified archive (no mutable post-install executable helper overlay). **Legacy Level B:** may refresh operator CLI helpers from the repository overlay. Bootstrap **script** delivery from the mutable `main` raw URL remains a separate T4 concern
+4. **Self-contained:** uses only helpers inside that verified archive (no mutable post-install executable helper overlay). **Legacy Level B:** may refresh operator CLI helpers from the repository overlay. Canonical bootstrap URLs are **tag-pinned** (`v1.3.0`); tip-of-tree `main` raw URL remains optional for operators who want the newest installer text
 5. Runs **doctor** (`--skip-build`) — repairs worker npm deps (resolve-check, not mere `node_modules` existence) + Playwright when needed (quiet by default). Manual repair: `occam install-workers`
 6. Verifies the Occam host (`verify-install` + smoke) — expect the profile's required tool identities (default `reader` = **11**; `full` = **18**)
 7. Writes operator defaults to `~/.occam/onboard.json` (no second `OCCAM_HOME` prompt)
@@ -87,7 +89,8 @@ Optional env (compatibility — same on all platforms):
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `OCCAM_SETUP` | `auto` (when unset) | `auto` \| `manual` \| `ask` — setup-mode selection does not prompt by default; connecting multiple detected hosts may still require confirmation |
-| `OCCAM_CONNECT_ALL` | unset | `1` — non-interactive installs may configure every detected Tier-A host; without it, multiple hosts are left for an explicit confirm / `occam connect` |
+| `OCCAM_CONNECT_ALL` | unset | `1` — non-interactive installs may configure every detected Tier-A host; without it, multiple hosts need confirm / `occam connect` / `OCCAM_CONNECT_ONLY` |
+| `OCCAM_CONNECT_ONLY` | unset | `id` or `id,id` — non-interactive connect **those** Tier-A hosts only (same consent as `occam connect --only`). Ignored when `OCCAM_CONNECT_ALL=1`. Not `OCCAM_HOST` |
 | `OCCAM_VERBOSE` | unset | `1` — show doctor/smoke/connect internals during install |
 | `OCCAM_HOST` | (none) | Legacy preference for the **fallback** connection snippet only (`hermes` or `cursor`) — not a phantom pre-selected host |
 | `OCCAM_INSTALL_DIR` | `~/.local/share/ff-occam` | Install root |

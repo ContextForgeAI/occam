@@ -23,12 +23,12 @@ Full install (recommended):
 
 ```powershell
 # Windows
-irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+irm https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.ps1 | iex
 ```
 
 ```bash
 # Linux x64 / macOS Apple Silicon
-curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh | bash
 ```
 
 This package is a thin CLI wrapper around

@@ -42,6 +42,11 @@ function read(rel) {
   assert.match(install, /Do not build from source/i);
   assert.match(install, /get-ff-occam\.sh/);
   assert.match(install, /get-ff-occam\.ps1/);
+  assert.match(
+    install,
+    /raw\.githubusercontent\.com\/ContextForgeAI\/occam\/v1\.3\.0\/scripts\/get-ff-occam\.sh/,
+    "INSTALL.md canonical curl must be tag-pinned (T4)",
+  );
   assert.match(install, /No \.NET SDK on the install machine/i);
   assert.doesNotMatch(
     install.slice(0, 800),

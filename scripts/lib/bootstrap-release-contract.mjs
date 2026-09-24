@@ -18,6 +18,16 @@ export const INSTALL_CONTRACT_SELF_CONTAINED_V1 = "self-contained-v1";
 export const PUBLIC_DEFAULT_RELEASE_VERSION = "1.3.0";
 
 /**
+ * Tag-pinned raw URL for the public bootstrap script (T4: avoid mutable `main`).
+ * @param {"sh"|"ps1"} [kind]
+ */
+export function publicDefaultBootstrapScriptUrl(kind = "sh") {
+  const tag = `v${PUBLIC_DEFAULT_RELEASE_VERSION}`;
+  const file = kind === "ps1" ? "get-ff-occam.ps1" : "get-ff-occam.sh";
+  return `https://raw.githubusercontent.com/ContextForgeAI/occam/${tag}/scripts/${file}`;
+}
+
+/**
  * @param {unknown} manifest
  * @returns {"legacy"|"self-contained-v1"}
  */

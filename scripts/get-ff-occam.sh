@@ -342,7 +342,7 @@ check_node() {
 error: Node.js ${MIN_NODE_MAJOR}+ is required to install Occam (node not found on PATH).
 
 Install Node 20+ from https://nodejs.org/ (or your package manager), then re-run:
-  curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh | bash
 
 No .NET SDK is required for this release install path.
 EOF

@@ -64,8 +64,8 @@ export function formatOperatorCliRefusal(verb, opts = {}) {
     `${prefix} Install the release CLI, then run: occam ${verb}`,
     "",
     "Guarded install:",
-    "  curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash",
-    "  # Windows: irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex",
+    "  curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh | bash",
+    "  # Windows: irm https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.ps1 | iex",
     "",
     "See INSTALL.md",
   ].join("\n");

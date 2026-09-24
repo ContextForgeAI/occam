@@ -28,6 +28,8 @@ installer
 
 Occam does **not** claim to support every MCP client.
 
+**Several hosts detected?** Install may report **Installed** (not Ready) until you confirm, set `OCCAM_CONNECT_ONLY=<id>`, set `OCCAM_CONNECT_ALL=1`, or run `occam connect --only <id>`. Details: [After install](after-install.md#installed-but-not-ready-multiple-ai-apps).
+
 Full host table: [Supported hosts](../mcp-hosts.md)
 
 ## Status meanings

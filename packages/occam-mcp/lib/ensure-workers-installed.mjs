@@ -44,7 +44,7 @@ export function ensureWorkersInstalled(home, opts = {}) {
       error:
         `${prefix} worker npm install failed (exit ${result.status ?? "unknown"}).\n` +
         (detail ? `${detail}\n` : "") +
-        `${prefix} Or use the guarded installer: curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash`,
+        `${prefix} Or use the guarded installer: curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh | bash`,
     };
   }
 

@@ -386,10 +386,12 @@ WebSocket handshake's `Authorization: Bearer` header. URI query tokens are rejec
 | `OCCAM_RELEASE_MANIFEST_URL` | Manifest with `sha256` |
 | `OCCAM_RELEASE_BASE` | Release download base — default in `get-ff-occam.sh`: `https://github.com/ContextForgeAI/occam/releases/download/v<version>` |
 | `OCCAM_RELEASE_BASE_URL` | Same for `@ff-occam/mcp` — `https://github.com/ContextForgeAI/occam/releases/download` (version appended by wrapper) |
-| `OCCAM_GET_URL` | Raw `get-ff-occam.sh` URL — default `https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh` |
+| `OCCAM_GET_URL` | Raw `get-ff-occam.sh` URL — default `https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh` |
 | `OCCAM_RELEASE_ALLOW_HTTP` | `1` — allow HTTP release URLs (non-default; HTTPS GitHub is preferred) |
 | `OCCAM_RELEASES_API_URL` | Override for update-check — default `https://api.github.com/repos/ContextForgeAI/occam/releases/latest` (stable-only; set `OCCAM_LATEST_VERSION` during prerelease) |
-| `OCCAM_HOST` | Onboard preset (`cursor`, `hermes`) |
+| `OCCAM_CONNECT_ALL` | `1` — non-interactive connect every detected Tier-A host |
+| `OCCAM_CONNECT_ONLY` | Host id(s) — non-interactive connect those Tier-A hosts only (ignored if `OCCAM_CONNECT_ALL=1`) |
+| `OCCAM_HOST` | Legacy fallback snippet preset (`cursor`, `hermes`) — not connect pre-select; use `OCCAM_CONNECT_ONLY` |
 | `OCCAM_CONFIG` | Onboard config path (`~/.occam/onboard.json`) |
 
 ---

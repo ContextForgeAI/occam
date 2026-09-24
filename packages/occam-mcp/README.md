@@ -34,12 +34,12 @@ they refuse with a pointer to the guarded installer. Use `get-ff-occam`, then `o
 
 ```bash
 # One-liner from GitHub Releases (no git, no .NET SDK — Node 20+ only)
-curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh | bash
 ```
 
 ```powershell
 # Windows
-irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+irm https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.ps1 | iex
 ```
 
 ```bash

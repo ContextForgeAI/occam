@@ -1,6 +1,6 @@
 # Roadmap — shipped log and direction
 
-> **Product version:** 1.1.1 (GA) · **L0 core:** CLOSED (fifteen core MCP tools; default profile `reader`).
+> **Product version:** 1.3.0 (GA) · **L0 core:** CLOSED (**18** core MCP tools; default profile `reader` = 11).
 > **North star:** [VISION.md](https://github.com/ContextForgeAI/occam/blob/main/VISION.md) · **Contract:** [MCP API](reference/mcp-api.md) · **Release notes:** [CHANGELOG.md](https://github.com/ContextForgeAI/occam/blob/main/CHANGELOG.md).
 
 This page is the **public shipped log**. Detailed engineering backlog lives in local `docs-internal/` (not committed).
@@ -11,16 +11,15 @@ This page is the **public shipped log**. Detailed engineering backlog lives in l
 
 | Milestone | What landed |
 |-----------|-------------|
-| **L0 core** | Native AOT .NET 10 host, stdio + optional WebSocket, fifteen `occam_*` tools, live extract only |
+| **L0 core** | Native AOT .NET 10 host, stdio + Streamable HTTP / WS, **18** core tools (registry: `OccamToolNames`), live extract by default |
 | **Receipt v1** | Signed extraction receipts + offline `occam_verify` |
-| **PB1 playbooks** | Seeds, resolve tiers, community manifest |
-| **PB3 heal/save** | `occam_playbook_heal` + `occam_playbook_save`, gate `L3_HEAL_LEARN_OK` |
-| **PB4a genome** | Resolve extensions, `playbook_policy=auto`, gate `L4_GENOME_OK` (PB4a) |
-| **PB4b extract** | `occam_extract_knowledge` (Recipe D), gate `L4_GENOME_OK` (full) |
+| **PB1–PB4b playbooks** | Seeds, resolve tiers, heal/save, genome + `occam_extract_knowledge` (Recipe D); gates `L3_HEAL_LEARN_OK` / `L4_GENOME_OK` |
 | **Agent-First AF-1..AF-6** | Confidence, receipts, auto-recovery, differential — gate `L8_AGENT_FIRST_OK` |
-| **Level B install** | Release tarballs, `get-ff-occam.sh`, GitHub release CI, Hermes smoke |
+| **Level B install** | Release tarballs + Cosign `required-cosign-v1`, `get-ff-occam.*`, doctor/workers repair, Hermes smoke |
+| **v1.3.0 install ship** | Idempotent `occam update`, clean-install CI (IF-01…03), agent tarball-only discipline, Exam MCP opt-in (`OCCAM_EXAM_MCP`), canary E2E selftest |
+| **Tool surface freeze** | No new core MCP tools until install is zero-config; expansion via env-gated opt-ins only |
 | **Agent skill** | `skills/occam/`, `@ff-occam/skill`, `occam skill install` |
-| **Docs compaction** | Twelve-page `docs/` hub derived from code |
+| **Docs hub** | Curated `docs/` + `INSTALL.md` as the agent/operator install entry |
 
 ---
 
@@ -28,9 +27,10 @@ This page is the **public shipped log**. Detailed engineering backlog lives in l
 
 | Track | Status |
 |-------|--------|
-| GitHub release publish (`occam-release.yml`, `GITHUB_TOKEN`) | CI on SemVer tag `v*` — Level B archives + Cosign (`required-cosign-v1` on rc.3+) |
+| **Zero-config install ship** | In progress — Node/Cosign prerequisites, tag-pinned bootstrap (T4), multi-host connect, npm honesty; unlocks ending the tool freeze |
+| GitHub release publish (`occam-release.yml`) | CI on SemVer tag `v*` — Level B archives + Cosign |
 | Product polish (receipt/login heuristics, doc-truth) | In progress |
-| npm publish (`ff-occam`, `@ff-occam/mcp`) | **Experimental RC** via `npm-publish.yml` (dist-tag `rc`) — **not** a GA install channel |
+| npm publish (`ff-occam`, `@ff-occam/mcp`) | **Experimental** — **not** the guarded GA install channel |
 
 ---
 
@@ -42,9 +42,9 @@ This page is the **public shipped log**. Detailed engineering backlog lives in l
 | Playbook marketplace GitHub App | Design only |
 | WASM edge extractor | Future — not implemented in this tree’s public snapshot |
 | Editor marketplace extension | Future |
-| npm as GA install channel | RC/GA packages exist on npm; **guarded** install remains GitHub Release bootstrap (npm stays experimental) |
+| npm as GA install channel | Packages may exist on npm; **guarded** install remains GitHub Release bootstrap |
 | Wide validation / wave2-eval | Not in this repo |
-| External CLI search / PDF OCR | Partial: keyless DuckDuckGo is the default search provider; optional `OCCAM_SEARCH_PROVIDER=external_cli`, opt-in `OCCAM_PDF_OCR` — no BoringSSL/crawl rewrite; third-party binaries not bundled. **Managed extract escalation removed** (own HTTP/browser ladder only). |
+| External CLI search / PDF OCR | Partial: keyless DuckDuckGo default; optional `OCCAM_SEARCH_PROVIDER=external_cli`, opt-in `OCCAM_PDF_OCR` — third-party binaries not bundled |
 | Resumable crawl MCP (`OCCAM_CRAWL_MCP`) | Deferred — use `occam_map` + `occam_digest` (+ opt-in batch) for multi-URL workflows |
 
 ---

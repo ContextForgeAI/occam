@@ -19,6 +19,19 @@ A successful install usually looks like this:
 
 **Action required ≠ broken install.**
 
+## Installed but not Ready (multiple AI apps)
+
+Install exit code can still be **0** when Occam itself is fine but Connect did not write host configs yet.
+
+| Situation | What to do |
+|-----------|------------|
+| Exactly one live-validated host | Auto-connect during install (no prompt) |
+| Several live-validated hosts (Cursor + Claude Desktop, …) | Confirm in a terminal, **or** `OCCAM_CONNECT_ONLY=cursor` (one host), **or** `OCCAM_CONNECT_ALL=1` (all Tier-A), **or** `occam connect --only cursor` |
+| Pipe install on Windows (`irm \| iex`) with several hosts | Non-TTY — no silent multi-host write; set `OCCAM_CONNECT_ONLY=<id>` / `OCCAM_CONNECT_ALL=1`, or run `occam connect` interactively |
+| Config-validated / Assisted hosts | Not auto; use `occam connect --only <id>` or paste guidance — see [MCP hosts](../mcp-hosts.md) |
+
+`OCCAM_HOST` only steers legacy snippets — it is **not** a silent pre-selected connect target. Use `OCCAM_CONNECT_ONLY` for that.
+
 ## PATH tip
 
 Add `$OCCAM_HOME/scripts` to your `PATH` so `occam` works in a new terminal. Default install root: `~/.local/share/ff-occam`.

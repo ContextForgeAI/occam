@@ -11,6 +11,8 @@ import { join } from "node:path";
 import {
   allowConnectAll,
   listConnectCandidates,
+  matchConnectOnlyCandidates,
+  parseConnectOnlyIds,
   renderMultiHostConfirmPrompt,
   runConnectOnboarding,
 } from "./connect-onboarding.mjs";
@@ -35,16 +37,35 @@ function makeFakeHome() {
 function testHelpers() {
   assert.equal(allowConnectAll({ OCCAM_CONNECT_ALL: "1" }), true);
   assert.equal(allowConnectAll({}), false);
-  assert.equal(parseYesNoDefaultNo(""), false);
-  assert.equal(parseYesNoDefaultNo("n"), false);
-  assert.equal(parseYesNoDefaultNo("y"), true);
-  assert.match(renderMultiHostConfirmPrompt([{ name: "A" }, { name: "B" }]), /\[y\/N\]/);
-
+  assert.equal(parseConnectOnlyIds({}), null);
+  assert.equal(parseConnectOnlyIds({ OCCAM_CONNECT_ONLY: "  " }), null);
+  assert.deepEqual(parseConnectOnlyIds({ OCCAM_CONNECT_ONLY: "cursor" }), ["cursor"]);
+  assert.deepEqual(parseConnectOnlyIds({ OCCAM_CONNECT_ONLY: "cursor, claude-desktop" }), [
+    "cursor",
+    "claude-desktop",
+  ]);
   const hosts = [
     { id: "cursor", name: "Cursor" },
     { id: "claude-desktop", name: "Claude Desktop" },
     { id: "codex", name: "Codex CLI" },
   ];
+  assert.deepEqual(matchConnectOnlyCandidates(hosts, ["Cursor"]), {
+    matched: ["cursor"],
+    missing: [],
+  });
+  assert.deepEqual(matchConnectOnlyCandidates(hosts, ["cursor", "nope"]), {
+    matched: ["cursor"],
+    missing: ["nope"],
+  });
+  assert.deepEqual(matchConnectOnlyCandidates(hosts, ["nope"]), {
+    matched: [],
+    missing: ["nope"],
+  });
+  assert.equal(parseYesNoDefaultNo(""), false);
+  assert.equal(parseYesNoDefaultNo("n"), false);
+  assert.equal(parseYesNoDefaultNo("y"), true);
+  assert.match(renderMultiHostConfirmPrompt([{ name: "A" }, { name: "B" }]), /\[y\/N\]/);
+
   assert.deepEqual(parseHostChoice("1,3", hosts), ["cursor", "codex"]);
   assert.equal(parseHostChoice("q", hosts), "skip");
   assert.equal(parseHostChoice("all", hosts), "all");
@@ -207,9 +228,105 @@ async function testNonInteractiveMultiNoSilentAll() {
     });
     assert.equal(result.mutated, false);
     assert.equal(result.skipped, true);
+    assert.match(result.transcript, /OCCAM_CONNECT_ONLY/);
     assert.match(result.transcript, /OCCAM_CONNECT_ALL=1/);
     const multi = result.transcript.match(/Multiple AI apps detected\./g) || [];
     assert.equal(multi.length, 1, `expected one multi-host line, got:\n${result.transcript}`);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+}
+
+async function testConnectOnlyPicksOneWhenMulti() {
+  const home = makeFakeHome();
+  try {
+    const candidates = listConnectCandidates(home);
+    if (candidates.length < 2) {
+      console.log("connect-only multi skipped (need ≥2 hosts)");
+      return;
+    }
+    const pick = candidates[0].id;
+    const lines = [];
+    const result = await runConnectOnboarding({
+      occamHome: home,
+      interactive: false,
+      source: "install",
+      skipOccamVerify: true,
+      // CI-safe: never write host configs in this selftest.
+      env: {
+        ...process.env,
+        OCCAM_CONNECT_ALL: "0",
+        OCCAM_CONNECT_ONLY: pick,
+        OCCAM_CONNECT: "off",
+        CI: "1",
+      },
+      emit: (l) => lines.push(l),
+    });
+    assert.equal(result.skipped, false);
+    assert.deepEqual(result.only, [pick]);
+    assert.equal((result.only || []).length, 1);
+    assert.match(lines.join("\n"), /OCCAM_CONNECT_ONLY/);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+}
+
+async function testConnectOnlyUnknownSkips() {
+  const home = makeFakeHome();
+  try {
+    const candidates = listConnectCandidates(home);
+    if (candidates.length < 1) {
+      console.log("connect-only unknown skipped (need ≥1 host)");
+      return;
+    }
+    const result = await runConnectOnboarding({
+      occamHome: home,
+      interactive: false,
+      source: "install",
+      skipOccamVerify: true,
+      env: {
+        ...process.env,
+        OCCAM_CONNECT_ALL: "0",
+        OCCAM_CONNECT_ONLY: "not-a-real-host-xyz",
+        OCCAM_CONNECT: "off",
+        CI: "1",
+      },
+      emit: () => {},
+    });
+    assert.equal(result.mutated, false);
+    assert.equal(result.skipped, true);
+    assert.match(result.transcript, /OCCAM_CONNECT_ONLY/);
+    assert.match(result.transcript, /none of those hosts were detected/i);
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+}
+
+async function testConnectAllWinsOverOnly() {
+  const home = makeFakeHome();
+  try {
+    const candidates = listConnectCandidates(home);
+    if (candidates.length < 2) {
+      console.log("connect-all vs only skipped (need ≥2 hosts)");
+      return;
+    }
+    const lines = [];
+    const result = await runConnectOnboarding({
+      occamHome: home,
+      interactive: false,
+      source: "install",
+      skipOccamVerify: true,
+      env: {
+        ...process.env,
+        OCCAM_CONNECT_ALL: "1",
+        OCCAM_CONNECT_ONLY: candidates[0].id,
+        OCCAM_CONNECT: "off",
+        CI: "1",
+      },
+      emit: (l) => lines.push(l),
+    });
+    assert.match(lines.join("\n"), /OCCAM_CONNECT_ALL=1 takes precedence/);
+    assert.deepEqual(result.only?.slice().sort(), candidates.map((c) => c.id).sort());
   } finally {
     rmSync(home, { recursive: true, force: true });
   }
@@ -222,6 +339,9 @@ async function main() {
   await testZeroHostsNonInteractive();
   await testMultiHostDefaultNoNoMutation();
   await testNonInteractiveMultiNoSilentAll();
+  await testConnectOnlyPicksOneWhenMulti();
+  await testConnectOnlyUnknownSkips();
+  await testConnectAllWinsOverOnly();
   console.log("connect-onboarding.selftest: OK");
 }
 

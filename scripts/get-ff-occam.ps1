@@ -9,11 +9,11 @@
   Quiet by default. Set OCCAM_VERBOSE=1 for doctor/smoke internals.
 
 .EXAMPLE
-  irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+  irm https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.ps1 | iex
 
 .EXAMPLE
   $env:OCCAM_SETUP='manual'
-  irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+  irm https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.ps1 | iex
 #>
 $ErrorActionPreference = "Stop"
 
@@ -107,7 +107,7 @@ function Test-NodeVersion {
 Node.js $MinNodeMajor+ is required to install Occam (node not found on PATH).
 
 Install Node 20+ from https://nodejs.org/, then re-run:
-  irm https://raw.githubusercontent.com/ContextForgeAI/occam/main/scripts/get-ff-occam.ps1 | iex
+  irm https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.ps1 | iex
 
 No .NET SDK is required for this release install path.
 "@
@@ -849,7 +849,7 @@ See INSTALL.md (Cosign / signaturePolicy).
   if ($HostTarget) { $env:OCCAM_HOST = $HostTarget }
 
   $postUx = Join-Path $InstallDir "scripts\lib\operator\post-install-ux.mjs"
-  $postArgs = @($postUx, "--setup", $SetupMode, "--version", $Version, "--download-ok")
+  $postArgs = @($postUx, "--setup", $script:SetupMode, "--version", $Version, "--download-ok")
   if ($VerboseInstall) { $postArgs += "--verbose" }
 
   if (Test-Path $postUx) {

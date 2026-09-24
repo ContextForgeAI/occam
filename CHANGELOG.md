@@ -6,6 +6,26 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ## [Unreleased]
 
+### Added
+
+- **`OCCAM_CONNECT_ONLY`:** non-interactive opt-in to connect one (or comma-list) Tier-A host when
+  several are detected — same consent model as `occam connect --only`. `OCCAM_CONNECT_ALL=1`
+  wins if both are set. Does not reuse `OCCAM_HOST` (legacy snippet only).
+
+### Changed
+
+- **Roadmap truth:** `docs/roadmap.md` tracks **1.3.0** / **18** core tools; active track is
+  zero-config install ship (tool freeze unlock).
+- **Bootstrap T4:** canonical install one-liners and doctor/gate hints pin
+  `get-ff-occam.*` to tag `v1.3.0` (not mutable `main`). Override with `OCCAM_GET_URL`.
+  Helper: `publicDefaultBootstrapScriptUrl()` in `bootstrap-release-contract.mjs`.
+- **`@ff-occam/mcp` package description:** no longer claims “zero-config via npx”; points to
+  guarded `get-ff-occam` and correct tool count (18).
+- **Connect multi-host honesty:** `docs/connect/after-install.md` (+ index) documents
+  Installed≠Ready when several Tier-A hosts are detected; Windows pipe / `OCCAM_CONNECT_ALL` /
+  `OCCAM_CONNECT_ONLY` / `--only`. PowerShell bootstrap passes resolved `$script:SetupMode` into
+  post-install UX.
+
 ## [1.3.0] — 2026-09-18
 
 GitHub Release **v1.3.0** (Cosign `required-cosign-v1`). Experimental npm
