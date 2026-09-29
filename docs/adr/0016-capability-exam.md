@@ -2,17 +2,21 @@
 
 **Status:** Accepted (engine); **MCP opt-in** via `OCCAM_EXAM_MCP` (see Consequences)
 **Date:** 2026-09-16
-**Updated:** 2026-09-18 — MCP submit + list_changed path
+**Updated:** 2026-09-18 — MCP submit + list_changed path is shipped (`OCCAM_EXAM_MCP=1`).  
+**Updated:** 2026-09-29 — profile tool counts corrected to live registry (reader=11, full=18; exam Strong → full = 18). Historical “8/9/12/15” figures below were accurate at ADR drafting time only.
+
 **Hypothesis:** [H2 and H3](../research/hypothesis.md)
 
 ## Context
 
-Occam advertises fifteen tools. A capable model handles that; a weak one does not fail at *using* a
-tool, it fails at *picking* one — reaching for `occam_playbook_heal` when it wanted to read a page,
-then never recovering because the next step is chosen from the same confused state.
+Occam advertises a large core tool surface (**18** tools on `OCCAM_PROFILE=full`). A capable model
+handles that; a weak one does not fail at *using* a tool, it fails at *picking* one — reaching for
+`occam_playbook_heal` when it wanted to read a page, then never recovering because the next step is
+chosen from the same confused state.
 
 The repository already had a partial answer: static role profiles (`OCCAM_PROFILE=reader |
-researcher | auditor | full`) exposing 8/9/12/15 tools. Static profiles have two gaps. They are set
+researcher | auditor | full`) exposing **11 / 12 / 15 / 18** tools today (earlier drafts used
+8/9/12/15 before cascade + canary landed in the core set). Static profiles have two gaps. They are set
 by the *operator*, who does not know which model is behind the client this session; and they encode
 a *role*, not a capability, so a weak model in a research workflow still gets the research surface.
 
@@ -31,7 +35,8 @@ and whether capability can be measured cheaply enough to be worth it.
 | `chain` | multi-step state handling | a later call carries the exact value an earlier one produced |
 
 Score 0–1 → `weak` → `minimal` profile (1 tool). Score 2–3 → `medium` → `basic` (3 tools).
-Score 4 → `strong` → `full` (15 tools). Default for a client that never sat the exam is **medium**.
+Score 4 → `strong` → `full` (**18** core tools). Default for a client that never sat the exam is
+**medium** on the exam path; the non-exam product default remains **`reader`**.
 
 Specific choices and why:
 
@@ -44,7 +49,7 @@ Specific choices and why:
 - **Default medium, not weak.** An unknown client is assumed competent. Starving a capable agent is
   a silent failure the user attributes to the product; over-trusting a weak one produces a visible,
   recoverable mess.
-- **Only a perfect score widens to fifteen tools.** Widening is the risky direction, so it has the
+- **Only a perfect score widens to the full core catalog (18 tools).** Widening is the risky direction, so it has the
   highest bar. Surfaces are also nested, so a promotion never removes a tool the agent already had.
 - **Narrow profiles get their own `instructions` text.** This was a bug the tests caught: the shared
   trust-and-default block names `occam_digest` and `occam_client_capabilities`, so a one-tool client

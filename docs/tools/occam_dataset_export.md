@@ -1,67 +1,48 @@
-# Export a signed dataset
+# `occam_dataset_export`
 
-**Canonical tool:** `occam_dataset_export`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamDatasetExportTool.cs` @ 2026-09-29  
+**Profiles:** `auditor`, `full` — not `reader` (default), `researcher`, `minimal`, or `basic`  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-Build a signed, auditable dataset from a set of URLs (1–20): each row is transcoded with its own
-Receipt v1 (when receipts enabled), and one manifest signature covers the ordered row Merkle root.
+## Purpose
 
-Proves **integrity of the export artifact** under your local key — not factual correctness of row
-content. See [Datasets](../datasets.md).
+Build a signed, auditable dataset from **1–20** URLs: each URL is live-transcoded into a row; one manifest signature (when receipts enabled) binds the ordered Merkle root of row leaves. Proves **integrity of the export artifact** under your local key — not factual correctness.
 
-## When to use
+## When to use / when not
 
-- Handing off an auditable corpus for RAG, evaluation, or provenance.
-- Each row verifies via [`occam_verify`](occam_verify.md); the manifest verifies on the **CLI only**
-  (`verify --mode manifest`). MCP has no manifest mode.
-- Just want async bulk transcodes without provenance → the opt-in
-  [`occam_batch_*`](occam_batch.md) tools.
+| Use when | Do not use when |
+|----------|-----------------|
+| Ordered signed corpus with per-row receipts + set-level manifest | One URL markdown → [`occam_transcode`](occam_transcode.md) |
+| Row verify via MCP; set verify via CLI `verify --mode manifest` | Bulk async without provenance → [`occam_batch`](occam_batch.md) |
+| Same policy/session for every URL is enough | Per-URL token/focus knobs (not exposed here) |
+
+**Implementation:** sequential rows; forced `json_blocks=true`, `playbook_policy=auto`.
 
 ## Parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `urls` | string | — | **yes** | JSON array of HTTP/HTTPS URL strings (1–20) |
-| `backend_policy` | string | `http_then_browser` | no | Applied to every URL |
-| `session_profile` | string? | null | no | Applied to every URL |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `urls` | yes | — | JSON array of HTTP(S) URLs (1–20) |
+| `backend_policy` | no | `http_then_browser` | Applied to every URL |
+| `session_profile` | no | null | Applied to every URL |
 
-## Returns
+## Response shape
 
-- `ok`, `timestamp`
-- `manifest` — `{v, createdAt, rowCount, manifestRoot, keyId, alg, sig}` — the one signature over
-  the Merkle root of the per-row leaves
-- `rows[]` — `{url, finalUrl, ok, contentHash?, blockMerkleRoot?, failureCode?, rowLeaf,
-  receipt?}`; a row can be `ok:false` (with `failureCode`) while the export as a whole succeeds —
-  the failure is then part of the signed record
+**Success (`ok: true`):** always after validation — even if some rows fail. `manifest` (`v: 1`, `alg: ecdsa-p256-sha256`, `manifestRoot`, optional `keyId`/`sig`), `rows[]` (`url`, `finalUrl`, `ok`, `rowLeaf`, optional hashes/receipt/`failureCode`), `timestamp`.
 
-Failure envelope: `ok: false`, `failure: {code, message}`, `timestamp` — only for bad input.
+When `OCCAM_RECEIPTS` is off: leaves/root remain; signatures omitted. Failed rows may get **negative** receipts only for selected wall codes (e.g. captcha, login, paywall, 401/403/404/410).
 
-## Failure codes
+**Tool failure:** `invalid_arguments` only.
 
-`invalid_arguments` (empty/malformed `urls`, more than 20, bad `backend_policy`). Per-row fetch
-failures land in `rows[].failureCode` using the transcode taxonomy — see
-[failure codes](../failure-codes.md).
+## Related env vars
 
-## Example
+`OCCAM_RECEIPTS`, `OCCAM_PROFILE` — [configuration](../configuration.md).
 
-Call:
+## Verification
 
-```json
-{ "urls": "[\"https://nginx.org/en/docs/\", \"https://nginx.org/en/docs/http/load_balancing.html\"]" }
-```
+- Per row: [`occam_verify`](occam_verify.md) with `rows[i].receipt`
+- Whole set: CLI `verify --mode manifest` (not an MCP mode)
 
-Trimmed response:
+## See also
 
-```json
-{
-  "ok": true,
-  "manifest": { "v": 1, "createdAt": "2026-07-18T…", "rowCount": 2, "manifestRoot": "…", "keyId": "k1:…", "alg": "…", "sig": "…" },
-  "rows": [
-    { "url": "https://nginx.org/en/docs/", "ok": true, "contentHash": "sha256:…", "blockMerkleRoot": "…", "rowLeaf": "…", "receipt": { … } }
-  ]
-}
-```
-
-## Related
-
-- [occam_verify](occam_verify.md) — verify a row's receipt
-- [Receipts](../receipts.md) · [Receipt verification spec](../receipt_verification.md)
+- [Datasets](../datasets.md) · [Receipts](../receipts.md) · [`occam_digest`](occam_digest.md)

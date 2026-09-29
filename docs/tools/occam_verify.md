@@ -1,77 +1,62 @@
-# Verify a receipt
+# `occam_verify`
 
-**Canonical tool:** `occam_verify`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamVerifyTool.cs` @ 2026-09-29  
+**Profiles:** `reader` (default), `researcher`, `auditor`, `full` — not `minimal` or `basic`  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-Verify Receipt v1 integrity **against a public key you supply** — offline signature check, live drift
-re-check, Merkle citation proofs, and watch history chain verification.
+## Purpose
 
-**`verified` means bytes + key**, not truth, origin identity, or that the page said what was extracted.
+Consumer half of Receipt v1: check signatures and optional content hashes, re-fetch for drift, build or verify Merkle citation proofs, or verify a signed `occam_watch` history chain. A passing `verdict` means cryptographic checks against the **public key you supply** (or this host’s local key) — not that the page is true.
 
-## When to use
+## When to use / when not
 
-- `offline` (default) — check envelope signature; pass `markdown` to also check `contentHash`.
-- `live` — re-fetch and report hash drift (context-light; session/playbook not replayed).
-- `prove` — emit a compact Merkle proof for one block (needs `json_blocks` receipt).
-- `citation` — verify block + proof against signed root — no page needed; membership only.
-- `history` — verify watch change chain (`history_verified` vs `history_chain_ok`).
+| Use when | Do not use when |
+|----------|-----------------|
+| You have a transcode `receipt` (`signed` + optional `blockLeaves` / `timeAnchor`) or bare signed envelope | Input is extract-knowledge telemetry (not Receipt v1) |
+| Offline integrity (`offline`) or live staleness (`live`) | Dataset **set** binding → CLI `verify --mode manifest` (not on MCP) |
+| Portable agent bundle via `occam://capsule/…` as `receipt` | — |
+| Citation without the full page (`prove` → `citation`) | — |
+| Watch change-chain audit (`history`) | — |
 
 ## Parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `receipt` | string | — | **yes** | Transcode `receipt` object, bare signed envelope, or watch `history` array |
-| `mode` | string | `offline` | no | `offline` \| `live` \| `prove` \| `citation` \| `history` |
-| `markdown` | string? | null | no | Markdown to check against `contentHash` (offline) |
-| `public_key` | string? | null | no | PEM public key. **Defaults to this host's local key** — supply producer PEM for third-party checks |
-| `block_index` | int? | null | prove | Block index for citation proof |
-| `block_text` | string? | null | citation | Block text |
-| `block_selector` | string? | null | citation | Block `source_selector` |
-| `proof` | string? | null | citation | Proof JSON from `prove` |
-| `chunks` | string? | null | live | JSON array of chunk leaf-hashes for staleness report |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `receipt` | yes | — | Transcode receipt, bare envelope, `occam://capsule/…`, or (history) watch entries / `{ history: [...] }` |
+| `markdown` | no | null | Markdown vs `contentHash` (`offline` / pre-live; capsule may supply content) |
+| `public_key` | no | host local PEM | PEM public key; omit → this host’s local key |
+| `mode` | no | `offline` | `offline` \| `live` \| `prove` \| `citation` \| `history` |
+| `block_index` | prove only | null | Block index (needs `blockLeaves`) |
+| `block_text` | citation only | null | Block text |
+| `block_selector` | no | null | Optional `source_selector` for citation leaf hash |
+| `proof` | citation only | null | Proof JSON from `prove` |
+| `chunks` | no | null | `live` only: JSON array of chunk leaf-hashes; omit → use receipt `blockLeaves` |
 
-## Returns
+## Modes
 
-Verify envelope:
+- **`offline`:** verify signature (+ optional markdown vs hash); report `timeAnchor` without changing MCP `verdict`.
+- **`live`:** offline first; if `signatureValid`, re-fetch (`http_then_browser`); `verified` / `drifted` / `refetch_failed` + `live` object.
+- **`prove`:** Merkle proof for `block_index` → `{ ok, keyId, root, leafIndex, leaf, proof[] }`.
+- **`citation`:** membership of `block_text` (+ optional selector) via `proof`.
+- **`history`:** watch chain integrity + per-entry signatures.
 
-- `ok: true`, `signatureValid`, `contentHashMatch?`, `keyId`, `mode`
-- `verdict` — e.g. `verified`, `wrong_key`, `signature_invalid`, `drifted`, `refetch_failed`,
-  `citation_verified` / `citation_invalid`, `history_verified` / `history_chain_ok` /
-  `history_wrong_key` / `history_invalid`
-- `live?`, `history?` — mode-specific detail
-- `timeAnchor?` — reported on MCP; **does not gate** MCP `verified` (CLI gates on anchor validity)
+## Response shape
 
-`prove` mode returns `{ok, keyId, root, leafIndex, leaf, proof[]}`.
+**Standard success (`ok: true`):** `signatureValid`, `contentHashMatch?`, `keyId`, `mode`, `verdict`, optional `live` / `history` / `timeAnchor`.
+
+**MCP verdicts:** offline `verified` \| `wrong_key` \| `signature_invalid` \| `content_mismatch`; live adds `drifted` \| `refetch_failed`; citation `citation_verified` \| `citation_invalid`; history `history_verified` \| `history_chain_ok` \| `history_wrong_key` \| `history_invalid`.
+
+**Failure (`ok: false`):** `failureCode`, `message` (not nested `failure`). Codes: `invalid_receipt`, `invalid_arguments`.
 
 ## MCP vs CLI
 
-| | MCP | CLI `OccamMcp.Core verify` |
-|---|-----|---------------------------|
-| `public_key` / `--pubkey` | Optional (local default) | **Mandatory** |
-| `manifest` mode | **Not available** | `--mode manifest` for dataset exports |
-| `live`, `prove` | Yes | No |
+MCP has `live` / `prove`; CLI has `manifest` and may gate “verified” on time-anchor validity. MCP reports `content_mismatch`; CLI receipt mode may say `content_hash_mismatch`.
 
-Extract-knowledge telemetry objects are **not** valid input.
+## Related env vars
 
-## Failure codes
+None read directly by this tool. Host key / `OCCAM_PROFILE` → [configuration](../configuration.md).
 
-`invalid_receipt`, `invalid_arguments`. See [failure codes](../failure-codes.md).
+## See also
 
-## Example
-
-```json
-{
-  "receipt": "{\"signed\":{…},\"blockLeaves\":[…]}",
-  "markdown": "# nginx documentation\n…",
-  "public_key": "-----BEGIN PUBLIC KEY-----\n…"
-}
-```
-
-```json
-{ "ok": true, "signatureValid": true, "contentHashMatch": true, "verdict": "verified", "keyId": "k1:…" }
-```
-
-## Related
-
-- [Receipts](../receipts.md) · [Receipt verification spec](../receipt_verification.md)
-- [Guide: verify a source](../guides/verify-sources.md)
-- [occam_transcode](occam_transcode.md) — Receipt v1 source
+- [Receipts](../receipts.md) · [Receipt verification](../receipt_verification.md) · [Guide: verify sources](../guides/verify-sources.md)
+- [`occam_transcode`](occam_transcode.md) · [`occam_dataset_export`](occam_dataset_export.md)

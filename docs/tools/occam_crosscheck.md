@@ -1,63 +1,45 @@
-# Crosscheck sources (opt-in)
+# `occam_crosscheck`
 
-**Canonical tool:** `occam_crosscheck`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamCrosscheckTool.cs` @ 2026-09-29  
+**Profiles:** opt-in — `OCCAM_CONSENSUS_MCP=1` (not part of `OCCAM_PROFILE` lists)  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-**Multi-source comparison / source agreement** — one host fetches a URL through 2–4 local vantages
-(HTTP vs browser, anonymous vs session) and compares content fingerprints (`blockMerkleRoot` or
-`contentHash`).
+## Purpose
 
-**Experimental, opt-in.** Not consensus proof, not multi-node quorum, not proof the content is
-correct. The **agreement verdict is unsigned** computed JSON; individual vantage extracts may carry
-signed Receipt v1 envelopes you can verify separately.
+Cross-check one URL from **2–4 local vantages** on the same host (HTTP vs browser, optional session). Compares fingerprints and returns an **unsigned** agreement verdict. Multi-source comparison — **not** consensus proof or multi-node quorum.
 
-> **Opt-in tool.** Absent from `tools/list` unless the host starts with `OCCAM_CONSENSUS_MCP=1`.
-> It runs 2+ full extracts per call.
+## When to use / when not
 
-## When to use
-
-- You suspect cloaking, personalization, or access-walling (bot vs browser, anon vs logged-in).
-- Ordinary reads → [`occam_transcode`](occam_transcode.md).
+| Use when | Do not use when |
+|----------|-----------------|
+| Suspect cloaking / bot-vs-browser / anon-vs-session | Single read is enough → [`occam_transcode`](occam_transcode.md) |
+| Pairwise fingerprint signals | Independent geo witnesses or signed “jury” verdict |
+| Interpreting `divergent` / `access_divergent` as signals | Claim stance → [`occam_claim_check`](occam_claim_check.md) / [`occam_attest`](occam_attest.md) |
 
 ## Parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `url` | string | — | **yes** | HTTP or HTTPS URL to cross-check |
-| `vantages` | string | `"http,browser"` | no | Comma list: `http`, `browser` |
-| `session_profile` | string? | null | no | Adds authenticated vantages per backend |
-| `focus_query` | string? | null | no | Focus prune applied identically to every vantage |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `url` | yes | — | HTTP(S) URL |
+| `vantages` | no | `http,browser` | Comma list: `http` and/or `browser` only |
+| `session_profile` | no | null | Adds authenticated vantage per backend |
+| `focus_query` | no | null | Identical prune on every vantage |
 
-## Returns
+Each vantage: `json_blocks=true`, `playbook_policy=off`.
 
-Success envelope:
+## Response shape
 
-- `verdict` — `consensus` | `divergent` | `access_divergent` | `inconclusive`
-  - **`consensus`** — vantages agreed on fingerprint. Agreement ≠ correctness.
-  - **`divergent`** — materially different content across vantages.
-  - **`access_divergent`** — some vantages walled, others succeeded.
-- Per-vantage results with optional signed `receipt` each
-- **No signed verdict** — re-derive agreement manually from vantage receipts if needed; no shipped
-  tool re-derives the verdict cryptographically
+**Success (`ok: true`)** after valid args — even if all vantages fail:
 
-Failure envelope: `ok: false`, `url`, `failureCode`, `message`, `timestamp`.
+- `verdict`: `consensus` \| `divergent` \| `access_divergent` \| `inconclusive`
+- `vantages[]`, `divergence[]`, `timestamp`
 
-## Failure codes
+**Tool failure (`ok: false`):** only `invalid_arguments`. Per-vantage failures stay in `vantages[]`.
 
-`invalid_arguments`, plus fetch-level codes when no vantage could extract. See
-[failure codes](../failure-codes.md).
+## Related env vars
 
-## Example
+`OCCAM_CONSENSUS_MCP=1`, `OCCAM_RECEIPTS`.
 
-Call:
+## See also
 
-```json
-{ "url": "https://news.example/story", "session_profile": "news-example" }
-```
-
-A `divergent` verdict signals different fingerprints — not which vantage was "right."
-
-## Related
-
-- [occam_transcode](occam_transcode.md) — single-vantage read
-- [occam_verify](occam_verify.md) — verify each vantage's receipt (not the agreement verdict)
-- [Trust & Safety](../trust-and-safety.md)
+- [`occam_transcode`](occam_transcode.md) · [`occam_verify`](occam_verify.md) · [experimental](../experimental.md) · [trust-and-safety](../trust-and-safety.md)

@@ -1,5 +1,9 @@
 # Trust
 
+> **Deep hub** — not the product front door. Prefer [why-occam](why-occam.md) ·
+> [tools/index](tools/index.md) · [trust-and-safety](trust-and-safety.md). This page
+> **links** integrity surfaces; runtime `tools/list` and verified tool cards win on schemas.
+
 Hub for integrity and proof surfaces. This page **links** deep docs; it does not
 duplicate their contracts.
 

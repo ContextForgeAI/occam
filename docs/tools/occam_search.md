@@ -1,82 +1,63 @@
-# Search the web
+# `occam_search`
 
-**Canonical tool:** `occam_search`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamSearchTool.cs` @ 2026-09-29  
+**Profiles:** `reader` (default), `basic`, `researcher`, `auditor`, `full` — not exposed in `minimal`  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-Open-web search (query → result URLs). **Default** when `OCCAM_SEARCH_PROVIDER` is
-unset: keyless DuckDuckGo HTML SERP with `provider: "duckduckgo"` disclosed in the
-response. Occam does not index the web — it delegates discovery and names the source.
+## Purpose
 
-Override with `OCCAM_SEARCH_PROVIDER=searxng` \| `brave` \| `tavily` \| `external_cli`
-(plus URL/key/binary as required), or `off` / `none` for the air-gap
-`search_unconfigured` contract. For parallel multi-backend discovery set
-`OCCAM_SEARCH_PROVIDERS=duckduckgo,brave,searxng` — response uses `provider: "fanout"`
-and `providersUsed`. See [configuration](../configuration.md).
+Open-web search: turn a query into normalized result URLs (`title`, `url`, optional `snippet`). Occam does not crawl or index the web — it delegates to a configured backend and discloses `provider` in the response. Default when `OCCAM_SEARCH_PROVIDER` is unset: keyless DuckDuckGo HTML (`provider: "duckduckgo"`). Pass a hit’s `handle` or `url` to probe, transcode, or digest next.
 
-## When to use
+## When to use / when not
 
-- No URLs yet → search, then feed **`handle` or `url`** into probe / transcode / digest.
-- Each hit includes `id` (`S1`…`Sn`, latest-search shorthand) and `handle` (`H…`, durable in
-  this MCP process for 60 minutes / 64 entries). A later search remaps `S1` — keep `handle`
-  or the raw `url` to retain a hit.
-- Discovering pages within one known site → [`occam_map`](occam_map.md) is cheaper.
-- `rerank=true` probes every hit and reorders so clean, HTTP-extractable pages rank above
-  paywalls/anti-bot walls/JS stubs — worth the extra latency when you will transcode the winners.
+| Use when | Do not use when |
+|----------|-----------------|
+| You have no URLs yet and need discovery | You already know the URL(s) — use [`occam_transcode`](occam_transcode.md) or [`occam_digest`](occam_digest.md) |
+| You want ranked links before fetching pages | Links **within one site** → [`occam_map`](occam_map.md) |
+| Optional `rerank=true` when you will transcode winners | Guaranteed probe on a **single** hit — `rerank` runs only when there are **two or more** results |
+
+Each hit gets `id` (`S1`…`Sn`) and `handle` (`H` + 8 hex digits, process-local). A later search remaps `S1`; keep `handle` or the raw `url`.
 
 ## Parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `query` | string | — | **yes** | Search query |
-| `max_results` | int | `8` | no | 1–20 |
-| `rerank` | bool | `false` | no | Probe each hit and sort by extractability; adds `extractability` (0–1) + `recommendedBackend` per result. Extra probe latency |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `query` | yes | — | Search query. |
+| `max_results` | no | `8` | Max results (1–20). |
+| `rerank` | no | `false` | Rerank by extractability (extra probe latency). Only when more than one result is returned. |
 
-## Returns
+## Response shape
 
-Success envelope:
+- **Success (`ok: true`):** `query`, `provider`, `count`, `results[]` (`id`, `handle`, `title`, `url`, optional `snippet`). With `rerank=true` and multiple results: `extractability`, optional `recommendedBackend` (probe failure → score `0.4`). Fan-out may include `providersUsed[]`. Also `handleTtlS` (3600), `handleScope` (`process`), `agentHints`. Empty `count: 0` is still `ok: true`.
+- **Failure (`ok: false`):** `query`, `failure: { code, message }` — do not invent page content.
 
-- `ok: true`, `query`, `provider`, `count`
-- `results[]` — `{id, handle, title, url, snippet?}`; with `rerank=true` also `extractability` and
-  `recommendedBackend` (a hit whose probe failed keeps a mid-low score and no backend annotation)
-- `providersUsed[]` — when `provider` is `fanout`, backends that returned ok hits
-- `handleTtlS` (3600) and `handleScope` (`process`) — once per success envelope
-- `agentHints.suggestedNext` — pass `handle` or `url`; `S1` is the latest search only
+## Common failure codes
 
-Failure envelope: `ok: false`, `query`, `failure: {code, message}`.
+| Code | Typical cause |
+|------|----------------|
+| `invalid_arguments` | Empty `query`, or `max_results` not in 1–20 |
+| `search_unconfigured` | Disabled (`off`/`none`), unknown provider, missing URL/key, or empty fan-out |
+| `search_timeout` | Backend or fan-out timeout |
+| `search_rate_limited` | Local rate window or provider degraded |
+| `search_http_<status>` | Backend HTTP non-success |
+| `search_error` | Empty/blocked SERP, parse miss, network, or `external_cli` without binary |
 
-## Failure codes
+Full taxonomy: [failure-codes](../failure-codes.md).
 
-`invalid_arguments`, `search_unconfigured` (provider `off` / incomplete explicit config),
-`search_timeout` (retry or raise `OCCAM_SEARCH_PROVIDER_TIMEOUT_MS` / `OCCAM_SEARCH_TIMEOUT_MS`),
-`search_rate_limited` (local rate window or all arms degraded), `search_http_<status>`,
-`search_error` (empty/blocked SERP or parse miss). See [failure codes](../failure-codes.md).
+## Related env vars
 
-## Example
+| Variable | Role |
+|----------|------|
+| `OCCAM_SEARCH_PROVIDER` | Single provider (`duckduckgo`, `searxng`, `brave`, `tavily`, `external_cli`, or `off`/`none`) |
+| `OCCAM_SEARCH_PROVIDERS` | CSV fan-out; **overrides** singular provider when set |
+| `OCCAM_SEARCH_URL` / `OCCAM_SEARCH_API_KEY` | Required for searxng / brave / tavily as applicable |
+| `OCCAM_EXTERNAL_SEARCH_PATH` | Optional path to `external_cli` binary |
+| `OCCAM_SEARCH_TIMEOUT_MS` / `OCCAM_SEARCH_PROVIDER_TIMEOUT_MS` / `OCCAM_SEARCH_FANOUT_TIMEOUT_MS` | Timeouts |
+| `OCCAM_SEARCH_RATE_MAX` / `OCCAM_SEARCH_RATE_WINDOW_S` / `OCCAM_SEARCH_DEGRADE_MINUTES` | Rate / degrade |
 
-Call (no env required after install):
+Full catalog: [configuration](../configuration.md).
 
-```json
-{ "query": "nginx rate limiting configuration", "max_results": 5 }
-```
+## See also
 
-Trimmed response:
-
-```json
-{
-  "ok": true,
-  "query": "nginx rate limiting configuration",
-  "provider": "duckduckgo",
-  "count": 5,
-  "results": [
-    { "id": "S1", "handle": "H00000001", "title": "Rate Limiting with NGINX", "url": "https://blog.nginx.org/…", "snippet": "…" }
-  ],
-  "handleTtlS": 3600,
-  "handleScope": "process",
-  "agentHints": { "suggestedNext": "Pass result.handle or url to occam_transcode…" }
-}
-```
-
-## Related
-
-- [occam_probe](occam_probe.md) — the scorer rerank uses, on demand for one URL
-- [occam_transcode](occam_transcode.md) / [occam_digest](occam_digest.md) — consume the results
-- [Configuration](../configuration.md) — provider setup
+- [`occam_probe`](occam_probe.md) · [`occam_transcode`](occam_transcode.md) · [`occam_digest`](occam_digest.md) · [`occam_map`](occam_map.md)
+- [Choosing a tool](../choosing-a-tool.md) · [Recipes](../recipes.md)

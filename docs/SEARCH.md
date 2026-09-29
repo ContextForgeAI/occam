@@ -1,5 +1,8 @@
 # Search
 
+> **Deep hub** — prefer [`occam_search`](tools/occam_search.md) (verified from code) and
+> [configuration](configuration.md). This page maps providers; it is not a second schema.
+
 Hub for open-web discovery. Occam does **not** index the web; providers return
 result URLs for later probe / transcode / digest.
 

@@ -44,7 +44,8 @@ live on wider profiles. It does **not** dynamically enlarge `tools/list` (see AD
 
 ## Consequences
 
-- Core catalog grows 15 → **16**; default reader 8 → **9**.
+- At ADR time: core catalog grew 15 → **16**; default reader 8 → **9** (cascade landing).
+  **Current registry (2026-09-29):** core **18**, default `reader` **11** (canary tools also in core).
 - Exam prompts teach `occam` / `task`+`budget`; the grader also accepts the specialised
   `focus_query`+`max_tokens` aliases.
 - CLI `cascade selftest|run` proves the state machine without MCP.

@@ -4,13 +4,14 @@ Task-oriented map of Occam’s **MCP tools** and supporting reference pages.
 Friendly names below are for navigation; the canonical identifier is always the
 ``occam_*`` tool name on each page and in runtime `tools/list`.
 
-For a learning path (not schemas), use [Guides](guides/read-a-page.md),
-the [workflow gallery](examples/gallery.md), or
-[Examples](examples/index.md). For capability domains (not tools), see
-[Capabilities](capabilities/index.md). Feature status table:
-[CAPABILITIES](CAPABILITIES.md). Topic hubs: [TRUST](TRUST.md),
-[CASCADE](CASCADE.md), [SEARCH](SEARCH.md). For a one-page advantages + knobs
-flashcard, see [Why Occam](why-occam.md).
+**Canon order:** runtime `tools/list` → [MCP API](reference/mcp-api.md) →
+[per-tool pages](tools/index.md) → narrative guides. When pages disagree, prefer
+the higher source and treat older hubs as suspect until verified.
+
+Learning path: [Why Occam](why-occam.md) · [Guides](guides/read-a-page.md) ·
+[workflow gallery](examples/gallery.md) · [Examples](examples/index.md).
+Deep hubs (optional): [TRUST](TRUST.md), [CASCADE](CASCADE.md), [SEARCH](SEARCH.md),
+[Capabilities](capabilities/index.md), [CAPABILITIES](CAPABILITIES.md).
 
 ## Which tool should I use?
 
@@ -107,8 +108,8 @@ If two pages disagree, prefer the higher-priority source and report drift.
 ## LLM reading order
 
 1. [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt) once  
-2. [Task routing](choosing-a-tool.md)  
+2. [Why Occam](why-occam.md) · [Task routing](choosing-a-tool.md)  
 3. One page under [tools/](tools/index.md)  
 4. [Failure codes](failure-codes.md) only after `ok: false`  
-5. [Handbook](handbook/index.md) for deep comprehension  
-6. [MCP API](reference/mcp-api.md) for contract-level detail  
+5. [MCP API](reference/mcp-api.md) for contract-level detail  
+6. [Handbook](handbook/index.md) only for optional deep mechanisms (verify against code)  

@@ -1,56 +1,55 @@
-# Chapter 18 — Exposure: 51 entrypoints, profile-scoped tools
+# Chapter 18 — Exposure: entrypoints and profile-scoped tools
 
-**Status:** STABLE · **Prerequisites:** [Chapter 3](03-standing-up-an-install.md)
+**Status:** STABLE · **Prerequisites:** [Chapter 3](03-standing-up-an-install.md)  
+**Verified counts:** 2026-09-29 against `OccamToolNames` / `OccamToolProfile` (doc rescue Phase 6)
 
 ---
 
 ## Mental model
 
-**Product capability ≠ MCP tool count.** Product default is `OCCAM_PROFILE=reader` (11 tools).
-"18 tools" is the `OCCAM_PROFILE=full` stdio `tools/list` with opt-in flags off — one exposure
-slice of **51 named entrypoints**, not the whole product.
+**Product capability ≠ MCP tool count.** Product default is `OCCAM_PROFILE=reader` (**11** tools).
+"**18** tools" is the `OCCAM_PROFILE=full` stdio `tools/list` with opt-in flags off — one MCP exposure
+slice of a larger product surface (CLI, install, transports), not the whole product.
+
+Runtime `tools/list` always wins for what a given host exposes.
 
 ---
 
 ## Explanation
 
-### Counting method
-
-Count every distinct **named invocation** a user, agent, or operator can start from shipped code without writing new code:
+### MCP tool counts (authoritative)
 
 | Bucket | Count |
 |--------|------:|
-| Core MCP tools | 15 |
-| Opt-in MCP tools | 6 |
-| Host offline CLI verbs | 5 |
-| Operator `occam <sub>` | 13 |
-| Installer / bootstrap | 4 |
-| Alternate process modes | 3 |
-| Package/API bins | 3 |
-| Docker ENTRYPOINT | 1 |
-| **Total** | **51** |
+| Core MCP tools (`OccamToolNames`) | **18** |
+| Opt-in MCP tools (env-gated) | **8** (batch×3, watch, crosscheck, atlas, browser_interact, exam_submit) |
 
-Connect's ~15 host adapters are **mechanisms under** `occam connect`, not separate entrypoints.
+**Eighteen core MCP tools:** `occam_client_capabilities`, `occam`, `occam_transcode`, `occam_probe`,
+`occam_digest`, `occam_playbook_resolve`, `occam_map`, `occam_playbook_heal`, `occam_playbook_save`,
+`occam_extract_knowledge`, `occam_search`, `occam_verify`, `occam_claim_check`, `occam_attest`,
+`occam_playbook_lint`, `occam_dataset_export`, `occam_canary_issue`, `occam_canary_verify`.
 
-### Fifteen core MCP tools
-
-Registered in `OccamMcpServerRegistration.OccamToolNames`: client_capabilities, transcode, probe, digest, playbook_resolve, map, playbook_heal, playbook_save, extract_knowledge, search, verify, claim_check, attest, playbook_lint, dataset_export.
-
-An agent on `full` can read pages, probe/map/search, extract knowledge, author playbooks, and run core trust flows — but **cannot** watch/batch/crosscheck/atlas/browser_interact, install/connect hosts, or reach WS/Remote/BatchServer via the canonical launcher without extra flags/modes. The product default `reader` omits heal/save and several trust/authoring tools.
+An agent on `full` can read pages, probe/map/search, extract knowledge, author playbooks, and run
+core trust flows — but **cannot** use watch/batch/crosscheck/atlas/browser_interact/exam_submit
+without the matching `OCCAM_*_MCP` flags. The product default `reader` omits heal/save/resolve and
+several authoring/attest tools.
 
 ### Profiles change exposure, not semantics
 
 | Profile | Tools exposed |
 |---------|--------------:|
-| `reader` (**default**) | 8 |
-| `researcher` | 9 |
-| `auditor` | 12 |
-| `full` | 15 |
+| `minimal` | 1 |
+| `basic` | 3 |
+| `reader` (**default**) | **11** |
+| `researcher` | **12** |
+| `auditor` | **15** |
+| `full` | **18** |
 | invalid value | → `reader` + stderr warning |
 
-Profiles filter **tools/list**, not handler behavior. A `reader` deployment still mints a key, still signs eligible successes, still applies playbook overlays, and may still use a managed provider. Opt-in tools ignore profiles entirely.
+Source: `Transport/OccamToolProfile.cs`. Profiles filter **tools/list**, not handler behavior.
+Opt-in tools ignore profiles entirely when their env gate is on.
 
-**Note (Phase 6):** `reader` now exposes `occam_verify` — earlier produce-without-verify trap is mitigated; still verify pubkey and profile expectations explicitly.
+`reader` includes `occam_verify` and canary tools — verify pubkey and profile expectations explicitly.
 
 ### Transports
 
@@ -60,47 +59,49 @@ Profiles filter **tools/list**, not handler behavior. A `reader` deployment stil
 | WebSocket | `--mcp-server` | No — not via launcher |
 | Remote WSS+JWT | `--remote` | No |
 | BatchServer HTTP | `--batch-server` | No |
-| Streamable HTTP | `--mcp-http` / `--streamable-http` (port 5055) | No |
+| Streamable HTTP | `--mcp-http` / `--streamable-http` | No |
 
-Local WS has no session semaphore; each socket builds a DI container that may kill the shared browser pool. BatchServer has no auth (loopback only). Streamable HTTP is loopback-first. Banner may claim stdio while running WS or Remote.
+Local WS has no session semaphore; each socket builds a DI container that may kill the shared browser
+pool. BatchServer has no auth (loopback only). Streamable HTTP is loopback-first.
 
 ### Operator surface is first-class
 
-Install, doctor, connect, session, refresh, and host-binary offline verbs (`keys export`, `verify`) are product entrypoints — not "advanced extras." The `occam` wrapper does not route `verify` or `keys`; use the host binary directly.
+Install, doctor, connect, session, refresh, and host-binary offline verbs (`keys export`, `verify`)
+are product entrypoints — not "advanced extras."
 
-### npm is a public experimental RC
+### npm is public experimental
 
-`ff-occam` is the published primary npm package and wraps the lower-level `@ff-occam/mcp` runtime at the same version. The channel is public but experimental; do not present it as GA. The guarded release install remains the Cosign-policy-aware GitHub Release bootstrap.
+`ff-occam` wraps `@ff-occam/mcp` at the same version. Experimental — not the guarded GA install path
+([INSTALL.md](../install.md)).
 
 ---
 
 ## CHECK
 
-**LOCAL.** Start the host four times, once per valid `OCCAM_PROFILE` value (`full`, `reader`, `researcher`, `auditor`). Record `tools/list` each time. Start with an invalid profile and observe fallback to `reader` plus stderr warning.
+**LOCAL.** Start the host for each of `minimal`, `basic`, `reader`, `researcher`, `auditor`, `full`.
+Record `tools/list` each time. Start with an invalid profile and observe fallback to `reader` plus
+stderr warning.
 
 ---
 
 ## Common misconception
 
-**"Profiles are a security boundary."** Profiles change *exposure*, never handler semantics or signing policy. Opt-in tools are not profile-filtered at all.
+**"Profiles are a security boundary."** Profiles change *exposure*, never handler semantics or
+signing policy. Opt-in tools are not profile-filtered at all.
 
 ---
 
 ## Limitations
 
-- 8/51 ≈ 16% of named entrypoints are exposed by the default `reader` profile; the `full` profile exposes 15/51 ≈ 29% before opt-in gates.
+- Default `reader` is **11/18** of the core catalog (~61%); `full` is all **18** before opt-in gates.
 - Canonical launcher is stdio-only; WS/Remote/BatchServer require direct binary flags.
-- Server instructions may mention tools (e.g. watch) without stating env gates — always check registration code and env.
-- `model_id` and `suggestedProfile` from client_capabilities are stored and echoed but not consumed by the host.
-- npm remains an experimental RC channel. The Cosign-policy-aware GitHub Release bundle is the guarded public RC path; neither channel becomes GA until `1.0.0` ships.
+- Server instructions may mention tools without stating env gates — check registration + env.
+- `model_id` / `suggestedProfile` from client_capabilities are advisory echoes unless the operator acts.
+- Prefer [tools/index](../tools/index.md) over older “51 entrypoints” inventories when counting MCP tools.
 
 ---
 
 ## Links
 
-- [Chapter 3 — Standing up an install](03-standing-up-an-install.md)
-- [Chapter 17 — Opt-in surfaces](17-opt-in-surfaces.md)
-- [Chapter 19 — Operating an install](19-operating-an-install.md)
-- [appendix-status-labels.md](appendix-status-labels.md)
-- User docs: [MCP hosts](../mcp-hosts.md) · [Transports](../transports.md) · [Connect](../connect/index.md)
-- Audit: `docs-audit/ENTRYPOINT-MODEL.md`
+- [Tools index](../tools/index.md) · [Configuration](../configuration.md) · [MCP map](../MCP_MAP.md)
+- [Why Occam](../why-occam.md) · [Experimental](../experimental.md)

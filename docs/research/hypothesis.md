@@ -116,7 +116,7 @@ rather than tune thresholds.
 |---|---|---|---|
 | Canary protocol + 4-state verdicts | ✅ | ✅ 314 tests, 3 platforms | ❌ |
 | Canary → hallucination-rate effect (H1) | — | — | ❌ no dataset yet |
-| Graded tool surfaces, 1/3/8/9/12/15 tools | ✅ | ✅ tests + gate | ❌ |
+| Graded tool surfaces, 1/3/11/12/15/18 tools (`minimal`→`full`) | ✅ | ✅ tests + gate | ❌ |
 | Single-entry cascade (H2) | ✅ | ✅ selftest + live smoke | ❌ no model data |
 | Exam grading + tiering + rolling scoring (H3) | ✅ engine | ✅ tests, 3 platforms | ❌ |
 | Exam administration harness | ✅ offline grade CLI + mock runners | ✅ `EXAM_HARNESS_SELFTEST_OK`, `H2_PIPELINE_OK`, `H3_PIPELINE_OK` | ⚠ n=1 Composer grade + H3 assignment cell; no AUC |

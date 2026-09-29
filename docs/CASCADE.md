@@ -1,5 +1,8 @@
 # Cascade
 
+> **Deep hub** — prefer [`occam`](tools/occam.md) for the tool card (verified from code) and
+> [why-occam](why-occam.md) for framing. This page is a topic map + ADR pointer, not a second API.
+
 Hub for the progressive-disclosure read path and how it relates to profiles.
 Deep contract: [ADR-0017](adr/0017-cascade-facade.md).
 Related: [CAPABILITIES](CAPABILITIES.md) · [TRUST](TRUST.md) · [acquisition](acquisition.md).

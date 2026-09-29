@@ -1,48 +1,70 @@
-# Verify a proof-of-read canary
+# `occam_canary_verify`
 
-**Canonical tool:** `occam_canary_verify`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamCanaryVerifyTool.cs`, `Canary/CanaryVerifier.cs` @ 2026-09-29  
+**Profiles:** `reader` (default), `researcher`, `auditor`, `full` — not `minimal` or `basic`  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-Adjudicate a sentinel the agent claims to have read from a canary page issued by
-`occam_canary_issue`.
+## Purpose
 
-## When to use
+Adjudicate a sentinel an agent claims to have read from a canary page issued by `occam_canary_issue`. The host checks cryptographic match, issuance provenance, and time-bucket freshness. Faking or guessing the sentinel is detected.
 
-- After `occam_canary_issue` → fetch → quote sentinel
-- To distinguish genuine reads from hallucination / replay / stale context
+## When to use / when not
+
+| Use when | Do not use when |
+|----------|-----------------|
+| After issue → fetch probe URL → quote the embedded sentinel | You have not fetched the page (guessing → `HALLUCINATED`) |
+| Trust gates need proof-of-read evidence | You only need page content → `occam_transcode` |
+| Separating real read vs hallucination / stale / unlogged replay | Missing `session_id` or `sentinel` |
 
 ## Parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `session_id` | string | — | **yes** | From `occam_canary_issue` |
-| `sentinel` | string | — | **yes** | Value quoted from the fetched page (not guessed) |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `session_id` | yes | — | Session id from `occam_canary_issue`. |
+| `sentinel` | yes | — | Sentinel quoted from the canary page (fetched, not guessed). |
 
-## Returns
+Both values are trimmed before verification.
 
-```json
-{
-  "ok": true,
-  "verdict": "READ_VERIFIED",
-  "bucket": 6000000,
-  "reason": "Sentinel is authentic, was issued by this host, and is inside the fresh window.",
-  "sessionId": "…",
-  "currentBucket": 6000000,
-  "matchedBucket": 6000000,
-  "bucketDistance": 0
-}
-```
+## Response shape
 
-| Wire verdict | Meaning | `ok` |
-|--------------|---------|------|
-| `READ_VERIFIED` | Authentic, issued, fresh | `true` |
-| `READ_STALE` | Authentic, issued, older bucket | `true` |
-| `HALLUCINATED` | No match in recognised window | `false` |
-| `REPLAY_SUSPECT` | Authentic crypto, never issued here | `false` |
+### Tool validation failure
 
-`ok` mirrors `IsReadEvidence` (verified or stale). Replay is authentic crypto
-with bad provenance — treat as failure for trust gates.
+Empty/whitespace `session_id` or `sentinel` → `{ ok: false, failure: { code: "invalid_arguments", message }, timestamp }`.
 
-## Related
+### Adjudication (inputs passed validation)
 
-- [occam_canary_issue](occam_canary_issue.md)
-- [TRUST](../TRUST.md) · ADR [0010](../adr/0010-proof-of-read-canary.md)
+Always includes `verdict` — including when `ok: false`:
+
+| Field | Meaning |
+|-------|---------|
+| `ok` | `true` only for `READ_VERIFIED` or `READ_STALE` |
+| `verdict` | One of four wire tokens below |
+| `bucket` | Same as `matchedBucket` when matched; else `null` |
+| `reason` | Human-readable detail |
+| `sessionId`, `currentBucket`, `matchedBucket`, `bucketDistance` | Bucket math |
+
+## Verdicts (exhaustive; fixed precedence)
+
+1. **`HALLUCINATED`** (`ok: false`) — No matching sentinel in the recognised window.
+2. **`REPLAY_SUSPECT`** (`ok: false`) — Cryptographically valid, but no issuance record on this host.
+3. **`READ_VERIFIED`** (`ok: true`) — Authentic, issued here, inside the fresh window.
+4. **`READ_STALE`** (`ok: true`) — Authentic and issued, outside fresh but inside stale horizon.
+
+## Common failure codes
+
+| Code | When |
+|------|------|
+| `invalid_arguments` | Empty or whitespace-only args at the MCP tool layer |
+
+Other outcomes use the adjudication envelope with `verdict`. See [failure-codes](../failure-codes.md).
+
+## Related env vars
+
+Same canary tunables as issue: `OCCAM_CANARY_BUCKET_SECONDS`, `OCCAM_CANARY_FRESH_TOLERANCE`, `OCCAM_CANARY_STALE_HORIZON`, `OCCAM_CANARY_SENTINEL_BYTES`, `OCCAM_CANARY_ISSUE_LOG_*`, `OCCAM_CANARY_RATE_*`.
+
+Full catalog: [configuration](../configuration.md).
+
+## See also
+
+- [`occam_canary_issue`](occam_canary_issue.md) · [TRUST](../TRUST.md) · [ADR 0010](../adr/0010-proof-of-read-canary.md)
+- [Choosing a tool](../choosing-a-tool.md)

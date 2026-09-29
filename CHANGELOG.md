@@ -14,6 +14,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Changed
 
+- **Doc rescue (Phase 1–6 + polish):** root `README.md` rewritten as a product door. `docs/rc2/**`
+  remains MkDocs-excluded (archive README added). Handbook collapsed to a single nav entry;
+  `llms.txt` / `docs/index.md` / `documentation-map.md` demote engineering piles. All **18 core** +
+  **opt-in** tool cards under `docs/tools/` rewritten from code (Status verified @ 2026-09-29).
+  MkDocs Capabilities nav leads with why-occam + tools index; `CAPABILITIES.md` / handbook ch.18 /
+  ADR-0016/0017 / research hypothesis corrected for reader=11 / full=18; deep hubs TRUST/CASCADE/
+  SEARCH marked non-canon. Truth baseline + template in local `docs-internal/` (gitignored).
 - **Roadmap truth:** `docs/roadmap.md` tracks **1.3.0** / **18** core tools; active track is
   zero-config install ship (tool freeze unlock).
 - **Bootstrap T4:** canonical install one-liners and doctor/gate hints pin

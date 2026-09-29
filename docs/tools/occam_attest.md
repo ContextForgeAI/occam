@@ -1,85 +1,46 @@
-# Attest citations
+# `occam_attest`
 
-**Canonical tool:** `occam_attest`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamAttestTool.cs` and `Attest/AttestService.cs` @ 2026-09-29  
+**Profiles:** `auditor`, `full` — not on `reader`, `researcher`, `minimal`, or `basic`  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-**Heuristic citation assessment** for a batch of `{claim, sourceUrl}` rows — **not** cryptographic
-attestation, not proof of truth, and not vendor/root identity certification.
+## Purpose
 
-Per claim, Occam:
+Batch citation check for report rows `{claim, sourceUrl}`. For each row: live extract, retrieve up to **three** BM25 blocks, fail-closed semantic classifier → `status`, attach Merkle proof for the top block when present. Proof = block membership only — never claim truth. Aggregate JSON is **unsigned**.
 
-1. **Retrieves** candidate blocks (BM25 / claim-check path).
-2. **Classifies stance** with a narrow regex/rule entailment engine → `status`
-   (`supported` | `contradicted` | `related` | `unsupported` | `unknown`).
-3. **Attaches Merkle proof** for the top retrieved block when present — proof = **block membership**
-   in the signed extract only.
+## When to use / when not
 
-**Gate on `status`.** `grounded` is a compat alias: `true` only when `status=supported`. BM25 score
-alone never sets `grounded=true`.
-
-The **aggregate response** (`supported`, `contradicted`, counts, partition totals) is **unsigned**
-plain JSON. Individual nested `receipt` / `proof` fields remain separately verifiable.
-
-## When to use
-
-- Batch honesty gate before shipping a research report: refuse rows with `status` other than
-  `supported` when you require explicit support.
-- Single-claim retrieval without stance → [`occam_claim_check`](occam_claim_check.md).
+| Use when | Do not use when |
+|----------|-----------------|
+| Stance per cited row in a report | One claim retrieval only → [`occam_claim_check`](occam_claim_check.md) |
+| Gate on `status` (not BM25 alone) | Claims outside **is-a** / **uses** classifier shapes → often `unknown` |
+| Batch counts (`supported`, `contradicted`, …) | Profile is `reader` / `researcher` |
 
 ## Parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `claims` | string | — | **yes** | JSON array of `{"claim":"…","sourceUrl":"https://…"}` rows (1–50) |
-| `backend_policy` | string | `http_then_browser` | no | Applied to every cited page |
-| `session_profile` | string? | null | no | Applied to every cited page |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `claims` | yes | — | JSON array of `{claim, sourceUrl}` (1–50) |
+| `backend_policy` | no | `http_then_browser` | Applied to every claim |
+| `session_profile` | no | null | Applied to every cited page |
 
-## Returns
+## Response shape
 
-Success envelope:
+**Success:** counts (`supported`, `contradicted`, `related`, `unsupported`, `unknown`), `grounded` (= supported count), `unsupportedTotal`, `perClaim[]` with `status`, evidence fields, optional `reason`.
 
-- `ok: true`, `claimsTotal`, `timestamp`
-- Status counts: `supported`, `contradicted`, `related`, `unsupported`, `unknown`
-- Compat: `grounded` (= supported count); `unsupportedTotal`
-- `perClaim[]` — `{claim, sourceUrl, status, grounded, blockIndex?, text?, score?,
-  leaf?, proof?, blockMerkleRoot?, receipt?, reason?}`
-  - `status` — heuristic classifier verdict (fail-closed)
-  - `grounded` ≡ `status == "supported"` — not proof of truth
-  - `proof` / `receipt` — verify via [`occam_verify`](occam_verify.md); membership only
+**Gate on `status`.** Per-row fetch failures become `status=unknown` without failing the whole call.
 
-Failure envelope: `ok: false` for bad input only; per-page fetch failures → `status=unknown` rows.
+**Failure (`ok: false`):** `invalid_arguments` only (bad/empty/oversized `claims`, bad policy).
 
-## Failure codes
+## Semantic classifier
 
-`invalid_arguments` (empty/malformed `claims`, more than 50 rows, bad `backend_policy`).
+Parses only **is-a** (`Subject is [a|an|the] object`) and **uses** (`uses|using|utilizes`). Lexical co-occurrence alone never yields `supported`.
 
-## Example
+## Related env vars
 
-Call:
+`OCCAM_PROFILE` must be `auditor` or `full`. Full catalog: [configuration](../configuration.md).
 
-```json
-{
-  "claims": "[{\"claim\":\"nginx supports weighted round-robin\",\"sourceUrl\":\"https://nginx.org/en/docs/http/load_balancing.html\"},{\"claim\":\"nginx was written in Rust\",\"sourceUrl\":\"https://nginx.org/en/\"}]"
-}
-```
+## See also
 
-Trimmed response:
-
-```json
-{
-  "ok": true,
-  "claimsTotal": 2,
-  "supported": 1,
-  "unsupported": 1,
-  "grounded": 1,
-  "perClaim": [
-    { "claim": "nginx supports weighted round-robin", "status": "supported", "grounded": true, "leaf": "…", "proof": [ … ] },
-    { "claim": "nginx was written in Rust", "status": "unsupported", "grounded": false, "reason": "no_matching_block" }
-  ]
-}
-```
-
-## Related
-
-- [occam_claim_check](occam_claim_check.md) — retrieval-only evidence lookup
-- [occam_verify](occam_verify.md) — verify nested proofs
-- [Guide: claims](../guides/claims.md)
+- [`occam_claim_check`](occam_claim_check.md) · [`occam_verify`](occam_verify.md) · [Guide: claims](../guides/claims.md)
+- [Failure codes](../failure-codes.md)

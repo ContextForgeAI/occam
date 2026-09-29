@@ -347,15 +347,13 @@ Optional Receipt v1 artifacts can check returned-byte integrity against a
 supplied key. They do not prove truth, identity, or authentic origin.
 
 [Trust and security](trust-and-safety.md) ·
-[Capabilities](capabilities/index.md) ·
-[Feature inventory](CAPABILITIES.md) ·
-[MCP map (18 tools)](MCP_MAP.md) ·
-[TRUST hub](TRUST.md) ·
-[CASCADE hub](CASCADE.md) ·
-[SEARCH hub](SEARCH.md) ·
-[Reference overview](documentation-map.md) ·
+[Receipts](receipts.md) ·
 [Installation safety](trust/installation-safety.md) ·
-[Receipts](receipts.md)
+[Reference overview](documentation-map.md)
+
+Deep hubs (after the product path): [TRUST](TRUST.md) · [CASCADE](CASCADE.md) ·
+[SEARCH](SEARCH.md) · [MCP map](MCP_MAP.md) · [Capabilities](capabilities/index.md) ·
+[Feature inventory](CAPABILITIES.md)
 
 ## Get your first Occam result
 
@@ -367,36 +365,27 @@ finish with a real page read.
 <a class="oc-btn oc-btn--secondary" href="examples/current-proof/">Inspect the proof</a>
 </p>
 
-<p class="oc-meta-line"><strong>Version:</strong> 1.0.0 (published install channel) · <strong>Status:</strong> GA · <strong>License:</strong> AGPL-3.0-or-later</p>
+<p class="oc-meta-line"><strong>Version:</strong> 1.3.0 (published install channel) · <strong>Status:</strong> GA · <strong>License:</strong> AGPL-3.0-or-later</p>
 
-## Research and verification
-
-Occam has a product half and a research half. This section is the research half — and its honest
-status is that the instrument is built and verified while **no experiment has been run with it**.
-
-| Page | What it is |
-|------|------------|
-| [Proof-of-read protocol](https://github.com/ContextForgeAI/occam/blob/main/PROBE_PROTOCOL.md) | Specification of the canary: sentinel derivation, the four verdicts, threat model, test vectors |
-| [Hypotheses](research/hypothesis.md) | H1–H3 in falsifiable form, each with what would kill it |
-| [Methodology](research/methodology.md) | Experiment design; mock pipelines ready, real-model cells not run |
-| [Exam harness](research/exam-harness.md) | Offline grade → `OCCAM_PROFILE`; H2/H3 scorecard runners |
-| [Related work](research/related_work.md) | Marked `[verified]` / `[concept]` / `[unverified]`; four literature searches still open |
-| [Paper skeleton](research/paper_draft.md) | Structure only; every figure is a placeholder |
-| [Citation](research/BibTeX.md) | Software and protocol entries, plus the normative RFCs |
-| [Cross-platform results](testing/RESULTS.md) | What is verified on which platform, with logs — and an explicit "not verified" list |
-| [Install failure regressions](testing/install-failures.md) | Clean-VM / agent install cases wired to CI |
-| [Architecture decisions](adr/README.md) | ADR index; 0010–0015 cover the canary, test stack and evidence policy |
-
-## Explore deeper
+## Explore (product path first)
 
 [**Why Occam**](why-occam.md) · [Task router](choosing-a-tool.md) ·
+[Tools](tools/index.md) · [Tools reference](tools-reference.md) ·
+[MCP API](reference/mcp-api.md) · [Configuration](configuration.md) ·
 [Workflow gallery](examples/gallery.md) · [Examples](examples/index.md) ·
-[Recipes](recipes.md) · [Tools](tools/index.md) ·
-[Tools reference](tools-reference.md) · [MCP API](reference/mcp-api.md) ·
+[Recipes](recipes.md) · [Operators](operators.md) ·
+[Troubleshooting](troubleshooting.md) · [FAQ](faq.md) ·
+[Reference overview](documentation-map.md) · [Ask AI](ask-ai.md) ·
+[`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt)
+
+Optional deep / engineering (not the onboarding funnel):
 [Handbook](handbook/index.md) · [Experimental](experimental.md) ·
-[Operators](operators.md) · [Troubleshooting](troubleshooting.md) ·
-[FAQ](faq.md) · [Reference overview](documentation-map.md) ·
-[Ask AI](ask-ai.md) · [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt)
+[Architecture decisions](adr/README.md) · [Testing results](testing/RESULTS.md) ·
+[Install failure regressions](testing/install-failures.md) ·
+[Proof-of-read protocol](https://github.com/ContextForgeAI/occam/blob/main/PROBE_PROTOCOL.md)
+
+Research drafts under `docs/research/` remain on disk for maintainers but are **off the
+product funnel** (not linked from the primary Explore path). `docs/rc2/` stays MkDocs-excluded.
 
 <div class="oc-sitemap-quiet" markdown="1">
 

@@ -161,11 +161,12 @@ nav:
           - "Experimental: crosscheck": examples/crosscheck-experimental.md
           - More recipes: recipes.md
   - Capabilities:
-      - Overview: capabilities/index.md
+      - Why Occam (flashcard): why-occam.md
+      - Tool index: tools/index.md
       - Feature inventory: CAPABILITIES.md
       - Cascade hub: CASCADE.md
       - Search hub: SEARCH.md
-      - Why Occam (flashcard): why-occam.md
+      - Overview (domains): capabilities/index.md
       - Web access:
           - Acquisition: acquisition.md
           - Networking and proxies: networking.md
@@ -229,36 +230,9 @@ nav:
   - Architecture:
       - Overview: how-occam-works.md
       - Semantic contract: architecture/semantic-contract.md
-      - Handbook:
-          - Overview: handbook/index.md
-          - 01 What Occam is: handbook/01-what-occam-is.md
-          - 02 Honesty contract: handbook/02-honesty-contract.md
-          - 03 Standing up an install: handbook/03-standing-up-an-install.md
-          - 04 Request path: handbook/04-request-path.md
-          - 05 Acquisition ladder: handbook/05-acquisition-ladder.md
-          - 06 When acquisition is hard: handbook/06-when-acquisition-is-hard.md
-          - 07 Materialization: handbook/07-materialization-token-contract.md
-          - 08 Structured output: handbook/08-structured-differential-output.md
-          - 09 Discovery: handbook/09-discovery-before-acquisition.md
-          - 10 Digest: handbook/10-many-sources-digest.md
-          - 11 Playbook resolution: handbook/11-playbooks-resolution.md
-          - 12 Authoring playbooks: handbook/12-authoring-playbook.md
-          - 13 Typed extraction: handbook/13-typed-field-extraction.md
-          - 14 What a receipt proves: handbook/14-what-a-receipt-proves.md
-          - 15 Verifying: handbook/15-verifying.md
-          - 16 Evidence for claims: handbook/16-evidence-for-claims.md
-          - 17 Opt-in surfaces: handbook/17-opt-in-surfaces.md
-          - 18 Exposure: handbook/18-exposure.md
-          - 19 Operating an install: handbook/19-operating-an-install.md
-          - 20 Automatic behaviors: handbook/20-automatic-behaviors.md
-          - 21 State and footprint: handbook/21-state-and-footprint.md
-          - 22 Configuration: handbook/22-configuration.md
-          - 23 Security posture: handbook/23-security-posture.md
-          - 24 Composing tools: handbook/24-composing-tools.md
-          - 25 Diagnosing bad results: handbook/25-diagnosing-bad-results.md
-          - 26 Architecture internals: handbook/26-architecture-internals.md
-          - 27 Checking this book: handbook/27-checking-this-book.md
-          - Status labels: handbook/appendix-status-labels.md
+      # Handbook chapters remain on disk for deep reading; not expanded in nav during doc rescue
+      # (prefer tools index + MCP API + why-occam). Full chapter list: handbook/index.md
+      - Handbook (optional deep): handbook/index.md
   - Developers:
       - Contributing: developers/contributing.md
       - Quality baseline: quality-baseline.md

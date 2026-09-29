@@ -1,73 +1,70 @@
-# Resolve a playbook
+# `occam_playbook_resolve`
 
-**Canonical tool:** `occam_playbook_resolve`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamPlaybookResolveTool.cs` @ 2026-09-29  
+**Profiles:** `full` only (`OCCAM_PROFILE=full`). Hidden on default `reader`, and on `researcher` / `auditor`.  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-Look up the saved extraction recipe (playbook/genome) for a URL or host: content selectors,
-knowledge schema, agent notes, and **signature integrity status** relative to your local key.
-Read-only.
+## Purpose
 
-Signature status is **integrity vs your local key** — not author identity, not a trusted registry, and
-not proof of recipe quality.
+Look up the saved extraction recipe (playbook/genome) for a URL or host: content selectors, `knowledge_schema` (when it matches the URL), agent notes, optional lessons, optional site well-known genome fetch metadata, and **signature trust status** against your local verification key. Read-only.
 
-## When to use
+Signature status is **integrity vs your local key** — not author identity, not a trusted registry, and not proof of recipe quality.
 
-- Before transcode/extract on a known site — see whether a tuned recipe exists.
-- Before [`occam_extract_knowledge`](occam_extract_knowledge.md) — confirm `knowledge_schema`.
-- Authoring → [`occam_playbook_heal`](occam_playbook_heal.md) / [`occam_playbook_save`](occam_playbook_save.md).
+## When to use / when not
 
-See [Playbooks](../playbooks.md) for resolution order and v1 vs v2 semantics.
+| Use when | Do not use when |
+|----------|-----------------|
+| Inspect `knowledgeSchema` / `pageClass` before extract (on `full`) | You only need page markdown → [`occam_transcode`](occam_transcode.md) |
+| Authoring — check what exists before heal/save | Host uses default `reader` — tool not on surface; set `full` or use internal resolve |
+| Signed-recipe `signature.status` before trusting selectors | You expect live page body — resolve never fetches the page (only optional well-known JSON) |
+
+Tier order: [Playbooks](../playbooks.md).
 
 ## Parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `url` | string | — | **yes** | HTTP(S) URL, search handle, or bare hostname |
-| `schema_version` | string | `1.0` | no | Playbook schema version |
-| `include_lessons` | bool | `false` | no | Export `lessons[]` from local tier (max 10) |
-| `fetch_site_genome` | bool | `false` | no | Fetch `https://{host}/.well-known/agent-genome.v1.json` |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `url` | yes | — | HTTP(S) URL, search handle (`S1`, `H…`), or bare hostname. |
+| `schema_version` | no | `1.0` | Schema version to negotiate; empty → `1.0`. |
+| `include_lessons` | no | `false` | Export redacted `lessons[]` from the **local** tier only (max 10). |
+| `fetch_site_genome` | no | `false` | Fetch well-known agent-genome JSON; also when `OCCAM_SITE_GENOME_FETCH` is `1`/`true`. |
 
-## Returns
+## Response shape
 
-Success envelope:
+### Success (`ok: true`)
 
-- `ok: true`, `url`, `matchedHost`, `playbookId`, `schemaVersion`, `provenance`, `sourcePath`
-- `contentSelectors[]?`, `preferredBackend?`, `agentNotes?`, `pageClass?`
-- `genome?` / `knowledgeSchema?`
-- `signature?` — `{present, status, sigVersion?, keyId?, score?, passesGate?}`
-  - `status` ∈ `unsigned` | `verified` | `invalid` | `wrong_key` | `key_mismatch` | `unsupported_version`
-  - `sigVersion` — `1`, `2`, or null when unsigned
-  - **v1:** body signed; gate fields in `provenance` are **unsigned**
-  - **v2:** body + `keyId`, `signedAt`, gate snapshot tamper-evident — still heuristic, not quality proof
+Always: `url`, `matchedHost`, `playbookId`, `schemaVersion`, `provenance`, `sourcePath`, `timestamp`.
 
-Failure envelope: `ok: false`, `playbook_not_found`, etc.
+Optional: `contentSelectors`, `preferredBackend`, `agentNotes`, `genome`, `knowledgeSchema` (URL-matched only), `pageClass`, `genomeFetch`, `lessons`, `schemaVersionWarning`, `signature` (`present`, `status`, `keyId?`, `score?`, `passesGate?`, `sigVersion?`).
 
-## Failure codes
+`provenance`: `local` \| `user` \| `community` \| `seed` \| `site`.
 
-`invalid_arguments`, `playbook_not_found`. See [failure codes](../failure-codes.md).
+### Failure (`ok: false`)
 
-## Example
+`url`, `failureCode`, `message`, `timestamp`; optional `agentHints`. Never infer page content.
 
-```json
-{ "url": "https://nginx.org/en/docs/", "include_lessons": true }
-```
+## Common failure codes
 
-```json
-{
-  "ok": true,
-  "playbookId": "nginx.org",
-  "signature": {
-    "present": true,
-    "status": "verified",
-    "sigVersion": 2,
-    "keyId": "k1:…",
-    "passesGate": true,
-    "score": 86
-  }
-}
-```
+| Code | When |
+|------|------|
+| `invalid_arguments` | Missing/invalid URL or hostname |
+| `playbook_not_found` | No tier match and no successful well-known genome |
+| `unknown_handle` / `stale_handle` | Search handle missing or expired |
 
-## Related
+Full taxonomy: [failure-codes](../failure-codes.md).
 
-- [Playbooks](../playbooks.md)
-- [occam_playbook_save](occam_playbook_save.md) · [occam_playbook_lint](occam_playbook_lint.md)
-- [occam_transcode](occam_transcode.md) — `playbook_policy=auto` applies resolution internally
+## Related env vars
+
+| Variable | Effect |
+|----------|--------|
+| `OCCAM_PROFILE` | Must be `full` for this tool in `tools/list` |
+| `OCCAM_SITE_GENOME_FETCH` | Enables site genome fetch like the param |
+| `OCCAM_HOME` | Seeds / community under install tree |
+| `OCCAM_PLAYBOOKS_LOCAL_ROOT` / `WT_PLAYBOOKS_PATH` | Local / user playbook dirs |
+
+Full catalog: [configuration](../configuration.md).
+
+## See also
+
+- [Playbooks](../playbooks.md) · [`occam_playbook_heal`](occam_playbook_heal.md) · [`occam_playbook_save`](occam_playbook_save.md) · [`occam_playbook_lint`](occam_playbook_lint.md)
+- [`occam_transcode`](occam_transcode.md) · [`occam_extract_knowledge`](occam_extract_knowledge.md)

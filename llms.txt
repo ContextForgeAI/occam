@@ -15,7 +15,7 @@ Use this file as the **agent documentation map**. Do not load every linked page 
 4. **After `ok: false` only:** [Failure codes](docs/failure-codes.md).
 5. **Setup / env only when needed:** [Configuration](docs/configuration.md).
 6. **Contract depth:** [MCP API contract](MCP_API_SPEC.md) — response semantics, not a tutorial.
-7. **Deep limits:** [Handbook honesty contract](docs/handbook/02-honesty-contract.md) or [Trust limits](#trust-limits-do-not-overclaim) below.
+7. **Trust limits:** [Trust limits](#trust-limits-do-not-overclaim) below · [Trust & Safety](docs/trust-and-safety.md). Handbook chapters are optional deep reading — not the default agent path.
 
 Non-negotiable rules:
 
@@ -53,7 +53,7 @@ Discoverable without env gates. Slugs are stable handbook identifiers.
 | `site-mapping` | Discover links (sitemap / crawl) | [`occam_map`](docs/tools/occam_map.md) |
 | `digest-synthesis` | Multi-URL synthesis under one budget | [`occam_digest`](docs/tools/occam_digest.md) |
 | `runtime-transports` | stdio default; WS/remote/batch are operator modes | [Transports](docs/transports.md) |
-| `mcp-exposure` | Registry, profiles, server instructions — not a fixed tool count | [Handbook ch.18](docs/handbook/18-exposure.md) · [Tools index](docs/tools/index.md) |
+| `mcp-exposure` | Registry, profiles, server instructions — default **reader=11**, **full=18** core | [Tools index](docs/tools/index.md) · [Configuration](docs/configuration.md) |
 | `client-context` | Session-start budget handshake | [`occam_client_capabilities`](docs/tools/occam_client_capabilities.md) |
 | `install-onboarding` | Tarball bootstrap + doctor + connect | [INSTALL.md](INSTALL.md) · [Quick Start](docs/quick-start.md) |
 
@@ -65,7 +65,7 @@ Shipped and reachable; may need operator setup or extra params. Linked from task
 |------|------------|------------|
 | `network-safety` | SSRF/private-URL blocks (path-scoped, not universal) | [Networking](docs/networking.md) |
 | `session-fetch` | Login walls via `session_profile` (per-tool matrix) | [Sessions](docs/sessions.md) · [Sessions guide](docs/guides/sessions.md) |
-| `access-consent` | Silent browser mutations (consent dismiss, etc.) — limits, not a brand | [Handbook ch.20](docs/handbook/20-automatic-behaviors.md) |
+| `access-consent` | Silent browser mutations (consent dismiss, etc.) — limits, not a brand | [Trust & Safety](docs/trust-and-safety.md) · [Acquisition](docs/acquisition.md) |
 | `structured-materialization` | Opt-in `json_blocks` / tables / feeds / chunks | [Materialization](docs/materialization.md) |
 | `differential-materialization` | `if_none_match`, `diff_against` | [Materialization](docs/materialization.md) |
 | `web-search` | Keyless DuckDuckGo by default; pass `handle` or `url` (`S1` latest-search only); `OCCAM_SEARCH_PROVIDER=off` fails closed | [`occam_search`](docs/tools/occam_search.md) |
@@ -75,7 +75,7 @@ Shipped and reachable; may need operator setup or extra params. Linked from task
 | `playbook-healing` | Skeleton evidence for repair (host drafts) | [`occam_playbook_heal`](docs/tools/occam_playbook_heal.md) |
 | `playbook-validation` | Lint is advisory; Core sanitizer is dead | [`occam_playbook_lint`](docs/tools/occam_playbook_lint.md) |
 | `receipts` | Receipt v1 local self-signed integrity | [Receipts](docs/receipts.md) |
-| `verification` | `occam_verify` + CLI asymmetry | [`occam_verify`](docs/tools/occam_verify.md) · [Handbook ch.15](docs/handbook/15-verifying.md) |
+| `verification` | `occam_verify` + CLI asymmetry | [`occam_verify`](docs/tools/occam_verify.md) · [Receipts](docs/receipts.md) |
 | `claims-attestation` | BM25 retrieval + heuristic attest — **not** crypto attestation | [Claims guide](docs/guides/claims.md) · [`occam_claim_check`](docs/tools/occam_claim_check.md) |
 | `dataset-provenance` | Auditor export; manifest verify is CLI-only | [`occam_dataset_export`](docs/tools/occam_dataset_export.md) |
 
@@ -90,6 +90,7 @@ Enable deliberately. Each names its env gate in the same breath as the tool.
 | Multi-source comparison | `OCCAM_CONSENSUS_MCP=1` | [`occam_crosscheck`](docs/tools/occam_crosscheck.md) · [Experimental](docs/experimental.md) |
 | Failure atlas | `OCCAM_ATLAS_MCP=1` | [`occam_failure_atlas`](docs/tools/occam_failure_atlas.md) · [Experimental](docs/experimental.md) |
 | Browser interact | `OCCAM_BROWSER_ACTIONS_MCP=1` | [`occam_browser_interact`](docs/tools/occam_browser_interact.md) · [Experimental](docs/experimental.md) |
+| Capability exam submit | `OCCAM_EXAM_MCP=1` | [`occam_exam_submit`](docs/tools/occam_exam_submit.md) · [Experimental](docs/experimental.md) |
 | Response cache | `cache_ttl_s > 0` on transcode | [Materialization](docs/materialization.md) |
 | Streamable HTTP | `--mcp-http` / `--streamable-http` | [Transports](docs/transports.md) |
 
@@ -104,21 +105,15 @@ Not agent task guides — first-class product system.
 - [Connect](docs/connect/index.md) · [MCP hosts](docs/mcp-hosts.md): Host tiers and config safety (rollback limits apply).
 - [Getting started](docs/getting-started.md): First read + operator CLI pointers.
 - [Troubleshooting](docs/troubleshooting.md): Symptom → fix.
-- [Handbook — standing up an install](docs/handbook/03-standing-up-an-install.md): Testable install + honesty checks.
 
-## Handbook (deep comprehension)
+## Handbook (optional deep — suspect drift until verified)
 
-Separate route from task guides — mechanisms, mental models, limits.
+Not on the default agent path. Prefer tools index + MCP_API_SPEC + trust-and-safety.
+Known drift example (do not trust verbatim): older handbook exposure text claimed
+“8 reader / 15 full” tools — **code says reader=11, full=18** (`OccamToolProfile` /
+`OccamToolNames`).
 
-- [Handbook index](docs/handbook/index.md): Reading orders (agent / operator / auditor).
-- [Ch.2 Honesty contract](docs/handbook/02-honesty-contract.md): **ok:false**, receipt boundaries, name corrections.
-- [Ch.5 Acquisition ladder](docs/handbook/05-acquisition-ladder.md): EF-056 locked behavior.
-- [Ch.7 Token contract](docs/handbook/07-materialization-token-contract.md): Budget semantics.
-- [Ch.15 Verifying](docs/handbook/15-verifying.md): MCP vs CLI verify asymmetry.
-- [Ch.17 Opt-in surfaces](docs/handbook/17-opt-in-surfaces.md): Watch/batch/crosscheck/atlas gates.
-- [Ch.18 Exposure](docs/handbook/18-exposure.md): Profiles, 51 named entrypoints, 8 default reader tools, and 15 full-profile core tools.
-- [Ch.20 Automatic behaviors](docs/handbook/20-automatic-behaviors.md): Silent routing, signing, cache, connect, browser mutations.
-- [Ch.21 State and footprint](docs/handbook/21-state-and-footprint.md): `~/.occam/` keys, sessions, watch/batch, cache, host configs.
+- [Handbook index](docs/handbook/index.md) — mechanisms only after the routes above.
 
 ## Trust limits (do not overclaim)
 

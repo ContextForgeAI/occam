@@ -1,44 +1,64 @@
-# Issue a proof-of-read canary
+# `occam_canary_issue`
 
-**Canonical tool:** `occam_canary_issue`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamCanaryIssueTool.cs` @ 2026-09-29  
+**Profiles:** `reader` (default), `researcher`, `auditor`, `full` — not `minimal` or `basic`  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-Mint a short-lived canary **URL + session** so an agent can prove it actually
-read a page. The response **never** includes the sentinel — quote it only after
-fetching `url` (typically via `occam_transcode`).
+## Purpose
 
-**Trust rule:** Returns a canary URL. Quote the sentinel only if you actually
-fetched the page. Faking it will be detected.
+Issue a proof-of-read canary URL and session. Returns a loopback probe URL the agent must fetch; **never** returns the sentinel. Quote the sentinel only after you actually read the page. Typical chain: `occam_transcode(url)` → `occam_canary_verify(session_id, sentinel)`.
 
-## When to use
+## When to use / when not
 
-- Research / eval harnesses that need cryptographic proof-of-read
-- Before trusting an agent summary of a sensitive page
-- Pair with `occam_canary_verify` after the fetch
+| Use when | Do not use when |
+|----------|-----------------|
+| Cryptographic proof that a page entered the agent context | Expecting the sentinel in the issue response |
+| Eval / trust gates paired with `occam_canary_verify` | Profile is `minimal` or `basic` |
+| After minting, you will fetch `url` and quote what you read | Ordinary page markdown with no proof workflow |
 
 ## Parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `session_id` | string? | generated | no | 1..128 chars `[A-Za-z0-9._-]`; generated when omitted |
-| `ttl_seconds` | int? | protocol | no | Advisory TTL for `expiresAt` (30–86400); crypto buckets unchanged |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `session_id` | no | generated | Optional session id (1..128 chars of `[A-Za-z0-9._-]`). |
+| `ttl_seconds` | no | protocol bucket window | Advisory TTL for `expiresAt` (30–86400). Crypto buckets unchanged. |
 
-## Returns
+## Response shape
 
-```json
-{
-  "ok": true,
-  "url": "http://127.0.0.1:<port>/probe/canary/<sessionId>",
-  "sessionId": "…",
-  "expiresAt": "2026-09-17T18:00:00.0000000+00:00",
-  "bucket": 6000000
-}
-```
+### Success (`ok: true`)
 
-Next step: `occam_transcode({ "url": "<url>" })` → read `Sentinel: \`…\`` from
-markdown → `occam_canary_verify`.
+`url`, `sessionId`, `expiresAt` (ISO-8601), `bucket`.
 
-## Related
+### Failure (`ok: false`)
 
-- [occam_canary_verify](occam_canary_verify.md)
-- [TRUST](../TRUST.md) · [PROBE_PROTOCOL.md](https://github.com/ContextForgeAI/occam/blob/main/PROBE_PROTOCOL.md)
-- CLI: `occam canary` (unchanged)
+`failure: { code, message }`, `timestamp`. Do not invent a sentinel.
+
+## Common failure codes
+
+| Code | When |
+|------|------|
+| `invalid_arguments` | `ttl_seconds` outside 30–86400; invalid `session_id` |
+| `canary_unavailable` | Loopback canary probe host failed to start |
+
+## After issue: fetch the page
+
+1. `occam_transcode` with the returned `url` (in-process for this host’s loopback canary URLs — `backend: "canary"`), or HTTP GET the URL.
+2. Read the sentinel from the document.
+3. `occam_canary_verify` with `session_id` and the quoted sentinel.
+
+## Related env vars
+
+| Variable | Role |
+|----------|------|
+| `OCCAM_CANARY_MCP_PORT` | Loopback probe port (`0` = OS-assigned) |
+| `OCCAM_CANARY_BUCKET_SECONDS` | Bucket width (default 300) |
+| `OCCAM_CANARY_FRESH_TOLERANCE` / `OCCAM_CANARY_STALE_HORIZON` | Fresh / stale windows |
+| `OCCAM_CANARY_SENTINEL_BYTES` | HMAC tag length |
+| `OCCAM_CANARY_ISSUE_LOG_*` / `OCCAM_CANARY_RATE_*` | Issuance log and rate limit |
+
+Full catalog: [configuration](../configuration.md).
+
+## See also
+
+- [`occam_canary_verify`](occam_canary_verify.md) · [`occam_transcode`](occam_transcode.md)
+- [TRUST](../TRUST.md) · [ADR 0010](../adr/0010-proof-of-read-canary.md) · [PROBE_PROTOCOL.md](../../PROBE_PROTOCOL.md)

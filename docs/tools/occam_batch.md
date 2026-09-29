@@ -1,70 +1,48 @@
-# Batch jobs (opt-in)
+# `occam_batch_submit` / `occam_batch_status` / `occam_batch_results`
 
-**Canonical tool:** `occam_batch_submit / occam_batch_status / occam_batch_results`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamBatchTools.cs` @ 2026-09-29  
+**Profiles:** **Opt-in** — require `OCCAM_BATCH_MCP=1` (not filtered by `OCCAM_PROFILE`)  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-Fire-and-forget asynchronous transcode of a URL list: submit returns a `job_id` immediately; poll
-status; then page the results.
+## Purpose
 
-> **Opt-in tools.** All three are absent from `tools/list` unless the host starts with
-> `OCCAM_BATCH_MCP=1` (which also registers the job store and the background processor).
+Fire-and-forget asynchronous transcode of many URLs: submit → poll status → page results. Background processor uses the same pipeline as `occam_transcode`. **No Receipt v1** on batch item envelopes.
 
-## When to use
+## When to use / when not
 
-- Many URLs where you don't need the answers inline — submit and come back.
-- Need a signed, auditable corpus instead → [`occam_dataset_export`](occam_dataset_export.md)
-  (synchronous, 1–20 URLs, provenance manifest).
-- Up to 8 URLs and you want the synthesis now → [`occam_digest`](occam_digest.md).
+| Use when | Do not use when |
+|----------|-----------------|
+| Many URLs and you can poll later | ≤8 URLs inline → [`occam_digest`](occam_digest.md) |
+| MCP batch is enough | Signed corpus → [`occam_dataset_export`](occam_dataset_export.md) |
+| You accept local JSON job store | Per-URL Receipt v1 proof → `occam_transcode` |
 
-## occam_batch_submit
+## Workflow
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `urls` | string | — | **yes** | JSON array or newline/comma/semicolon-separated list |
-| `backend_policy` | string | `http_then_browser` | no | `http`, `browser`, or `http_then_browser` |
-| `focus_query` | string? | null | no | Focus keywords for the per-URL prune |
-| `max_tokens` | int? | null | no | Per-URL output token budget (min 128) |
-| `fit_markdown` | bool | `true` | no | Paragraph prune per URL |
-| `session_profile` | string? | null | no | Applied to every URL |
-| `playbook_policy` | string | `auto` | no | `off` or `auto` |
-| `idempotency_key` | string? | null | no | Re-submitting the same key within 24h returns the existing job |
-| `on_oversize` | string | `fail` | no | HTTP oversize handling: `fail` or `partial` |
+1. **`occam_batch_submit`** → `job_id`, `accepted_count`, `state`  
+2. **`occam_batch_status`** → `progress` (`total`, `done`, `failed`, `running`)  
+3. **`occam_batch_results`** → `items[]`, `next_cursor`
 
-Returns the job descriptor with `job_id` and state `queued`.
+Terminal job state is usually **`done`**; check **`progress.failed`** for failures.
 
-## occam_batch_status
+## Submit parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `job_id` | string | — | **yes** | Id returned by submit |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `urls` | yes | — | JSON array string or delimiter-separated URLs |
+| `backend_policy` | no | `http_then_browser` | Per-URL backend |
+| `focus_query` / `fit_markdown` / `max_tokens` | no | fit default `true` | Prune / budget |
+| `session_profile` / `playbook_policy` | no | `auto` | Session / playbooks |
+| `idempotency_key` | no | null | 24h dedupe |
+| `on_oversize` | no | `fail` | `fail` or `partial` |
 
-Returns the job state (`queued` / `running` / `done` / `failed`) and progress counts.
+## Errors
 
-## occam_batch_results
+Tool errors use **`error: { code, message }`** (not `failure`): `invalid_request`, `job_not_found`. Per-item `ok:false` → content unknown.
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `job_id` | string | — | **yes** | Id returned by submit |
-| `cursor` | int | `0` | no | Pass the prior `next_cursor` to continue |
-| `limit` | int | `50` | no | Max items per page (1–200) |
+## Related env vars
 
-Returns `items[]` (per-URL transcode outcomes, using the transcode taxonomy for failures) and
-`next_cursor` (`null` when exhausted).
+`OCCAM_BATCH_MCP=1`, `OCCAM_BATCH_MAX_URLS`, `OCCAM_BATCH_PARALLEL`, `OCCAM_BATCH_DB_PATH`, `OCCAM_BATCH_PORT` (HTTP `--batch-server` only).
 
-## Failure codes
+## See also
 
-Errors are returned as `{failure: {code, message}}` — `invalid_arguments`, unknown `job_id`, and
-per-item transcode codes inside results. See [failure codes](../failure-codes.md).
-
-## Example
-
-```json
-{ "urls": "https://a.example/1\nhttps://a.example/2", "max_tokens": 512 }
-```
-
-→ `{ "job_id": "…", "state": "queued" }` — then poll `occam_batch_status`, then page
-`occam_batch_results`.
-
-## Related
-
-- [occam_digest](occam_digest.md) — synchronous small-batch synthesis
-- [occam_dataset_export](occam_dataset_export.md) — signed corpus export
+- [`occam_transcode`](occam_transcode.md) · [`occam_digest`](occam_digest.md) · [experimental](../experimental.md)

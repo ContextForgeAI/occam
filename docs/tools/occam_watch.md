@@ -1,59 +1,45 @@
-# Watch a page (opt-in)
+# `occam_watch`
 
-**Canonical tool:** `occam_watch`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamWatchTool.cs` @ 2026-09-29  
+**Profiles:** opt-in — `OCCAM_WATCH_MCP=1` (not gated by `OCCAM_PROFILE`)  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-Stateful page-change watch. The first call records the page; later calls return `changed:
-true/false` plus a block-level diff when it changed. State is kept server-side, keyed by URL.
+## Purpose
 
-> **Opt-in tool.** Absent from `tools/list` unless the host starts with `OCCAM_WATCH_MCP=1`.
-> There is no daemon — the agent calls on its own cadence.
+Stateful page-change watch. Each call live-extracts the URL, compares against a local JSON baseline, and reports whether content changed. No daemon — the agent polls. Response carries hashes/diff/history — **not** full page markdown.
 
-## When to use
+## When to use / when not
 
-- Recurring "did this page change since I last looked?" checks, with an optional signed change history when receipts are enabled (`history_verified` requires every entry signed).
-- The stateless equivalent (you keep the state) is `occam_transcode` with `if_none_match` +
-  `diff_against` — see [occam_transcode](occam_transcode.md).
+| Use when | Do not use when |
+|----------|-----------------|
+| Recurring “did this URL change?” with server-side baseline | You keep baseline yourself → `occam_transcode` + `if_none_match` / `diff_against` |
+| Optional signed history when receipts enabled | One-shot read → `occam_transcode` |
 
 ## Parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `url` | string | — | **yes** | HTTP or HTTPS URL to watch |
-| `backend_policy` | string | `http_then_browser` | no | `http`, `browser`, or `http_then_browser` |
-| `focus_query` | string? | null | no | Focus prune — narrows what counts as a change |
-| `session_profile` | string? | null | no | Headers profile id |
-| `playbook_policy` | string | `auto` | no | `off` or `auto` |
-| `include_diff` | bool | `true` | no | Include the block-level diff (`addedBlocks`/`removedHashes`) when changed |
-| `reset` | bool | `false` | no | Overwrite prior state; treat this call as the first sighting (`changed:false`) |
-| `include_history` | bool | `false` | no | Return the full signed change-history chain in `history`; the response always carries the history length + latest entry regardless |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `url` | yes | — | HTTP(S) URL to watch |
+| `backend_policy` | no | `http_then_browser` | Backend policy |
+| `focus_query` | no | null | Focus prune (enables fit when set) |
+| `session_profile` | no | null | Session profile id |
+| `playbook_policy` | no | `auto` | `off` or `auto` |
+| `include_diff` | no | `true` | Block-level diff when changed |
+| `reset` | no | `false` | Restart baseline / history |
+| `include_history` | no | `false` | Return full retained chain |
 
-## Returns
+Internally always requests `json_blocks`. History appends only on first_seen or changed (max 64 entries).
 
-Success envelope: watch state (`changed`, content hashes, optional block diff, history summary and
-— with `include_history=true` — the signed `history[]` chain, verifiable via
-[`occam_verify`](occam_verify.md) `mode=history`).
+## Response shape
 
-Failure envelope: `ok: false`, `url`, `failure: {code, message}`.
+**Success:** `firstSeen`, `changed`, `contentHash`, `blockCount`, timestamps, optional `diff`, `contentDeltaTokens`, `historyLength`, `latestEntry`, optional `history`.
 
-## Failure codes
+**Failure:** extract fail → baseline unchanged; `failure: { code, message }`.
 
-`invalid_arguments`, plus the transcode fetch taxonomy for the underlying extraction (`timeout`,
-`http_*`, `thin_extract`, …). See [failure codes](../failure-codes.md).
+## Related env vars
 
-## Example
+`OCCAM_WATCH_MCP=1`, `OCCAM_WATCH_DB_PATH`, `OCCAM_RECEIPTS`.
 
-Second call on a changed page (trimmed):
+## See also
 
-```json
-{
-  "ok": true,
-  "changed": true,
-  "diff": { "addedBlocks": [ { "text": "…", "sourceSelector": "…" } ], "removedHashes": ["…"] },
-  "historyLength": 3
-}
-```
-
-## Related
-
-- [occam_transcode](occam_transcode.md) — stateless change-detection (`if_none_match`, `diff_against`)
-- [occam_verify](occam_verify.md) — verify the signed history chain
+- [`occam_transcode`](occam_transcode.md) · [`occam_verify`](occam_verify.md) (`mode=history`) · [watch example](../examples/watch-experimental.md)

@@ -1,5 +1,10 @@
 # Capabilities
 
+> **Prefer** [tools/index](tools/index.md) for per-tool docs (verified against code @ 2026-09-29)
+> and [why-occam](why-occam.md) for product framing. This page is a **feature inventory hub** —
+> useful for scanning status, not a second API contract. When counts disagree, trust
+> `OccamToolNames` / runtime `tools/list`.
+
 Hub: inventory of shipped capabilities and their status.
 Individual MCP schemas live in [tools-reference](tools-reference.md).
 Domain overview (older map): [capabilities/index.md](capabilities/index.md).
@@ -63,6 +68,8 @@ Source of truth for this table: codebase paths cited below
 | `minimal` | 1 | Exam Weak mapping |
 | `basic` | 3 | Exam Medium mapping |
 | `reader` | 11 | Default |
+| `researcher` | 12 | reader + claim_check |
+| `auditor` | 15 | researcher + attest, dataset_export, playbook_lint |
 | `full` | 18 core | Exam Strong mapping |
 
 Source: `Transport/OccamToolProfile.cs`, `Exam/ExamScoring.cs:47–51`,

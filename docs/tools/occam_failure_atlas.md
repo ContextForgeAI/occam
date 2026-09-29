@@ -1,54 +1,38 @@
-# Failure atlas (opt-in)
+# `occam_failure_atlas`
 
-**Canonical tool:** `occam_failure_atlas`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamFailureAtlasTool.cs` @ 2026-09-29  
+**Profiles:** opt-in — `OCCAM_ATLAS_MCP=1` (not gated by `OCCAM_PROFILE`)  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-Read the running host's per-host failure atlas: which hosts look **walled in this session**
-(captcha / login / 4xx dominance — retrying may be wasted) vs which merely had transient failures.
-In-memory over the current run; not persisted; **not proof** a host is permanently unreachable.
+## Purpose
 
-> **Opt-in tool.** Absent from `tools/list` unless the host starts with `OCCAM_ATLAS_MCP=1`
-> (which also turns on the per-host aggregation).
+Read the running host’s in-memory per-host failure atlas: which hosts look **walled for this run** (dominant honest closure) vs transient failures. Not persisted; not proof a host is permanently unreachable.
 
-## When to use
+## When to use / when not
 
-- Planning a crawl mid-session: skip hosts the atlas classifies as walled for this run.
-- Note the atlas is empty at startup and forgets everything on restart.
+| Use when | Do not use when |
+|----------|-----------------|
+| Mid-session crawl: skip `walled: true` hosts | Pre-flight before any extract → [`occam_probe`](occam_probe.md) |
+| Closure-oriented summary after extracts this process | Expecting probe-only traffic to populate the atlas |
+
+**Populated by** `TranscodePipeline` outcomes only (transcode, digest, cascade, batch/watch/crosscheck when enabled). **Not** by `occam_probe`. Max 500 hosts.
 
 ## Parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `only_walled` | bool | `false` | no | Return only hosts classified as walled in this session |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `only_walled` | no | `false` | If true, filter `hosts[]` to walled only |
 
-## Returns
+## Response shape
 
-- `ok: true`, `hostCount`, `walledCount`, `timestamp`
-- `hosts[]` (worst-first) — `{host, attempts, successes, failures, closureRate, walled,
-  dominantFailure, byCode:[{code, count}], lastFailureAt}`
+**Always `ok: true`.** Fields: `hostCount`, `walledCount` (full snapshot), `hosts[]` (worst-first), `timestamp`.
 
-`walled` = the host never succeeded **and** its dominant failure is an honest closure
-(captcha/login/4xx).
+Honest closures: `captcha_or_challenge`, `requires_login`, `http_401`, `http_403`, `http_404`, `http_410`.
 
-## Example
+## Related env vars
 
-```json
-{ "only_walled": true }
-```
+`OCCAM_ATLAS_MCP=1` — registers tool and `FailureAtlasSink`.
 
-Trimmed response:
+## See also
 
-```json
-{
-  "ok": true,
-  "hostCount": 12,
-  "walledCount": 2,
-  "hosts": [
-    { "host": "paywalled.example", "attempts": 4, "successes": 0, "failures": 4, "closureRate": 1.0, "walled": true, "dominantFailure": "requires_login", "byCode": [ { "code": "requires_login", "count": 4 } ] }
-  ]
-}
-```
-
-## Related
-
-- [Failure codes](../failure-codes.md) — what each code means
-- [occam_probe](occam_probe.md) — pre-flight check for hosts not yet in the atlas
+- [Failure codes](../failure-codes.md) · [`occam_transcode`](occam_transcode.md) · [`occam_probe`](occam_probe.md)

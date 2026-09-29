@@ -1,77 +1,46 @@
-# Heal a playbook
+# `occam_playbook_heal`
 
-**Canonical tool:** `occam_playbook_heal`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamPlaybookHealTool.cs` @ 2026-09-29  
+**Profiles:** `full` only (`OCCAM_PROFILE=full`). Hidden on `reader` (default) and other narrow profiles.  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-When a transcode fails on a hard site with no recipe: capture the page's DOM skeleton plus selector
-candidates and an optional **mechanical** `draftPlaybookJson` stub (selectors only — not LLM-written).
-Review the stub → lint → [`occam_playbook_save`](occam_playbook_save.md).
+## Purpose
 
-## When to use
+After a heal-eligible transcode failure, load the page in the browser, capture a compact DOM skeleton plus selector candidates, and may emit a mechanical `draftPlaybookJson` stub (selectors only — not LLM-written). Review → lint → [`occam_playbook_save`](occam_playbook_save.md).
 
-- After an `ok:false` transcode whose failure response suggested it
-  (`agentHints.suggestedNext: "occam_playbook_heal"`), typically on `thin_extract`.
-- Then: draft the recipe JSON → [`occam_playbook_lint`](occam_playbook_lint.md) →
-  [`occam_playbook_save`](occam_playbook_save.md).
-- Not for provable walls (captcha/login) — those are not healable by selectors.
+## When to use / when not
+
+| Use when | Do not use when |
+|----------|-----------------|
+| Prior transcode `ok: false` and `agentHints.suggestedNext` is `occam_playbook_heal` | Terminal failures (captcha, private URL, many HTTP errors) — heal echoes and stops |
+| Heal-set `failure_reason` (e.g. `thin_extract`, `extraction_failed`, `content_selectors_miss`, playbook verify failures) | Outside heal set → `heal_not_applicable` |
+| Login walls **only with** the same `session_profile` as transcode | Profile is not `full` |
 
 ## Parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `url` | string | — | **yes** | Absolute HTTP(S) URL to heal |
-| `failure_reason` | string | — | **yes** | The prior `failure.code` from `occam_transcode` (e.g. `thin_extract`) |
-| `session_profile` | string? | null | no | Same profile you used with the failing transcode |
-| `max_skeleton_nodes` | int | `600` | no | Max skeleton nodes (cap 600) |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `url` | yes | — | Absolute HTTP(S) URL to heal |
+| `failure_reason` | yes | — | Prior `failure.code` from transcode |
+| `session_profile` | no | omit | Optional session profile id |
+| `max_skeleton_nodes` | no | `600` | Max skeleton nodes (clamped **50–600**) |
 
-## Returns
+## Response shape
 
-Success envelope:
+**Success:** `url`, `failureReason`, optional `domSkeleton`, `anchors`, `draftPlaybookJson` (omitted if no candidates with score ≥ 0.45), `agentHints` (`suggestedNext: occam_playbook_save`, `maxVerifyRetries: 3`).
 
-- `ok: true`, `url`, `failureReason`
-- `domSkeleton` — `{root, stats: {nodeCount, maxDepth, interactiveCount}}`; each node is
-  `{tag, id?, class[]?, role?, testId?, aria?, text?, interactive, children[]?}`
-- `anchors` — `{landmarks[], dataTestIds[], mainCandidates[]}`; each candidate is
-  `{selector, textAnchor?, score}` — the ranked guesses for the page's main content selector.
-  Capture prefers content landmarks (`main` / `article` / `#content`) over nav chrome so a
-  tight `max_skeleton_nodes` budget still surfaces usable candidates on docs SPAs.
-- `draftPlaybookJson?` — mechanical schema_version 1 stub with top `contentSelectors` from
-  `mainCandidates` (omitted when empty). Review before save; not a verified playbook.
-- `agentHints` — `{suggestedNext, doNot[], maxVerifyRetries}`
+**Failure:** `failureCode`, `message` — never invent page content.
 
-Failure envelope: `ok: false`, `url`, `failureReason`, `failureCode`, `message`, `agentHints?`.
+## Common failure codes
 
-## Failure codes
+`invalid_url`, `invalid_failure_reason`, `heal_not_applicable`, terminal prior codes, `workers_unavailable`, `timeout` (120s), `extraction_failed`, `heal_failed`.
 
-`heal_not_applicable` (this failure isn't selector-healable), `heal_failed`, plus fetch-level codes
-(`timeout`, `network_error`, `captcha_or_challenge`, …) when the capture itself could not load the
-page. See [failure codes](../failure-codes.md).
+Full taxonomy: [failure-codes](../failure-codes.md).
 
-## Example
+## Related env vars
 
-Call:
+`OCCAM_PROFILE` (must be `full`), `OCCAM_HOME`, `OCCAM_DOM_SKELETON_SCRIPT`, session profiles — [configuration](../configuration.md).
 
-```json
-{ "url": "https://spa.example/app/article/42", "failure_reason": "thin_extract" }
-```
+## See also
 
-Trimmed response:
-
-```json
-{
-  "ok": true,
-  "url": "https://spa.example/app/article/42",
-  "failureReason": "thin_extract",
-  "anchors": {
-    "landmarks": ["main", "article"],
-    "dataTestIds": ["article-body"],
-    "mainCandidates": [ { "selector": "[data-testid=article-body]", "textAnchor": "…", "score": 0.87 } ]
-  },
-  "agentHints": { "suggestedNext": "occam_playbook_save", "doNot": ["do not loop heal more than once per url per turn"], "maxVerifyRetries": 2 }
-}
-```
-
-## Related
-
-- [occam_playbook_lint](occam_playbook_lint.md) — validate the recipe you draft
-- [occam_playbook_save](occam_playbook_save.md) — save + verify it
-- [Failure codes](../failure-codes.md)
+- [`occam_transcode`](occam_transcode.md) · [`occam_playbook_lint`](occam_playbook_lint.md) · [`occam_playbook_save`](occam_playbook_save.md)

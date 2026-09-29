@@ -1,114 +1,63 @@
-# Digest several sources
+# `occam_digest`
 
-**Canonical tool:** `occam_digest`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamDigestTool.cs`, `OccamDigestModels.cs`, and `Services/DigestService.cs` @ 2026-09-29  
+**Profiles:** `basic`, `reader`, `researcher`, `auditor`, `full` — not exposed in `minimal`  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-Research several pages at once: digest up to 8 URLs into per-page excerpts plus an optional
-combined Markdown block. **Polite by host:** URLs that share a registrable host run one at a
-time; different hosts may fan out (see `OCCAM_DIGEST_MAX_PARALLEL`).
+## Purpose
 
-## When to use
+Research several live pages in one call: transcode up to eight URLs into per-page excerpts, optional combined Markdown with `##` titles, and optional link discovery from a `source_url`. Prefer one digest over many separate `occam_transcode` calls when you already have multiple URLs.
 
-- Multi-source synthesis — instead of many single `occam_transcode` calls.
-- Pass `focus_query` to keep only the parts relevant to your question (recommended).
-- Need the raw full text of one page → [`occam_transcode`](occam_transcode.md).
-- Don't have URLs yet → [`occam_map`](occam_map.md) or [`occam_search`](occam_search.md) first,
-  or let digest discover links itself via `source_url`.
+## When to use / when not
+
+| Use when | Do not use when |
+|----------|-----------------|
+| Several URLs (or a site entry point) and you want excerpts plus an optional merged block | Full single-page materialization → [`occam_transcode`](occam_transcode.md) |
+| A shared `focus_query` should prune each excerpt | Link list only, no bodies → [`occam_map`](occam_map.md) |
+| `source_url` discovery (with optional focus ranking) | No URLs yet → [`occam_map`](occam_map.md) or [`occam_search`](occam_search.md) first |
 
 ## Parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `urls` | array<string> \| string? | null | no* | Preferred: native URL or search-handle array. Deprecated compatibility: JSON-encoded string/object entries or newline/comma-separated string. *Required only when `source_url` is omitted |
-| `backend_policy` | string | `http_then_browser` | no | Applied to each URL |
-| `max_urls` | int | `8` | no | 1–8; extra URLs are dropped |
-| `per_url_max_tokens` | int? | null | no | Per-URL token budget (min 128) |
-| `focus_query` | string? | null | no | Focus keywords applied to each URL (a per-entry `focus_query` wins). Also ranks `source_url` discovery (entity-first; same ranker as `occam_map`) |
-| `fit_markdown` | bool | `true` | no | Paragraph prune per URL (note: default **true** here, unlike transcode) |
-| `include_combined` | bool | `true` | no | Include the combined markdown block with `##` titles |
-| `session_profile` | string? | null | no | Applied to every URL in the batch |
-| `source_url` | string? | null | no | Auto-discover links (URL or search handle); when set, **`urls` is ignored**. With `focus_query`: homepage (+ hub expand) ∪ sitemap → shared ranker → `max_links`. Without focus: lighter sitemap → HTML path |
-| `max_links` | int | `8` | no | Max links to discover from `source_url` (1–8) |
-| `if_none_match` | string? | null | no | SHA-256 of prior combined (bare hex or receipt `sha256:` contentHash); returns `unchanged:true` when matched |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `urls` | yes* | — | *Required when `source_url` is omitted. JSON string (legacy) or array of URL strings. Ignored when `source_url` is set. Native arrays must be URL strings only. |
+| `backend_policy` | no | `http_then_browser` | `http`, `browser`, `http_then_browser`, or `http-then-browser`. |
+| `max_urls` | no | `8` | Process at most 1–8 URLs. |
+| `per_url_max_tokens` | no | null | Per-URL output token budget (minimum **128**). Omit for ambient client budget or full excerpt. |
+| `focus_query` | no | null | Focus keywords per URL; also drives focused `source_url` discovery ranking. |
+| `fit_markdown` | no | `true` | Paragraph prune per URL (default **true**, unlike transcode). |
+| `include_combined` | no | `true` | Include merged markdown with `## {title}` sections. |
+| `session_profile` | no | null | Session profile id applied to every URL. |
+| `source_url` | no | null | Auto link discovery. When set, **`urls` is ignored**. |
+| `max_links` | no | `8` | Max links to discover from `source_url` (1–8). |
+| `if_none_match` | no | null | SHA-256 of prior **combined** markdown. Match → `unchanged: true` and empty `combined`. |
 
-**Input contract:** supply `urls` and/or `source_url` (at least one). MCP `tools/list` publishes
-`urls` as a native string-array/string union and does not require it when `source_url` is present.
-Prefer native arrays. Legacy strings remain temporarily supported for prerelease compatibility,
-including JSON-encoded `{url, focus_query?}` entries, but are deprecated.
+Supply **`urls` and/or `source_url`** (at least one). Empty discovery → `invalid_urls`.
 
-Native arrays must contain only URL strings. Empty, mixed-type, nested, malformed, or oversized
-transport input returns typed `invalid_arguments` after binding. Normalization accepts at most 256
-entries and 65,536 characters; `max_urls` separately limits executed URLs to 8. Both inputs set →
-`source_url` wins. Empty discovery → typed `invalid_urls` (no fallback to `urls`).
+## Response shape
 
-## Returns
+**Success (`ok: true`):** `digestId` (16-char hex), `items[]` (per-URL success or failure), `stats`, optional `combined`, `sourceUrl` / `discoveredLinks[]`, `unchanged`, `agentHints`, `timestamp`. Digest-level `ok` may be **true** even when some items failed.
 
-Success envelope:
+**Failure (`ok: false`):** `failureCode`, `message`, `timestamp`; optional partial fields. Treat failed item bodies as unknown.
 
-- `ok: true`, `digestId`, `stats: {requested, succeeded, failed, totalTokensEstimated}`, `timestamp`
-- `items[]` — per URL: `{url, ok, title?, excerpt?, backend?, tokensEstimated, failure?,
-  focusQuery?, focusMatched?, mediaRefs[], confidence, receipt?}`; a failed item carries
-  `failure: {code, message}` while the digest as a whole stays `ok:true`. `focusMatched` is scored
-  (phrase / ideal with stem+synonym / partial for ≥3-term queries; 2-term queries require both terms)
-- successful item receipts identify their token-count heuristic as `tokenEstimator: "heuristic-unicode-v1"`
-- `combined` — the merged markdown (when `include_combined=true`)
-- `sourceUrl` + `discoveredLinks[]` — when link discovery ran
-- `unchanged` — for conditional digests
-- `agentHints` — `{suggestedReadOrder, warnings[], decisions[]?}`. When every ok item has
-  `focusMatched: false`, includes `focus_not_found` (warning + decision) and
-  `suggestedReadOrder: "items_only"` — do not treat the result as a successful focused digest.
+## Common failure codes
 
-Failure envelope: `ok: false`, `failureCode`, `message`, plus partial `items`/`stats` when some
-URLs were attempted. `ok:false` (or a per-item `ok:false`) = that content is unknown.
+Digest-level: `invalid_arguments`, `invalid_urls`, `invalid_url`, `private_url_blocked`, `invalid_session_profile`, `session_profile_not_found`, `stale_handle`, `unknown_handle`, `workers_unavailable`, `digest_failed`.
 
-## Failure codes
+Per-item codes use the transcode taxonomy. Full list: [failure codes](../failure-codes.md).
 
-Digest-level: `invalid_arguments` (neither input; malformed/empty/mixed/oversized `urls`; bad
-policy/budget), `invalid_urls` (`source_url` discovery empty), `stale_handle` / `unknown_handle`
-(a search handle expired or is not live), `digest_failed` (all URLs failed).
-Per-item `failure.code` uses the transcode taxonomy (`timeout`, `http_*`, `thin_extract`,
-`captcha_or_challenge`, …). See [failure codes](../failure-codes.md).
+## Related env vars
 
-## Example — `source_url` only
+| Variable | Effect |
+|----------|--------|
+| `OCCAM_DIGEST_PARALLEL=0` | Force sequential per-URL transcodes |
+| `OCCAM_DIGEST_MAX_PARALLEL` | Cap concurrent transcodes (1–8) |
+| `OCCAM_CLIENT_CONTEXT_TOKENS` | Ambient per-URL budget when `per_url_max_tokens` is omitted |
+| `OCCAM_PROFILE` | Whether `occam_digest` is exposed |
 
-```json
-{
-  "source_url": "https://nginx.org/en/docs/",
-  "max_links": 4,
-  "focus_query": "configuration"
-}
-```
+Full catalog: [configuration](../configuration.md).
 
-(`urls` may be omitted; MCP schema does not require it when `source_url` is set.)
+## See also
 
-## Example — `urls` only
-
-Call:
-
-```json
-{
-  "urls": ["https://a.example/post", "https://b.example/post"],
-  "focus_query": "rate limiting",
-  "per_url_max_tokens": 800
-}
-```
-
-Trimmed response:
-
-```json
-{
-  "ok": true,
-  "digestId": "dg_…",
-  "items": [
-    { "url": "https://a.example/post", "ok": true, "title": "…", "excerpt": "…", "backend": "http", "tokensEstimated": 640 },
-    { "url": "https://b.example/post", "ok": false, "failure": { "code": "http_404", "message": "HTTP 404 (http_404)." }, "mediaRefs": [] }
-  ],
-  "combined": "## A post\n…",
-  "stats": { "requested": 2, "succeeded": 1, "failed": 1, "totalTokensEstimated": 640 }
-}
-```
-
-## Related
-
-- [occam_map](occam_map.md) — find URLs to feed in
-- [occam_transcode](occam_transcode.md) — single-page deep read
-- [Failure codes](../failure-codes.md)
+- [`occam_transcode`](occam_transcode.md) · [`occam_map`](occam_map.md) · [`occam_search`](occam_search.md)
+- [Choosing a tool](../choosing-a-tool.md) · [Recipes](../recipes.md) · [Failure codes](../failure-codes.md)

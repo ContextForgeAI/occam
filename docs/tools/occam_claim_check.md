@@ -1,77 +1,47 @@
-# Check a claim
+# `occam_claim_check`
 
-**Canonical tool:** `occam_claim_check`
+**Status:** verified against `src/FFOccamMcp.Core/Tools/OccamClaimCheckTool.cs` @ 2026-09-29  
+**Profiles:** `researcher`, `auditor`, `full` — **not** default `reader`, `minimal`, or `basic`  
+**Contract depth:** [MCP API](../reference/mcp-api.md) · runtime `tools/list`
 
-**Evidence / support lookup** over extracted page content: retrieve blocks that clear a lexical BM25
-floor for a claim string, attach Merkle membership proofs, and return a signed Receipt v1 for the
-extract — or an honest `found:false`.
+## Purpose
 
-**Not a fact check.** `verdict` is always `not_evaluated`. The tool does not classify support vs
-refute. Merkle proofs prove **block membership** in the signed extract, not that the claim is true.
+Live claim grounding for one sentence against one URL: fetch via transcode pipeline, rank blocks by BM25 vs `claim`, return top matches with Merkle leaf + proof. Shows **which source text was retrieved**; does **not** decide support vs refute (`verdict` always `not_evaluated`).
 
-## When to use
+## When to use / when not
 
-- Grounding a single assertion against one source URL before citing it.
-- Auditing many claims with stance heuristics → [`occam_attest`](occam_attest.md) (unsigned aggregate).
-- Third-party re-check of each returned proof → [`occam_verify`](occam_verify.md) `mode=citation`.
+| Use when | Do not use when |
+|----------|-----------------|
+| Provable block(s) from this URL for one assertion | Host-side stance status → [`occam_attest`](occam_attest.md) |
+| You will judge support yourself from `matches[].text` | Full page markdown only → [`occam_transcode`](occam_transcode.md) |
+| Re-check leaf + proof via [`occam_verify`](occam_verify.md) `citation` | Expecting truth from the claim string alone |
 
 ## Parameters
 
-| Parameter | Type | Default | Required | Description |
-|---|---|---|---|---|
-| `claim` | string | — | **yes** | The assertion to ground (a sentence) |
-| `url` | string | — | **yes** | HTTP or HTTPS URL to check against |
-| `backend_policy` | string | `http_then_browser` | no | `http`, `browser`, or `http_then_browser` |
-| `session_profile` | string? | null | no | For gated pages |
-| `max_matches` | int | `3` | no | Max relevant blocks to return (1–10) |
+| Name | Required | Default | Meaning |
+|------|----------|---------|---------|
+| `claim` | yes | — | Assertion to ground (a sentence) |
+| `url` | yes | — | HTTP(S) URL |
+| `backend_policy` | no | `http_then_browser` | `http`, `browser`, or `http_then_browser` |
+| `session_profile` | no | null | Optional session profile id |
+| `max_matches` | no | `3` | Max blocks (1–10; silently clamped) |
 
-## Returns
+**Fixed internally:** `json_blocks=true`, `playbook_policy=auto`; no caller `max_tokens` / `fit_markdown`.
 
-Success envelope:
+## Response shape
 
-- `ok: true`, `url`, `claim`, `found` — retrieval result, not stance
-- `verdict` — always `not_evaluated` (use [`occam_attest`](occam_attest.md) for `status`)
-- `proven` — **legacy field:** when `found:false`, `true` means **retrieval-complete negative**
-  (untruncated leaf set, no BM25 hit). **Not** semantic proof the page omits the claim. `null` when
-  `found:true`.
-- `blockMerkleRoot?`, `keyId?` — the signed root proofs anchor to
-- `matches[]` — retrieved blocks with text, score, leaf, Merkle proof
-- `receipt?` — signed Receipt v1 for the page extract (verifiable)
-- `timestamp`
+**Success:** `found`, `retrieved` (= `found`), `verdict: not_evaluated`, optional `proven` when `found:false` (retrieval-complete negative only — not semantic absence), `blockMerkleRoot`, `matches[]` (`blockIndex`, `text`, `score`, `leaf`, `proof[]`, …), optional `receipt`, `timestamp`.
 
-Failure envelope: `ok: false` — page could not be read (content unknown). Distinct from `found:false`.
+**Failure:** `failure: { code, message }` — page content unknown. Distinct from success with `found: false`.
 
-## Failure codes
+## Common failure codes
 
-`invalid_arguments`, plus the transcode fetch taxonomy. See [failure codes](../failure-codes.md).
+`invalid_arguments`; plus transcode taxonomy on fetch/extract. Full list: [failure-codes](../failure-codes.md).
 
-## Example
+## Related env vars
 
-Call:
+`OCCAM_PROFILE`, `OCCAM_RECEIPTS`, session profiles — [configuration](../configuration.md).
 
-```json
-{
-  "claim": "nginx supports weighted round-robin load balancing",
-  "url": "https://nginx.org/en/docs/http/load_balancing.html"
-}
-```
+## See also
 
-Trimmed response:
-
-```json
-{
-  "ok": true,
-  "found": true,
-  "verdict": "not_evaluated",
-  "blockMerkleRoot": "…",
-  "keyId": "k1:…",
-  "matches": [ { "text": "…weight parameter…round-robin…", "score": 0.71, "leaf": "…", "proof": [ … ] } ],
-  "receipt": { "signed": { "contentHash": "sha256:…", "sig": "…" } }
-}
-```
-
-## Related
-
-- [occam_attest](occam_attest.md) — heuristic citation assessment (batch)
-- [occam_verify](occam_verify.md) — verify membership proofs
-- [Guide: claims](../guides/claims.md) · [Receipts](../receipts.md)
+- [`occam_verify`](occam_verify.md) · [`occam_attest`](occam_attest.md) · [Guide: claims](../guides/claims.md)

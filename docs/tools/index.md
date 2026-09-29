@@ -5,9 +5,11 @@ Occam exposes **18 core tools** under `OCCAM_PROFILE=full` (product default is *
 All tools return a **JSON string** (camelCase). The trust rule everywhere: **`ok: false` means the
 page content is unknown** — never substitute model memory.
 
+Per-tool pages below were **rewritten from code** (Status verified @ 2026-09-29) during the doc
+rescue. Runtime `tools/list` remains authoritative for availability and input schemas.
+
 For an agent, this page is a router, not a prompt payload: choose one tool, then open only its linked
-page. Runtime `tools/list` is authoritative for availability and input schemas; these pages explain
-intent, outputs, and recovery behavior.
+page.
 
 ## Pick by job
 
