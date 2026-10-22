@@ -8,6 +8,7 @@ Occam is a **local MCP server** (`ff-occam`). It fetches the real page, strips c
 The product is not a pile of eighteen tools. Tools combine into a few **skills**: get material under a budget, learn a site recipe when the default path fails, attach evidence for citations, and (opt-in) size the tool surface to how an agent actually behaves.
 
 [![Release](https://img.shields.io/github/v/release/ContextForgeAI/occam?label=release)](https://github.com/ContextForgeAI/occam/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/ContextForgeAI/occam/total?label=downloads)](https://github.com/ContextForgeAI/occam/releases)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-contextforgeai.github.io%2Foccam-0ea5e9)](https://contextforgeai.github.io/occam/)
 [![MCP](https://img.shields.io/badge/MCP-18%20core%20tools-0ea5e9)](docs/tools/index.md)
