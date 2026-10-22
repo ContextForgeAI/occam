@@ -99,23 +99,28 @@ Does <strong>not</strong> invent page text from model memory.
     <li><a href="quick-start/"><span>03</span><strong>Read</strong><small>Get compact context or an explicit failure.</small></a></li>
   </ol>
 
-  <p class="oc-signal-meta">Local-first · MCP · explicit failures · 1.0.0</p>
+  <p class="oc-signal-meta">Local-first · MCP · explicit failures · 1.3.0</p>
 </section>
 
-## What you get (30 seconds)
+## What Occam is for (skills, not a tool pile)
 
-| | Capability |
-|---|------------|
-| **Honest read** | Live extract → Markdown, or typed refusal. `ok:false` = content **unknown**. |
-| **Token contract** | `occam_client_capabilities`, `max_tokens`, `fit_markdown` + `focus_query` — not an LLM summarizer. |
-| **Acquisition ladder** | HTTP → browser when needed → typed refusal. |
-| **One page / many** | `occam_transcode` · `occam_digest` · `occam_map` / `occam_search`. |
-| **Structure / diffs** | Opt-in blocks/tables/feeds · `if_none_match` / `diff_against`. |
-| **Integrity** | Optional Receipt v1 → `occam_verify` (integrity vs a key — not truth). |
-| **Playbooks** | Per-site recipes when you author them. |
-| **Local-first** | Runs with you; private URL / SSRF blocks by default. |
+Occam’s eighteen core tools combine into a few finished abilities. Default
+profile **`reader`** exposes eleven day-to-day tools; authoring and the full
+catalog need **`OCCAM_PROFILE=full`**.
 
-Full knobs and tool map: **[Why Occam](why-occam.md)**. Agents: start at [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt).
+| Skill | Situation → result | How tools join |
+|-------|--------------------|----------------|
+| **Read under a budget** | Need page material without burning context → compact Markdown or typed `ok:false` | Optional search / map / probe → `occam_transcode` or one-call `occam` or `occam_digest`; budget via `occam_client_capabilities`; cheap re-read with `if_none_match` / `diff_against` |
+| **Learn a site recipe** | Default extract fails on a site you will revisit → local playbook reused later | Agent loop: heal → lint → save (`full` profile); later resolve / transcode / `occam_extract_knowledge`. Notes guide the agent; they are not an automatic price converter |
+| **Bind evidence** | Need citations or proof of what was returned → integrity / block match / heuristic attest / canary | Receipt + `occam_verify`, `occam_claim_check`, `occam_attest`, canary, `occam_dataset_export` — different questions, not one “truth” button |
+| **Size the tool surface** (opt-in) | Match the tool menu to observed agent behaviour → narrower or fuller `tools/list` | `OCCAM_EXAM_MCP=1` + submit a behaviour record; the host grades the record, it does not run the exam for the agent |
+
+Local-first defaults, private-URL blocks, and typed unknowns apply across skills.
+Opt-in volume/time tools (batch, watch, crosscheck, atlas, browser actions) stay
+behind env flags — see [configuration](configuration.md).
+
+Full knobs: **[Why Occam](why-occam.md)** · agents: [`llms.txt`](https://raw.githubusercontent.com/ContextForgeAI/occam/main/llms.txt) ·
+repo door: [README](https://github.com/ContextForgeAI/occam#readme).
 
 ## Inspect one demo (not a benchmark)
 
@@ -297,15 +302,17 @@ verification are available when the task needs more control.
 
 ## Why Occam
 
-Not “another web fetch.” Occam is the honesty + token-budget layer between your
-agent and the public web.
+Not “another web fetch.” Occam is the local honesty-and-evidence layer between
+your agent and the public web: acquire real material (or refuse), fit a token
+budget without LLM summarization, optionally learn a site recipe, and optionally
+attach checkable integrity aids.
 
 | Generic fetch / memory | Occam |
 |------------------------|--------|
 | Empty HTML or invented text | Live Markdown **or** typed `ok:false` |
 | Burns the context window | Budget + focus prune (deterministic) |
-| No proof of what was returned | Optional Receipt v1 → verify |
-| One opaque “read” | Ladder, probe, map, search, digest |
+| No proof of what was returned | Optional Receipt v1 → verify (integrity vs a key — not truth) |
+| One opaque “read” | Skills: budgeted read, playbook authoring, evidence, opt-in exam surface |
 
 [Why Occam — full flashcard](why-occam.md) · [Choose a tool](choosing-a-tool.md) ·
 [Ask AI / agent prompt](ask-ai.md)

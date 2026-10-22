@@ -22,16 +22,16 @@ Default one-page call: **`occam_transcode` with only `url`**. Everything else is
 
 ---
 
-## Advantages (product)
+## Skills (product)
 
-1. **Honesty contract** — typed failures; `thin_extract` is bad extract; short complete pages stay `ok:true`.  
-2. **Token contract (K2)** — ambient budget via `occam_client_capabilities` (~20% of context) or explicit `max_tokens`; drops reported in `compile.omitted`.  
-3. **Acquisition ladder** — cheap HTTP first, browser when needed; typed refusal when both fail.  
-4. **Materialization** — focus, structured sidecars, differential re-reads — same extract, different shapes.  
-5. **Receipts & evidence** — signed extract integrity; claim_check / attest for citation workflows (heuristic — not crypto truth).  
-6. **Playbooks** — per-site recipes (resolve / heal / lint / save) without rewriting the host.  
-7. **Local-first** — host runs with you; SSRF/private URL blocks; Cosign on *releases* ≠ page truth.  
-8. **Discovery before spend** — probe extractability, map links, search (keyless DuckDuckGo by default), then digest many URLs once.
+Tools matter as finished abilities, not as an eighteen-card catalog.
+
+1. **Read under a budget** — honesty contract (`ok:false` = unknown; `thin_extract` ≠ `short_quality`) + token contract (`occam_client_capabilities` ~20% of context, or explicit `max_tokens` / focus) + acquisition ladder (HTTP → browser) + discovery (probe / map / search) + many URLs (`occam_digest`) + cheap re-reads (`if_none_match` / `diff_against`). One-call facade: `occam`. Full knobs: `occam_transcode`.  
+2. **Learn a site recipe** — when default extract fails: heal → lint → save (`OCCAM_PROFILE=full`), then reuse via resolve / transcode / `occam_extract_knowledge`. `agent_notes` guide the agent; they are not automatic arithmetic.  
+3. **Bind evidence** — Receipt v1 + `occam_verify` (integrity vs a key — not truth); `occam_claim_check` / `occam_attest` (heuristic citation aids); canary proof-of-read; `occam_dataset_export`.  
+4. **Size the tool surface** (opt-in) — `OCCAM_EXAM_MCP=1` grades a **submitted behaviour record** and may change `tools/list`; not an autonomous exam.  
+
+Also: **local-first** defaults (SSRF / private URL blocks); Cosign on *releases* ≠ page truth. Opt-in batch / watch / crosscheck / atlas / browser actions stay behind env flags — [experimental](experimental.md).
 
 ---
 
@@ -84,16 +84,18 @@ There is **no** public MCP parameter to pick a knowledge codec (`compact-markdow
 | Typed fields | `occam_extract_knowledge` |
 | Integrity / cite | `occam_verify` · `occam_claim_check` · `occam_attest` |
 | Corpus export | `occam_dataset_export` |
-| Site recipe | `occam_playbook_*` (authoring only) |
-| Opt-in extras | watch / batch / crosscheck / atlas / browser_interact — [experimental](experimental.md) |
+| Site recipe | `occam_playbook_*` (authoring — needs `OCCAM_PROFILE=full`) |
+| Opt-in extras | watch / batch / crosscheck / atlas / browser_interact / exam_submit — [experimental](experimental.md) |
 
-Default profile **`reader`** exposes a subset; `full` exposes the fifteen-core set. Runtime `tools/list` is authoritative.
+Default profile **`reader`** exposes **11** day-to-day tools; `full` exposes all **18** core tools. Runtime `tools/list` is authoritative.
 
 ---
 
 ## Do not overclaim
 
 - Receipts = integrity vs a key — **not** truth, identity, origin authenticity, or trusted time.  
+- Attest / claim_check = heuristic retrieval aids — **not** general NLI truth.  
+- Exam MCP = grade of a submitted record — **not** the host running the four tasks for the agent.  
 - Crosscheck = comparison — **not** consensus proof.  
 - npm = experimental RC — **not** GA install.  
 - Cosign = release authenticity under policy — **not** page-content truth.  

@@ -14,6 +14,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Changed
 
+- **Product door by skills:** root `README.md`, `docs/index.md` (site home), and `docs/why-occam.md`
+  explain Occam as four skills (budgeted read, playbook authoring, evidence, opt-in exam surface)
+  instead of a flat tool/capability list. Honest profile notes (`reader` vs `full`), cascade vs
+  transcode roles, and exam-as-submitted-record. Site hero meta version aligned to **1.3.0**.
 - **Doc rescue (Phase 1–6 + polish):** root `README.md` rewritten as a product door. `docs/rc2/**`
   remains MkDocs-excluded (archive README added). Handbook collapsed to a single nav entry;
   `llms.txt` / `docs/index.md` / `documentation-map.md` demote engineering piles. All **18 core** +
