@@ -25,7 +25,12 @@ The product is not a pile of eighteen tools. Tools combine into a few **skills**
 ## Install
 
 > **Use the release tarball.** Do not build from source (`dotnet build` / `publish` / `run`) unless you are developing Occam itself.  
-> Needs **Node 20+**. No .NET SDK on the install machine. Full rules: [INSTALL.md](INSTALL.md).
+> Full rules: [INSTALL.md](INSTALL.md).
+
+**Prerequisites** (must be on PATH before running install):
+
+- **Node.js 20+**
+- **Cosign** ([install guide](https://docs.sigstore.dev/cosign/system_config/installation/)) — required for signature verification since v1.0.0-rc.3
 
 **Windows (PowerShell):**
 

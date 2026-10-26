@@ -10,11 +10,15 @@
 **Repo:** [https://github.com/ContextForgeAI/occam](https://github.com/ContextForgeAI/occam)  
 **Docs site:** [https://contextforgeai.github.io/occam/](https://contextforgeai.github.io/occam/)
 
-**Requirements:** Node.js **20+** (installer also checks Homebrew locations `/opt/homebrew/bin` and `/usr/local/bin` when `node` is not already on `PATH`). No .NET SDK on the install machine.  
-**Cosign:** required when the release manifest declares `signaturePolicy=required-cosign-v1` (published `v1.0.0-rc.3`+). Install from [Sigstore Cosign docs](https://docs.sigstore.dev/cosign/system_config/installation/) before bootstrap if Cosign is not already on `PATH`. Authenticity ≠ page-content truth.
+**Prerequisites** (must be on PATH before running install):
 
-**Published release:** `1.3.0` (GitHub Release tag `v1.3.0`).
+- **Node.js 20+** (installer also checks Homebrew locations `/opt/homebrew/bin` and `/usr/local/bin` when `node` is not already on `PATH`)
+- **Cosign** ([install guide](https://docs.sigstore.dev/cosign/system_config/installation/)) — required for signature verification since v1.0.0-rc.3 (`signaturePolicy=required-cosign-v1`)
+
+**Published release:** `1.3.0` (GitHub Release tag `v1.3.0`).  
 **Public install default** (unset `OCCAM_VERSION`): **`1.3.0`**.
+
+The release install does not require the .NET SDK on the install machine. Authenticity ≠ page-content truth.
 
 ---
 

@@ -21,6 +21,8 @@ ff-occam --help
 
 Full install (recommended):
 
+**Prerequisites:** Node.js 20+ and [Cosign](https://docs.sigstore.dev/cosign/system_config/installation/) must be on PATH.
+
 ```powershell
 # Windows
 irm https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.ps1 | iex

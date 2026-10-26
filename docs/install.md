@@ -4,10 +4,15 @@ Canonical agent/operator install reference also lives at the repository root:
 [`INSTALL.md`](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md).
 This page is the documentation-site copy of the same happy path.
 
-**Requirements:** Node.js **20+**. No .NET SDK on the install machine.  
-**Cosign:** required for published `v1.0.0-rc.3`+ (`signaturePolicy=required-cosign-v1`). See [Sigstore install](https://docs.sigstore.dev/cosign/system_config/installation/).
-**Published release:** `1.3.0`
+**Prerequisites** (must be on PATH before running install):
+
+- **Node.js 20+**
+- **Cosign** ([install guide](https://docs.sigstore.dev/cosign/system_config/installation/)) — required for signature verification since v1.0.0-rc.3
+
+**Published release:** `1.3.0`  
 **Public install default** (unset `OCCAM_VERSION`): **`1.3.0`
+
+The release install does not require the .NET SDK on the install machine.
 
 ---
 
