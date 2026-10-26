@@ -14,6 +14,11 @@
  *   node scripts/check-public-mcp-contract.mjs --diagnose   # print version-surface JSON
  *
  * Exit 0 on PASS. Marker: PUBLIC_MCP_CONTRACT_OK
+ *
+ * OCCAM_PROFILE: This script always uses profile=full when spawning the host (unless
+ * OCCAM_PROFILE is already set in the environment), because the fingerprint corpus
+ * represents the full 18-tool catalog. Operator users may run narrower profiles at
+ * runtime, but the contract check validates the complete published surface.
  */
 import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
@@ -105,7 +110,14 @@ class McpStdioClient {
 function spawnLaunchPath() {
   return spawn(process.execPath, [join(root, "scripts", "launch-mcp-host.mjs")], {
     cwd: root,
-    env: { ...process.env, OCCAM_HOME: root, OCCAM_BANNER: "0" },
+    env: {
+      ...process.env,
+      OCCAM_HOME: root,
+      OCCAM_BANNER: "0",
+      // Contract + fingerprint corpus assert the full core catalog (18 tools).
+      // Product default profile is reader (11 tools).
+      OCCAM_PROFILE: process.env.OCCAM_PROFILE ?? "full",
+    },
     stdio: ["pipe", "pipe", "pipe"],
   });
 }
@@ -143,7 +155,12 @@ function runHostVersionSurface(binaryPath) {
   return new Promise((resolve) => {
     const child = spawn(binaryPath, ["version-surface"], {
       cwd: root,
-      env: { ...process.env, OCCAM_HOME: root, OCCAM_BANNER: "0" },
+      env: {
+        ...process.env,
+        OCCAM_HOME: root,
+        OCCAM_BANNER: "0",
+        OCCAM_PROFILE: process.env.OCCAM_PROFILE ?? "full",
+      },
       stdio: ["ignore", "pipe", "pipe"],
     });
     let out = "";
@@ -283,7 +300,12 @@ async function main() {
       const port = 18765;
       const wsProc = spawn(binary, ["--mcp-server", "--port", String(port)], {
         cwd: root,
-        env: { ...process.env, OCCAM_HOME: root, OCCAM_BANNER: "0" },
+        env: {
+          ...process.env,
+          OCCAM_HOME: root,
+          OCCAM_BANNER: "0",
+          OCCAM_PROFILE: process.env.OCCAM_PROFILE ?? "full",
+        },
         stdio: ["ignore", "ignore", "pipe"],
       });
       try {
@@ -335,7 +357,12 @@ async function main() {
       // Parity: direct binary stdio vs launch-mcp-host (tunnel) must share fingerprint.
       const directProc = spawn(binary, [], {
         cwd: root,
-        env: { ...process.env, OCCAM_HOME: root, OCCAM_BANNER: "0" },
+        env: {
+          ...process.env,
+          OCCAM_HOME: root,
+          OCCAM_BANNER: "0",
+          OCCAM_PROFILE: process.env.OCCAM_PROFILE ?? "full",
+        },
         stdio: ["pipe", "pipe", "pipe"],
       });
       const directClient = new McpStdioClient(directProc);
