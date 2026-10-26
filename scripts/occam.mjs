@@ -9,6 +9,7 @@ import {
   formatSubcommandUsage,
 } from "./lib/operator/occam-cli-subcommands.mjs";
 import { runControlAction, showStatus } from "./lib/operator/control-actions.mjs";
+import { readInstalledVersion } from "./lib/operator/update-check.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const defaultHome = process.env.OCCAM_HOME?.trim() || join(scriptDir, "..");
@@ -21,6 +22,7 @@ function parseGlobalArgs(argv) {
   const args = [...argv];
   let json = false;
   let help = false;
+  let version = false;
 
   while (args[0]?.startsWith("-")) {
     const flag = args.shift();
@@ -28,12 +30,14 @@ function parseGlobalArgs(argv) {
       json = true;
     } else if (flag === "-h" || flag === "--help") {
       help = true;
+    } else if (flag === "--version" || flag === "-V") {
+      version = true;
     } else {
       break;
     }
   }
 
-  return { json, help, args };
+  return { json, help, version, args };
 }
 
 /**
@@ -50,7 +54,17 @@ function printUsage(opts) {
 }
 
 async function main() {
-  const { json, help, args } = parseGlobalArgs(process.argv.slice(2));
+  const { json, help, version, args } = parseGlobalArgs(process.argv.slice(2));
+
+  if (version && args.length === 0) {
+    const installedVersion = readInstalledVersion(defaultHome);
+    if (json) {
+      console.log(JSON.stringify({ version: installedVersion }, null, 2));
+    } else {
+      console.log(installedVersion);
+    }
+    process.exit(0);
+  }
 
   if (help && args.length === 0) {
     printUsage({ json });
