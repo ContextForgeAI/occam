@@ -20,6 +20,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   `schemaFingerprint mismatch` (`7f4f…` expected vs `eb0d…` actual). Workaround on 1.3.0:
   `OCCAM_PROFILE=full occam contract`. CI gate: `public-mcp-contract-profile.selftest` plus
   gate-fast `check-public-mcp-contract.mjs` with profile unset.
+- **NuGet audit:** `System.Security.Cryptography.Pkcs` 10.0.0 → 10.0.14 (GHSA-2fmv-rv2c-59x7,
+  GHSA-846f-f764-76mx). Restore treated those advisories as errors and blocked CI.
+- **Clean-install regression catalog:** README assertion accepts the current door wording
+  (`Use the release tarball`) while `docs/getting-started.md` keeps the longer imperative.
 
 ### Changed
 
