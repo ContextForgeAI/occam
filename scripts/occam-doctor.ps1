@@ -54,7 +54,7 @@ if (Test-Path $ensureWorkers) {
     }
     & node $ensureWorkers @ensureArgs
     if ($LASTEXITCODE -ne 0) {
-        Write-Error "workers npm install failed — run: occam install-workers --force"
+        Write-Error "workers npm install failed - run: occam install-workers --force"
     }
 }
 else {
@@ -158,7 +158,7 @@ if (Test-Path $ssrfSelftest) {
 
 if (Test-Path $browserWorker) {
     # Launch is the source of truth: it also installs a missing bundled runtime and retries once.
-    # Single path string — quiet vs verbose only changes output, not probe count.
+    # Single path string - quiet vs verbose only changes output, not probe count.
     $chromiumLaunchProbe = Join-Path $browserWorker "lib\ensure-chromium-usable.mjs"
     if (-not (Test-Path $chromiumLaunchProbe)) {
         # Older Level B tarballs may only ship verify-browser-launch.mjs.
@@ -187,7 +187,7 @@ if (Test-Path $browserWorker) {
             Pop-Location
         }
     } else {
-        Write-Host "warning: browser launch probe script missing — skip browser check" -ForegroundColor Yellow
+        Write-Host "warning: browser launch probe script missing - skip browser check" -ForegroundColor Yellow
     }
 }
 

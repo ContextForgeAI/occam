@@ -33,6 +33,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   `npm audit --audit-level=high` passes.
 - **Cascade unit test:** `HttpTimeoutOmitsStepAndSetsPartial` waits on cancel instead of a short
   `Task.Delay` race that flaked on ubuntu CI.
+- **Windows clean-install doctor parse:** `occam-doctor.ps1` no longer uses U+2014 em dashes
+  (Windows PowerShell 5.1 + UTF-8-without-BOM → `MissingEndCurlyBrace`). Bootstrap sanitizes
+  published 1.3.0 trees; post-install prefers `pwsh` when available.
 
 ### Changed
 

@@ -844,6 +844,19 @@ See INSTALL.md (Cosign / signaturePolicy).
   Replace-OccamInstallTree -TargetDir $InstallDir -StagedDir $staged
   if ($VerboseInstall) { Write-Host "extracted: $InstallDir" }
 
+  # Published 1.3.0 doctor.ps1 is UTF-8 without BOM and contains U+2014 em dashes.
+  # Windows PowerShell 5.1 (-File) then reports MissingEndCurlyBrace around those lines.
+  # Sanitize in place so post-install can still run doctor from the verified tree.
+  $doctorPs1 = Join-Path $InstallDir "scripts\occam-doctor.ps1"
+  if (Test-Path -LiteralPath $doctorPs1) {
+    $doctorText = [System.IO.File]::ReadAllText($doctorPs1)
+    if ($doctorText.IndexOf([char]0x2014) -ge 0) {
+      $doctorFixed = $doctorText.Replace([char]0x2014, [char]0x2D)
+      $utf8Bom = New-Object System.Text.UTF8Encoding $true
+      [System.IO.File]::WriteAllText($doctorPs1, $doctorFixed, $utf8Bom)
+    }
+  }
+
   $env:OCCAM_HOME = $InstallDir
   Set-Location $InstallDir
   if ($HostTarget) { $env:OCCAM_HOST = $HostTarget }
