@@ -14,16 +14,29 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Fixed
 
+- **`occam --version` / `-V` (#51):** print the installed version (same source as `occam status`)
+  and exit 0. `--json` returns `{ "version": "…" }`.
 - **`occam contract` fingerprint (#52):** the check spawns the host with `OCCAM_PROFILE=full`
   unless the variable is already set. The fingerprint file is the 18-tool catalog; the product
   default profile is `reader` (11), which made published 1.3.0 report
   `schemaFingerprint mismatch` (`7f4f…` expected vs `eb0d…` actual). Workaround on 1.3.0:
   `OCCAM_PROFILE=full occam contract`. CI gate: `public-mcp-contract-profile.selftest` plus
   gate-fast `check-public-mcp-contract.mjs` with profile unset.
+- **Install prerequisites (#50):** README, `INSTALL.md`, and the install docs name **Cosign**
+  (with Node.js 20+) before the bootstrap one-liner. Fail-closed `required-cosign-v1` is
+  unchanged. Tag-pinned bootstrap URLs (#53) were already correct on `main`.
 - **NuGet audit:** `System.Security.Cryptography.Pkcs` 10.0.0 → 10.0.14 (GHSA-2fmv-rv2c-59x7,
   GHSA-846f-f764-76mx). Restore treated those advisories as errors and blocked CI.
+- **Worker `undici`:** pin past 7.30.0 high advisories so `npm audit --audit-level=high` in
+  gate-fast can pass.
+- **Cascade timeout unit test:** HTTP delay waits on cancel instead of a short wall clock, so
+  overloaded CI timers cannot falsely complete the HTTP step.
 - **Clean-install regression catalog:** README assertion accepts the current door wording
   (`Use the release tarball`) while `docs/getting-started.md` keeps the longer imperative.
+- **Workers `undici`:** lockfile → 7.30.1 (past GHSA high range 7.0.0–7.30.0) so gate-fast
+  `npm audit --audit-level=high` passes.
+- **Cascade unit test:** `HttpTimeoutOmitsStepAndSetsPartial` waits on cancel instead of a short
+  `Task.Delay` race that flaked on ubuntu CI.
 
 ### Changed
 
