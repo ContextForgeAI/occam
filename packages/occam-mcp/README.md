@@ -32,8 +32,10 @@ they refuse with a pointer to the guarded installer. Use `get-ff-occam`, then `o
 
 ## Installation
 
+**Prerequisites:** Node.js 20+ and [Cosign](https://docs.sigstore.dev/cosign/system_config/installation/) on PATH.
+
 ```bash
-# One-liner from GitHub Releases (no git, no .NET SDK — Node 20+ only)
+# One-liner from GitHub Releases (no git, no .NET SDK)
 curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts/get-ff-occam.sh | bash
 ```
 

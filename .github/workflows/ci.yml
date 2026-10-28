@@ -278,6 +278,7 @@ jobs:
           node scripts/lib/operator/occam-brief.selftest.mjs
           node scripts/lib/operator/occam-cite.selftest.mjs
           node scripts/lib/operator/occam-data-cli.selftest.mjs
+          node scripts/lib/operator/occam-version.selftest.mjs
           node scripts/lib/public-mcp-contract-profile.selftest.mjs
           node scripts/lib/operator/discovery-rank.selftest.mjs
           node workers/browser-extract/lib/gated-nav-extract.selftest.mjs

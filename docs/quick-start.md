@@ -68,7 +68,12 @@ terminal.
 
 ## Install once
 
-Requires Node.js 20+. The release install does not require the .NET SDK.
+**Prerequisites** (must be on PATH before running install):
+
+- **Node.js 20+**
+- **Cosign** ([install guide](https://docs.sigstore.dev/cosign/system_config/installation/)) — required for signature verification since v1.0.0-rc.3
+
+The release install does not require the .NET SDK.
 
 === "Linux x64 / macOS Apple Silicon"
 

@@ -225,7 +225,7 @@ export function formatSubcommandUsage() {
   }
   lines.push(
     "",
-    "Global flags: --json",
+    "Global flags: --json, --help, -h, --version, -V",
     "Env: OCCAM_HOME (optional). The install puts `occam` on PATH via ~/.local/bin.",
   );
   return lines.join("\n");

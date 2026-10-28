@@ -27,10 +27,6 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   unchanged. Tag-pinned bootstrap URLs (#53) were already correct on `main`.
 - **NuGet audit:** `System.Security.Cryptography.Pkcs` 10.0.0 → 10.0.14 (GHSA-2fmv-rv2c-59x7,
   GHSA-846f-f764-76mx). Restore treated those advisories as errors and blocked CI.
-- **Worker `undici`:** pin past 7.30.0 high advisories so `npm audit --audit-level=high` in
-  gate-fast can pass.
-- **Cascade timeout unit test:** HTTP delay waits on cancel instead of a short wall clock, so
-  overloaded CI timers cannot falsely complete the HTTP step.
 - **Clean-install regression catalog:** README assertion accepts the current door wording
   (`Use the release tarball`) while `docs/getting-started.md` keeps the longer imperative.
 - **Workers `undici`:** lockfile → 7.30.1 (past GHSA high range 7.0.0–7.30.0) so gate-fast
