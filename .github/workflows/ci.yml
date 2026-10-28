@@ -192,6 +192,15 @@ jobs:
         run: dotnet run --project benchmarks/l0-gate -- --fast
         timeout-minutes: 5
 
+      # Deliberately leave OCCAM_PROFILE unset: the contract script must default to
+      # full itself (fingerprint corpus = 18-tool catalog; product default = reader).
+      - name: Public MCP contract (CLI path, profile unset)
+        env:
+          OCCAM_FORCE_DOTNET_RUN: "0"
+          OCCAM_PROFILE: ""
+        run: node scripts/check-public-mcp-contract.mjs
+        timeout-minutes: 3
+
       - name: MCP dual-era handshake
         env:
           OCCAM_FORCE_DOTNET_RUN: "0"
@@ -269,6 +278,7 @@ jobs:
           node scripts/lib/operator/occam-brief.selftest.mjs
           node scripts/lib/operator/occam-cite.selftest.mjs
           node scripts/lib/operator/occam-data-cli.selftest.mjs
+          node scripts/lib/public-mcp-contract-profile.selftest.mjs
           node scripts/lib/operator/discovery-rank.selftest.mjs
           node workers/browser-extract/lib/gated-nav-extract.selftest.mjs
           node workers/browser-extract/lib/harvest-cookies.selftest.mjs

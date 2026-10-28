@@ -8,6 +8,7 @@
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
+| `occam contract` reports `schemaFingerprint mismatch` on published 1.3.0 | The 1.3.0 contract check spawned the default `reader` profile (11 tools). The fingerprint file is the full catalog (18) | `OCCAM_PROFILE=full occam contract`. A later release sets that default inside the check |
 | `release manifest ... mismatch` | Manifest version, RID, tarball name, or SHA field does not match the requested release | Stop. Download the matching archive + manifest pair from the same release; do not bypass the check |
 | `verified release archive is incomplete` | The archive lacks its platform host, matching `VERSION` / inner manifest, or a required runtime helper | Stop. Re-download the official release assets or repair the mirror; the existing install is not replaced |
 | `Refusing to replace OCCAM_INSTALL_DIR` | The target is a source checkout, link/reparse point, malformed release, wrong-RID release, or unrelated directory | Correct `OCCAM_INSTALL_DIR`; do not delete the target blindly. The installer stopped before process preparation or moving files |

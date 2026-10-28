@@ -12,6 +12,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   several are detected — same consent model as `occam connect --only`. `OCCAM_CONNECT_ALL=1`
   wins if both are set. Does not reuse `OCCAM_HOST` (legacy snippet only).
 
+### Fixed
+
+- **`occam contract` fingerprint (#52):** the check spawns the host with `OCCAM_PROFILE=full`
+  unless the variable is already set. The fingerprint file is the 18-tool catalog; the product
+  default profile is `reader` (11), which made published 1.3.0 report
+  `schemaFingerprint mismatch` (`7f4f…` expected vs `eb0d…` actual). Workaround on 1.3.0:
+  `OCCAM_PROFILE=full occam contract`. CI gate: `public-mcp-contract-profile.selftest` plus
+  gate-fast `check-public-mcp-contract.mjs` with profile unset.
+
 ### Changed
 
 - **Product door by skills:** root `README.md`, `docs/index.md` (site home), and `docs/why-occam.md`
