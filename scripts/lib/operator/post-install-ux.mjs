@@ -100,8 +100,18 @@ function runDoctor(occamHome, quiet, env) {
     OCCAM_INSTALL_QUIET: quiet ? "1" : "0",
   };
   if (isWin && existsSync(doctorPs1)) {
+    // Prefer pwsh: Windows PowerShell 5.1 mis-parses UTF-8 scripts that lack a BOM
+    // when they contain U+2014 em dashes (MissingEndCurlyBrace on published 1.3.0).
+    let shell = process.env.OCCAM_POWERSHELL?.trim() || "";
+    if (!shell) {
+      const probe = spawnSync("pwsh", ["-NoProfile", "-Command", "exit 0"], {
+        encoding: "utf8",
+        windowsHide: true,
+      });
+      shell = probe.status === 0 ? "pwsh" : "powershell";
+    }
     return runCaptured(
-      "powershell",
+      shell,
       ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", doctorPs1, "-SkipBuild"],
       { cwd: occamHome, env: childEnv, quiet },
     );

@@ -61,4 +61,4 @@ Full catalog: [configuration](../configuration.md).
 ## See also
 
 - [`occam_canary_verify`](occam_canary_verify.md) · [`occam_transcode`](occam_transcode.md)
-- [TRUST](../TRUST.md) · [ADR 0010](../adr/0010-proof-of-read-canary.md) · [PROBE_PROTOCOL.md](../../PROBE_PROTOCOL.md)
+- [TRUST](../TRUST.md) · [ADR 0010](../adr/0010-proof-of-read-canary.md) · [PROBE_PROTOCOL.md](https://github.com/ContextForgeAI/occam/blob/main/PROBE_PROTOCOL.md)

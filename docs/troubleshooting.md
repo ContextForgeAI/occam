@@ -8,6 +8,8 @@
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
+| `signaturePolicy=required-cosign-v1 requires the cosign CLI on PATH` | Published v1.0.0-rc.3+ verifies a Cosign bundle and does not install Cosign for you | Install [Cosign](https://docs.sigstore.dev/cosign/system_config/installation/) so `cosign` is on PATH, then re-run the bootstrap |
+| `occam contract` reports `schemaFingerprint mismatch` on published 1.3.0 | The 1.3.0 contract check spawned the default `reader` profile (11 tools). The fingerprint file is the full catalog (18) | `OCCAM_PROFILE=full occam contract`. A later release sets that default inside the check |
 | `release manifest ... mismatch` | Manifest version, RID, tarball name, or SHA field does not match the requested release | Stop. Download the matching archive + manifest pair from the same release; do not bypass the check |
 | `verified release archive is incomplete` | The archive lacks its platform host, matching `VERSION` / inner manifest, or a required runtime helper | Stop. Re-download the official release assets or repair the mirror; the existing install is not replaced |
 | `Refusing to replace OCCAM_INSTALL_DIR` | The target is a source checkout, link/reparse point, malformed release, wrong-RID release, or unrelated directory | Correct `OCCAM_INSTALL_DIR`; do not delete the target blindly. The installer stopped before process preparation or moving files |

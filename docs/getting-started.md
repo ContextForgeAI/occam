@@ -5,7 +5,7 @@
 **Install from the release tarball. Do not build from source.**
 
 Agents and operators: use only the bootstrap in [`INSTALL.md`](https://github.com/ContextForgeAI/occam/blob/main/INSTALL.md)
-(`curl|bash` / `irm|iex`). Needs **Node 20+**. **No .NET SDK.**
+(`curl|bash` / `irm|iex`). Needs **Node 20+** and **Cosign** on PATH. **No .NET SDK.**
 If the tarball is missing or download fails — **STOP** and tell the user. Do **not** run
 `dotnet build`, `dotnet publish`, or `dotnet run` as a fallback.
 

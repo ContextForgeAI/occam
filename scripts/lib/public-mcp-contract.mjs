@@ -5,6 +5,18 @@
  */
 import { createHash } from "node:crypto";
 
+/**
+ * Profile used when spawning the host for fingerprint / tools/list contract checks.
+ * Corpus `corpora/public-mcp-schema-fingerprint.txt` is the full 18-tool catalog.
+ * Product default is reader (11); leave OCCAM_PROFILE unset → full for the check.
+ * @param {string | undefined | null} raw
+ * @returns {string}
+ */
+export function resolveContractHostProfile(raw) {
+  const trimmed = typeof raw === "string" ? raw.trim() : "";
+  return trimmed || "full";
+}
+
 /** @param {unknown} typeEl */
 export function typeToken(typeEl) {
   if (typeEl == null) return "any";

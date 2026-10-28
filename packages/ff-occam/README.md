@@ -19,7 +19,7 @@ npm install -g ff-occam@1.3.0
 ff-occam --help
 ```
 
-Full install (recommended):
+Full install (recommended). **Prerequisites:** Node.js 20+ and [Cosign](https://docs.sigstore.dev/cosign/system_config/installation/) on PATH.
 
 ```powershell
 # Windows
@@ -34,7 +34,7 @@ curl -fsSL https://raw.githubusercontent.com/ContextForgeAI/occam/v1.3.0/scripts
 This package is a thin CLI wrapper around
 [`@ff-occam/mcp`](../occam-mcp) at the same version pin. Use `OCCAM_HOME` to
 point at a local checkout and skip release download. Runtime `tools/list` is
-authoritative: the default `reader` profile exposes 8 tools; `full` exposes 15;
+authoritative: the default `reader` profile exposes 11 tools; `full` exposes 18;
 opt-in flags can add more.
 
 See [docs/getting-started.md](../../docs/getting-started.md).

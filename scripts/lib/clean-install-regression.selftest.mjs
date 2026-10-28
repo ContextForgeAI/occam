@@ -71,7 +71,8 @@ function read(rel) {
   assert.match(skill, /Source builds are \*\*not\*\* supported for agents/i);
 
   const readme = read("README.md");
-  assert.match(readme, /Install from the release tarball\. Do not build from source/i);
+  // README uses the short door line; getting-started keeps the longer imperative.
+  assert.match(readme, /Use the release tarball\.\*\*?\s*Do not build from source/i);
 
   const gettingStarted = read("docs/getting-started.md");
   assert.match(gettingStarted, /Install from the release tarball\. Do not build from source/i);

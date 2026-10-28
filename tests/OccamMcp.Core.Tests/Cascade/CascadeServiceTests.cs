@@ -45,16 +45,17 @@ public sealed class CascadeServiceTests
     [Fact]
     public async Task HttpTimeoutOmitsStepAndSetsPartial()
     {
+        // Hang until cancelled (not a short Delay race) so HttpMs always wins on CI.
         var backend = new Fake(
             Miss(),
             new CascadeExtractAttempt(true, "late", "http", null, null),
             new CascadeExtractAttempt(true, "# FromBrowser", "browser", null, null),
             receiptsEnabled: false,
-            httpDelayMs: 400);
+            httpDelayMs: -1);
         var result = await new CascadeService(backend).RunAsync(
             new CascadeRequest(
                 "https://example.com",
-                Timeouts: CascadeTimeouts.Fast with { HttpMs = 20, BrowserMs = 500, TotalMs = 2_000 }));
+                Timeouts: CascadeTimeouts.Fast with { HttpMs = 50, BrowserMs = 500, TotalMs = 2_000 }));
 
         Assert.True(result.Ok);
         Assert.True(result.Partial);
@@ -150,9 +151,10 @@ public sealed class CascadeServiceTests
             CancellationToken cancellationToken)
         {
             onExtract?.Invoke(options);
-            if (httpDelayMs > 0 && policy == OccamBackendPolicy.Http)
+            if (policy == OccamBackendPolicy.Http && httpDelayMs != 0)
             {
-                await Task.Delay(httpDelayMs, cancellationToken);
+                // httpDelayMs < 0 → wait until cancelled (deterministic timeout path).
+                await Task.Delay(httpDelayMs < 0 ? Timeout.Infinite : httpDelayMs, cancellationToken);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
