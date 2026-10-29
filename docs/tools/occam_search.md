@@ -48,8 +48,8 @@ Full taxonomy: [failure-codes](../failure-codes.md).
 
 | Variable | Role |
 |----------|------|
-| `OCCAM_SEARCH_PROVIDER` | Single provider (`duckduckgo`, `searxng`, `brave`, `tavily`, `external_cli`, or `off`/`none`) |
-| `OCCAM_SEARCH_PROVIDERS` | CSV fan-out; **overrides** singular provider when set |
+| `OCCAM_SEARCH_PROVIDER` | Single provider (`duckduckgo`, `mojeek`, `searxng`, `brave`, `tavily`, `external_cli`, or `off`/`none`) |
+| `OCCAM_SEARCH_PROVIDERS` | CSV fan-out; token `keyless` → duckduckgo+mojeek; **overrides** singular |
 | `OCCAM_SEARCH_URL` / `OCCAM_SEARCH_API_KEY` | Required for searxng / brave / tavily as applicable |
 | `OCCAM_EXTERNAL_SEARCH_PATH` | Optional path to `external_cli` binary |
 | `OCCAM_SEARCH_TIMEOUT_MS` / `OCCAM_SEARCH_PROVIDER_TIMEOUT_MS` / `OCCAM_SEARCH_FANOUT_TIMEOUT_MS` | Timeouts |

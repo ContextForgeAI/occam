@@ -3588,6 +3588,20 @@ internal static class L0InfraUnitTests
             DuckDuckGoHtmlParser.LooksLikeAnomalyChallenge(
                 """<div class="anomaly-modal__title">Unfortunately, bots use DuckDuckGo too.</div><form action="//duckduckgo.com/anomaly.js">"""));
         assert("ddg anomaly not on normal SERP", !DuckDuckGoHtmlParser.LooksLikeAnomalyChallenge(fixture));
+
+        var mojeekFixture = """
+            <html><body>
+              <a class="title" href="https://nginx.org/en/docs/">Nginx docs</a>
+              <p class="s">Reverse proxy configuration guide</p>
+              <a class="title" href="https://example.com/a">Example A</a>
+              <p class="s">Snippet A</p>
+              <a class="title" href="https://www.mojeek.com/about">Mojeek about</a>
+            </body></html>
+            """;
+        var mojeekHits = MojeekHtmlParser.Parse(mojeekFixture, maxResults: 5);
+        assert("mojeek parse count", mojeekHits.Count == 2);
+        assert("mojeek first url", mojeekHits[0].Url == "https://nginx.org/en/docs/");
+        assert("mojeek filters mojeek host", mojeekHits.All(h => !h.Url.Contains("mojeek.com", StringComparison.OrdinalIgnoreCase)));
     }
 
     private static void RunSearchFanoutContract(Action<string, bool> assert)
@@ -3649,6 +3663,11 @@ internal static class L0InfraUnitTests
         Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS", "brave");
         Environment.SetEnvironmentVariable("OCCAM_SEARCH_API_KEY", null);
         assert("search PROVIDERS brave without key → empty", !fan.IsConfigured);
+
+        Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS", "keyless");
+        Environment.SetEnvironmentVariable("OCCAM_SEARCH_API_KEY", null);
+        var keyless = OccamServiceCollectionExtensions.BuildSearchService();
+        assert("search keyless expands → fanout", keyless.IsConfigured && keyless.ProviderName == "fanout");
 
         Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS", null);
 

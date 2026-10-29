@@ -65,7 +65,7 @@
       "transport": "stdio",
       "configFormat": "yaml",
       "launcher": "scripts/occam-wrapper.sh",
-      "configHint": "~/.hermes/config.yaml mcp_servers",
+      "configHint": "~/.hermes/config.yaml mcp_servers — boot OCCAM_PROFILE=reader; widen mid-session via occam_client_capabilities(profile=full) + re-list (no YAML edit/restart). OCCAM_PROFILE_LOCK=1 freezes.",
       "avoidLauncher": "packages/occam-mcp/bin/occam-mcp.js on a git clone without OCCAM_HOME"
     },
     "openclaw": {

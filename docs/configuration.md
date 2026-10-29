@@ -142,7 +142,8 @@ Set `OCCAM_EXAM_MCP=1` to expose `occam_exam_submit` and allow mid-session surfa
 
 Behaviour when enabled:
 
-- Session starts at **`reader`** (11 tools) unless `OCCAM_PROFILE` is set (pinned — exam never overrides).
+- Session starts at **`reader`** (11 tools) unless `OCCAM_PROFILE` is set (boot default only).
+  Freeze the surface with **`OCCAM_PROFILE_LOCK=1`** (exam + runtime `profile=` cannot change it).
 - Agent/harness calls `occam_exam_submit` with the same JSON as `occam exam grade`.
 - On success: cache by `{clientInfo, modelHint, sessionId}` (TTL 24h); if not pinned, apply
   tier→profile and notify `tools/list_changed`.
@@ -200,8 +201,9 @@ Notes that matter:
 
 | Variable | Purpose |
 |----------|---------|
-| `OCCAM_SEARCH_PROVIDER` | Unset → keyless **`duckduckgo`** (HTML SERP, `provider` disclosed). `off` \| `none` → `search_unconfigured`. Explicit: `duckduckgo` \| `searxng` \| `brave` \| `tavily` \| `external_cli`. **Ignored when `OCCAM_SEARCH_PROVIDERS` is set.** |
-| `OCCAM_SEARCH_PROVIDERS` | Optional CSV fan-out list (e.g. `duckduckgo,brave,searxng`). **Wins over** `OCCAM_SEARCH_PROVIDER`. Parallel poll of every configured healthy backend; merge by URL consensus. Response `provider` is `fanout` + `providersUsed[]`. Entries missing key/URL are skipped. |
+| `OCCAM_SEARCH_PROVIDER` | Unset → keyless **`duckduckgo`** (HTML SERP, `provider` disclosed). `off` \| `none` → `search_unconfigured`. Explicit: `duckduckgo` \| `mojeek` \| `searxng` \| `brave` \| `tavily` \| `external_cli`. **Ignored when `OCCAM_SEARCH_PROVIDERS` is set.** |
+| `OCCAM_SEARCH_PROVIDERS` | Optional CSV fan-out. **Wins over** singular. Token **`keyless`** → `duckduckgo`+`mojeek`. Example: `keyless` or `duckduckgo,brave`. Response `provider=fanout` + `providersUsed[]`. |
+| `OCCAM_CRAWL_MCP` | `1` enables experimental `occam_crawl` (ADR-0018). Off by default; not in `reader`. |
 | `OCCAM_SEARCH_URL` | Required for SearXNG base URL |
 | `OCCAM_SEARCH_API_KEY` | Required for Brave/Tavily |
 | `OCCAM_SEARCH_TIMEOUT_MS` | HttpClient ceiling. Default `20000` (1k–120k) |
@@ -285,9 +287,19 @@ When a proxy pool is active, HTTP and browser daemons are disabled (rotation req
 
 ## Tool surface profile (`OCCAM_PROFILE`)
 
-Narrows which **core** tools appear in `tools/list` (and in server instructions). Default **`reader`**
-keeps the day-to-day read surface (11 tools). Set `OCCAM_PROFILE=full` for all eighteen (including
-playbook heal/save). Opt-in tools above are independent — still require their own flags.
+Narrows which **core** tools appear in `tools/list` (and in boot server instructions). Default
+**`reader`** keeps the day-to-day read surface (11 tools). Set `OCCAM_PROFILE=full` as the **boot**
+default for all eighteen (including playbook heal/save).
+
+**Runtime switch (no MCP restart):** call
+`occam_client_capabilities({ "profile": "full" })` (or `reader` / `researcher` / `auditor`).
+The host sends `notifications/tools/list_changed` — the client must re-list tools. Hermes: no
+config.yaml edit and no process restart.
+
+**Hard freeze:** `OCCAM_PROFILE_LOCK=1` — boot profile stays fixed (exam + `profile=` are no-ops).
+Use for CI / contract hosts only. Setting `OCCAM_PROFILE` alone does **not** lock.
+
+Opt-in tools above are independent — still require their own flags.
 
 | Value | Core tools exposed |
 |-------|--------------------|
@@ -320,7 +332,7 @@ MCP does **not** tell servers the model's context window. Occam sizes extracts t
 | Tool (preferred) | Call `occam_client_capabilities` once with `context_tokens` (the model knows its window) |
 | Env (operator) | `OCCAM_CLIENT_CONTEXT_TOKENS` (1024–2000000); optional `OCCAM_CLIENT_MODEL_ID` label |
 
-After configure, `occam_transcode` / `occam_digest` that **omit** `max_tokens` / `per_url_max_tokens` use ~**20%** of the context (clamped 512–16384). Explicit `max_tokens` always wins. Response includes `suggestedProfile` (`reader` / `researcher` / `full`) as advisory only — it does not change `OCCAM_PROFILE`.
+After configure, `occam_transcode` / `occam_digest` that **omit** `max_tokens` / `per_url_max_tokens` use ~**20%** of the context (clamped 512–16384). Explicit `max_tokens` always wins. Response includes `suggestedProfile` (`reader` / `researcher` / `full`) as advisory; pass `profile=` on the same tool to actually switch the live surface (unless `OCCAM_PROFILE_LOCK=1`).
 
 ### Batch
 

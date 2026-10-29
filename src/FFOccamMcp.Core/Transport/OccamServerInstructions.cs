@@ -41,29 +41,28 @@ public static class OccamServerInstructions
         page. A complete short page is `ok:true` with `quality.verdict=short_quality`; do not heal or
         escalate just because the body is small. Success may include `quality` + `confidence`.
 
-        CLIENT BUDGET (do once per session): call `occam_client_capabilities` with your context window
-        in tokens. Occam then sizes later reads to ~20% of that window when you omit max_tokens.
-        Or the operator sets OCCAM_CLIENT_CONTEXT_TOKENS.
+        CLIENT BUDGET (once/session): `occam_client_capabilities(context_tokens=…)` → ~20% output
+        budget when max_tokens omitted (or OCCAM_CLIENT_CONTEXT_TOKENS). Mid-session widen:
+        same tool `profile:"full"`, then re-list after `list_changed` (no MCP restart; LOCK=1 freezes).
 
-        DEFAULT: to read one page, call `occam(url)` (cascade) or `occam_transcode` with just `url`.
-        Every other parameter is opt-in. Several URLs → one `occam_digest`, not N× `occam`.
+        DEFAULT: one page → `occam(url)` or `occam_transcode(url)`. Else opt-in. Several URLs → one
+        `occam_digest`, not N× `occam`.
         """;
 
     private const string TranscodeOptIns =
         """
-        occam_transcode OPT-INS — use when the page calls for it (token economy, not a codec picker):
-        - Large page / token budget → `max_tokens` (overrides ambient client budget), or `fit_markdown:true` + `focus_query`.
-        - Less link noise → `compact_links` / `compact_block_links`; media URLs → `include_media_refs:true`.
-        - Tabular data → `json_tables`. RSS/Atom → `json_feed`. RAG citations → `json_blocks` (+ optional `rank_blocks`).
-        - Cheap re-check → `if_none_match` or `diff_against`. Site /llms.txt → `prefer_llms_txt:true`.
-        - Login walls → `session_profile` (operator-provided cookies). Occam does NOT solve CAPTCHAs.
+        occam_transcode OPT-INS (token economy, not a codec picker):
+        - Budget/focus → `max_tokens` or `fit_markdown:true` + `focus_query` (weak/incomplete → follow nextStep; do not invent).
+        - Less link noise → `compact_links` / `compact_block_links`; media → `include_media_refs:true`.
+        - Tables → `json_tables`. Feeds → `json_feed`. RAG → `json_blocks` (+ optional `rank_blocks`).
+        - Cheap re-check → `if_none_match` / `diff_against`. Soft challenge → still transcode (`try_browser`); then `session_profile`. Hard CAPTCHA → stop. `/llms.txt` → `prefer_llms_txt:true`.
         """;
 
     private const string ReaderPick =
         """
         PICK THE TOOL:
-        - Session start → `occam_client_capabilities(context_tokens=…)` once.
-        - One page → `occam` (cascade: url, optional task/budget) or `occam_transcode` for full opt-ins.
+        - Session start → `occam_client_capabilities` once (budget and/or `profile:"full"`).
+        - One page → `occam` (cascade) or `occam_transcode` for full opt-ins.
         - Worth fetching? Cheap check → `occam_probe` (`recommendation.extractability` 0–1).
         - Several URLs → `occam_digest` (not N separate reads). List a site's links → `occam_map`. No URLs yet → `occam_search`.
         - Search hits: pass `handle` or `url`; `S1` is latest search only.
@@ -86,7 +85,7 @@ public static class OccamServerInstructions
     private const string FullPick =
         """
         PICK THE TOOL:
-        - Session start → `occam_client_capabilities(context_tokens=…)` once.
+        - Session start → `occam_client_capabilities` once (budget and/or `profile`).
         - One page → `occam` (cascade) or `occam_transcode`. Worth fetching? → `occam_probe`.
         - Several URLs → `occam_digest` (not N× transcode). Site links → `occam_map`. Web search → `occam_search`.
         - Search hits: pass `handle` or `url`; `S1` is latest search only.
@@ -169,6 +168,7 @@ public static class OccamServerInstructions
         SIGNALS — pick by intent, they are NOT one scale:
         - `extractability` (prediction BEFORE fetch), `confidence` / `quality` (measurement AFTER), playbook `verify.score` (0–100 gate).
         - Change scope: whole doc → `if_none_match`; what changed → `diff_against`; over time → `occam_watch` (opt-in); RAG chunks → `occam_verify` live + `chunks`.
+        - Profiles reader→full; search `OCCAM_SEARCH_PROVIDERS=keyless`; digest = per-URL merge, not LLM synthesis.
 
         """ + ReceiptsFooter;
 }

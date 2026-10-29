@@ -6,7 +6,7 @@
 
 ## Purpose
 
-Grade a capability-exam harness submission (same JSON as `occam exam grade`). Returns score, tier, recommended profile, and per-task outcomes. When `OCCAM_PROFILE` is **not pinned**, may apply the tier-derived tool surface and send `notifications/tools/list_changed`. Does **not** fetch the web or run the tasks for you.
+Grade a capability-exam harness submission (same JSON as `occam exam grade`). Returns score, tier, recommended profile, and per-task outcomes. When `OCCAM_PROFILE_LOCK` is **not** set, may apply the tier-derived tool surface and send `notifications/tools/list_changed`. Does **not** fetch the web or run the tasks for you. Day-to-day profile switches use `occam_client_capabilities(profile=…)` without exam.
 
 ## When to use / when not
 
@@ -14,7 +14,7 @@ Grade a capability-exam harness submission (same JSON as `occam exam grade`). Re
 |----------|-----------------|
 | Harness posts graded behaviour after canary + tool-use tasks | Ordinary URL read → core tools |
 | Dynamic `tools/list` by demonstrated competence | Default host with exam flag off |
-| Client can re-list after `list_changed` | Expecting surface change while `OCCAM_PROFILE` is pinned |
+| Client can re-list after `list_changed` | Expecting surface change while `OCCAM_PROFILE_LOCK=1` |
 
 ## Enablement
 

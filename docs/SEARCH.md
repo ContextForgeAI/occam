@@ -28,7 +28,8 @@ DI registration: `Composition/OccamServiceCollectionExtensions.cs:85–90`.
 
 | Name | API key? | Base URL | Notes |
 |------|----------|----------|-------|
-| `duckduckgo` | no | built-in HTML/lite | Default |
+| `duckduckgo` | no | built-in HTML/lite | Default singular |
+| `mojeek` | no | built-in HTML | Second keyless fan-out arm |
 | `searxng` | no | **required** `OCCAM_SEARCH_URL` | Self-hosted |
 | `brave` | yes (`OCCAM_SEARCH_API_KEY`) | default `api.search.brave.com` | |
 | `tavily` | yes (`OCCAM_SEARCH_API_KEY`) | default `api.tavily.com` | |
@@ -40,9 +41,8 @@ DI registration: `Composition/OccamServiceCollectionExtensions.cs:85–90`.
 ## Fan-out + health
 
 When `OCCAM_SEARCH_PROVIDERS` is set (CSV), it **wins** over the singular
-provider (`SearchService.cs:228–238`). Healthy configured backends are polled;
-results merge by URL consensus; response `provider` is `fanout` with
-`providersUsed[]`.
+provider. Token **`keyless`** expands to `duckduckgo`+`mojeek`. Healthy backends
+are polled; merge by URL consensus; `provider=fanout` + `providersUsed[]`.
 
 Health / degrade / rate limits: `Search/SearchProviderHealth.cs`
 (env: `OCCAM_SEARCH_DEGRADE_MINUTES`, `OCCAM_SEARCH_RATE_MAX`,

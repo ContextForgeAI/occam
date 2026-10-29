@@ -1,3 +1,5 @@
+using OccamMcp.Core.Knowledge;
+using OccamMcp.Core.Semantics;
 using OccamMcp.Core.Services;
 
 namespace OccamMcp.Core.Agent;
@@ -22,6 +24,13 @@ public static class DigestAgentHints
         var focusQuery = okItems
             .Select(i => i.FocusQuery)
             .FirstOrDefault(q => !string.IsNullOrWhiteSpace(q));
+
+        // Honesty: digest merges per-URL compiles — it does not LLM-synthesize across pages.
+        warnings.Add(
+            "digest_merge_not_synthesis: combined is a per-URL merge of extracts, not cross-page LLM synthesis.");
+        decisions.Add(new DigestDecision(
+            "cite_per_url",
+            "Cite items[].excerpt (and receipts) per URL; do not treat combined as a single synthesized answer."));
 
         var suggestedReadOrder = "combined";
         if (!string.IsNullOrWhiteSpace(focusQuery))
@@ -58,6 +67,29 @@ public static class DigestAgentHints
             foreach (var hub in weakMatches.Where(LooksLikeHubExcerpt))
             {
                 warnings.Add($"hub_excerpt:{hub.Url} — TOC/navigation excerpt; use leaf transcode for definitions.");
+            }
+        }
+
+        foreach (var item in okItems)
+        {
+            var next = FocusBudgetHints.NextStepFromAssessment(item.MaterializationAssessment);
+            if (string.IsNullOrWhiteSpace(next))
+            {
+                continue;
+            }
+
+            var assessment = item.MaterializationAssessment!;
+            if (assessment.Completeness == MaterializationCompleteness.Incomplete
+                || assessment.Completeness == MaterializationCompleteness.Partial)
+            {
+                warnings.Add($"completeness_{assessment.Completeness.ToString().ToLowerInvariant()}:{item.Url} — {next}");
+                var action = assessment.SuggestedMinTokens is > 0
+                    ? FocusBudgetHints.RaiseMaxTokens
+                    : FocusBudgetHints.RefineFocus;
+                decisions.Add(new DigestDecision(
+                    action,
+                    next,
+                    Url: item.Url));
             }
         }
 

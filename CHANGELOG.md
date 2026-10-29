@@ -11,6 +11,25 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 - **`OCCAM_CONNECT_ONLY`:** non-interactive opt-in to connect one (or comma-list) Tier-A host when
   several are detected — same consent model as `occam connect --only`. `OCCAM_CONNECT_ALL=1`
   wins if both are set. Does not reuse `OCCAM_HOST` (legacy snippet only).
+- **Keyless search fan-out:** `MojeekSearchProvider` + `OCCAM_SEARCH_PROVIDERS=keyless` →
+  `duckduckgo`+`mojeek`.
+- **`OCCAM_CRAWL_MCP=1` → `occam_crawl`:** experimental same-domain map→transcode with
+  `resume_token` + optional JSONL ([ADR-0018](docs/adr/0018-crawl-mcp.md)).
+- **Runtime profile switch:** `occam_client_capabilities(profile=reader|researcher|auditor|full|…)`
+  changes the live `tools/list` and sends `notifications/tools/list_changed` — no MCP restart
+  (Hermes-friendly). Hard freeze: `OCCAM_PROFILE_LOCK=1`. Surfaced in server `instructions`,
+  getting-started, choosing-a-tool, and Hermes wizard `configHint`.
+
+### Changed
+
+- **`OCCAM_PROFILE` is boot default only** — no longer pins the session. Exam + runtime switches
+  respect **`OCCAM_PROFILE_LOCK`** instead (aligns with contract hosts that set `OCCAM_PROFILE=full`
+  for fingerprint without locking agents out of switches).
+- **Browser-aggressive soft challenges:** `generic_challenge` / `js_challenge` recommend
+  `try_browser` (not bare `stop`); turnstile/hcaptcha/datadome stay `stop`.
+- **Focus/digest honesty (Wave 4):** `focus.nextStep` / `completeness.nextStep` on weak/miss/
+  incomplete/partial; `agentHints.suggestedNext` + decisions (`raise_max_tokens`, `refine_focus`,
+  `disable_fit_markdown`); digest always warns that `combined` is a per-URL merge, not LLM synthesis.
 
 ### Fixed
 

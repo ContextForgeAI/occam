@@ -83,6 +83,7 @@ public static class OccamServiceCollectionExtensions
         services.AddHttpClient(Services.SearchService.HttpClientName, c => c.Timeout = TimeSpan.FromMilliseconds(
             OccamMcp.Core.Configuration.OccamEnvironment.GetInt("OCCAM_SEARCH_TIMEOUT_MS", defaultValue: 20_000, min: 1_000, max: 120_000)));
         services.AddSingleton<Search.ISearchProvider, Search.DuckDuckGoSearchProvider>();
+        services.AddSingleton<Search.ISearchProvider, Search.MojeekSearchProvider>();
         services.AddSingleton<Search.ISearchProvider, Search.SearxngProvider>();
         services.AddSingleton<Search.ISearchProvider, Search.BraveProvider>();
         services.AddSingleton<Search.ISearchProvider, Search.TavilyProvider>();

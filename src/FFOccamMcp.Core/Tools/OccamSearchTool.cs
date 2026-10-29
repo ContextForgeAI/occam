@@ -14,7 +14,7 @@ public sealed class OccamSearchTool(ISearchService searchService, ProbeService p
     private const int RerankProbeTimeoutMs = 6_000;
     private const int RerankMaxParallel = 5;
 
-    [McpServerTool(Name = "occam_search"), Description("Open-web search → result URLs. Default keyless DuckDuckGo (OCCAM_SEARCH_PROVIDER). Multi-backend fan-out via OCCAM_SEARCH_PROVIDERS CSV. No URLs yet → search, then pass result.handle or url to probe/transcode/digest. S1 is latest-search only; H… survives later searches. Returns {id, handle, title, url, snippet}. Does not index the web.")]
+    [McpServerTool(Name = "occam_search"), Description("Open-web search → result URLs. Default keyless DuckDuckGo. Fan-out: OCCAM_SEARCH_PROVIDERS=keyless (duckduckgo+mojeek) or duckduckgo,brave (+ key). Optional rerank=true. Then pass handle/url to probe/transcode/digest. S1 is latest-search only; H… survives later searches. Returns {id, handle, title, url, snippet}. Does not index the web.")]
     public async Task<string> Search(
         [Description("Search query.")] string query,
         [Description("Max results to return (1-20). Default 8.")] int max_results = DefaultMaxResults,

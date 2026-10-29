@@ -86,7 +86,9 @@ session-scoped `SessionToolSurface`, and may send `notifications/tools/list_chan
 
 **Administration:** still not automatic at initialize (no server-driven agent task loop). Offline
 `occam exam grade` remains. With `OCCAM_EXAM_MCP=1`, agents/harnesses POST a behaviour record via
-`occam_exam_submit`. A pinned `OCCAM_PROFILE` always wins (exam recommends but does not apply).
+`occam_exam_submit`. **`OCCAM_PROFILE_LOCK=1`** freezes the surface (exam recommends but does not apply).
+`OCCAM_PROFILE` alone is only the boot default — agents can also switch via
+`occam_client_capabilities(profile=…)` without restart.
 Cache miss / never-sat does **not** apply `ExamResult.Default`→`basic` — the session stays at
 `reader` until a real grade or an operator pin.
 

@@ -11,6 +11,7 @@ namespace OccamMcp.Core.Services;
 /// <c>tavily</c>/<c>external_cli</c> still require their URL/key/binary.
 /// When <c>OCCAM_SEARCH_PROVIDERS</c> is set (CSV), fan-out polls all configured
 /// healthy providers in parallel, merges by URL consensus, and skips degraded ones.
+/// Token <c>keyless</c> expands to built-in keyless HTML SERPs (<c>duckduckgo</c>, <c>mojeek</c>).
 /// Core never crawls or indexes — it delegates and normalizes results.
 /// </summary>
 public interface ISearchService
@@ -238,7 +239,7 @@ public sealed class SearchService(
         var multi = Environment.GetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS")?.Trim();
         if (!string.IsNullOrEmpty(multi))
         {
-            var names = ParseCsv(multi);
+            var names = ExpandProviderNames(ParseCsv(multi));
             var list = new List<ISearchProvider>(names.Count);
             foreach (var name in names)
             {
@@ -306,5 +307,44 @@ public sealed class SearchService(
         }
 
         return list;
+    }
+
+    /// <summary>
+    /// Expands the <c>keyless</c> token to built-in HTML SERPs that need neither API key nor base URL.
+    /// <c>external_cli</c> stays opt-in by explicit name (BYO binary).
+    /// </summary>
+    private List<string> ExpandProviderNames(List<string> names)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var expanded = new List<string>();
+        foreach (var name in names)
+        {
+            if (string.Equals(name, "keyless", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var provider in _providers.Values)
+                {
+                    if (provider.RequiresApiKey
+                        || provider.RequiresBaseUrl
+                        || string.Equals(provider.Name, "external_cli", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (seen.Add(provider.Name))
+                    {
+                        expanded.Add(provider.Name);
+                    }
+                }
+
+                continue;
+            }
+
+            if (seen.Add(name))
+            {
+                expanded.Add(name);
+            }
+        }
+
+        return expanded;
     }
 }

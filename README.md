@@ -111,7 +111,7 @@ Authoring tools (`resolve` / `heal` / `save`) need **`OCCAM_PROFILE=full`**. Def
 ### 4. Size the tool surface to the agent (opt-in research)
 
 **When:** you want a narrower or fuller tool menu based on observed tool-use behaviour.  
-**Result:** graded tier → `minimal` / `basic` / `full` for the session (unless `OCCAM_PROFILE` is pinned).
+**Result:** graded tier → `minimal` / `basic` / `full` for the session (unless `OCCAM_PROFILE_LOCK=1`). Day-to-day: `occam_client_capabilities(profile=…)` switches tools live — no MCP restart.
 
 Enable with `OCCAM_EXAM_MCP=1`, submit a behaviour record via `occam_exam_submit` (or CLI `exam grade`). The host **grades a submitted record**; it does not autonomously run the four tasks for the agent. Canary also works standalone for proof-of-read outside the exam. Details: [experimental](docs/experimental.md) · research pages on the [docs site](https://contextforgeai.github.io/occam/).
 

@@ -45,7 +45,7 @@ This page is the **public shipped log**. Detailed engineering backlog lives in l
 | npm as GA install channel | Packages may exist on npm; **guarded** install remains GitHub Release bootstrap |
 | Wide validation / wave2-eval | Not in this repo |
 | External CLI search / PDF OCR | Partial: keyless DuckDuckGo default; optional `OCCAM_SEARCH_PROVIDER=external_cli`, opt-in `OCCAM_PDF_OCR` — third-party binaries not bundled |
-| Resumable crawl MCP (`OCCAM_CRAWL_MCP`) | Deferred — use `occam_map` + `occam_digest` (+ opt-in batch) for multi-URL workflows |
+| Resumable crawl MCP (`OCCAM_CRAWL_MCP`) | **Opt-in experimental** — `OCCAM_CRAWL_MCP=1` → `occam_crawl` ([ADR-0018](adr/0018-crawl-mcp.md)); else map+digest |
 
 ---
 

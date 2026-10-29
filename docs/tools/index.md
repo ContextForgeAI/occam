@@ -45,6 +45,7 @@ Set the flag in the host environment **before** starting the MCP server, then re
 | [`occam_failure_atlas`](occam_failure_atlas.md) | `OCCAM_ATLAS_MCP=1` | Per-host failure map of the current run; skip walled hosts |
 | [`occam_browser_interact`](occam_browser_interact.md) | `OCCAM_BROWSER_ACTIONS_MCP=1` | Declarative browser actions, then materialize Markdown + Receipt v1 |
 | [`occam_exam_submit`](occam_exam_submit.md) | `OCCAM_EXAM_MCP=1` | Grade a capability-exam harness JSON; may change tools/list + list_changed |
+| [`occam_crawl`](occam_crawl.md) | `OCCAM_CRAWL_MCP=1` | Same-domain map→transcode crawl with `resume_token` + optional JSONL |
 
 ## Common parameters
 
