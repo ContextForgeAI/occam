@@ -210,13 +210,13 @@ public sealed class CrawlService(MapService mapService, TranscodePipeline pipeli
         return queue;
     }
 
-    private static string EncodeResume(CrawlResumeState state)
+    internal static string EncodeResume(CrawlResumeState state)
     {
         var json = JsonSerializer.Serialize(state, CrawlJsonContext.Default.CrawlResumeState);
         return Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
     }
 
-    private static bool TryDecodeResume(string token, out CrawlResumeState state, out string? error)
+    internal static bool TryDecodeResume(string token, out CrawlResumeState state, out string? error)
     {
         state = null!;
         error = null;

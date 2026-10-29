@@ -381,6 +381,36 @@ internal static class L0InfraUnitTests
 
             Environment.SetEnvironmentVariable("OCCAM_PROFILE", "not-a-profile");
             assert("invalid profile falls back to reader", OccamMcp.Core.Transport.OccamToolProfile.Resolve() == "reader");
+
+            // Runtime profile switch (Hermes) — surface changes without MCP restart.
+            var surface = new OccamMcp.Core.Exam.SessionToolSurface("reader", isPinned: false);
+            assert("surface boot reader hides heal", !surface.IsExposed("occam_playbook_heal"));
+            assert("surface apply full", surface.TryApplyProfile("full"));
+            assert("surface now full", surface.ProfileId == "full");
+            assert("surface full exposes heal", surface.IsExposed("occam_playbook_heal"));
+            assert("surface generation bumped", surface.Generation == 1);
+            assert("surface noop same profile", !surface.TryApplyProfile("full"));
+            assert("surface reject garbage", !surface.TryApplyProfile("not-a-profile"));
+
+            var locked = new OccamMcp.Core.Exam.SessionToolSurface("reader", isPinned: true);
+            assert("locked surface ignores full", !locked.TryApplyProfile("full"));
+            assert("locked stays reader", locked.ProfileId == "reader");
+
+            // Crawl resume token round-trip (ADR-0018) — no network.
+            var resume = OccamMcp.Core.Crawl.CrawlService.EncodeResume(
+                new OccamMcp.Core.Crawl.CrawlResumeState(
+                    1,
+                    "https://example.com/",
+                    ["https://example.com/a", "https://example.com/b"]));
+            assert(
+                "crawl resume decode",
+                OccamMcp.Core.Crawl.CrawlService.TryDecodeResume(resume, out var state, out _)
+                && state.Seed == "https://example.com/"
+                && state.Queue.Length == 2);
+            assert(
+                "crawl resume rejects junk",
+                !OccamMcp.Core.Crawl.CrawlService.TryDecodeResume("%%%not-base64%%%", out _, out var err)
+                && !string.IsNullOrWhiteSpace(err));
         }
         finally
         {
