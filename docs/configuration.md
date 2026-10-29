@@ -201,8 +201,8 @@ Notes that matter:
 
 | Variable | Purpose |
 |----------|---------|
-| `OCCAM_SEARCH_PROVIDER` | Unset → keyless **`duckduckgo`** (HTML SERP, `provider` disclosed). `off` \| `none` → `search_unconfigured`. Explicit: `duckduckgo` \| `mojeek` \| `searxng` \| `brave` \| `tavily` \| `external_cli`. **Ignored when `OCCAM_SEARCH_PROVIDERS` is set.** |
-| `OCCAM_SEARCH_PROVIDERS` | Optional CSV fan-out. **Wins over** singular. Token **`keyless`** → `duckduckgo`+`mojeek`. Example: `keyless` or `duckduckgo,brave`. Response `provider=fanout` + `providersUsed[]`. |
+| `OCCAM_SEARCH_PROVIDER` | Unset → keyless **`duckduckgo`** (HTML SERP, `provider` disclosed). `off` \| `none` → `search_unconfigured`. Explicit: `duckduckgo` \| `mojeek` \| `qwant` \| `startpage` \| `bing` \| `searxng` \| `brave` \| `tavily` \| `external_cli`. **Ignored when `OCCAM_SEARCH_PROVIDERS` is set.** |
+| `OCCAM_SEARCH_PROVIDERS` | Optional CSV fan-out. **Wins over** singular. Token **`keyless`** → all built-in HTML SERPs without key/URL (`duckduckgo`,`mojeek`,`qwant`,`startpage`,`bing`). Example: `keyless` or `duckduckgo,brave`. Response `provider=fanout` + `providersUsed[]`. |
 | `OCCAM_CRAWL_MCP` | `1` enables experimental `occam_crawl` (ADR-0018). Off by default; not in `reader`. |
 | `OCCAM_SEARCH_URL` | Required for SearXNG base URL |
 | `OCCAM_SEARCH_API_KEY` | Required for Brave/Tavily |
@@ -287,9 +287,11 @@ When a proxy pool is active, HTTP and browser daemons are disabled (rotation req
 
 ## Tool surface profile (`OCCAM_PROFILE`)
 
-Narrows which **core** tools appear in `tools/list` (and in boot server instructions). Default
-**`reader`** keeps the day-to-day read surface (11 tools). Set `OCCAM_PROFILE=full` as the **boot**
-default for all eighteen (including playbook heal/save).
+Narrows which **core** tools appear in `tools/list` (and in boot server instructions). Product
+default stays **`reader`** (11 day-to-day tools) — **not** `full`. Do not set
+`OCCAM_PROFILE=full` as the global product default; use boot `OCCAM_PROFILE=full` only on
+authoring hosts, or switch at runtime (below). Contract fingerprint may spawn `full` for the
+18-tool schema check (#52) — that is not the product default.
 
 **Runtime switch (no MCP restart):** call
 `occam_client_capabilities({ "profile": "full" })` (or `reader` / `researcher` / `auditor`).

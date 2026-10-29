@@ -11,7 +11,8 @@ namespace OccamMcp.Core.Services;
 /// <c>tavily</c>/<c>external_cli</c> still require their URL/key/binary.
 /// When <c>OCCAM_SEARCH_PROVIDERS</c> is set (CSV), fan-out polls all configured
 /// healthy providers in parallel, merges by URL consensus, and skips degraded ones.
-/// Token <c>keyless</c> expands to built-in keyless HTML SERPs (<c>duckduckgo</c>, <c>mojeek</c>).
+/// Token <c>keyless</c> expands to built-in keyless HTML SERPs
+/// (<c>duckduckgo</c>, <c>mojeek</c>, <c>qwant</c>, <c>startpage</c>, <c>bing</c>).
 /// Core never crawls or indexes — it delegates and normalizes results.
 /// </summary>
 public interface ISearchService

@@ -11,8 +11,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 - **`OCCAM_CONNECT_ONLY`:** non-interactive opt-in to connect one (or comma-list) Tier-A host when
   several are detected — same consent model as `occam connect --only`. `OCCAM_CONNECT_ALL=1`
   wins if both are set. Does not reuse `OCCAM_HOST` (legacy snippet only).
-- **Keyless search fan-out:** `MojeekSearchProvider` + `OCCAM_SEARCH_PROVIDERS=keyless` →
-  `duckduckgo`+`mojeek`.
+- **Keyless search fan-out:** `OCCAM_SEARCH_PROVIDERS=keyless` expands to built-in HTML SERPs
+  (`duckduckgo`, `mojeek`, `qwant`, `startpage`, `bing`). Default singular search remains DDG.
+- **Policy (anti-roadmap closed):** no CAPTCHA unlocker / residential proxy in core; product
+  default profile stays **`reader`** (runtime `profile=` or boot `OCCAM_PROFILE=full` for authoring).
 - **`OCCAM_CRAWL_MCP=1` → `occam_crawl`:** experimental same-domain map→transcode with
   `resume_token` + optional JSONL ([ADR-0018](docs/adr/0018-crawl-mcp.md)).
 - **Runtime profile switch:** `occam_client_capabilities(profile=reader|researcher|auditor|full|…)`
@@ -24,7 +26,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 - **`OCCAM_PROFILE` is boot default only** — no longer pins the session. Exam + runtime switches
   respect **`OCCAM_PROFILE_LOCK`** instead (aligns with contract hosts that set `OCCAM_PROFILE=full`
-  for fingerprint without locking agents out of switches).
+  for fingerprint without locking agents out of switches). Product default remains **`reader`**;
+  defaulting the product to `full` is rejected.
 - **Browser-aggressive soft challenges:** `generic_challenge` / `js_challenge` recommend
   `try_browser` (not bare `stop`); turnstile/hcaptcha/datadome stay `stop`.
 - **Focus/digest honesty (Wave 4):** `focus.nextStep` / `completeness.nextStep` on weak/miss/

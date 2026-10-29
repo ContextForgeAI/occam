@@ -3602,6 +3602,53 @@ internal static class L0InfraUnitTests
         assert("mojeek parse count", mojeekHits.Count == 2);
         assert("mojeek first url", mojeekHits[0].Url == "https://nginx.org/en/docs/");
         assert("mojeek filters mojeek host", mojeekHits.All(h => !h.Url.Contains("mojeek.com", StringComparison.OrdinalIgnoreCase)));
+
+        var qwantFixture = """
+            <html><body>
+              <a class="result-title" href="https://nginx.org/en/docs/">Nginx docs</a>
+              <p class="result-desc">Reverse proxy guide</p>
+              <a class="result-title" href="https://example.com/q">Example Q</a>
+              <p class="result-desc">Snippet Q</p>
+              <a class="result-title" href="https://www.qwant.com/about">Qwant about</a>
+            </body></html>
+            """;
+        var qwantHits = QwantHtmlParser.Parse(qwantFixture, maxResults: 5);
+        assert("qwant parse count", qwantHits.Count == 2);
+        assert("qwant first url", qwantHits[0].Url == "https://nginx.org/en/docs/");
+        assert("qwant filters qwant host", qwantHits.All(h => !h.Url.Contains("qwant.com", StringComparison.OrdinalIgnoreCase)));
+
+        var startpageFixture = """
+            <html><body>
+              <a class="w-gl__result-title" href="https://nginx.org/en/docs/">Nginx docs</a>
+              <p class="w-gl__description">Reverse proxy guide</p>
+              <a class="w-gl__result-title" href="https://example.com/s">Example S</a>
+              <p class="w-gl__description">Snippet S</p>
+              <a class="w-gl__result-title" href="https://www.startpage.com/about">Startpage about</a>
+            </body></html>
+            """;
+        var startpageHits = StartpageHtmlParser.Parse(startpageFixture, maxResults: 5);
+        assert("startpage parse count", startpageHits.Count == 2);
+        assert("startpage first url", startpageHits[0].Url == "https://nginx.org/en/docs/");
+        assert(
+            "startpage filters startpage host",
+            startpageHits.All(h => !h.Url.Contains("startpage.com", StringComparison.OrdinalIgnoreCase)));
+
+        var bingFixture = """
+            <html><body>
+              <ol id="b_results">
+                <li class="b_algo"><h2><a href="https://nginx.org/en/docs/">Nginx docs</a></h2>
+                  <div class="b_caption"><p>Reverse proxy guide</p></div></li>
+                <li class="b_algo"><h2><a href="https://example.com/b">Example B</a></h2>
+                  <div class="b_caption"><p>Snippet B</p></div></li>
+                <li class="b_algo"><h2><a href="https://www.bing.com/account">Bing account</a></h2>
+                  <div class="b_caption"><p>Chrome</p></div></li>
+              </ol>
+            </body></html>
+            """;
+        var bingHits = BingHtmlParser.Parse(bingFixture, maxResults: 5);
+        assert("bing parse count", bingHits.Count == 2);
+        assert("bing first url", bingHits[0].Url == "https://nginx.org/en/docs/");
+        assert("bing filters bing host", bingHits.All(h => !h.Url.Contains("bing.com", StringComparison.OrdinalIgnoreCase)));
     }
 
     private static void RunSearchFanoutContract(Action<string, bool> assert)

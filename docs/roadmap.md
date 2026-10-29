@@ -46,6 +46,8 @@ This page is the **public shipped log**. Detailed engineering backlog lives in l
 | Wide validation / wave2-eval | Not in this repo |
 | External CLI search / PDF OCR | Partial: keyless DuckDuckGo default; optional `OCCAM_SEARCH_PROVIDER=external_cli`, opt-in `OCCAM_PDF_OCR` — third-party binaries not bundled |
 | Resumable crawl MCP (`OCCAM_CRAWL_MCP`) | **Opt-in experimental** — `OCCAM_CRAWL_MCP=1` → `occam_crawl` ([ADR-0018](adr/0018-crawl-mcp.md)); else map+digest |
+| CAPTCHA unlocker / residential proxy | **Rejected** — permanent non-goal; soft challenge → `try_browser`, hard CAPTCHA → stop + operator `session_profile` |
+| Default `OCCAM_PROFILE=full` | **Rejected** — product default stays `reader`; runtime `profile=` or boot env for authoring; contract may spawn `full` for fingerprint only |
 
 ---
 

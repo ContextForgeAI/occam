@@ -19,8 +19,9 @@ the manifest declares `signaturePolicy=required-cosign-v1` (requires the
 mutable repository overlay. Review [installation safety](trust/installation-safety.md)
 for what install mutates and how to remove it.
 
-**Tool surface:** product default is `OCCAM_PROFILE=reader` (11 tools). Boot with
-`OCCAM_PROFILE=full` **or** switch at runtime (no MCP restart — Hermes-friendly):
+**Tool surface:** product default stays `OCCAM_PROFILE=reader` (11 tools) — we will **not**
+change the default to `full`. For playbook authoring, boot with `OCCAM_PROFILE=full` **or**
+switch at runtime (no MCP restart — Hermes-friendly):
 
 ```json
 { "name": "occam_client_capabilities", "arguments": { "profile": "full" } }

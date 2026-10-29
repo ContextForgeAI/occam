@@ -56,9 +56,9 @@ If MCP is unavailable, stop and tell the user to follow [references/install.md](
 | `ok: false` | Content **unknown** | Read `failure.code`; follow [references/failure-codes.md](references/failure-codes.md) |
 | `receipt.signed` | Integrity of extract bytes **relative to a local key** — not truth, origin, or trusted time | Optional offline check via `occam_verify` |
 
-Never invent markdown for a failed URL. Soft challenge (`try_browser`): call `occam_transcode` first; then optional `session_profile`. Hard CAPTCHA → stop.
+Never invent markdown for a failed URL. Soft challenge (`try_browser`): call `occam_transcode` first; then optional `session_profile`. Hard CAPTCHA → stop — **no CAPTCHA unlocker** in Occam (permanent non-goal).
 
-**Profiles:** default boot `reader` = 11 tools. Widen **without restart**:
+**Profiles:** product default stays boot `reader` = 11 tools (not `full`). Widen **without restart**:
 `occam_client_capabilities({ profile: "full" })` then re-list tools after `list_changed`.
 Playbook heal/lint/save need `full`. Freeze only with `OCCAM_PROFILE_LOCK=1`.
 
@@ -73,7 +73,7 @@ Playbook heal/lint/save need `full`. Freeze only with `OCCAM_PROFILE_LOCK=1`.
 | Several pages | `occam_digest` | ≤8 URLs; per-URL merge — not LLM cross-page synthesis |
 | Discover URLs | `occam_map` → `occam_digest` | `source=sitemap` then `homepage` fallback |
 | Site crawl (opt-in) | `occam_crawl` | Needs `OCCAM_CRAWL_MCP=1`; resume_token for continuation |
-| Web search → fetch | `occam_search` → transcode/digest | Default DDG; `OCCAM_SEARCH_PROVIDERS=keyless` for DDG+Mojeek |
+| Web search → fetch | `occam_search` → transcode/digest | Default DDG; `OCCAM_SEARCH_PROVIDERS=keyless` for DDG+Mojeek+Qwant+Startpage+Bing |
 | Structured fields | `occam_playbook_resolve` → `occam_extract_knowledge` | Schema required in playbook |
 | Site-tuned extract | `occam_playbook_resolve` → `occam_transcode` | `playbook_policy=auto` (default) |
 | Fix hard site | heal → lint → save | Local playbooks only |

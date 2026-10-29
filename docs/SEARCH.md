@@ -24,12 +24,15 @@ via `SourceHandleStore`.
 ## Providers
 
 Interface: `Search/ISearchProvider.cs:8`.
-DI registration: `Composition/OccamServiceCollectionExtensions.cs:85–90`.
+DI registration: `Composition/OccamServiceCollectionExtensions.cs` (search provider block).
 
 | Name | API key? | Base URL | Notes |
 |------|----------|----------|-------|
 | `duckduckgo` | no | built-in HTML/lite | Default singular |
-| `mojeek` | no | built-in HTML | Second keyless fan-out arm |
+| `mojeek` | no | built-in HTML | Keyless fan-out arm |
+| `qwant` | no | built-in HTML | Keyless fan-out arm |
+| `startpage` | no | built-in HTML | Keyless fan-out arm |
+| `bing` | no | built-in HTML | Keyless fan-out arm (may soft-fail) |
 | `searxng` | no | **required** `OCCAM_SEARCH_URL` | Self-hosted |
 | `brave` | yes (`OCCAM_SEARCH_API_KEY`) | default `api.search.brave.com` | |
 | `tavily` | yes (`OCCAM_SEARCH_API_KEY`) | default `api.tavily.com` | |
@@ -41,8 +44,11 @@ DI registration: `Composition/OccamServiceCollectionExtensions.cs:85–90`.
 ## Fan-out + health
 
 When `OCCAM_SEARCH_PROVIDERS` is set (CSV), it **wins** over the singular
-provider. Token **`keyless`** expands to `duckduckgo`+`mojeek`. Healthy backends
-are polled; merge by URL consensus; `provider=fanout` + `providersUsed[]`.
+provider. Token **`keyless`** expands to every registered HTML SERP that needs
+neither API key nor base URL (today: `duckduckgo`, `mojeek`, `qwant`, `startpage`,
+`bing`; not `external_cli`). Healthy backends are polled; merge by URL consensus;
+`provider=fanout` + `providersUsed[]`. Individual arms may soft-fail — that is
+expected, not a claim that five providers always succeed.
 
 Health / degrade / rate limits: `Search/SearchProviderHealth.cs`
 (env: `OCCAM_SEARCH_DEGRADE_MINUTES`, `OCCAM_SEARCH_RATE_MAX`,
