@@ -12,7 +12,7 @@ After a heal-eligible transcode failure, load the page in the browser, capture a
 
 | Use when | Do not use when |
 |----------|-----------------|
-| Prior transcode `ok: false` and `agentHints.suggestedNext` is `occam_playbook_heal` | Terminal failures (captcha, private URL, many HTTP errors) — heal echoes and stops |
+| Prior transcode `ok: false` and heal is eligible (`suggestedNext` is `occam_playbook_heal`, or `occam_client_capabilities` with `heal_needs_full` when the surface is `reader`) | Terminal failures (captcha, private URL, many HTTP errors) — heal echoes and stops. On narrow profiles: widen with `profile=full` → `tools/list` → heal |
 | Heal-set `failure_reason` (e.g. `thin_extract`, `extraction_failed`, `content_selectors_miss`, playbook verify failures) | Outside heal set → `heal_not_applicable` |
 | Login walls **only with** the same `session_profile` as transcode | Profile is not `full` |
 

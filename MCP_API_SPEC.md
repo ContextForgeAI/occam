@@ -564,10 +564,25 @@ Gate: `L3_HEAL_LEARN_OK` · Corpus: `corpora/l3-heal-learn.jsonl`
 
 ### Transcode heal hints
 
-On heal-eligible `occam_transcode` failures, response may include:
+On heal-eligible `occam_transcode` failures, `agentHints` depend on the live tool surface:
+
+| Surface | `suggestedNext` | Notes |
+|---------|-----------------|-------|
+| `full` (heal exposed) | `occam_playbook_heal` | Same as before |
+| `reader` / narrow (heal hidden, not locked) | `occam_client_capabilities` | Warning `heal_needs_full`; decisions: `widen_profile` (`profile=full`) → `relist_tools` → heal |
+| Locked below full (`OCCAM_PROFILE_LOCK`) | `none` | Warning `heal_needs_full_locked`; decision `heal_unavailable` |
 
 ```json
-"agentHints": { "suggestedNext": "occam_playbook_heal", "doNot": ["max_heal_per_url_per_turn=1"] }
+"agentHints": {
+  "suggestedNext": "occam_client_capabilities",
+  "doNot": ["max_heal_per_url_per_turn=1"],
+  "warnings": ["heal_needs_full: …"],
+  "decisions": [
+    { "action": "widen_profile", "tool": "occam_client_capabilities", "parameter": "profile=full" },
+    { "action": "relist_tools", "tool": "tools/list" },
+    { "action": "heal", "tool": "occam_playbook_heal" }
+  ]
+}
 ```
 
 Core **never** auto-calls heal.

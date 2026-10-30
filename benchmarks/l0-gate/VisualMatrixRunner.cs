@@ -105,7 +105,7 @@ internal static class VisualMatrixRunner
         }
 
         var probeTool = new OccamProbeTool(probeService);
-        var transcodeTool = new OccamTranscodeTool(paths, pipeline, new FeatureDiscoveryService(paths), new NoOpTranslationService(), new FileTranscodeResponseCache(), OccamMcp.Core.Receipts.ReceiptSigner.CreateEphemeral(), new OccamMcp.Core.Receipts.TimeAnchorService(new StubHttpClientFactory()), new OccamMcp.Core.Client.ClientCapabilityStore(), new SourceHandleStore());
+        var transcodeTool = new OccamTranscodeTool(paths, pipeline, new FeatureDiscoveryService(paths), new NoOpTranslationService(), new FileTranscodeResponseCache(), OccamMcp.Core.Receipts.ReceiptSigner.CreateEphemeral(), new OccamMcp.Core.Receipts.TimeAnchorService(new StubHttpClientFactory()), new OccamMcp.Core.Client.ClientCapabilityStore(), new SourceHandleStore(), new OccamMcp.Core.Exam.SessionToolSurface("full", isPinned: false));
         var runDir = VisualMatrixWriter.CreateRunDirectory();
         var results = new List<VisualMatrixCaseResult>();
 

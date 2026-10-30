@@ -1,3 +1,5 @@
+using OccamMcp.Core.Agent;
+using OccamMcp.Core.Exam;
 using OccamMcp.Core.Playbooks;
 
 namespace OccamMcp.L0Gate;
@@ -48,6 +50,33 @@ internal static class L3HealLearnUnitTests
 
         assert("heal max verify retries", PlaybookHealPolicy.MaxVerifyRetries == 3);
         assert("heal max lessons", PlaybookHealPolicy.MaxLessonsPerFile == 50);
+
+        assert("heal surface hints null when ineligible", HealSurfaceHints.ForHealOffer(
+            new SessionToolSurface("reader", isPinned: false), healEligible: false) is null);
+
+        var readerHints = HealSurfaceHints.ForHealOffer(
+            new SessionToolSurface("reader", isPinned: false), healEligible: true);
+        assert("heal surface reader suggests capabilities", readerHints?.SuggestedNext == HealSurfaceHints.WidenToolName);
+        assert(
+            "heal surface reader widen decision",
+            readerHints?.Decisions is { } rd
+            && rd.Any(d => d.Action == HealSurfaceHints.WidenAction && d.Parameter == "profile=full"));
+        assert(
+            "heal surface reader warns needs full",
+            readerHints?.Warnings is { } rw
+            && rw.Any(w => w.StartsWith("heal_needs_full:", StringComparison.Ordinal)));
+
+        var fullHints = HealSurfaceHints.ForHealOffer(
+            new SessionToolSurface("full", isPinned: false), healEligible: true);
+        assert("heal surface full suggests heal", fullHints?.SuggestedNext == HealSurfaceHints.HealToolName);
+
+        var lockedHints = HealSurfaceHints.ForHealOffer(
+            new SessionToolSurface("reader", isPinned: true), healEligible: true);
+        assert("heal surface locked suggests none", lockedHints?.SuggestedNext == "none");
+        assert(
+            "heal surface locked decision",
+            lockedHints?.Decisions is { } ld
+            && ld.Any(d => d.Action == "heal_unavailable"));
 
         RunHealDraft(assert);
         RunAppendLesson(assert);

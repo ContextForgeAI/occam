@@ -78,7 +78,7 @@ Freeze only with `OCCAM_PROFILE_LOCK=1`.
 | Web search → fetch | `occam_search` → transcode/digest | Default DDG+Mojeek fan-out; `OCCAM_SEARCH_PROVIDERS=keyless` for all 5 HTML arms |
 | Structured fields | `occam_playbook_resolve` → `occam_extract_knowledge` | Schema required in playbook |
 | Site-tuned extract | `occam_playbook_resolve` → `occam_transcode` | `playbook_policy=auto` (default) |
-| Fix hard site | heal → lint → save | Local playbooks only |
+| Fix hard site | heal → lint → save | Needs `full`. If hints say `heal_needs_full` → `occam_client_capabilities({profile:"full"})` → `tools/list` → heal |
 | Cite one sentence | `occam_claim_check` | Retrieves cited blocks + membership proof; legacy `proven` ≠ page truth |
 | Batch citations | `occam_attest` | Heuristic citation assessment (`status`); **not** cryptographic attestation |
 | Offline receipt check | `occam_verify` | Integrity vs key; no re-fetch required in offline mode |

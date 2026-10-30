@@ -21,7 +21,7 @@
 | **Search the web for URLs** | `occam_search` → probe/transcode | Default DuckDuckGo; pass `handle` or `url` (`S1` is latest-search only) |
 | **Get structured fields (price, author, …)** | `occam_playbook_resolve` → `occam_extract_knowledge` | Needs a playbook with `knowledge_schema` |
 | **Use a site's tuned extract recipe** | `occam_playbook_resolve` → `occam_transcode` | `playbook_policy=auto` (default) |
-| **Fix a hard site (draft a playbook)** | `occam_transcode` fails → `occam_playbook_heal` → edit JSON → `occam_playbook_lint` → `occam_playbook_save` | Local only |
+| **Fix a hard site (draft a playbook)** | `occam_transcode` fails → if hints say `heal_needs_full`, `occam_client_capabilities({profile:"full"})` → `tools/list` → `occam_playbook_heal` → lint → save | Needs `full` surface; local only |
 | **Look up evidence blocks for one sentence** | `occam_claim_check` | Evidence/support lookup + Merkle membership; you judge support vs refute — does **not** prove the claim |
 | **Heuristic citation-support assessment** | `occam_attest` | Status classifier over retrieved blocks — **not** cryptographic attestation |
 | **Verify a signed extraction** | `occam_verify` | Integrity check against a key; optional live drift |
