@@ -21,6 +21,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
   changes the live `tools/list` and sends `notifications/tools/list_changed` — no MCP restart
   (Hermes-friendly). Hard freeze: `OCCAM_PROFILE_LOCK=1`. Surfaced in server `instructions`,
   getting-started, choosing-a-tool, and Hermes wizard `configHint`.
+  Advertise `tools.listChanged=true` only on negotiated `2026-07-28`+ (legacy dual-era stays false).
 
 ### Changed
 

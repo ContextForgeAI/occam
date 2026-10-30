@@ -396,6 +396,16 @@ internal static class L0InfraUnitTests
             assert("locked surface ignores full", !locked.TryApplyProfile("full"));
             assert("locked stays reader", locked.ProfileId == "reader");
 
+            assert(
+                "listChanged advertise modern",
+                OccamMcp.Core.Transport.OccamCapabilityHonesty.SupportsListChangedAdvertise("2026-07-28"));
+            assert(
+                "listChanged hide legacy 2024",
+                !OccamMcp.Core.Transport.OccamCapabilityHonesty.SupportsListChangedAdvertise("2024-11-05"));
+            assert(
+                "listChanged hide legacy 2025",
+                !OccamMcp.Core.Transport.OccamCapabilityHonesty.SupportsListChangedAdvertise("2025-11-25"));
+
             // Crawl resume token round-trip (ADR-0018) — no network.
             var resume = OccamMcp.Core.Crawl.CrawlService.EncodeResume(
                 new OccamMcp.Core.Crawl.CrawlResumeState(

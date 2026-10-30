@@ -24,7 +24,7 @@ Declare this LLM’s context window so Occam can store a process-scoped output b
 | `context_tokens` | No (omit to inspect) | `null` | Context window in tokens. Required **value** to configure; omit to inspect. When set, must be in **1024–2 000 000** (`ClientCapabilityStore`). |
 | `model_id` | No | `null` | Optional model id string for the response. |
 | `clear` | No | `false` | If true, clear the session override and re-read `OCCAM_CLIENT_CONTEXT_TOKENS` env bootstrap. |
-| `profile` | No | `null` | Runtime surface: `minimal` \| `basic` \| `reader` \| `researcher` \| `auditor` \| `full`. Sends `tools/list_changed` when applied — **re-list tools** after. |
+| `profile` | No | `null` | Runtime surface: `minimal` \| `basic` \| `reader` \| `researcher` \| `auditor` \| `full`. Sends `tools/list_changed` when applied — **re-list tools** after (also when `listChangedSent` is true). Advertise of `tools.listChanged` is only on negotiated `2026-07-28`+; legacy clients still get the notification / should re-list from the tool response. |
 
 ## Response shape
 
