@@ -6,7 +6,7 @@
 
 ## Purpose
 
-Open-web search: turn a query into normalized result URLs (`title`, `url`, optional `snippet`). Occam does not crawl or index the web — it delegates to a configured backend and discloses `provider` in the response. Default when `OCCAM_SEARCH_PROVIDER` is unset: keyless DuckDuckGo HTML (`provider: "duckduckgo"`). Pass a hit’s `handle` or `url` to probe, transcode, or digest next.
+Open-web search: turn a query into normalized result URLs (`title`, `url`, optional `snippet`). Occam does not crawl or index the web — it delegates to a configured backend and discloses `provider` in the response. Default when both search env vars are unset: cautious fan-out duckduckgo+mojeek (`provider: "fanout"`). Pass a hit’s `handle` or `url` to probe, transcode, or digest next.
 
 ## When to use / when not
 

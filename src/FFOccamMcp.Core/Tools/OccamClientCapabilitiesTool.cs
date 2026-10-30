@@ -18,7 +18,8 @@ public sealed class OccamClientCapabilitiesTool(ClientCapabilityStore store, Ses
 {
     [McpServerTool(Name = "occam_client_capabilities"), Description(
         "Declare context window and/or switch live tool surface. Pass context_tokens once; " +
-        "profile=reader|researcher|auditor|full widens tools without MCP restart (list_changed — re-list). " +
+        "profile=reader|researcher|auditor|full widens tools without restart. " +
+        "If mustRelistTools: tools/list BEFORE any other Occam tool. " +
         "Locked if OCCAM_PROFILE_LOCK=1. Omit args to inspect; clear=true resets budget.")]
     public async Task<string> ClientCapabilities(
         [Description("Context window tokens (e.g. 128000). Omit to inspect.")]
@@ -72,7 +73,9 @@ public sealed class OccamClientCapabilitiesTool(ClientCapabilityStore store, Ses
                         ActiveProfile: surface.ProfileId,
                         ProfileApplied: false,
                         ProfileLocked: surface.IsPinned,
-                        ListChangedSent: false));
+                        ListChangedSent: false,
+                        MustRelistTools: false,
+                        SuggestedNext: null));
                 }
 
                 if (surface.IsPinned)
@@ -88,7 +91,8 @@ public sealed class OccamClientCapabilitiesTool(ClientCapabilityStore store, Ses
                 {
                     profileApplied = true;
                     note = AppendNote(note,
-                        $"profile → '{normalized}' ({OccamToolProfile.GetExposedToolNames(normalized).Length} tools); re-list after list_changed");
+                        $"profile → '{normalized}' ({OccamToolProfile.GetExposedToolNames(normalized).Length} tools); " +
+                        "REQUIRED: call tools/list now before any other Occam tool (do not use the previous tool set)");
                     if (server is not null)
                     {
                         try
@@ -131,7 +135,9 @@ public sealed class OccamClientCapabilitiesTool(ClientCapabilityStore store, Ses
                 ActiveProfile: surface.ProfileId,
                 ProfileApplied: false,
                 ProfileLocked: surface.IsPinned,
-                ListChangedSent: false));
+                ListChangedSent: false,
+                MustRelistTools: false,
+                SuggestedNext: null));
         }
     }
 
@@ -153,7 +159,9 @@ public sealed class OccamClientCapabilitiesTool(ClientCapabilityStore store, Ses
             ActiveProfile: surface.ProfileId,
             ProfileApplied: profileApplied,
             ProfileLocked: surface.IsPinned,
-            ListChangedSent: listChangedSent);
+            ListChangedSent: listChangedSent,
+            MustRelistTools: profileApplied,
+            SuggestedNext: profileApplied ? "tools/list" : null);
 
     private static string AppendNote(string? prior, string next) =>
         string.IsNullOrEmpty(prior) ? next : prior + "; " + next;
@@ -175,7 +183,11 @@ public sealed record OccamClientCapabilitiesResponse(
     string? ActiveProfile = null,
     bool ProfileApplied = false,
     bool ProfileLocked = false,
-    bool ListChangedSent = false);
+    bool ListChangedSent = false,
+    /// <summary>True when the live tool surface changed — client must <c>tools/list</c> before next Occam call.</summary>
+    bool MustRelistTools = false,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? SuggestedNext = null);
 
 [JsonSerializable(typeof(OccamClientCapabilitiesResponse))]
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]

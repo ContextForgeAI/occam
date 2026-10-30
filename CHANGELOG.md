@@ -25,6 +25,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/). Versioning: Sem
 
 ### Changed
 
+- **Default search fan-out:** when both `OCCAM_SEARCH_PROVIDER` and `OCCAM_SEARCH_PROVIDERS` are
+  unset, Occam uses cautious **duckduckgo+mojeek** (`provider=fanout`). Explicit singular
+  `OCCAM_SEARCH_PROVIDER=duckduckgo` keeps one arm; `OCCAM_SEARCH_PROVIDERS=keyless` still expands
+  to all five HTML SERPs.
+- **Profile switch re-list contract:** `occam_client_capabilities` sets `mustRelistTools` +
+  `suggestedNext:"tools/list"` when the surface changes — agents must re-list before the next tool.
 - **`OCCAM_PROFILE` is boot default only** — no longer pins the session. Exam + runtime switches
   respect **`OCCAM_PROFILE_LOCK`** instead (aligns with contract hosts that set `OCCAM_PROFILE=full`
   for fingerprint without locking agents out of switches). Product default remains **`reader`**;

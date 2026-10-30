@@ -59,8 +59,10 @@ If MCP is unavailable, stop and tell the user to follow [references/install.md](
 Never invent markdown for a failed URL. Soft challenge (`try_browser`): call `occam_transcode` first; then optional `session_profile`. Hard CAPTCHA → stop — **no CAPTCHA unlocker** in Occam (permanent non-goal).
 
 **Profiles:** product default stays boot `reader` = 11 tools (not `full`). Widen **without restart**:
-`occam_client_capabilities({ profile: "full" })` then re-list tools after `list_changed`.
-Playbook heal/lint/save need `full`. Freeze only with `OCCAM_PROFILE_LOCK=1`.
+`occam_client_capabilities({ profile: "full" })`. If response has `mustRelistTools` /
+`listChangedSent` / `suggestedNext:"tools/list"` — **call `tools/list` before any other Occam
+tool** (heal/save will fail or be invisible on a stale list). Playbook heal/lint/save need `full`.
+Freeze only with `OCCAM_PROFILE_LOCK=1`.
 
 ---
 
@@ -73,7 +75,7 @@ Playbook heal/lint/save need `full`. Freeze only with `OCCAM_PROFILE_LOCK=1`.
 | Several pages | `occam_digest` | ≤8 URLs; per-URL merge — not LLM cross-page synthesis |
 | Discover URLs | `occam_map` → `occam_digest` | `source=sitemap` then `homepage` fallback |
 | Site crawl (opt-in) | `occam_crawl` | Needs `OCCAM_CRAWL_MCP=1`; resume_token for continuation |
-| Web search → fetch | `occam_search` → transcode/digest | Default DDG; `OCCAM_SEARCH_PROVIDERS=keyless` for DDG+Mojeek+Qwant+Startpage+Bing |
+| Web search → fetch | `occam_search` → transcode/digest | Default DDG+Mojeek fan-out; `OCCAM_SEARCH_PROVIDERS=keyless` for all 5 HTML arms |
 | Structured fields | `occam_playbook_resolve` → `occam_extract_knowledge` | Schema required in playbook |
 | Site-tuned extract | `occam_playbook_resolve` → `occam_transcode` | `playbook_policy=auto` (default) |
 | Fix hard site | heal → lint → save | Local playbooks only |

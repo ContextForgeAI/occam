@@ -268,9 +268,9 @@ Extract typed `facts[]` driven by playbook `knowledge_schema`.
 
 ## 10. `occam_search`
 
-Open-web search → result URLs. Default keyless DuckDuckGo HTML (`provider=duckduckgo`);
-override or disable via `OCCAM_SEARCH_PROVIDER`. Multi-backend fan-out via
-`OCCAM_SEARCH_PROVIDERS` (CSV) → `provider=fanout` + `providersUsed[]`.
+Open-web search → result URLs. Default cautious fan-out duckduckgo+mojeek
+(`provider=fanout`); singular via `OCCAM_SEARCH_PROVIDER`; full HTML set via
+`OCCAM_SEARCH_PROVIDERS=keyless` → `provider=fanout` + `providersUsed[]`.
 
 ### Parameters
 

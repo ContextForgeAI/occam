@@ -5,14 +5,13 @@ namespace OccamMcp.Core.Services;
 
 /// <summary>
 /// Open-web search adapter (the agent's discovery step: query → result URLs).
-/// Default when <c>OCCAM_SEARCH_PROVIDER</c> is unset: keyless DuckDuckGo HTML
-/// (<c>provider=duckduckgo</c> disclosed). Set <c>off</c>/<c>none</c> for the old
-/// air-gap <c>search_unconfigured</c> contract. Explicit <c>searxng</c>/<c>brave</c>/
-/// <c>tavily</c>/<c>external_cli</c> still require their URL/key/binary.
-/// When <c>OCCAM_SEARCH_PROVIDERS</c> is set (CSV), fan-out polls all configured
-/// healthy providers in parallel, merges by URL consensus, and skips degraded ones.
-/// Token <c>keyless</c> expands to built-in keyless HTML SERPs
-/// (<c>duckduckgo</c>, <c>mojeek</c>, <c>qwant</c>, <c>startpage</c>, <c>bing</c>).
+/// Default when both <c>OCCAM_SEARCH_PROVIDER</c> and <c>OCCAM_SEARCH_PROVIDERS</c> are
+/// unset: cautious keyless fan-out <c>duckduckgo</c>+<c>mojeek</c>
+/// (<c>provider=fanout</c>). Set singular <c>OCCAM_SEARCH_PROVIDER=duckduckgo</c> for
+/// one arm; <c>off</c>/<c>none</c> for air-gap <c>search_unconfigured</c>.
+/// Explicit <c>searxng</c>/<c>brave</c>/<c>tavily</c>/<c>external_cli</c> still need
+/// URL/key/binary. CSV <c>OCCAM_SEARCH_PROVIDERS</c> wins; token <c>keyless</c> expands
+/// to all built-in HTML SERPs without key/URL (DDG+Mojeek+Qwant+Startpage+Bing).
 /// Core never crawls or indexes — it delegates and normalizes results.
 /// </summary>
 public interface ISearchService
@@ -34,6 +33,9 @@ public sealed class SearchService(
     public const string HttpClientName = "occam.search";
     public const string DefaultProviderName = "duckduckgo";
     public const string FanoutProviderName = "fanout";
+
+    /// <summary>Cautious default fan-out when search env is fully unset (not the full <c>keyless</c> set).</summary>
+    public static readonly string[] DefaultFanoutProviderNames = ["duckduckgo", "mojeek"];
 
     private readonly IReadOnlyDictionary<string, ISearchProvider> _providers =
         providers.ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
@@ -227,39 +229,28 @@ public sealed class SearchService(
 
     private bool IsFanoutMode()
     {
-        var raw = Environment.GetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS");
-        return !string.IsNullOrWhiteSpace(raw);
+        var multi = Environment.GetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS");
+        if (!string.IsNullOrWhiteSpace(multi))
+        {
+            return true;
+        }
+
+        // Unset singular + unset CSV → default duckduckgo+mojeek fan-out.
+        var singular = Environment.GetEnvironmentVariable("OCCAM_SEARCH_PROVIDER");
+        return string.IsNullOrWhiteSpace(singular);
     }
 
     /// <summary>
     /// Resolves the active provider list. <c>OCCAM_SEARCH_PROVIDERS</c> wins over singular
-    /// <c>OCCAM_SEARCH_PROVIDER</c>. Entries missing required config are skipped.
+    /// <c>OCCAM_SEARCH_PROVIDER</c>. When both are unset, uses
+    /// <see cref="DefaultFanoutProviderNames"/>. Entries missing required config are skipped.
     /// </summary>
     private IReadOnlyList<ISearchProvider> ResolveProviders()
     {
         var multi = Environment.GetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS")?.Trim();
         if (!string.IsNullOrEmpty(multi))
         {
-            var names = ExpandProviderNames(ParseCsv(multi));
-            var list = new List<ISearchProvider>(names.Count);
-            foreach (var name in names)
-            {
-                if (!_providers.TryGetValue(name, out var provider))
-                {
-                    Console.Error.WriteLine(
-                        $"[occam.search] event=unknown_provider provider={name} reason=not_registered untilUtc=");
-                    continue;
-                }
-
-                if (!HasRequiredConfig(provider))
-                {
-                    continue;
-                }
-
-                list.Add(provider);
-            }
-
-            return list;
+            return ResolveNamedList(ExpandProviderNames(ParseCsv(multi)));
         }
 
         var raw = Environment.GetEnvironmentVariable("OCCAM_SEARCH_PROVIDER")?.Trim();
@@ -269,13 +260,35 @@ public sealed class SearchService(
             return [];
         }
 
-        var singleName = string.IsNullOrEmpty(raw) ? DefaultProviderName : raw;
-        if (!_providers.TryGetValue(singleName, out var single))
+        if (string.IsNullOrEmpty(raw))
         {
-            return [];
+            return ResolveNamedList(DefaultFanoutProviderNames);
         }
 
-        return HasRequiredConfig(single) ? [single] : [];
+        return ResolveNamedList([raw]);
+    }
+
+    private IReadOnlyList<ISearchProvider> ResolveNamedList(IReadOnlyList<string> names)
+    {
+        var list = new List<ISearchProvider>(names.Count);
+        foreach (var name in names)
+        {
+            if (!_providers.TryGetValue(name, out var provider))
+            {
+                Console.Error.WriteLine(
+                    $"[occam.search] event=unknown_provider provider={name} reason=not_registered untilUtc=");
+                continue;
+            }
+
+            if (!HasRequiredConfig(provider))
+            {
+                continue;
+            }
+
+            list.Add(provider);
+        }
+
+        return list;
     }
 
     private static bool HasRequiredConfig(ISearchProvider provider)

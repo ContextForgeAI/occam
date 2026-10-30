@@ -30,9 +30,10 @@ Declare this LLM’s context window so Occam can store a process-scoped output b
 
 JSON object (camelCase):
 
-- **Success (`ok: true`):** `configured`, `contextTokens`, `outputBudgetTokens`, `suggestedProfile`, `modelId`, `source`, `note`, plus `activeProfile`, `profileApplied`, `profileLocked`, `listChangedSent`.
+- **Success (`ok: true`):** `configured`, `contextTokens`, `outputBudgetTokens`, `suggestedProfile`, `modelId`, `source`, `note`, plus `activeProfile`, `profileApplied`, `profileLocked`, `listChangedSent`, `mustRelistTools`, optional `suggestedNext`.
   - After configure, `outputBudgetTokens` ≈ **20%** of `context_tokens`, rounded and clamped to **512–16 384**.
   - `suggestedProfile` is **advisory** (`reader` if context < 8192, `researcher` if < 32768, else `full`) — use `profile=` to apply.
+  - When `mustRelistTools` / `suggestedNext: "tools/list"` — **call `tools/list` before any other Occam tool**.
   - `source` is `tool` when set via this call, or `env` when loaded from operator env.
 - **Failure (`ok: false`):** top-level `failureCode` (not nested `failure.code`), `note`, other fields nulled. This tool does not describe page content.
 
