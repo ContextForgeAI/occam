@@ -13,9 +13,10 @@ Inventory: [CAPABILITIES](CAPABILITIES.md).
 
 ## Default path
 
-Unset `OCCAM_SEARCH_PROVIDER` → keyless **DuckDuckGo** HTML SERP
-(`Search/DuckDuckGoSearchProvider.cs:12`). On soft failure, falls back to the
-lite endpoint (`:30–40`). Outcome discloses `provider: duckduckgo`.
+Both `OCCAM_SEARCH_PROVIDER` and `OCCAM_SEARCH_PROVIDERS` unset → cautious fan-out
+**duckduckgo + mojeek** (`provider: fanout`, `providersUsed[]`). Soft-failing arms are
+skipped; merge by URL consensus. Singular `OCCAM_SEARCH_PROVIDER=duckduckgo` keeps one arm.
+`OCCAM_SEARCH_PROVIDERS=keyless` expands to all built-in HTML SERPs (DDG+Mojeek+Qwant+Startpage+Bing).
 
 MCP tool: `occam_search` (`Tools/OccamSearchTool.cs:17–22`) — query →
 `{id, handle, title, url, snippet}`. Handles `S1` / `H…` bind into later tools

@@ -43,7 +43,8 @@ public static class OccamServerInstructions
 
         CLIENT BUDGET (once/session): `occam_client_capabilities(context_tokens=…)` → ~20% output
         budget when max_tokens omitted (or OCCAM_CLIENT_CONTEXT_TOKENS). Mid-session widen:
-        same tool `profile:"full"`, then re-list after `list_changed` (no MCP restart; LOCK=1 freezes).
+        same tool `profile:"full"`; if mustRelistTools/listChangedSent — call tools/list BEFORE any
+        other Occam tool (no MCP restart; LOCK=1 freezes).
 
         DEFAULT: one page → `occam(url)` or `occam_transcode(url)`. Else opt-in. Several URLs → one
         `occam_digest`, not N× `occam`.
@@ -168,7 +169,7 @@ public static class OccamServerInstructions
         SIGNALS — pick by intent, they are NOT one scale:
         - `extractability` (prediction BEFORE fetch), `confidence` / `quality` (measurement AFTER), playbook `verify.score` (0–100 gate).
         - Change scope: whole doc → `if_none_match`; what changed → `diff_against`; over time → `occam_watch` (opt-in); RAG chunks → `occam_verify` live + `chunks`.
-        - Profiles reader→full; search `OCCAM_SEARCH_PROVIDERS=keyless`; digest = per-URL merge, not LLM synthesis.
+        - Profiles reader→full; search default DDG+Mojeek fan-out; `OCCAM_SEARCH_PROVIDERS=keyless` for all HTML arms; digest = merge not LLM.
 
         """ + ReceiptsFooter;
 }

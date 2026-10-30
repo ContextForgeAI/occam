@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using OccamMcp.Core.Agent;
 using OccamMcp.Core.Caching;
+using OccamMcp.Core.Exam;
 using OccamMcp.Core.Handles;
 using OccamMcp.Core.Json;
 using OccamMcp.Core.Playbooks;
@@ -24,7 +25,8 @@ public sealed class OccamTranscodeTool(
     OccamMcp.Core.Receipts.ReceiptSigner receiptSigner,
     OccamMcp.Core.Receipts.TimeAnchorService timeAnchorService,
     OccamMcp.Core.Client.ClientCapabilityStore clientCapabilities,
-    SourceHandleStore sourceHandles)
+    SourceHandleStore sourceHandles,
+    SessionToolSurface sessionToolSurface)
 {
     /// <summary>An llms.txt shorter than this is treated as absent/placeholder; fall back to normal extract.</summary>
     private const int MinLlmsTxtLength = 32;
@@ -640,10 +642,19 @@ public sealed class OccamTranscodeTool(
         return true;
     }
 
+    private string SerializePipelineFailure(
+        string url,
+        TranscodeOutcome result,
+        string? sessionProfile,
+        ReceiptSigner? signer = null,
+        OccamTranscodeRecoveryInfo[]? recovery = null) =>
+        SerializePipelineFailure(url, result, sessionProfile, sessionToolSurface, signer, recovery);
+
     private static string SerializePipelineFailure(
         string url,
         TranscodeOutcome result,
         string? sessionProfile,
+        SessionToolSurface surface,
         ReceiptSigner? signer = null,
         OccamTranscodeRecoveryInfo[]? recovery = null)
     {
@@ -680,16 +691,13 @@ public sealed class OccamTranscodeTool(
             : null;
 
         var sessionApplied = !string.IsNullOrWhiteSpace(sessionProfile);
-        OccamTranscodeAgentHintsInfo? agentHints = !browserExhaustedRetry
+        var healEligible = !browserExhaustedRetry
             && PlaybookHealPolicy.ShouldOfferHeal(
                 code,
                 sessionProfileApplied: sessionApplied,
                 finalUrl: result.FinalUrl,
-                requestUrl: url)
-            ? new OccamTranscodeAgentHintsInfo(
-                "occam_playbook_heal",
-                ["max_heal_per_url_per_turn=1", $"max_verify_retries={PlaybookHealPolicy.MaxVerifyRetries}"])
-            : null;
+                requestUrl: url);
+        OccamTranscodeAgentHintsInfo? agentHints = HealSurfaceHints.ForHealOffer(surface, healEligible);
 
         var accessInfo = Semantics.SemanticOutcomeMapper.MapAccess(result.AccessAssessment);
         return OccamJsonPrintableEscapes.Serialize(
@@ -756,6 +764,13 @@ public sealed class OccamTranscodeTool(
     internal static string SerializePipelineFailureForTests(
         string url,
         TranscodeOutcome result,
-        OccamTranscodeRecoveryInfo[]? recovery = null) =>
-        SerializePipelineFailure(url, result, sessionProfile: null, signer: null, recovery);
+        OccamTranscodeRecoveryInfo[]? recovery = null,
+        SessionToolSurface? surface = null) =>
+        SerializePipelineFailure(
+            url,
+            result,
+            sessionProfile: null,
+            surface ?? new SessionToolSurface("full", isPinned: false),
+            signer: null,
+            recovery);
 }

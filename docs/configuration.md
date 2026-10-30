@@ -201,7 +201,7 @@ Notes that matter:
 
 | Variable | Purpose |
 |----------|---------|
-| `OCCAM_SEARCH_PROVIDER` | Unset → keyless **`duckduckgo`** (HTML SERP, `provider` disclosed). `off` \| `none` → `search_unconfigured`. Explicit: `duckduckgo` \| `mojeek` \| `qwant` \| `startpage` \| `bing` \| `searxng` \| `brave` \| `tavily` \| `external_cli`. **Ignored when `OCCAM_SEARCH_PROVIDERS` is set.** |
+| `OCCAM_SEARCH_PROVIDER` | Unset **and** `OCCAM_SEARCH_PROVIDERS` unset → default fan-out `duckduckgo`+`mojeek` (`provider=fanout`). Explicit singular: `duckduckgo` \| `mojeek` \| `qwant` \| `startpage` \| `bing` \| `searxng` \| `brave` \| `tavily` \| `external_cli`. `off` \| `none` → `search_unconfigured`. **Ignored when `OCCAM_SEARCH_PROVIDERS` is set.** |
 | `OCCAM_SEARCH_PROVIDERS` | Optional CSV fan-out. **Wins over** singular. Token **`keyless`** → all built-in HTML SERPs without key/URL (`duckduckgo`,`mojeek`,`qwant`,`startpage`,`bing`). Example: `keyless` or `duckduckgo,brave`. Response `provider=fanout` + `providersUsed[]`. |
 | `OCCAM_CRAWL_MCP` | `1` enables experimental `occam_crawl` (ADR-0018). Off by default; not in `reader`. |
 | `OCCAM_SEARCH_URL` | Required for SearXNG base URL |

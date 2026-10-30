@@ -3497,7 +3497,7 @@ internal static class L0InfraUnitTests
 
     private static void RunSearchContract(Action<string, bool> assert)
     {
-        // Default (unset) → keyless duckduckgo. off/none → search_unconfigured.
+        // Default (both unset) → cautious fan-out duckduckgo+mojeek. off/none → search_unconfigured.
         // SearXNG needs OCCAM_SEARCH_URL; Brave/Tavily need OCCAM_SEARCH_API_KEY. Env read live.
         var prevProvider = Environment.GetEnvironmentVariable("OCCAM_SEARCH_PROVIDER");
         var prevUrl = Environment.GetEnvironmentVariable("OCCAM_SEARCH_URL");
@@ -3511,7 +3511,9 @@ internal static class L0InfraUnitTests
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", null);
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_URL", null);
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_API_KEY", null);
-            assert("search default is duckduckgo", search.IsConfigured && search.ProviderName == "duckduckgo");
+            assert(
+                "search default is duckduckgo+mojeek fanout",
+                search.IsConfigured && search.ProviderName == "fanout");
 
             Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDER", "off");
             assert("search off → unconfigured", !search.IsConfigured);
