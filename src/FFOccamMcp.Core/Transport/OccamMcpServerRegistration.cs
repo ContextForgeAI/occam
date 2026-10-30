@@ -59,22 +59,28 @@ public static class OccamMcpServerRegistration
         }
 
         var examMcp = ExamMcpRuntime.IsEnabled;
-        var pinned = OccamToolProfile.IsPinned();
-        // Exam path: start at reader unless the operator pinned OCCAM_PROFILE. Never start at
-        // ExamResult.Default→basic (that would silently demote a working host).
-        var profile = examMcp && !pinned ? OccamToolProfile.Reader : OccamToolProfile.Resolve();
+        var locked = OccamToolProfile.IsLocked();
+        // Exam path: start at reader unless locked. Otherwise boot from OCCAM_PROFILE / reader.
+        // OCCAM_PROFILE alone no longer locks — agents switch via occam_client_capabilities(profile=…).
+        var profile = examMcp && !locked ? OccamToolProfile.Reader : OccamToolProfile.Resolve();
         var instructions = OccamServerInstructions.TextFor(profile);
 
+        // Always register a session surface so tools/list can change at runtime without MCP restart.
+        services.AddSingleton(_ => new SessionToolSurface(profile, locked));
         if (examMcp)
         {
             services.AddSingleton(_ => new ExamResultCache());
-            services.AddSingleton(_ => new SessionToolSurface(profile, pinned));
             services.AddSingleton<ExamMcpRuntime>();
             Console.Error.WriteLine(
-                pinned
-                    ? $"[occam.exam] OCCAM_EXAM_MCP=1; OCCAM_PROFILE pinned to '{profile}' (exam will not change surface)."
+                locked
+                    ? $"[occam.exam] OCCAM_EXAM_MCP=1; OCCAM_PROFILE_LOCK=1 surface='{profile}' (exam will not change surface)."
                     : $"[occam.exam] OCCAM_EXAM_MCP=1; session surface starts at '{profile}' (submit may change it).");
         }
+
+        Console.Error.WriteLine(
+            locked
+                ? $"[occam.profile] boot='{profile}' locked=1 (runtime switch disabled)."
+                : $"[occam.profile] boot='{profile}' — switch at runtime via occam_client_capabilities(profile=…).");
 
         var builder = services
             // Surface the capability + decision guide to the consuming model on initialize, so the
@@ -91,7 +97,7 @@ public static class OccamMcpServerRegistration
                 // is present — see WithMessageFilters honesty rewrite below).
                 options.Capabilities = new ServerCapabilities
                 {
-                    Tools = new ToolsCapability { ListChanged = examMcp },
+                    Tools = new ToolsCapability { ListChanged = true },
                 };
             })
             .WithMessageFilters(messageFilters =>
@@ -117,8 +123,7 @@ public static class OccamMcpServerRegistration
             {
                 filters.AddCallToolFilter(next => async (request, cancellationToken) =>
                 {
-                    if (examMcp
-                        && request.Params?.Name is { } toolName
+                    if (request.Params?.Name is { } toolName
                         && request.Services?.GetService<SessionToolSurface>() is { } surface
                         && !surface.IsExposed(toolName))
                     {
@@ -142,8 +147,7 @@ public static class OccamMcpServerRegistration
                 filters.AddListToolsFilter(next => async (request, cancellationToken) =>
                 {
                     var result = await next(request, cancellationToken).ConfigureAwait(false);
-                    if (examMcp
-                        && request.Services?.GetService<SessionToolSurface>() is { } surface
+                    if (request.Services?.GetService<SessionToolSurface>() is { } surface
                         && result.Tools is { Count: > 0 })
                     {
                         result.Tools = result.Tools.Where(t => surface.IsExposed(t.Name)).ToList();
@@ -153,10 +157,8 @@ public static class OccamMcpServerRegistration
                 });
             });
 
-        // When exam MCP is on, register the full core catalog and filter at list/call time.
-        // When off, keep the historical profile-gated DI registration (zero behavior change).
-        var registrationProfile = examMcp ? OccamToolProfile.Full : profile;
-        builder = RegisterCoreTools(builder, services, registrationProfile);
+        // Always register the full core catalog; SessionToolSurface filters tools/list + calls.
+        builder = RegisterCoreTools(builder, services, OccamToolProfile.Full);
 
         if (examMcp)
         {
@@ -207,6 +209,13 @@ public static class OccamMcpServerRegistration
         if (OccamMcp.Core.Configuration.OccamEnvironment.GetFlag("OCCAM_BROWSER_ACTIONS_MCP", defaultValue: false))
         {
             builder.WithTools<OccamBrowserInteractTool>();
+        }
+
+        // Opt-in resumable crawl (ADR-0018). Off by default. Enable with OCCAM_CRAWL_MCP=1.
+        if (OccamMcp.Core.Configuration.OccamEnvironment.GetFlag("OCCAM_CRAWL_MCP", defaultValue: false))
+        {
+            services.AddSingleton<Crawl.ICrawlService, Crawl.CrawlService>();
+            builder.WithTools<OccamCrawlTool>();
         }
 
         return builder;
@@ -333,8 +342,9 @@ public static class OccamMcpServerRegistration
     private static CallToolResult ToolNotExposedResult(string toolName, string profile)
     {
         var message =
-            $"Tool '{toolName}' is not on the current exam surface (profile={profile}). " +
-            "Re-list tools after list_changed, or submit a new exam / pin OCCAM_PROFILE.";
+            $"Tool '{toolName}' is not on the current surface (profile={profile}). "
+            + "Call occam_client_capabilities(profile=\"full\"|\"researcher\"|…) then re-list tools after list_changed "
+            + "(or set OCCAM_PROFILE_LOCK=1 only when the operator wants a frozen surface).";
         var payload =
             "{\"ok\":false,\"failureCode\":\"tool_not_on_surface\",\"message\":"
             + McpArgumentBindingGuard.JsonString(message)

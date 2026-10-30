@@ -66,8 +66,17 @@ There is **no** public MCP parameter to pick a knowledge codec (`compact-markdow
 | `backend_policy` | Force `http` / `browser` / `http_then_browser` |
 | `session_profile` | Operator cookies for login walls (no CAPTCHA solve) |
 | `playbook_policy` / playbook tools | Site recipe overlay / authoring |
-| `occam_search` | Default keyless DuckDuckGo; override or `off` via `OCCAM_SEARCH_PROVIDER` |
-| PDF OCR | Operator env — see [configuration](configuration.md) · [capability decision](examples/capability-eval/pdf-ocr/) |
+| `occam_search` | Default keyless DuckDuckGo; `OCCAM_SEARCH_PROVIDERS=keyless` → DDG+Mojeek+Qwant+Startpage+Bing fan-out |
+| PDF OCR | Operator env `OCCAM_PDF_OCR*` — not bundled; else PDF via browser extract |
+| Soft anti-bot | Probe `try_browser` → `occam_transcode`; then optional `session_profile` |
+| Hard CAPTCHA | **Permanent non-goal** — no CAPTCHA unlocker / residential proxy / paid solver in core. Stop + operator `session_profile` only |
+| Crawl (opt-in) | `OCCAM_CRAWL_MCP=1` → `occam_crawl` (map→transcode, resume_token) |
+
+---
+
+## Occam vs generic scrapers (honesty)
+
+Occam wins on **signed receipts**, **probe gating**, **playbooks**, **token-aware compile**. It is **not** a residential unlocker and will **not** ship a CAPTCHA solver. Change detection is caller-held (`if_none_match` / `diff_against`); opt-in `occam_watch` for stateful watch. Install for agents: **release tarball**, not .NET SDK. Product default stays **`reader` = 11 tools** (not `full`); widen mid-session with `occam_client_capabilities(profile=…)` or boot `OCCAM_PROFILE=full` for authoring. `occam_digest` merges per-URL extracts — not cross-page LLM synthesis.
 
 ---
 

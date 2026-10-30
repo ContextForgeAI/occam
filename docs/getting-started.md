@@ -19,8 +19,16 @@ the manifest declares `signaturePolicy=required-cosign-v1` (requires the
 mutable repository overlay. Review [installation safety](trust/installation-safety.md)
 for what install mutates and how to remove it.
 
-**Tool surface:** product default is `OCCAM_PROFILE=reader` (11 tools). Set `OCCAM_PROFILE=full`
-for heal/save and the complete eighteen-tool catalog. See [Configuration — profiles](configuration.md).
+**Tool surface:** product default stays `OCCAM_PROFILE=reader` (11 tools) — we will **not**
+change the default to `full`. For playbook authoring, boot with `OCCAM_PROFILE=full` **or**
+switch at runtime (no MCP restart — Hermes-friendly):
+
+```json
+{ "name": "occam_client_capabilities", "arguments": { "profile": "full" } }
+```
+
+Then re-list tools after `notifications/tools/list_changed`. Freeze only with
+`OCCAM_PROFILE_LOCK=1`. See [Configuration — profiles](configuration.md).
 
 ---
 
@@ -73,10 +81,10 @@ After `example.com` works, run the recorded documentation job in the
 [workflow gallery](examples/gallery.md) (MDN Functions, omissions listed).
 Where to type on your host: [onboarding](onboarding/index.md).
 
-Optional session budget (once per chat):
+Optional session budget + profile (once per chat; combine as needed):
 
 ```json
-{ "name": "occam_client_capabilities", "arguments": { "context_tokens": 200000 } }
+{ "name": "occam_client_capabilities", "arguments": { "context_tokens": 200000, "profile": "full" } }
 ```
 
 ---

@@ -72,13 +72,14 @@ public static class ChallengeKindClassifier
                 "ray id:",
                 "enable javascript and cookies"))
         {
-            return Hint("js_challenge", "session_cookies");
+            // Soft: try local browser (and session cookies if needed). Not a hard CAPTCHA stop.
+            return Hint("js_challenge", "try_browser");
         }
 
         if (!string.IsNullOrWhiteSpace(url)
             && url.Contains("__cf_chl", StringComparison.OrdinalIgnoreCase))
         {
-            return Hint("js_challenge", "session_cookies");
+            return Hint("js_challenge", "try_browser");
         }
 
         if (Contains(
@@ -95,7 +96,9 @@ public static class ChallengeKindClassifier
                 return null;
             }
 
-            return Hint("generic_challenge", "stop");
+            // Soft generic wall: escalate to browser before declaring content unknown.
+            // Hard solvers (turnstile/hcaptcha/datadome) remain recommendedAction=stop above.
+            return Hint("generic_challenge", "try_browser");
         }
 
         if (statusCode is 403 or 503
@@ -103,7 +106,7 @@ public static class ChallengeKindClassifier
             && (url.Contains("cloudflare", StringComparison.OrdinalIgnoreCase)
                 || lower.Contains("cloudflare", StringComparison.Ordinal)))
         {
-            return Hint("js_challenge", "skip_url");
+            return Hint("js_challenge", "try_browser");
         }
 
         return null;

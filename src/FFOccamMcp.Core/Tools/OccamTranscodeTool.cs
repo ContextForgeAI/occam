@@ -510,22 +510,14 @@ public sealed class OccamTranscodeTool(
         Semantics.SemanticAccessInfo? access)
     {
         var warnings = existing?.Warnings?.ToList() ?? [];
-        if (completeness?.Status == "incomplete")
+        if (!string.IsNullOrWhiteSpace(completeness?.NextStep))
         {
-            warnings.Add(
-                $"completeness_incomplete: {completeness.IncompleteReason ?? "answer unit did not fit"}; "
-                + "do not treat ok/confidence as a complete focused answer.");
-        }
-        else if (completeness?.Status == "partial")
-        {
-            warnings.Add(
-                "completeness_partial: focused answer retained but surrounding context was truncated.");
+            warnings.Add($"completeness_{completeness.Status}: {completeness.NextStep}");
         }
 
-        if (focus?.Status is "miss" or "weak")
+        if (!string.IsNullOrWhiteSpace(focus?.NextStep))
         {
-            warnings.Add(
-                $"focus_{focus.Status}: structural focus is {focus.Status}; do not infer section correctness from confidence.");
+            warnings.Add($"focus_{focus.Status}: {focus.NextStep}");
         }
 
         if (access?.Disposition == "restricted")
@@ -538,16 +530,33 @@ public sealed class OccamTranscodeTool(
                 "access_blocked_but_content: HTTP 401/403 with a usable extracted document; do not treat this as granted access.");
         }
 
-        if (warnings.Count == 0)
+        var decisions = (existing?.Decisions ?? []).ToList();
+        foreach (var d in Semantics.FocusBudgetHints.Decisions(focus, completeness))
+        {
+            if (!decisions.Any(x => string.Equals(x.Action, d.Action, StringComparison.Ordinal)
+                    && string.Equals(x.Parameter, d.Parameter, StringComparison.Ordinal)))
+            {
+                decisions.Add(d);
+            }
+        }
+
+        var suggested = existing?.SuggestedNext;
+        if (string.IsNullOrWhiteSpace(suggested) || string.Equals(suggested, "none", StringComparison.Ordinal))
+        {
+            suggested = Semantics.FocusBudgetHints.SuggestedNext(focus, completeness);
+        }
+
+        if (warnings.Count == 0 && decisions.Count == 0
+            && (string.IsNullOrWhiteSpace(suggested) || string.Equals(suggested, "none", StringComparison.Ordinal)))
         {
             return existing;
         }
 
         return new OccamTranscodeAgentHintsInfo(
-            existing?.SuggestedNext ?? "none",
+            suggested ?? "none",
             existing?.DoNot,
-            [.. warnings.Distinct(StringComparer.Ordinal)],
-            existing?.Decisions);
+            warnings.Count > 0 ? [.. warnings.Distinct(StringComparer.Ordinal)] : existing?.Warnings,
+            decisions.Count > 0 ? [.. decisions] : existing?.Decisions);
     }
 
     private static OccamTranscodeQualityInfo? MapQuality(

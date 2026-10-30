@@ -23,6 +23,7 @@ with a superseding record; an ADR is a historical document, not living documenta
 | [0015](0015-cross-platform-evidence-policy.md) | Cross-platform claims require committed artefacts | Accepted |
 | [0016](0016-capability-exam.md) | Capability exam and behaviour-derived tool tiers | Accepted (engine); administration partially implemented |
 | [0017](0017-cascade-facade.md) | Cascade facade `occam(url, task, budget)` | Accepted |
+| [0018](0018-crawl-mcp.md) | Env-gated crawl MCP (`OCCAM_CRAWL_MCP`) | Accepted — MVP shipped |
 
 Numbers 0001–0009 predate this directory. They were recorded in the documents listed above and in
 source comments; they are indexed here so the numbering line stays single and unambiguous. New

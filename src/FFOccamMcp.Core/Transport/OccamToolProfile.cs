@@ -71,13 +71,18 @@ public static class OccamToolProfile
     ];
 
     /// <summary>
-    /// True when the operator set <c>OCCAM_PROFILE</c> (any non-whitespace value). Used by the
-    /// opt-in exam MCP path so a pinned profile is never overwritten by a graded tier.
+    /// Hard lock: <c>OCCAM_PROFILE_LOCK=1</c> freezes the session surface (exam +
+    /// <c>occam_client_capabilities(profile=…)</c> cannot change it). Boot default remains
+    /// <c>OCCAM_PROFILE</c> / reader — setting the env alone no longer pins (Hermes can widen
+    /// at runtime without restarting the MCP host).
     /// </summary>
-    public static bool IsPinned() =>
-        !string.IsNullOrWhiteSpace(OccamEnvironment.Get("OCCAM_PROFILE"));
+    public static bool IsLocked() =>
+        OccamEnvironment.GetFlag("OCCAM_PROFILE_LOCK", defaultValue: false);
 
-    /// <summary>Resolved profile id: <c>full</c> | <c>reader</c> | <c>researcher</c> | <c>auditor</c>.</summary>
+    /// <summary>Alias of <see cref="IsLocked"/> for exam / older call sites.</summary>
+    public static bool IsPinned() => IsLocked();
+
+    /// <summary>Resolved boot profile id: <c>full</c> | <c>reader</c> | <c>researcher</c> | <c>auditor</c> | …</summary>
     public static string Resolve()
     {
         var raw = OccamEnvironment.Get("OCCAM_PROFILE");
@@ -87,8 +92,7 @@ public static class OccamToolProfile
             return Reader;
         }
 
-        var normalized = raw.Trim().ToLowerInvariant();
-        if (normalized is Full or Reader or Researcher or Auditor or Minimal or Basic)
+        if (TryNormalize(raw, out var normalized))
         {
             return normalized;
         }
@@ -96,6 +100,25 @@ public static class OccamToolProfile
         Console.Error.WriteLine(
             $"[occam.config] OCCAM_PROFILE='{raw}' is not minimal|basic|reader|researcher|auditor|full — using default reader.");
         return Reader;
+    }
+
+    /// <summary>Normalize a profile id from env or tool args. Returns false when unknown.</summary>
+    public static bool TryNormalize(string? raw, out string profile)
+    {
+        profile = Reader;
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return false;
+        }
+
+        var normalized = raw.Trim().ToLowerInvariant();
+        if (normalized is Full or Reader or Researcher or Auditor or Minimal or Basic)
+        {
+            profile = normalized;
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>Core tool names exposed for the active (or given) profile.</summary>

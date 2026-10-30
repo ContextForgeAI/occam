@@ -15,7 +15,7 @@ public sealed class OccamDigestTool(
     DigestService digestService,
     OccamMcp.Core.Client.ClientCapabilityStore clientCapabilities)
 {
-    [McpServerTool(Name = "occam_digest"), Description("Research several pages at once: digests up to 8 URLs into per-page excerpts plus optional combined Markdown. Prefer ONE digest over N separate occam_transcode calls when you have multiple URLs. Supply urls and/or source_url (at least one). When source_url is set, urls is ignored and links are auto-discovered. Use focus_query to keep only the parts relevant to your question.")]
+    [McpServerTool(Name = "occam_digest"), Description("Research several pages at once: digests up to 8 URLs into per-page excerpts plus optional combined Markdown (per-URL merge, not LLM cross-page synthesis). Prefer ONE digest over N× occam_transcode. Supply urls and/or source_url (at least one). When source_url is set, urls is ignored and links are auto-discovered. Use focus_query to keep only relevant parts.")]
     public async Task<string> Digest(
         [Description("URL or search-handle array (or JSON/CSV). Ignored when source_url is set.")] JsonElement? urls = null,
         [Description("Backend policy applied to each URL: http, browser, or http_then_browser.")] string backend_policy = "http_then_browser",

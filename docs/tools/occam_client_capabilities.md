@@ -6,13 +6,14 @@
 
 ## Purpose
 
-Declare this LLM’s context window so Occam can store a process-scoped output budget and apply it to later `occam_transcode` / `occam_digest` calls that omit explicit token limits. MCP does not expose model context size; the agent (or operator env bootstrap) must supply it once per host process.
+Declare this LLM’s context window so Occam can store a process-scoped output budget **and/or switch the live tool surface** (`profile=…`) without restarting the MCP host. MCP does not expose model context size; the agent (or operator env bootstrap) must supply budget once per host process.
 
 ## When to use / when not
 
 | Use when | Do not use when |
 |----------|-----------------|
 | Session start and you know the model context window in tokens | The host profile is `minimal` or `basic` (tool hidden — set `OCCAM_CLIENT_CONTEXT_TOKENS` instead) |
+| Hermes / Cursor needs `full` playbooks mid-session without editing config.yaml | `OCCAM_PROFILE_LOCK=1` (operator froze the surface) |
 | Before reads that omit `max_tokens` / `per_url_max_tokens` and should inherit a safe default | Every read already passes explicit `max_tokens` or `per_url_max_tokens` |
 | You need to inspect or clear the in-process override | You only need a one-off full payload and no ambient budget is configured |
 
@@ -23,14 +24,15 @@ Declare this LLM’s context window so Occam can store a process-scoped output b
 | `context_tokens` | No (omit to inspect) | `null` | Context window in tokens. Required **value** to configure; omit to inspect. When set, must be in **1024–2 000 000** (`ClientCapabilityStore`). |
 | `model_id` | No | `null` | Optional model id string for the response. |
 | `clear` | No | `false` | If true, clear the session override and re-read `OCCAM_CLIENT_CONTEXT_TOKENS` env bootstrap. |
+| `profile` | No | `null` | Runtime surface: `minimal` \| `basic` \| `reader` \| `researcher` \| `auditor` \| `full`. Sends `tools/list_changed` when applied — **re-list tools** after (also when `listChangedSent` is true). Advertise of `tools.listChanged` is only on negotiated `2026-07-28`+; legacy clients still get the notification / should re-list from the tool response. |
 
 ## Response shape
 
 JSON object (camelCase):
 
-- **Success (`ok: true`):** `configured`, `contextTokens`, `outputBudgetTokens`, `suggestedProfile`, `modelId`, `source`, `note`.
+- **Success (`ok: true`):** `configured`, `contextTokens`, `outputBudgetTokens`, `suggestedProfile`, `modelId`, `source`, `note`, plus `activeProfile`, `profileApplied`, `profileLocked`, `listChangedSent`.
   - After configure, `outputBudgetTokens` ≈ **20%** of `context_tokens`, rounded and clamped to **512–16 384**.
-  - `suggestedProfile` is **advisory only** (`reader` if context < 8192, `researcher` if < 32768, else `full`).
+  - `suggestedProfile` is **advisory** (`reader` if context < 8192, `researcher` if < 32768, else `full`) — use `profile=` to apply.
   - `source` is `tool` when set via this call, or `env` when loaded from operator env.
 - **Failure (`ok: false`):** top-level `failureCode` (not nested `failure.code`), `note`, other fields nulled. This tool does not describe page content.
 
@@ -50,6 +52,8 @@ Full taxonomy: [failure codes](../failure-codes.md).
 |----------|------|
 | `OCCAM_CLIENT_CONTEXT_TOKENS` | Operator bootstrap (1024–2 000 000); re-read after `clear: true` |
 | `OCCAM_CLIENT_MODEL_ID` | Optional label on env bootstrap |
+| `OCCAM_PROFILE` | Boot default surface only (not a lock) |
+| `OCCAM_PROFILE_LOCK` | `1` freezes surface — `profile=` and exam cannot change it |
 
 Full catalog: [configuration](../configuration.md).
 

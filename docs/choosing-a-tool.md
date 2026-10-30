@@ -138,7 +138,9 @@ If you drive occam from a small local model — or any agent that drifts into pl
 | `auditor` | researcher + `occam_attest`, `occam_dataset_export`, `occam_playbook_lint` | heal/save/resolve |
 | `full` | all fifteen | — |
 
-Set in the MCP host env block, e.g. `"OCCAM_PROFILE": "researcher"`. Details: [configuration.md](configuration.md#tool-surface-profile-occam_profile).
+Boot default: MCP host env, e.g. `"OCCAM_PROFILE": "researcher"`. **Runtime (no restart):**
+`occam_client_capabilities({ "profile": "full" })` then re-list after `list_changed`.
+Details: [configuration.md](configuration.md#tool-surface-profile-occam_profile).
 
 **Client budget:** at session start call `occam_client_capabilities` with your context window (or set `OCCAM_CLIENT_CONTEXT_TOKENS`) so later reads without `max_tokens` stay within what you can hold — see [configuration.md](configuration.md#client-context-budget-occam_client_context_tokens).
 

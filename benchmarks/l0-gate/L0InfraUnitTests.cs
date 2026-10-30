@@ -381,6 +381,46 @@ internal static class L0InfraUnitTests
 
             Environment.SetEnvironmentVariable("OCCAM_PROFILE", "not-a-profile");
             assert("invalid profile falls back to reader", OccamMcp.Core.Transport.OccamToolProfile.Resolve() == "reader");
+
+            // Runtime profile switch (Hermes) — surface changes without MCP restart.
+            var surface = new OccamMcp.Core.Exam.SessionToolSurface("reader", isPinned: false);
+            assert("surface boot reader hides heal", !surface.IsExposed("occam_playbook_heal"));
+            assert("surface apply full", surface.TryApplyProfile("full"));
+            assert("surface now full", surface.ProfileId == "full");
+            assert("surface full exposes heal", surface.IsExposed("occam_playbook_heal"));
+            assert("surface generation bumped", surface.Generation == 1);
+            assert("surface noop same profile", !surface.TryApplyProfile("full"));
+            assert("surface reject garbage", !surface.TryApplyProfile("not-a-profile"));
+
+            var locked = new OccamMcp.Core.Exam.SessionToolSurface("reader", isPinned: true);
+            assert("locked surface ignores full", !locked.TryApplyProfile("full"));
+            assert("locked stays reader", locked.ProfileId == "reader");
+
+            assert(
+                "listChanged advertise modern",
+                OccamMcp.Core.Transport.OccamCapabilityHonesty.SupportsListChangedAdvertise("2026-07-28"));
+            assert(
+                "listChanged hide legacy 2024",
+                !OccamMcp.Core.Transport.OccamCapabilityHonesty.SupportsListChangedAdvertise("2024-11-05"));
+            assert(
+                "listChanged hide legacy 2025",
+                !OccamMcp.Core.Transport.OccamCapabilityHonesty.SupportsListChangedAdvertise("2025-11-25"));
+
+            // Crawl resume token round-trip (ADR-0018) — no network.
+            var resume = OccamMcp.Core.Crawl.CrawlService.EncodeResume(
+                new OccamMcp.Core.Crawl.CrawlResumeState(
+                    1,
+                    "https://example.com/",
+                    ["https://example.com/a", "https://example.com/b"]));
+            assert(
+                "crawl resume decode",
+                OccamMcp.Core.Crawl.CrawlService.TryDecodeResume(resume, out var state, out _)
+                && state.Seed == "https://example.com/"
+                && state.Queue.Length == 2);
+            assert(
+                "crawl resume rejects junk",
+                !OccamMcp.Core.Crawl.CrawlService.TryDecodeResume("%%%not-base64%%%", out _, out var err)
+                && !string.IsNullOrWhiteSpace(err));
         }
         finally
         {
@@ -3588,6 +3628,67 @@ internal static class L0InfraUnitTests
             DuckDuckGoHtmlParser.LooksLikeAnomalyChallenge(
                 """<div class="anomaly-modal__title">Unfortunately, bots use DuckDuckGo too.</div><form action="//duckduckgo.com/anomaly.js">"""));
         assert("ddg anomaly not on normal SERP", !DuckDuckGoHtmlParser.LooksLikeAnomalyChallenge(fixture));
+
+        var mojeekFixture = """
+            <html><body>
+              <a class="title" href="https://nginx.org/en/docs/">Nginx docs</a>
+              <p class="s">Reverse proxy configuration guide</p>
+              <a class="title" href="https://example.com/a">Example A</a>
+              <p class="s">Snippet A</p>
+              <a class="title" href="https://www.mojeek.com/about">Mojeek about</a>
+            </body></html>
+            """;
+        var mojeekHits = MojeekHtmlParser.Parse(mojeekFixture, maxResults: 5);
+        assert("mojeek parse count", mojeekHits.Count == 2);
+        assert("mojeek first url", mojeekHits[0].Url == "https://nginx.org/en/docs/");
+        assert("mojeek filters mojeek host", mojeekHits.All(h => !h.Url.Contains("mojeek.com", StringComparison.OrdinalIgnoreCase)));
+
+        var qwantFixture = """
+            <html><body>
+              <a class="result-title" href="https://nginx.org/en/docs/">Nginx docs</a>
+              <p class="result-desc">Reverse proxy guide</p>
+              <a class="result-title" href="https://example.com/q">Example Q</a>
+              <p class="result-desc">Snippet Q</p>
+              <a class="result-title" href="https://www.qwant.com/about">Qwant about</a>
+            </body></html>
+            """;
+        var qwantHits = QwantHtmlParser.Parse(qwantFixture, maxResults: 5);
+        assert("qwant parse count", qwantHits.Count == 2);
+        assert("qwant first url", qwantHits[0].Url == "https://nginx.org/en/docs/");
+        assert("qwant filters qwant host", qwantHits.All(h => !h.Url.Contains("qwant.com", StringComparison.OrdinalIgnoreCase)));
+
+        var startpageFixture = """
+            <html><body>
+              <a class="w-gl__result-title" href="https://nginx.org/en/docs/">Nginx docs</a>
+              <p class="w-gl__description">Reverse proxy guide</p>
+              <a class="w-gl__result-title" href="https://example.com/s">Example S</a>
+              <p class="w-gl__description">Snippet S</p>
+              <a class="w-gl__result-title" href="https://www.startpage.com/about">Startpage about</a>
+            </body></html>
+            """;
+        var startpageHits = StartpageHtmlParser.Parse(startpageFixture, maxResults: 5);
+        assert("startpage parse count", startpageHits.Count == 2);
+        assert("startpage first url", startpageHits[0].Url == "https://nginx.org/en/docs/");
+        assert(
+            "startpage filters startpage host",
+            startpageHits.All(h => !h.Url.Contains("startpage.com", StringComparison.OrdinalIgnoreCase)));
+
+        var bingFixture = """
+            <html><body>
+              <ol id="b_results">
+                <li class="b_algo"><h2><a href="https://nginx.org/en/docs/">Nginx docs</a></h2>
+                  <div class="b_caption"><p>Reverse proxy guide</p></div></li>
+                <li class="b_algo"><h2><a href="https://example.com/b">Example B</a></h2>
+                  <div class="b_caption"><p>Snippet B</p></div></li>
+                <li class="b_algo"><h2><a href="https://www.bing.com/account">Bing account</a></h2>
+                  <div class="b_caption"><p>Chrome</p></div></li>
+              </ol>
+            </body></html>
+            """;
+        var bingHits = BingHtmlParser.Parse(bingFixture, maxResults: 5);
+        assert("bing parse count", bingHits.Count == 2);
+        assert("bing first url", bingHits[0].Url == "https://nginx.org/en/docs/");
+        assert("bing filters bing host", bingHits.All(h => !h.Url.Contains("bing.com", StringComparison.OrdinalIgnoreCase)));
     }
 
     private static void RunSearchFanoutContract(Action<string, bool> assert)
@@ -3649,6 +3750,11 @@ internal static class L0InfraUnitTests
         Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS", "brave");
         Environment.SetEnvironmentVariable("OCCAM_SEARCH_API_KEY", null);
         assert("search PROVIDERS brave without key → empty", !fan.IsConfigured);
+
+        Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS", "keyless");
+        Environment.SetEnvironmentVariable("OCCAM_SEARCH_API_KEY", null);
+        var keyless = OccamServiceCollectionExtensions.BuildSearchService();
+        assert("search keyless expands → fanout", keyless.IsConfigured && keyless.ProviderName == "fanout");
 
         Environment.SetEnvironmentVariable("OCCAM_SEARCH_PROVIDERS", null);
 

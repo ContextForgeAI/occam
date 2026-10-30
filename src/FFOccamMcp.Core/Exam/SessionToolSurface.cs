@@ -3,8 +3,9 @@ using OccamMcp.Core.Transport;
 namespace OccamMcp.Core.Exam;
 
 /// <summary>
-/// Session-scoped tool surface used when <c>OCCAM_EXAM_MCP=1</c>. Starts at reader (or an
-/// operator-pinned <c>OCCAM_PROFILE</c>); exam submit may narrow/widen unless pinned.
+/// Session-scoped tool surface for the MCP process. Boot profile comes from <c>OCCAM_PROFILE</c>
+/// (default reader). Agents widen/narrow via <c>occam_client_capabilities(profile=…)</c> without
+/// restart; exam submit may also change the surface unless <c>OCCAM_PROFILE_LOCK=1</c>.
 /// </summary>
 public sealed class SessionToolSurface
 {
@@ -22,7 +23,7 @@ public sealed class SessionToolSurface
         IsPinned = isPinned;
     }
 
-    /// <summary>True when the operator set <c>OCCAM_PROFILE</c> — exam must not change the surface.</summary>
+    /// <summary>True when <c>OCCAM_PROFILE_LOCK=1</c> — exam and runtime profile switches are no-ops.</summary>
     public bool IsPinned { get; }
 
     /// <summary>Active profile id (<c>minimal|basic|reader|…</c>).</summary>
@@ -70,7 +71,7 @@ public sealed class SessionToolSurface
     }
 
     /// <summary>
-    /// Applies a tier-derived profile. No-op when pinned or when the profile is unchanged.
+    /// Applies a tier-derived profile. No-op when locked or when the profile is unchanged.
     /// </summary>
     /// <returns><c>true</c> when the surface changed (caller should send <c>list_changed</c>).</returns>
     public bool TryApplyExamTier(AgentTier tier)
@@ -80,7 +81,25 @@ public sealed class SessionToolSurface
             return false;
         }
 
-        var next = ExamScoring.ProfileFor(tier);
+        return TryApplyProfile(ExamScoring.ProfileFor(tier));
+    }
+
+    /// <summary>
+    /// Runtime profile switch (Hermes / agents). No-op when locked or unchanged.
+    /// </summary>
+    /// <returns><c>true</c> when the surface changed (caller should send <c>list_changed</c>).</returns>
+    public bool TryApplyProfile(string profileId)
+    {
+        if (IsPinned)
+        {
+            return false;
+        }
+
+        if (!OccamToolProfile.TryNormalize(profileId, out var next))
+        {
+            return false;
+        }
+
         lock (_gate)
         {
             if (string.Equals(_profileId, next, StringComparison.Ordinal))

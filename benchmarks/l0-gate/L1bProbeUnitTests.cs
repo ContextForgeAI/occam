@@ -76,6 +76,16 @@ internal static class L1bProbeUnitTests
         var hint = ChallengeKindClassifier.DetectHint(html, 503, "https://example.com");
         assert("l1b challenge js_challenge", hint?.Kind == "js_challenge");
         assert("l1b challenge not heal eligible", hint is { HealEligible: false });
+        assert("l1b soft challenge try_browser", hint?.RecommendedAction == "try_browser");
+
+        var genericHtml = "<html><body><h1>Attention Required</h1><p>Verify you are human to continue.</p></body></html>";
+        var genericHint = ChallengeKindClassifier.DetectHint(genericHtml, 403, "https://market.example/");
+        assert("l1b generic_challenge kind", genericHint?.Kind == "generic_challenge");
+        assert("l1b generic_challenge try_browser", genericHint?.RecommendedAction == "try_browser");
+
+        var turnstileHtml = "<html><body>challenges.cloudflare.com/turnstile widget</body></html>";
+        var turnstileHint = ChallengeKindClassifier.DetectHint(turnstileHtml, 200, "https://market.example/");
+        assert("l1b turnstile hard stop", turnstileHint is { Kind: "turnstile", RecommendedAction: "skip_url" });
 
         var docsHtml = """
             <!DOCTYPE html><html><head><title>API Guide</title></head>

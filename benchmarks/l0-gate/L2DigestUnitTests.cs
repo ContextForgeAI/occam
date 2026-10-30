@@ -298,6 +298,44 @@ internal static class L2DigestUnitTests
             "digest focus_not_found decision",
             unfocusedHints.Decisions.Any(d => d.Action == "focus_not_found"));
         assert("digest focus_not_found read order", unfocusedHints.SuggestedReadOrder == "items_only");
+        assert(
+            "digest merge-not-synthesis honesty",
+            unfocusedHints.Warnings.Any(w => w.StartsWith("digest_merge_not_synthesis:", StringComparison.Ordinal))
+            && unfocusedHints.Decisions.Any(d => d.Action == "cite_per_url"));
+        var incompleteItem = new DigestAnalysis(true, "inc1", [
+            new DigestItemResult(
+                "https://example.com/a",
+                true,
+                "A",
+                "body",
+                "http",
+                40,
+                null,
+                null,
+                "topic",
+                true,
+                MaterializationAssessment: new OccamMcp.Core.Knowledge.MaterializationAssessment(
+                    OccamMcp.Core.Compile.FocusMatchStatus.Weak,
+                    OccamMcp.Core.Knowledge.MaterializationCompleteness.Incomplete,
+                    "focus_body_truncated",
+                    SuggestedMinTokens: 512)),
+        ], "## A", 1, 1, 0, 40, null, null);
+        var incompleteHints = DigestAgentHints.ForDigest(incompleteItem);
+        assert(
+            "digest completeness raise_max_tokens",
+            incompleteHints.Decisions.Any(d => d.Action == OccamMcp.Core.Semantics.FocusBudgetHints.RaiseMaxTokens)
+            && incompleteHints.Warnings.Any(w => w.Contains("completeness_incomplete:", StringComparison.Ordinal)));
+        var weakFocus = OccamMcp.Core.Semantics.SemanticOutcomeMapper.MapFocus(
+            new OccamMcp.Core.Knowledge.MaterializationAssessment(
+                OccamMcp.Core.Compile.FocusMatchStatus.Weak,
+                OccamMcp.Core.Knowledge.MaterializationCompleteness.Complete),
+            "topic",
+            null);
+        assert("focus weak carries nextStep", !string.IsNullOrWhiteSpace(weakFocus.NextStep));
+        assert(
+            "focus budget suggestedNext refine",
+            OccamMcp.Core.Semantics.FocusBudgetHints.SuggestedNext(weakFocus, null)
+                == OccamMcp.Core.Semantics.FocusBudgetHints.RefineFocus);
         var unfocusedJson = JsonSerializer.Serialize(
             OccamDigestResponseMapper.MapSuccess(unfocused),
             OccamDigestJsonContext.Default.OccamDigestSuccessResponse);

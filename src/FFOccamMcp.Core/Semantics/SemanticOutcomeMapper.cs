@@ -22,7 +22,10 @@ public sealed record SemanticFocusInfo(
     double? Confidence = null,
     [property: System.Text.Json.Serialization.JsonIgnore(
         Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
-    string? MatchedAnchor = null);
+    string? MatchedAnchor = null,
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? NextStep = null);
 
 /// <summary>Public completeness dimension: complete | partial | incomplete.</summary>
 public sealed record SemanticCompletenessInfo(
@@ -32,7 +35,10 @@ public sealed record SemanticCompletenessInfo(
     string? IncompleteReason = null,
     [property: System.Text.Json.Serialization.JsonIgnore(
         Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
-    int? SuggestedMinTokens = null);
+    int? SuggestedMinTokens = null,
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? NextStep = null);
 
 /// <summary>Claim / attestation semantic judgment. Retrieval tools emit <c>not_evaluated</c>.</summary>
 public static class SemanticVerdict
@@ -96,7 +102,11 @@ public static class SemanticOutcomeMapper
             FocusMatchStatus.Weak => "weak",
             _ => "miss",
         };
-        return new SemanticFocusInfo(status, Confidence: null, MatchedAnchor: matchedAnchor);
+        return new SemanticFocusInfo(
+            status,
+            Confidence: null,
+            MatchedAnchor: matchedAnchor,
+            NextStep: FocusBudgetHints.NextStepForFocus(status));
     }
 
     public static SemanticCompletenessInfo? MapCompleteness(MaterializationAssessment? assessment)
@@ -115,7 +125,11 @@ public static class SemanticOutcomeMapper
         return new SemanticCompletenessInfo(
             status,
             assessment.IncompleteReason,
-            assessment.SuggestedMinTokens);
+            assessment.SuggestedMinTokens,
+            FocusBudgetHints.NextStepForCompleteness(
+                status,
+                assessment.IncompleteReason,
+                assessment.SuggestedMinTokens));
     }
 
     /// <summary>
@@ -129,12 +143,14 @@ public static class SemanticOutcomeMapper
             return new SemanticFocusInfo("not_requested");
         }
 
-        return focusMatched switch
+        var status = focusMatched switch
         {
-            true => new SemanticFocusInfo("hit"),
-            false => new SemanticFocusInfo("miss"),
-            _ => new SemanticFocusInfo("miss"),
+            true => "hit",
+            _ => "miss",
         };
+        return new SemanticFocusInfo(
+            status,
+            NextStep: FocusBudgetHints.NextStepForFocus(status));
     }
 
 }
